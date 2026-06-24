@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>WEB2MUSIC — Signal Capture Prototype</title>
+<style>
+  body { font-family: -apple-system, Segoe UI, Arial, sans-serif; margin: 0; }
+  #dashboard {
+    position: fixed; top: 0; left: 0; right: 0;
+    background: #111; color: #0f0; padding: 16px 24px;
+    font-family: 'Courier New', monospace;
+    font-size: 18px;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    display: flex; gap: 40px; flex-wrap: wrap;
+  }
+  .metric { min-width: 200px; }
+  .metric .label { color: #888; font-size: 12px; text-transform: uppercase; }
+  .metric .value { font-size: 28px; font-weight: bold; }
+  .metric .value.low { color: #4caf50; }
+  .metric .value.mid { color: #ffc107; }
+  .metric .value.high { color: #f44336; }
+  #content { padding: 150px 40px 120px; max-width: 700px; margin: 0 auto; line-height: 1.7; color: #333; }
+  #content p { margin-bottom: 20px; }
+  h1 { margin-top: 0; }
+</style>
+</head>
+<body>
+
+<div id="dashboard">
+  <div class="metric">
+    <div class="label">Cursor speed (px/s)</div>
+    <div class="value low" id="cursorSpeed">0</div>
+  </div>
+  <div class="metric">
+    <div class="label">Scroll speed (px/s)</div>
+    <div class="value low" id="scrollSpeed">0</div>
+  </div>
+  <div class="metric">
+    <div class="label">Mousemove events/sec (throttled)</div>
+    <div class="value low" id="moveRate">0</div>
+  </div>
+  <div class="metric">
+    <div class="label">Scroll events/sec (throttled)</div>
+    <div class="value low" id="scrollRate">0</div>
+  </div>
+</div>
+
+<div id="content">
+  <h1>Scroll &amp; Move Around</h1>
+  <p>This page measures cursor and scroll speed using the same formulas your spec defines for content_script.js: distance divided by time, averaged over the last 5 readings, with throttling so it doesn't run hundreds of times per second.</p>
+  <p>Move your mouse slowly, then quickly — watch "Cursor speed" react. Then scroll slowly, then rapidly — watch "Scroll speed" react separately. The colour changes from green to yellow to red as speed increases, roughly matching the thresholds your B2 code already uses (scroll &gt; 800 px/s, cursor &gt; 600 px/s).</p>
+  <p>The two "events/sec" counters show how many times the throttle actually let an event through in the last second — this proves the throttling itself is working, capping mousemove at 20/sec and scroll at 10/sec no matter how fast the raw browser events fire.</p>
+  <p>Keep scrolling down through this page to generate scroll signal. Paragraph one of filler content.</p>
+  <p>Paragraph two of filler content, just here to make the page tall enough to scroll through meaningfully.</p>
+  <p>Paragraph three of filler content. Try scrolling with your mouse wheel versus dragging the scrollbar — notice if the readings differ.</p>
+  <p>Paragraph four of filler content. Try moving your mouse in small slow circles, then large fast swipes across the screen.</p>
+  <p>Paragraph five of filler content. The numbers should settle back toward zero shortly after you stop moving or scrolling.</p>
+  <p>Paragraph six of filler content, continuing to pad out the page height.</p>
+  <p>Paragraph seven of filler content. Almost at the bottom now.</p>
+  <p>Paragraph eight of filler content. This is the last paragraph — scroll back up to test again.</p>
+</div>
+
+<script>
+(function () {
+  const cursorSpeedEl = document.getElementById('cursorSpeed');
+  const scrollSpeedEl = document.getElementById('scrollSpeed');
+  const moveRateEl    = document.getElementById('moveRate');
+  const scrollRateEl  = document.getElementById('scrollRate');
+
+  function colorize(el, value, midThresh, highThresh) {
+    el.classList.remove('low', 'mid', 'high');
+    if (value >= highThresh) el.classList.add('high');
+    else if (value >= midThresh) el.classList.add('mid');
+    else el.classList.add('low');
+  }
+
+  // ---------- Cursor speed tracking ----------
+  let lastMouseX = null, lastMouseY = null, lastMouseTime = null;
+  let lastMouseEventTime = 0;
+  const MOUSE_THROTTLE_MS = 50; // caps at 20 events/sec — spec edge case #22
+  const cursorReadings = []; // sliding window of last 5 speeds
+
+  let moveCount = 0;
+  setInterval(() => { moveRateEl.textContent = moveCount; moveCount = 0; }, 1000);
+
+  window.addEventListener('mousemove', (e) => {
+    const now = performance.now();
+    if (now - lastMouseEventTime < MOUSE_THROTTLE_MS) return; // throttle
+    lastMouseEventTime = now;
+    moveCount++;
+
+    if (lastMouseX !== null) {
+      const dx = e.clientX - lastMouseX;
+      const dy = e.clientY - lastMouseY;
+      const dt = (now - lastMouseTime) / 1000; // seconds
+      if (dt > 0) {
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const speed = distance / dt; // px/sec
+        cursorReadings.push(speed);
+        if (cursorReadings.length > 5) cursorReadings.shift();
+        const avg = cursorReadings.reduce((a, b) => a + b, 0) / cursorReadings.length;
+        cursorSpeedEl.textContent = Math.round(avg);
+        colorize(cursorSpeedEl, avg, 200, 600);
+      }
+    }
+    lastMouseX = e.clientX;
+    lastMouseY = e.clientY;
+    lastMouseTime = now;
+  });
+
+  // ---------- Scroll speed tracking ----------
+  let lastScrollY = window.scrollY, lastScrollTime = performance.now();
+  let lastScrollEventTime = 0;
+  const SCROLL_THROTTLE_MS = 100; // caps at 10 events/sec — spec edge case #22
+  const scrollReadings = [];
+
+  let scrollCount = 0;
+  setInterval(() => { scrollRateEl.textContent = scrollCount; scrollCount = 0; }, 1000);
+
+  window.addEventListener('scroll', () => {
+    const now = performance.now();
+    if (now - lastScrollEventTime < SCROLL_THROTTLE_MS) return; // throttle
+    lastScrollEventTime = now;
+    scrollCount++;
+
+    const currentY = window.scrollY;
+    const dy = Math.abs(currentY - lastScrollY);
+    const dt = (now - lastScrollTime) / 1000;
+    if (dt > 0) {
+      const speed = dy / dt; // px/sec
+      scrollReadings.push(speed);
+      if (scrollReadings.length > 5) scrollReadings.shift();
+      const avg = scrollReadings.reduce((a, b) => a + b, 0) / scrollReadings.length;
+      scrollSpeedEl.textContent = Math.round(avg);
+      colorize(scrollSpeedEl, avg, 300, 800);
+    }
+    lastScrollY = currentY;
+    lastScrollTime = now;
+  });
+
+  // Decay readings to zero when idle, so numbers don't stay frozen
+  setInterval(() => {
+    const now = performance.now();
+    if (now - lastMouseEventTime > 500 && cursorReadings.length) {
+      cursorReadings.length = 0;
+      cursorSpeedEl.textContent = 0;
+      colorize(cursorSpeedEl, 0, 200, 600);
+    }
+    if (now - lastScrollEventTime > 500 && scrollReadings.length) {
+      scrollReadings.length = 0;
+      scrollSpeedEl.textContent = 0;
+      colorize(scrollSpeedEl, 0, 300, 800);
+    }
+  }, 500);
+})();
+</script>
+
+</body>
+</html>
