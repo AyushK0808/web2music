@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Web2Music</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #f5f5f5;
+    }
+
+    /* ── Popup root ── */
+    .popup-root {
+      width: 610px;
+      background: #f5f5f5;
+      color: #111;
+      font-family: 'SF Pro Display', 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Segoe UI', system-ui, sans-serif;
+      font-size: 13px;
+      user-select: none;
+      border-radius: 20px;
+      overflow: hidden;
+      /* The shadow creates the illusion of rounded corners against the frame */
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08);
+    }
+
+    /* ── Header ─────────────────────────────────────────── */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 22px 10px;
+    }
+
+    .title {
+      font-family: 'Poppins', 'Georgia', serif;
+      font-weight: 700;
+      font-size: 28px;
+      letter-spacing: -0.5px;
+      color: #282828;
+    }
+
+    /* Toggle */
+    .toggle { position: relative; width: 52px; height: 28px; flex-shrink: 0; }
+    .toggle input { display: none; }
+    .toggle-track {
+      position: absolute; inset: 0; border-radius: 14px;
+      background: #ccc; transition: background 0.2s; cursor: pointer;
+    }
+    .toggle input:checked + .toggle-track { background: #5a4e00; }
+    .toggle-thumb {
+      position: absolute; top: 4px; left: 4px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: white; transition: transform 0.2s;
+      pointer-events: none; display: flex; align-items: center;
+      justify-content: center; font-size: 11px; color: #5a4e00; font-weight: 700;
+    }
+    .toggle input:checked ~ .toggle-thumb { transform: translateX(24px); }
+
+    /* ── Section label ───────────────────────────────────── */
+    .section-label {
+      font-size: 11px; font-weight: 700; color: #555;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      padding: 4px 22px 8px;
+    }
+
+    /* ── Page Card ───────────────────────────────────────── */
+    /* We draw the dashed border via SVG overlay so we can control gap */
+    .page-card-wrap {
+      margin: 0 10px;
+      position: relative;
+    }
+
+    .page-card {
+      background: white;
+      border-radius: 16px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      /* CSS var defaults, overridden by JS after favicon colour extract */
+      --card-border: #f0c0a0;
+      --card-bg: #ffffff;
+      background: var(--card-bg);
+      /* no CSS border — SVG handles it */
+    }
+
+    /* SVG dashed border absolutely positioned over the card */
+    .page-card-wrap svg.dash-border {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: visible;
+    }
+
+    .page-favicon {
+      width: 44px; height: 44px; border-radius: 11px;
+      background: #f5f0ff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; flex-shrink: 0; overflow: hidden;
+    }
+    .page-favicon img {
+      width: 100%; height: 100%; object-fit: cover; border-radius: 11px;
+    }
+
+    .page-info { flex: 1; min-width: 0; }
+
+    .page-title {
+      font-weight: 700; font-size: 15px; color: #4c4c4c;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    .page-url {
+      font-size:10px; color: #888;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      margin-top: 3px;
+    }
+
+    .page-status-tag {
+      font-size: 11px; color: #e07a30;
+      margin-top: 5px; display: flex; align-items: center; gap: 5px;
+    }
+    .page-status-tag::before {
+      content: ''; display: inline-block;
+      width: 7px; height: 7px; border-radius: 50%;
+      background: #e07a30;
+      animation: pulse-dot 1.4s ease-in-out infinite; flex-shrink: 0;
+    }
+    @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    .page-action {
+      flex-shrink: 0; width: 34px; height: 34px;
+      border: 1.5px solid #ddd; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: #888; font-size: 15px;
+      background: white; transition: background 0.15s, color 0.15s;
+    }
+    .page-action:hover { background: #f5f5f5; color: #333; }
+
+    /* ── Visualizer ──────────────────────────────────────── */
+    .visualizer-wrap { padding: 16px 16px 8px; }
+    #visualizer { width: 578px; height: 90px; display: block; background: transparent; }
+
+    /* ── Bottom ──────────────────────────────────────────── */
+    .bottom-section {
+      padding: 4px 22px 18px;
+      display: flex; align-items: flex-end;
+      justify-content: space-between; gap: 14px;
+    }
+
+    .volume-block { flex: 1; }
+
+    .controls-row {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+    }
+
+    .btn {
+      border: none; cursor: pointer; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s, transform 0.1s; font-family: inherit;
+    }
+    .btn:active { transform: scale(0.92); }
+    .btn-play { width: 40px; height: 40px; background: #2563eb; color: white; font-size: 14px; }
+    .btn-play:hover { background: #1d4fd8; }
+    .btn-stop { width: 30px; height: 30px; background: #e8e8e8; color: #555; font-size: 12px; }
+    .btn-stop:hover { background: #ddd; }
+
+    .volume-label {
+      font-size: 12px; font-weight: 700; color: #222;
+      display: flex; align-items: center; gap: 6px; margin-bottom: 8px;
+    }
+    .volume-label svg { width: 14px; height: 14px; }
+
+    .slider-wrap {
+      position: relative;
+      width: 100%;
+      height: 12px;
+      margin-bottom: 2px;
+    }
+
+    .slider-track {
+      position: absolute;
+      inset: 0;
+      border-radius: 99px;
+      background: #e2e2e2;
+      overflow: hidden;
+      display: flex;
+      align-items: stretch;
+    }
+
+    .slider-fill {
+      background: #0f2d6b;
+      border-radius: 99px 0 0 99px;
+      flex-shrink: 0;
+      width: 65%;
+      transition: width 0.05s linear;
+    }
+
+    .slider-indicator {
+      width: 10px;
+      flex-shrink: 0;
+      background: #a8c4f0;
+    }
+
+    /* Invisible range input sits on top for interaction */
+    #volumeSlider {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      -webkit-appearance: none;
+      background: transparent;
+      outline: none;
+      cursor: pointer;
+      margin: 0;
+      opacity: 0; /* fully invisible — visual is handled by divs above */
+    }
+    #volumeSlider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px; height: 18px;
+      background: transparent;
+    }
+
+    .volume-pct-row {
+      display: flex; justify-content: space-between;
+      margin-top: 6px; font-size: 11px; font-weight: 600; color: #2563eb;
+      letter-spacing: -0.1px;
+    }
+    .volume-pct-row .pct-max { color: #2563eb; }
+
+    /* ── Customize ───────────────────────────────────────── */
+    .customize-block {
+      display: flex; flex-direction: column; align-items: center; gap: 7px;
+    }
+    .btn-customize {
+      display: flex; align-items: center; gap: 8px;
+      padding: 12px 20px; background: white;
+      border: 1.5px solid #e0e0e0; border-radius: 14px;
+      font-family: inherit; font-size: 13px; font-weight: 700; color: #222;
+      cursor: pointer; white-space: nowrap;
+      transition: background 0.15s, box-shadow 0.15s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .btn-customize:hover { background: #f9f9f9; box-shadow: 0 2px 8px rgba(0,0,0,0.10); }
+    .btn-customize svg { width: 16px; height: 16px; }
+    .share-link { font-size: 10px; color: #aaa; text-decoration: none; cursor: pointer; }
+    .share-link:hover { color: #888; text-decoration: underline; }
+
+    /* ── Cat ─────────────────────────────────────────────── */
+    .cat-wrap { flex-shrink: 0; width: 68px; height: 68px; display: flex; align-items: flex-end; }
+    .cat-wrap svg { width: 68px; height: 68px; }
+
+    /* ── Status variants ─────────────────────────────────── */
+    .status-playing .page-status-tag::before { background: #22c55e; }
+    .status-playing .page-status-tag { color: #16a34a; }
+    .status-error   .page-status-tag::before { background: #ef4444; }
+    .status-error   .page-status-tag { color: #dc2626; }
+  </style>
+</head>
+<body>
+<div class="popup-root">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="title">Web2Music</div>
+    <label class="toggle">
+      <input type="checkbox" id="toggleEnabled" checked />
+      <div class="toggle-track"></div>
+      <div class="toggle-thumb">✓</div>
+    </label>
+  </div>
+
+  <!-- Current Page -->
+  <div class="section-label">Current page</div>
+  <div class="page-card-wrap">
+    <!-- SVG dashed border — redrawn by JS once dimensions are known -->
+    <svg class="dash-border" id="dashBorder" xmlns="http://www.w3.org/2000/svg">
+      <rect id="dashRect" x="1" y="1" rx="15" ry="15"
+        fill="none" stroke="#f0c0a0" stroke-width="1.1"
+        stroke-dasharray="6 8" />
+    </svg>
+
+    <div class="page-card" id="pageCard">
+      <div class="page-favicon" id="pageFavicon">🌐</div>
+      <div class="page-info">
+        <div class="page-title" id="pageTitle">—</div>
+        <div class="page-url" id="pageUrl">—</div>
+        <div class="page-status-tag" id="pageStatusTag">Extracting Styles</div>
+      </div>
+      <button class="page-action" id="btnPlayPause" title="Play / Pause">▶</button>
+    </div>
+  </div>
+
+  <!-- Visualizer -->
+  <div class="visualizer-wrap">
+    <canvas id="visualizer" width="1016" height="180"></canvas>
+  </div>
+
+  <!-- Bottom -->
+  <div class="bottom-section">
+    <div class="volume-block">
+      <div class="volume-label">
+        Volume Control
+        <svg viewBox="0 0 20 20" fill="currentColor"><path d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.707.707L4.586 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.586l3.707-3.707a1 1 0 011.09-.217zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z"/></svg>
+      </div>
+      <div class="slider-wrap">
+        <div class="slider-track">
+          <div class="slider-fill" id="sliderFill"></div>
+          <div class="slider-indicator" id="sliderIndicator"></div>
+        </div>
+        <input type="range" id="volumeSlider" min="0" max="100" value="65" />
+      </div>
+      <div class="volume-pct-row">
+        <span id="volPctLabel">65%</span>
+        <span class="pct-max">100%</span>
+      </div>
+    </div>
+
+    <div class="customize-block">
+      <button class="btn-customize" id="btnCustomize">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/></svg>
+        Customize
+      </button>
+      <a class="share-link" href="#">Share this extension ↗</a>
+    </div>
+
+    <!-- Cat mascot -->
+    <div class="cat-wrap">
+      <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="32" cy="46" rx="16" ry="13" fill="#f5e6c8"/>
+        <circle cx="32" cy="28" r="15" fill="#f5e6c8"/>
+        <polygon points="18,18 13,8 22,14" fill="#f5e6c8"/>
+        <polygon points="18,17 15,10 21,14" fill="#f0b8b8"/>
+        <polygon points="46,18 51,8 42,14" fill="#f5e6c8"/>
+        <polygon points="46,17 49,10 43,14" fill="#f0b8b8"/>
+        <ellipse cx="26" cy="28" rx="3.5" ry="4" fill="#444"/>
+        <ellipse cx="38" cy="28" rx="3.5" ry="4" fill="#444"/>
+        <circle cx="27.5" cy="26.5" r="1.2" fill="white"/>
+        <circle cx="39.5" cy="26.5" r="1.2" fill="white"/>
+        <ellipse cx="32" cy="33" rx="2" ry="1.5" fill="#f09090"/>
+        <path d="M30 34.5 Q32 36.5 34 34.5" stroke="#d07070" stroke-width="1" fill="none" stroke-linecap="round"/>
+        <line x1="18" y1="33" x2="29" y2="33.5" stroke="#bbb" stroke-width="0.8"/>
+        <line x1="18" y1="35" x2="29" y2="34.5" stroke="#bbb" stroke-width="0.8"/>
+        <line x1="46" y1="33" x2="35" y2="33.5" stroke="#bbb" stroke-width="0.8"/>
+        <line x1="46" y1="35" x2="35" y2="34.5" stroke="#bbb" stroke-width="0.8"/>
+        <path d="M46 54 Q58 50 56 42" stroke="#f5e6c8" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <ellipse cx="24" cy="57" rx="5" ry="3.5" fill="#f5e6c8"/>
+        <ellipse cx="38" cy="57" rx="5" ry="3.5" fill="#f5e6c8"/>
+      </svg>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</div>
+</body>
+</html>
