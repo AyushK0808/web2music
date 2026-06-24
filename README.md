@@ -134,8 +134,94 @@ registerFeatureBListener();
 
 ---
 
-## Running tests
+### Manual exploration scripts
+
+All exploratory test scripts are organized in `manual-tests/` for validation and debugging:
 
 ```bash
-node --experimental-vm-modules feature_b/feature_b.test.js
+# Test mood detection with real LLM (requires Anthropic API key)
+$env:ANTHROPIC_API_KEY="sk-ant-your-key"
+node manual-tests/try_tier_check.js
+
+# Test full pipeline on real websites
+node manual-tests/try_real_site.js https://en.wikipedia.org/wiki/Indus_Valley_Civilisation
+
+# Test signal impact on final prompt generation
+node manual-tests/try_signal_in_prompt.js
+
+# Debug content category classification
+node manual-tests/try_category_debug.js https://example.com
+
+# Test raw Anthropic API connectivity
+node manual-tests/try_anthropic_raw.js
 ```
+
+### Signal capture prototype
+
+To prototype scroll and cursor speed capture (same logic as content_script.js will use):
+
+1. Open `manual-tests/signal_capture_test.html` in a browser (double-click in File Explorer).
+2. Move your mouse and scroll on the page.
+3. Watch the live dashboard update with speed measurements (green/yellow/red colour bands).
+4. Verify throttling is working: event rate counters should never exceed 20/sec (mouse) or 10/sec (scroll).
+
+---
+
+## Known issues found & fixed during testing
+
+### 1. HTML entity decoding in cleanText()
+**Issue:** `&amp;` was being deleted instead of decoded to `&`.
+**Fix:** Added explicit entity decode steps before the catch-all strip.
+**Impact:** Pages with special characters in content now classify correctly.
+
+### 2. Substring matching in content category classification
+**Issue:** Keyword `"cook"` was matching `"cookies"` (browser cookies), and `"eat"` was matching `"wheat"`.
+**Fix:** Changed `.includes(kw)` to `.startsWith(kw)` for whole-word boundaries.
+**Added:** Minimum 2-keyword-hit threshold to avoid single-word false positives.
+**Impact:** Indus Valley Civilization articles no longer misclassify as "Food."
+
+### 3. Mood scoring scale mismatch
+**Issue:** Keyword hits (raw integers: 1, 2, 3...) were competing directly against behavioural biases (tiny decimals: 0.1–0.2), so keyword matches always dominated regardless of scroll/cursor speed.
+**Fix:** Normalized keyword hits to the same 0–1 scale as behaviour signals (1 keyword ≈ 0.25 weight).
+**Impact:** Scroll and cursor speed now meaningfully influence mood detection on keyword-ambiguous pages.
+
+---
+
+## No Python, no databases needed
+
+Feature B is pure JavaScript. Vector databases (ChromaDB, Supabase) and Python tools are used by Feature A (embedding) and Feature D (audio generation), not Feature B. All testing and development uses only Node.js.
+
+---
+## Project structure
+
+```
+feature_b/
+├── index.js                         # Orchestrator: chains B1→B2→B3→B4
+├── b1_contentUnderstanding.js       # Text cleaning, keyword extraction, category classification
+├── b2_moodClassifier.js             # Two-tier mood detection (heuristic + LLM)
+├── b3_musicProfileGenerator.js      # Mood → BPM, key, instruments, reverb, ambience
+└── b4_promptEngineer.js             # Profile → natural-language audio prompt
+
+manual-tests/
+├── signal_capture_test.html         # Browser prototype: scroll/cursor speed capture
+├── try_tier_check.js                # Validate Tier-1 vs Tier-2 LLM escalation
+├── try_real_site.js                 # Full pipeline on real website content
+├── try_signal_in_prompt.js          # Verify scroll/cursor speed affects final prompt
+├── try_category_debug.js            # Debug content category classification
+├── try_anthropic_raw.js             # Test Anthropic API connectivity directly
+├── try_it_out.js                    # Quick test with synthetic data
+└── try_signal_test.js               # Test energy/intensity scaling with behaviour signals
+
+feature_b_test.js                    # Main test suite (20+ assertions)
+background_integration.js            # Reference: wiring into Chrome extension
+package.json                         # Node.js project config
+README.md                            # This file
+```
+## Extending Feature B
+
+Documented future improvements are in the PoC document (section 7):
+
+- **7.3:** Use Feature A's page embedding for similarity-based Tier-1 mood refinement.
+- **7.4:** Deploy a lightweight fine-tuned model (~50–100M params) via ONNX/TensorFlow.js instead of calling the full LLM for Tier-2.
+- **7.5:** Implement dynamic instrument layering instead of static per-mood lists.
+- **7.6:** Build an automated evaluation framework to score mood→prompt→music coherence.
