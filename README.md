@@ -133,6 +133,17 @@ registerFeatureBListener();
 ```
 
 ---
+## Testing & Validation
+
+### Main test suite
+
+Run all Feature B tests (B1, B2, B3, B4, and integration):
+
+```bash
+npm test
+```
+
+This runs ~20 assertions covering content cleaning, mood detection (both tiers), music profile generation, prompt engineering, and the 5-second confidence interval.
 
 ### Manual exploration scripts
 
