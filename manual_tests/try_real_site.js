@@ -1,4 +1,4 @@
-import { runFeatureB, configureFeatureB, resetConfidenceWindow } from "./feature_b/index.js";
+import { runFeatureB, configureFeatureB, resetConfidenceWindow } from "../feature_b/index.js";
 
 const url = process.argv[2] || "https://en.wikipedia.org/wiki/Bioluminescence";
 

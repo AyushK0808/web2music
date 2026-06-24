@@ -1,4 +1,4 @@
-import { runFeatureB, configureFeatureB, resetConfidenceWindow } from "./feature_b/index.js";
+import { runFeatureB, configureFeatureB, resetConfidenceWindow } from "../feature_b/index.js";
 
 const baseText = "Scientists are exploring ancient ruins and ongoing archaeological digs in the region.";
 

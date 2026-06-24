@@ -1,4 +1,4 @@
-import { runFeatureB, configureFeatureB, resetConfidenceWindow } from "./feature_b/index.js";
+import { runFeatureB, configureFeatureB, resetConfidenceWindow } from "../feature_b/index.js";
 
 resetConfidenceWindow();
 configureFeatureB({ apiKey: "", targetModel: "musicgen" }); // "" = heuristic only, no real LLM call

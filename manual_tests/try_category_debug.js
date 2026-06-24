@@ -1,4 +1,4 @@
-import { runB1 } from "./feature_b/b1_contentUnderstanding.js";
+import { runB1 } from "../feature_b/b1_contentUnderstanding.js";
 
 const url = process.argv[2];
 const res  = await fetch(url);
