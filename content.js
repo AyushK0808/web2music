@@ -1,53 +1,35 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// content.js  –  DOM Signal Extractor (lightweight version for Feature C dev)
-// Runs on every page, extracts key signals, sends to background.js
-// Feature A will replace/enrich this with full signal extraction
+// content.js  –  DOM Signal Extractor
 // ─────────────────────────────────────────────────────────────────────────────
 
-// Only run once per page navigation
-if (!window.__adaptiveAudioRan) {
-  window.__adaptiveAudioRan = true;
+// Use a timestamp-based cooldown instead of a boolean flag.
+// This allows background.js to re-inject this script (when toggle turns on)
+// without it being silently blocked, while still preventing double-fires on
+// normal page loads within the same 2-second window.
+const now = Date.now();
+if (!window.__adaptiveAudioLastRan || (now - window.__adaptiveAudioLastRan) > 2000) {
+  window.__adaptiveAudioLastRan = now;
 
   function extractPageData() {
-    const text = document.body?.innerText?.slice(0, 2000) ?? ""; // first 2000 chars
+    const text = document.body?.innerText?.slice(0, 2000) ?? "";
     const title = document.title;
     const url = window.location.href;
     const metaDesc = document.querySelector('meta[name="description"]')?.content ?? "";
-
-    // Basic structural signals (Feature A will make this richer)
     const paragraphCount = document.querySelectorAll("p").length;
     const imageCount = document.querySelectorAll("img").length;
     const videoCount = document.querySelectorAll("video, iframe[src*='youtube'], iframe[src*='vimeo']").length;
-
-    // Dominant bg color (rough approximation)
     const bodyBg = window.getComputedStyle(document.body).backgroundColor;
-
-    return {
-      url,
-      title,
-      metaDesc,
-      text,
-      structure: {
-        paragraphCount,
-        imageCount,
-        videoCount,
-      },
-      style: {
-        bodyBg,
-      },
-    };
+    return { url, title, metaDesc, text,
+      structure: { paragraphCount, imageCount, videoCount },
+      style: { bodyBg } };
   }
 
-  // Wait for page to settle a bit before extracting
+  // Small delay so the page has settled; re-injection skips this since page is already loaded
+  const delay = document.readyState === "complete" ? 0 : 1500;
   setTimeout(() => {
     const pageData = extractPageData();
     console.log("[content] Sending page data to background");
-
-    chrome.runtime.sendMessage({
-      type: "PAGE_DATA",
-      data: pageData,
-    }).catch((err) => {
-      console.warn("[content] Could not send page data:", err.message);
-    });
-  }, 1500);
+    chrome.runtime.sendMessage({ type: "PAGE_DATA", data: pageData })
+      .catch((err) => console.warn("[content] Could not send page data:", err.message));
+  }, delay);
 }

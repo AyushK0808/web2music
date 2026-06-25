@@ -156,15 +156,16 @@ volumeSlider.addEventListener("input", (e) => {
 toggleEnabled.addEventListener("change", () => {
   const enabled = toggleEnabled.checked;
 
-  // Tell background — this is the single source of truth
   chrome.runtime.sendMessage({ type: "POPUP_SET_ENABLED", enabled });
 
   if (!enabled) {
     isPlaying = false;
     fftData = new Array(64).fill(-100);
-    renderPageStatus("stopped");
+    renderPageStatus("stopped");   // toggle off = fully stopped
+  } else {
+    isPlaying = true;
+    renderPageStatus("playing");   // toggle on = restarting
   }
-  // If turning ON, don't auto-play — user presses ▶ or visits a new page
 });
 
 // ── Status ────────────────────────────────────────────────────────────────────
@@ -275,6 +276,8 @@ chrome.runtime.onMessage.addListener((msg) => {
         toggleEnabled.checked = msg.isEnabled;
       }
       renderPageStatus(msg.status);
+      // Keep isPlaying in sync with actual background state — this is what
+      // makes the play/pause button send the right message on next click
       isPlaying = msg.status === "playing";
       break;
     case "ANALYSER_DATA":

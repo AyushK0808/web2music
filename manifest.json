@@ -9,7 +9,8 @@
     "tabs",
     "alarms",
     "offscreen",
-    "idle"
+    "idle",
+    "scripting"
   ],
 
   "host_permissions": [

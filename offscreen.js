@@ -9,6 +9,8 @@ let gainNode = null;
 let reverbNode = null;
 let isSetup = false;
 let currentUrl = null;
+let isPaused = false;
+let pausedVolume = -6; // remember volume before pause so resume restores it
 
 // ── Engine Setup ─────────────────────────────────────────────────────────────
 // Called once, lazily, on first PLAY message.
@@ -59,40 +61,68 @@ async function playUrl(url) {
     player = null;
   }
 
+  // Reset pause state and restore volume for the new track
+  isPaused = false;
+  pausedVolume = -6;
+  if (gainNode) gainNode.volume.value = -6;
+
   currentUrl = url;
 
-  player = new Tone.Player({
+  // Track whether onload fired synchronously (cached buffer) before constructor returns
+  let loadedSync = false;
+
+  const p = new Tone.Player({
     url: url,
     loop: true,
     autostart: false,
     onload: () => {
-      player.connect(gainNode);
-      player.start();
-      console.log("[offscreen] Playing:", url);
-      sendStatus("playing");
+      if (player) {
+        // Normal case: constructor already returned, player is assigned
+        player.connect(gainNode);
+        player.start();
+        console.log("[offscreen] Playing (async load):", url);
+        sendStatus("playing");
+      } else {
+        // Cached case: onload fired before constructor returned, player not assigned yet
+        // Set the flag; the code below the constructor will handle connect+start
+        loadedSync = true;
+      }
     },
     onerror: (err) => {
       console.error("[offscreen] Player error:", err);
       sendStatus("error");
     },
   });
+
+  player = p;
+
+  // If onload already fired synchronously (cached URL), connect and start now
+  if (loadedSync) {
+    player.connect(gainNode);
+    player.start();
+    console.log("[offscreen] Playing (sync/cached load):", url);
+    sendStatus("playing");
+  }
 }
 
 function pause() {
-  if (player && Tone.Transport.state === "started") {
-    Tone.Transport.pause();
-    sendStatus("paused");
-  } else if (player) {
-    player.stop();
-    sendStatus("paused");
+  if (!player) return;
+  if (gainNode) {
+    pausedVolume = gainNode.volume.value;
+    gainNode.volume.rampTo(-60, 0.15); // -60dB is effectively silent; -Infinity is invalid in Tone.js
   }
+  isPaused = true;
+  sendStatus("paused");
 }
 
 function resume() {
-  if (player) {
-    player.start();
-    sendStatus("playing");
+  if (!player) return;
+  // Restore volume — audio never actually stopped so it continues from the same position
+  if (gainNode) {
+    gainNode.volume.rampTo(pausedVolume, 0.15);
   }
+  isPaused = false;
+  sendStatus("playing");
 }
 
 function stop() {
@@ -101,8 +131,10 @@ function stop() {
     player.disconnect();
     player.dispose();
     player = null;
-    sendStatus("stopped");
   }
+  isPaused = false;
+  if (gainNode) gainNode.volume.value = -6; // restore default so next play isn't silent
+  sendStatus("stopped");
 }
 
 // ── Tab Ducking ───────────────────────────────────────────────────────────────
@@ -116,19 +148,23 @@ function duck() {
 }
 
 function unduck() {
-  if (gainNode) {
-    gainNode.volume.rampTo(-6, 0.5); // restore to -6dB
+  if (gainNode && !isPaused) {
+    gainNode.volume.rampTo(-6, 0.5); // restore to -6dB only if not paused
     console.log("[offscreen] Unducking audio");
   }
 }
 
 function setVolume(dbOrFraction) {
   if (!gainNode) return;
-  // Accept either dB (-20 to 0) or fraction (0.0 to 1.0)
   const db = dbOrFraction <= 1 && dbOrFraction >= 0
     ? Tone.gainToDb(dbOrFraction)
     : dbOrFraction;
-  gainNode.volume.rampTo(db, 0.3);
+  // Always track the target volume for when we resume
+  pausedVolume = db;
+  // Only apply immediately if not paused — otherwise resume will pick it up
+  if (!isPaused) {
+    gainNode.volume.rampTo(db, 0.3);
+  }
 }
 
 // ── Idle Fade ─────────────────────────────────────────────────────────────────

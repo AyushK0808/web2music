@@ -1,12 +1,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // background.js  –  Service Worker
-// Coordinates between: content.js → backend API → offscreen.js → popup.js
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ── Offscreen Document Management ────────────────────────────────────────────
 
 async function ensureOffscreen() {
-  // chrome.offscreen.hasDocument is the correct MV3 check
   const hasDoc = await chrome.offscreen.hasDocument();
   if (!hasDoc) {
     await chrome.offscreen.createDocument({
@@ -24,20 +22,19 @@ const audioState = {
   status: "stopped",     // stopped | loading | playing | paused | error
   currentUrl: null,
   currentTabId: null,
-  currentProfile: null,  // music profile JSON from backend
+  currentProfile: null,
   isDucked: false,
-  isEnabled: true,       // master switch — persisted in chrome.storage.local
+  isEnabled: true,       // optimistic default; overwritten immediately from storage
+  isPaused: false,       // dedicated pause flag — does NOT get confused with "stopped"
 };
 
-// Load persisted enabled state on service worker startup
-(async () => {
-  const { masterEnabled } = await chrome.storage.local.get({ masterEnabled: true });
+// Load persisted enabled state — runs immediately on SW startup
+chrome.storage.local.get({ masterEnabled: true }, ({ masterEnabled }) => {
   audioState.isEnabled = masterEnabled;
   console.log("[background] Master switch loaded:", masterEnabled);
-})();
+});
 
 // ── Tab Monitoring ────────────────────────────────────────────────────────────
-// Detect media-playing tabs (YouTube, Spotify) and duck our audio
 
 const MEDIA_DOMAINS = ["youtube.com", "spotify.com", "netflix.com", "twitch.tv", "soundcloud.com"];
 
@@ -49,134 +46,118 @@ function isMediaTab(url) {
 chrome.tabs.onActivated.addListener(async ({ tabId }) => {
   const tab = await chrome.tabs.get(tabId);
   audioState.currentTabId = tabId;
-
   if (isMediaTab(tab.url)) {
-    if (!audioState.isDucked) {
-      audioState.isDucked = true;
-      forwardToOffscreen({ type: "DUCK" });
-      console.log("[background] Ducking — media tab active:", tab.url);
-    }
+    if (!audioState.isDucked) { audioState.isDucked = true; forwardToOffscreen({ type: "DUCK" }); }
   } else {
-    if (audioState.isDucked) {
-      audioState.isDucked = false;
-      forwardToOffscreen({ type: "UNDUCK" });
-    }
+    if (audioState.isDucked) { audioState.isDucked = false; forwardToOffscreen({ type: "UNDUCK" }); }
   }
 });
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.status !== "complete") return;
   if (tabId !== audioState.currentTabId) return;
-
   if (isMediaTab(tab.url)) {
-    audioState.isDucked = true;
-    forwardToOffscreen({ type: "DUCK" });
+    audioState.isDucked = true; forwardToOffscreen({ type: "DUCK" });
   } else {
-    // New page loaded — eventually content.js will send new DOM data
-    // For now just unduck
-    audioState.isDucked = false;
-    forwardToOffscreen({ type: "UNDUCK" });
+    audioState.isDucked = false; forwardToOffscreen({ type: "UNDUCK" });
   }
 });
 
 // ── Idle Detection ────────────────────────────────────────────────────────────
 
-chrome.idle.setDetectionInterval(60); // 60s of inactivity = idle
+chrome.idle.setDetectionInterval(60);
 
 chrome.idle.onStateChanged.addListener((state) => {
   if (state === "idle" || state === "locked") {
-    console.log("[background] User idle/locked — fading out");
     forwardToOffscreen({ type: "FADE_OUT", seconds: 4 });
     audioState.status = "stopped";
-  } else if (state === "active") {
-    // Don't auto-resume, let user or tab event trigger it
-    console.log("[background] User active again");
+    audioState.isPaused = false;
   }
 });
 
 // ── Backend Communication ─────────────────────────────────────────────────────
-// Feature C's job: receive page data → ask backend → get audio URL → play it
 
-const BACKEND_URL = "http://localhost:8000"; // local FastAPI during dev
+const BACKEND_URL = "http://localhost:8000";
 
 async function fetchMusicProfile(pageData) {
   const res = await fetch(`${BACKEND_URL}/profile`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify(pageData),
   });
   if (!res.ok) throw new Error(`/profile failed: ${res.status}`);
-  return res.json(); // { mood, bpm, energy, pageType, timbre }
+  return res.json();
 }
 
 async function fetchAudioUrl(profile) {
   const res = await fetch(`${BACKEND_URL}/generate`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify(profile),
   });
   if (!res.ok) throw new Error(`/generate failed: ${res.status}`);
-  const data = await res.json();
-  return data.audioUrl; // e.g. "http://localhost:8000/audio/abc123.mp3"
+  return (await res.json()).audioUrl;
 }
 
-// ── Message Router ────────────────────────────────────────────────────────────
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
-// Forward a message to the offscreen document
 async function forwardToOffscreen(msg) {
   await ensureOffscreen();
   return chrome.runtime.sendMessage(msg);
 }
 
-// Broadcast status to any open popups
 function broadcastStatus() {
-  chrome.runtime.sendMessage({
-    type: "STATUS_UPDATE",
-    ...audioState,
-  }).catch(() => {}); // no popup open = fine
+  chrome.runtime.sendMessage({ type: "STATUS_UPDATE", ...audioState }).catch(() => {});
 }
 
+async function startPlayback(url) {
+  await ensureOffscreen();
+  await forwardToOffscreen({ type: "PLAY", url });
+  audioState.currentUrl = url;
+  audioState.status = "playing";
+  audioState.isPaused = false;
+  broadcastStatus();
+}
+
+// ── Message Router ────────────────────────────────────────────────────────────
+
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  console.log("[background] message:", msg.type, "from:", sender.tab?.url ?? "extension");
+  console.log("[background] message:", msg.type);
 
   switch (msg.type) {
 
-    // ── From content.js: new page data ─────────────────────────────────────
+    // ── From content.js ───────────────────────────────────────────────────────
     case "PAGE_DATA": {
-      // Master switch is off — ignore incoming page data entirely
-      if (!audioState.isEnabled) {
-        console.log("[background] PAGE_DATA ignored — master switch is off");
-        break;
-      }
-
-      audioState.status = "loading";
-      broadcastStatus();
-
       (async () => {
+        // Always re-read storage — SW can restart and lose in-memory state
+        const { masterEnabled } = await chrome.storage.local.get({ masterEnabled: true });
+        audioState.isEnabled = masterEnabled;
+
+        if (!audioState.isEnabled) {
+          console.log("[background] PAGE_DATA ignored — master switch is off");
+          return;
+        }
+
+        // Only the active tab triggers playback
+        const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (!activeTab || activeTab.id !== sender.tab?.id) {
+          console.log("[background] PAGE_DATA ignored — not active tab");
+          return;
+        }
+
+        audioState.currentTabId = sender.tab.id;
+        audioState.isPaused = false;
+        audioState.status = "loading";
+        broadcastStatus();
+
         try {
-          await ensureOffscreen();
-
-          // ── TEST MODE: hardcoded audio URL, no backend needed ──────────────
-          // Replace this URL with your own .mp3 once the backend is ready
           const TEST_AUDIO_URL = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3";
-
-          // Fake profile so the popup chips show something during testing
           audioState.currentProfile = { mood: "calm", bpm: 70, energy: "low" };
-          audioState.currentUrl = TEST_AUDIO_URL;
+          await startPlayback(TEST_AUDIO_URL);
 
-          await forwardToOffscreen({ type: "PLAY", url: TEST_AUDIO_URL });
-          audioState.status = "playing";
-          broadcastStatus();
-          // ── END TEST MODE ──────────────────────────────────────────────────
-
-          // TODO: uncomment below and remove TEST MODE block when backend is ready
+          // TODO: swap in real backend when ready:
           // const profile = await fetchMusicProfile(msg.data);
           // audioState.currentProfile = profile;
           // const audioUrl = await fetchAudioUrl(profile);
-          // audioState.currentUrl = audioUrl;
-          // await forwardToOffscreen({ type: "PLAY", url: audioUrl });
-          // audioState.status = "playing";
-          // broadcastStatus();
+          // await startPlayback(audioUrl);
 
         } catch (err) {
           console.error("[background] Pipeline error:", err);
@@ -184,47 +165,71 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           broadcastStatus();
         }
       })();
-
       break;
     }
 
-    // ── From popup: user controls ──────────────────────────────────────────
-    case "POPUP_PLAY":
-      if (audioState.currentUrl) {
-        // If stopped (player disposed), restart from scratch with the saved URL
-        forwardToOffscreen({ type: "PLAY", url: audioState.currentUrl });
-      } else {
+    // ── From popup: play button ───────────────────────────────────────────────
+    case "POPUP_PLAY": {
+      if (audioState.isPaused) {
+        // ▶ after ⏸ — gain-restore resume, player never stopped
         forwardToOffscreen({ type: "RESUME" });
+        audioState.isPaused = false;
+        audioState.status = "playing";
+      } else if (audioState.currentUrl) {
+        // ▶ after stop/toggle-off — restart from beginning
+        forwardToOffscreen({ type: "PLAY", url: audioState.currentUrl });
+        audioState.status = "playing";
       }
-      audioState.status = "playing";
       broadcastStatus();
       break;
+    }
 
-    case "POPUP_PAUSE":
+    // ── From popup: pause button ──────────────────────────────────────────────
+    case "POPUP_PAUSE": {
       forwardToOffscreen({ type: "PAUSE" });
+      audioState.isPaused = true;
       audioState.status = "paused";
       broadcastStatus();
       break;
+    }
 
-    case "POPUP_STOP":
+    case "POPUP_STOP": {
       forwardToOffscreen({ type: "STOP" });
+      audioState.isPaused = false;
       audioState.status = "stopped";
       broadcastStatus();
       break;
+    }
 
-    // ── From popup: master toggle ──────────────────────────────────────────
+    // ── From popup: master toggle ─────────────────────────────────────────────
     case "POPUP_SET_ENABLED": {
       audioState.isEnabled = msg.enabled;
-      // Persist so it survives service worker restarts and new tabs
       chrome.storage.local.set({ masterEnabled: msg.enabled });
 
       if (!msg.enabled) {
-        // Kill audio immediately
+        // Toggle OFF — fully stop, clear pause flag
         forwardToOffscreen({ type: "STOP" });
+        audioState.isPaused = false;
         audioState.status = "stopped";
+        broadcastStatus();
+      } else {
+        // Toggle ON — restart if we know the URL for this page
+        if (audioState.currentUrl) {
+          startPlayback(audioState.currentUrl); // startPlayback broadcasts internally
+        } else {
+          // No URL yet (e.g. toggled off on a new page before content.js fired).
+          // Inject content.js into the active tab to re-trigger PAGE_DATA.
+          chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
+            if (tab?.id) {
+              chrome.scripting.executeScript({
+                target: { tabId: tab.id },
+                files: ["content.js"],
+              }).catch((e) => console.warn("[background] Re-inject failed:", e));
+            }
+          });
+          broadcastStatus();
+        }
       }
-      // Broadcast so any open popup reflects the change
-      broadcastStatus();
       break;
     }
 
@@ -236,18 +241,16 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       sendResponse({ ...audioState });
       return true;
 
-    // ── From offscreen: analyser data passthrough to popup ─────────────────
     case "ANALYSER_DATA":
-      // Just rebroadcast — popup will receive it if open
-      chrome.runtime.sendMessage({
-        type: "ANALYSER_DATA",
-        fft: msg.fft,
-      }).catch(() => {});
+      chrome.runtime.sendMessage({ type: "ANALYSER_DATA", fft: msg.fft }).catch(() => {});
       break;
 
     case "PLAYER_STATUS":
-      audioState.status = msg.state;
-      broadcastStatus();
+      // Only trust "error" from offscreen — background owns all other state transitions
+      if (msg.state === "error") {
+        audioState.status = "error";
+        broadcastStatus();
+      }
       break;
   }
 });
@@ -259,7 +262,6 @@ chrome.runtime.onInstalled.addListener(async () => {
   await ensureOffscreen();
 });
 
-// Re-create offscreen on SW wake (service workers can sleep and restart)
 chrome.runtime.onStartup.addListener(async () => {
   await ensureOffscreen();
 });
