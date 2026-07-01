@@ -6,7 +6,7 @@ Feature D is the audio generation backend. It receives a music profile from Feat
 
 ---
 
-## 🏗️ Architecture Overview
+## Architecture Overview
 Feature B ──► D1: Validate Profile ──► D2: Build Prompt ──► D3: Generate Audio (MusicGen)
 │
 Feature C ◄── D5: Return Audio ◄── D4: Cache & Store ◄── D3: Post-Process Audio
@@ -23,7 +23,7 @@ Feature C ◄── D5: Return Audio ◄── D4: Cache & Store ◄── D3: P
 
 ---
 
-## 🚀 API
+##  API
 
 ### `POST /generate`
 
@@ -68,7 +68,7 @@ Accepts a music profile JSON from Feature B and returns a loopable audio URL.
 
 **Cache hit** returns instantly with `"cache": "hit"` — no regeneration.
 
-### 🗃️ Caching Logic
+### Caching Logic
 
 Two requests are treated as identical (cache hit) if they share the same:
 - `mood` (exact match)
@@ -78,7 +78,7 @@ Two requests are treated as identical (cache hit) if they share the same:
 
 ---
 
-## ⚙️ Setup
+##  Setup
 
 ### Prerequisites
 - Python 3.10+
@@ -122,7 +122,11 @@ Swagger UI available at `http://127.0.0.1:8000/docs`
 
 ---
 
+##  Project Structure
 ## 📁 Project Structure
+
+```
+
 web2music-feature-d/
 ├── d1_validate.py          # Profile validation & defaults
 ├── d2_prompt.py            # Prompt builder for MusicGen
@@ -140,9 +144,9 @@ web2music-feature-d/
 ├── .gitignore
 └── requirements.txt
 
----
+```
 
-## 📦 Dependencies
+##  Dependencies
 
 | Package | Purpose |
 |---|---|
@@ -158,7 +162,7 @@ web2music-feature-d/
 
 ---
 
-## 🔗 Handoffs
+## Handoffs
 
 | Handoff | From → To | Payload |
 |---|---|---|
@@ -167,7 +171,7 @@ web2music-feature-d/
 
 ---
 
-## 🛣️ Planned Improvements
+##  Planned Improvements
 
 - [ ] Retry logic & fallback clips for generation failures
 - [ ] Fix NaN risk in loop-point detection
