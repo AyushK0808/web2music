@@ -119,7 +119,7 @@ const ATMOSPHERE_TAGS = {
   neutral:   ["unobtrusive", "background", "balanced"],
 };
 
-function selectAtmosphereTags(mood, count = 2) {
+export function selectAtmosphereTags(mood, count = 2) {
   const tags = ATMOSPHERE_TAGS[mood] ?? ATMOSPHERE_TAGS.neutral;
   // Shuffle slightly and take `count`
   return tags.slice(0, count).join(", ");
@@ -127,10 +127,24 @@ function selectAtmosphereTags(mood, count = 2) {
 
 // ─── Prompt validation ────────────────────────────────────────────────────────
 
-function validatePrompt(prompt) {
+// The multi-sentence "generic" template (with its closing loop/no-vocals
+// instructions) legitimately runs up to ~675 chars across every mood/page-type
+// combination — a 500 cap silently truncated that closing sentence on every
+// single prompt. Cap raised with headroom, and truncation (on the rare
+// profile that still exceeds it) now falls back to the last full sentence
+// instead of cutting mid-word.
+const MAX_PROMPT_LENGTH = 700;
+
+export function validatePrompt(prompt) {
   if (typeof prompt === "string") {
-    if (prompt.length < 20)  throw new Error("Prompt too short");
-    if (prompt.length > 500) return prompt.slice(0, 497) + "..."; // hard cap
+    if (prompt.length < 20) throw new Error("Prompt too short");
+    if (prompt.length > MAX_PROMPT_LENGTH) {
+      const truncated     = prompt.slice(0, MAX_PROMPT_LENGTH);
+      const lastSentenceEnd = truncated.lastIndexOf(". ");
+      return lastSentenceEnd > MAX_PROMPT_LENGTH * 0.5
+        ? truncated.slice(0, lastSentenceEnd + 1)
+        : truncated.slice(0, MAX_PROMPT_LENGTH - 3) + "...";
+    }
   }
   return prompt;
 }

@@ -13,13 +13,34 @@ function extract(re) {
 const title       = extract(/<title[^>]*>([^<]*)<\/title>/i);
 const description = extract(/<meta\s+name=["']description["']\s+content=["']([^"']*)["']/i);
 
-const bodyText = html
-  .replace(/<script[\s\S]*?<\/script>/gi, " ")
-  .replace(/<style[\s\S]*?<\/style>/gi, " ")
-  .replace(/<[^>]+>/g, " ")
-  .replace(/\s{2,}/g, " ")
-  .trim()
-  .slice(0, 2000);
+// Strip nav/header/footer/aside chrome, then prefer a real content
+// container so the first 2000 chars are article text, not sidebar links.
+function extractArticleText(rawHtml) {
+  const withoutChrome = rawHtml
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<noscript[\s\S]*?<\/noscript>/gi, " ")
+    .replace(/<nav[\s\S]*?<\/nav>/gi, " ")
+    .replace(/<header[\s\S]*?<\/header>/gi, " ")
+    .replace(/<footer[\s\S]*?<\/footer>/gi, " ")
+    .replace(/<aside[\s\S]*?<\/aside>/gi, " ")
+    .replace(/<form[\s\S]*?<\/form>/gi, " ");
+
+  const mainMatch = withoutChrome.match(/<main[^>]*>([\s\S]*)/i)
+    || withoutChrome.match(/<article[^>]*>([\s\S]*)/i);
+  const wikiIdx = withoutChrome.search(/id=["']mw-content-text["']/i);
+  const body = mainMatch ? mainMatch[1]
+    : wikiIdx >= 0 ? withoutChrome.slice(wikiIdx)
+    : withoutChrome;
+
+  return body
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s{2,}/g, " ")
+    .trim()
+    .slice(0, 2000);
+}
+
+const bodyText = extractArticleText(html);
 
 const pageData = {
   rawText: bodyText,

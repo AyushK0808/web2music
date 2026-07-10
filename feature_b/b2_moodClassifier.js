@@ -49,53 +49,72 @@ export const MUSIC_CATEGORY_MAP = {
 
 // ─── Tier-1 keyword heuristic rules ──────────────────────────────────────────
 // Each entry: { mood, requiredHits, keywords[] }
-// The mood with the most keyword hits wins.
-const MOOD_RULES = [
+// The mood with the most keyword hits wins. Each list is 20+ keywords.
+export const MOOD_RULES = [
   {
     mood: MOODS.JOYFUL,
-    keywords: ["celebrate","joy","happy","exciting","amazing","love","fun","party","win","success","congratulations"],
+    keywords: ["celebrate","joy","happy","exciting","amazing","love","fun","party","win","success","congratulations",
+               "delighted","cheerful","thrilled","ecstatic","jubilant","festive","elated","upbeat","laughter","playful"],
   },
   {
     mood: MOODS.SAD,
-    keywords: ["sad","grief","loss","mourn","cry","death","regret","alone","hurt","pain","heartbreak","miss"],
+    keywords: ["sad","grief","loss","mourn","cry","death","regret","alone","hurt","pain","heartbreak","miss",
+               "sorrow","tears","lonely","despair","heartache","grieving","melancholy","downhearted","anguish","weep",
+               "mourning","bereft","hopeless","forlorn"],
   },
   {
     mood: MOODS.ENERGETIC,
-    keywords: ["workout","gym","run","hustle","grind","energy","power","fast","intense","explosive","challenge"],
+    keywords: ["workout","gym","run","hustle","grind","energy","power","fast","intense","explosive","challenge",
+               "adrenaline","sprint","dynamic","vigorous","pump","momentum","charge","drive","force","robust","active",
+               "boost","surge"],
   },
   {
     mood: MOODS.FOCUSED,
-    keywords: ["study","research","code","work","focus","productive","analysis","learn","build","task","deadline"],
+    keywords: ["study","research","code","work","focus","productive","analysis","learn","build","task","deadline",
+               "concentrate","discipline","priority","efficient","diligent","methodical","precision","dedicated","strategy","planning",
+               "execute","organize","schedule"],
   },
   {
     mood: MOODS.TENSE,
-    keywords: ["breaking","urgent","crisis","war","threat","danger","attack","conflict","disaster","emergency"],
+    keywords: ["breaking","urgent","crisis","war","threat","danger","attack","conflict","disaster","emergency",
+               "alarm","panic","standoff","hostage","siege","riot","chaos","turmoil","unrest","warning",
+               "alert","volatile","precarious","brace"],
   },
   {
     mood: MOODS.DARK,
-    keywords: ["horror","thriller","murder","dark","evil","curse","dead","haunted","serial","killer","blood","sinister"],
+    keywords: ["horror","thriller","murder","dark","evil","curse","dead","haunted","serial","killer","blood","sinister",
+               "grim","macabre","sinful","wicked","ominous","malevolent","gruesome","malicious","twisted","nightmarish",
+               "shadowy","corrupt","villain"],
   },
   {
     mood: MOODS.NOSTALGIC,
-    keywords: ["retro","classic","90s","80s","vintage","throwback","remember","childhood","old","memory","tradition"],
+    keywords: ["retro","classic","90s","80s","vintage","throwback","remember","childhood","old","memory","tradition",
+               "reminisce","bygone","yesteryear","timeless","sentimental","wistful","antique","heirloom","reunion","familiar",
+               "nostalgia"],
   },
   {
     mood: MOODS.CURIOUS,
-    keywords: ["discover","explore","wonder","mystery","secret","unknown","universe","science","ancient","how","why"],
+    keywords: ["discover","explore","wonder","mystery","secret","unknown","universe","science","ancient","how","why",
+               "inquisitive","investigate","puzzle","enigma","intrigue","fascinating","uncover","revelation","exploration","riddle",
+               "phenomenon","anomaly","speculate"],
   },
   {
     mood: MOODS.CALM,
-    keywords: ["relax","peaceful","quiet","serene","nature","breathe","meditate","slow","gentle","soothe","comfort"],
+    keywords: ["relax","peaceful","quiet","serene","nature","breathe","meditate","slow","gentle","soothe","comfort",
+               "tranquil","stillness","mellow","unwind","ease","restful","placid","harmony","balance","zen",
+               "composed","leisurely","soft"],
   },
   {
     mood: MOODS.UPLIFTING,
-    keywords: ["inspire","motivate","hope","faith","gratitude","positive","uplift","spiritual","blessed","transform"],
+    keywords: ["inspire","motivate","hope","faith","gratitude","positive","uplift","spiritual","blessed","transform",
+               "encourage","empower","resilience","triumph","perseverance","optimism","renewal","healing","courage","breakthrough",
+               "victory","overcome","radiant"],
   },
 ];
 
 // ─── Colour → mood influence (from spec COLORS AND VISUALS) ──────────────────
 // HSL hue ranges mapped to mood bias weights
-function colourMoodBias(colors = {}) {
+export function colourMoodBias(colors = {}) {
   const { hue = 0, saturation = 0, lightness = 0.5 } = colors;
   const bias = {};
 
@@ -134,7 +153,7 @@ function colourMoodBias(colors = {}) {
 }
 
 // ─── Behavioural signals → mood influence ────────────────────────────────────
-function behaviourMoodBias(scrollSpeed = 0, cursorSpeed = 0, readingComplexity = 0.5) {
+export function behaviourMoodBias(scrollSpeed = 0, cursorSpeed = 0, readingComplexity = 0.5) {
   const bias = {};
 
   // Fast scroll → doomscrolling → could mean anxious/tense or distracted
@@ -160,7 +179,7 @@ function behaviourMoodBias(scrollSpeed = 0, cursorSpeed = 0, readingComplexity =
 }
 
 // ─── Tier-1: Fast keyword heuristic ──────────────────────────────────────────
-function tier1KeywordMood(keywords = [], cleanedText = "") {
+export function tier1KeywordMood(keywords = [], cleanedText = "") {
   const tokenSet = new Set([
     ...keywords,
     ...(cleanedText.toLowerCase().match(/\b[a-z]{3,}\b/g) || []),
@@ -223,7 +242,8 @@ Return this exact JSON shape:
 
 /**
  * callLLMClassifier — makes API call to LLM for mood classification.
- * Uses Claude claude-sonnet-4-6 via the Anthropic API (developer key from config).
+ * Uses Claude Haiku via the Anthropic API (developer key from config) — fast
+ * and cheap enough for a single JSON-classification call on every ambiguous page.
  * Falls back gracefully on timeout / offline (edge case #13).
  *
  * @param {Object} cleanedContent
@@ -246,7 +266,7 @@ export async function callLLMClassifier(cleanedContent, apiKey) {
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        model:      "claude-sonnet-4-6",
+        model:      "claude-haiku-4-5-20251001",
         max_tokens: 200,
         messages:   [{ role: "user", content: prompt }],
       }),
@@ -339,9 +359,15 @@ export async function runB2(cleanedContent, apiKey) {
     cleanedContent.readingComplexity,
   );
 
-  // Merge all scores
+  // Merge all scores. colourBias and behaviourBias are added independently —
+  // spreading them into one object first (`{...colourBias, ...behaviourBias}`)
+  // would overwrite rather than add whenever both bias the same mood key,
+  // silently discarding the colour signal for calm/focused/energetic/etc.
   const allScores = { ...tier1.allScores };
-  for (const [mood, weight] of Object.entries({ ...colourBias, ...behaviourBias })) {
+  for (const [mood, weight] of Object.entries(colourBias)) {
+    allScores[mood] = (allScores[mood] || 0) + weight;
+  }
+  for (const [mood, weight] of Object.entries(behaviourBias)) {
     allScores[mood] = (allScores[mood] || 0) + weight;
   }
   const sortedMoods   = Object.entries(allScores).sort((a, b) => b[1] - a[1]);
@@ -405,14 +431,14 @@ export async function runB2(cleanedContent, apiKey) {
 
 // ─── Internal helpers ─────────────────────────────────────────────────────────
 
-function computeEnergyHint({ scrollSpeed = 0, cursorSpeed = 0, readingComplexity = 0.5 }) {
+export function computeEnergyHint({ scrollSpeed = 0, cursorSpeed = 0, readingComplexity = 0.5 }) {
   // Normalised 0→1 blend of user activity signals
   const scrollNorm = Math.min(1, scrollSpeed / 1000);
   const cursorNorm = Math.min(1, cursorSpeed / 1000);
   return parseFloat(((scrollNorm * 0.4 + cursorNorm * 0.3 + readingComplexity * 0.3)).toFixed(3));
 }
 
-function computeValenceHint(mood) {
+export function computeValenceHint(mood) {
   const map = {
     calm:      0.5,
     focused:   0.4,

@@ -29,6 +29,7 @@ const CONFIDENCE_WINDOW_MS = 5000;
 let _pendingMood       = null;
 let _pendingMoodSince  = 0;
 let _currentMood       = null;
+let _currentMoodSince  = 0;
 
 /**
  * shouldTransition — returns true only if the new mood has been
@@ -50,6 +51,28 @@ function shouldTransition(newMood) {
   }
 
   return (now - _pendingMoodSince) >= CONFIDENCE_WINDOW_MS;
+}
+
+// ─── Idle fade-out (same mood held too long) ─────────────────────────────────
+// If the same track has been playing for 5+ minutes with no mood change, the
+// music fades out rather than looping the same mood indefinitely: the fade
+// starts at the 4-minute mark and reaches silence exactly at 5 minutes.
+const IDLE_FADE_START_MS    = 4 * 60 * 1000;
+const IDLE_FADE_COMPLETE_MS = 5 * 60 * 1000;
+
+/**
+ * computeFadeVolume — pure function so the fade curve is unit-testable
+ * without waiting out real 4-5 minute windows.
+ * @param {number} idleMs   Milliseconds since the current mood started playing.
+ * @returns {number|null}   null if no fade is due yet, else a 0..1 volume
+ *   multiplier that reaches exactly 0 at IDLE_FADE_COMPLETE_MS and stays 0
+ *   for as long as the mood remains unchanged after that.
+ */
+export function computeFadeVolume(idleMs) {
+  if (idleMs < IDLE_FADE_START_MS) return null;
+  const fadeSpan = IDLE_FADE_COMPLETE_MS - IDLE_FADE_START_MS;
+  const progress = Math.min(1, (idleMs - IDLE_FADE_START_MS) / fadeSpan);
+  return parseFloat((1 - progress).toFixed(3));
 }
 
 // ─── Configuration ────────────────────────────────────────────────────────────
@@ -79,18 +102,33 @@ export function configureFeatureB(config = {}) {
 export async function runFeatureB(pageData) {
   try {
     // ── B1: Content Understanding ──────────────────────────────────────────
-    const cleanedContent = runB1(pageData);
+    const cleanedContent = await runB1(pageData, _config.apiKey);
 
     // ── B2: Mood & Context Classification ─────────────────────────────────
     const moodContext = await runB2(cleanedContent, _config.apiKey);
 
     // ── Confidence interval check (spec edge case #1) ─────────────────────
     if (!shouldTransition(moodContext.mood)) {
+      // Not a confirmed transition. If this is the same mood that's already
+      // playing and it's been idle 4+ minutes, emit a fade-volume update
+      // instead of staying silent — the track shouldn't loop forever unheard.
+      if (_currentMood === moodContext.mood && _currentMoodSince) {
+        const fadeVolume = computeFadeVolume(Date.now() - _currentMoodSince);
+        if (fadeVolume !== null) {
+          const musicProfile = runB3(moodContext);
+          const handoff2 = runB4(musicProfile, {
+            targetModel: _config.targetModel,
+            includeAll:  _config.includeAll,
+          });
+          return { ...handoff2, volume: fadeVolume, isFadeUpdate: true };
+        }
+      }
       return null; // Not yet stable — hold current music
     }
 
     // Mood confirmed stable — update tracker
-    _currentMood = moodContext.mood;
+    _currentMood      = moodContext.mood;
+    _currentMoodSince = Date.now();
 
     // ── B3: Music Profile Generation ──────────────────────────────────────
     const musicProfile = runB3(moodContext);
@@ -101,7 +139,7 @@ export async function runFeatureB(pageData) {
       includeAll:  _config.includeAll,
     });
 
-    return handoff2;
+    return { ...handoff2, volume: 1, isFadeUpdate: false };
 
   } catch (err) {
     console.error("[FeatureB] Pipeline error:", err.message);
@@ -162,6 +200,7 @@ export function resetConfidenceWindow() {
   _pendingMood      = null;
   _pendingMoodSince = 0;
   _currentMood      = null;
+  _currentMoodSince = 0;
 }
 
 // ─── Re-exports for consumers who need individual stages ─────────────────────

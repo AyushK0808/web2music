@@ -161,8 +161,9 @@ const PAGE_TYPE_MODIFIERS = {
 };
 
 // ─── Time-of-day context ─────────────────────────────────────────────────────
-function getTimeOfDayContext() {
-  const hour = new Date().getHours();
+// `hour` is injectable so callers (and tests) can pin a specific time bracket
+// instead of depending on the wall clock at call time.
+export function getTimeOfDayContext(hour = new Date().getHours()) {
   if (hour >= 5  && hour < 9)  return { label: "morning",   energyAdjust: +0.05, bpmAdjust: +3  };
   if (hour >= 9  && hour < 12) return { label: "mid-morning", energyAdjust: +0.1, bpmAdjust: +5  };
   if (hour >= 12 && hour < 14) return { label: "afternoon", energyAdjust:  0,    bpmAdjust:  0  };
@@ -174,7 +175,7 @@ function getTimeOfDayContext() {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function pickKey(keys, valenceHint = 0) {
+export function pickKey(keys, valenceHint = 0) {
   // More positive valence → pick earlier (usually major) keys in the list
   const idx = valenceHint > 0
     ? 0
