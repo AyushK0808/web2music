@@ -1,7 +1,7 @@
 import { runFeatureB, configureFeatureB, resetConfidenceWindow } from "../feature_b/index.js";
 
 resetConfidenceWindow();
-configureFeatureB({ apiKey: "", targetModel: "musicgen" }); // "" = heuristic only, no real LLM call
+configureFeatureB({ apiKey: process.env.ANTHROPIC_API_KEY || "", targetModel: "musicgen" }); // real key → escalates to the LLM when the heuristic is unsure
 
 const samplePage = {
   rawText: "Scientists discovered a deep sea fish that glows in the dark, baffling marine biologists.",
