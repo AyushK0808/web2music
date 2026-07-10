@@ -1,0 +1,12 @@
+{
+  "name": "web2music-data-extraction",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Feature A content-script modules: text, embedding, and colour extraction.",
+  "scripts": {
+    "play": "node playground.js"
+  },
+  "devDependencies": {
+    "jsdom": "^24.0.0"
+  }
+}

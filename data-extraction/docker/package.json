@@ -1,0 +1,10 @@
+{
+  "name": "web2music-embed-service",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Containerised OpenAI embedding microservice for Feature A (keeps the API key out of the browser).",
+  "main": "embedService.js",
+  "scripts": {
+    "start": "node embedService.js"
+  }
+}

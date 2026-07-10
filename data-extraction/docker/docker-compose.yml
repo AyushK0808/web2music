@@ -1,0 +1,23 @@
+# Feature A — embedding microservice.
+#
+#   cd data-extraction/docker
+#   cp .env.example .env      # then paste your OpenAI key into .env
+#   docker compose up --build
+#
+# Then in the extension / page, use the embedding backend:
+#   getEmbedding(text, { backend: 'service' })   // → http://localhost:8077/embed
+#
+# The API key is read from .env into the container's environment and never
+# leaves it; the browser only ever talks to localhost.
+
+services:
+  embed-service:
+    build: .
+    container_name: web2music-embed-service
+    ports:
+      - "8077:8077"
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY:?set OPENAI_API_KEY in data-extraction/docker/.env}
+      EMBED_MODEL: ${EMBED_MODEL:-text-embedding-3-small}
+      PORT: "8077"
+    restart: unless-stopped

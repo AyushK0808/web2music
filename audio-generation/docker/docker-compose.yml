@@ -1,0 +1,33 @@
+# Feature D dev cache — local Postgres standing in for Supabase's database.
+# Audio files themselves are written to ../audio-cache/ on disk and served by
+# FastAPI's StaticFiles mount in main.py, so no object-storage container is
+# needed for local prototyping.
+#
+#   cd audio-generation/docker
+#   docker compose up -d
+#
+# Then run the API with IS_PROD unset (or "false"):
+#   cd audio-generation
+#   uvicorn main:app --reload
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: web2music-audio-cache-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: audio_cache
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  db-data:

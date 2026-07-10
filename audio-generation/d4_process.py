@@ -2,9 +2,14 @@ import librosa
 import numpy as np
 import soundfile as sf
 import pyloudnorm as pyln
+import imageio_ffmpeg
 from pydub import AudioSegment
 from pydub.silence import detect_leading_silence
 import io
+
+# pydub shells out to ffmpeg to encode MP3. Point it at the binary bundled with
+# imageio-ffmpeg so we don't depend on ffmpeg being installed / on PATH.
+AudioSegment.converter = imageio_ffmpeg.get_ffmpeg_exe()
 
 def process_audio(audio_bytes: bytes):
     audio_buffer = io.BytesIO(audio_bytes)

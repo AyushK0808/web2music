@@ -68,8 +68,41 @@ function normalizeWhitespace(text) {
     .trim();
 }
 
+/**
+ * extractMetadata \u2014 cheap DOM reads Feature A owns: the meta description
+ * (with og:description / twitter:description fallbacks) and the document
+ * language. Both are required inputs for Feature B's B1 (analyseMetadata).
+ * @param {Document} doc
+ * @returns {{ description: string, lang: string }}
+ */
+function extractMetadata(doc = document) {
+  const pick = (selector, attr = 'content') => {
+    const el = doc.querySelector(selector);
+    const val = el && el.getAttribute(attr);
+    return val ? normalizeWhitespace(val) : '';
+  };
+
+  const description =
+    pick('meta[name="description"]') ||
+    pick('meta[property="og:description"]') ||
+    pick('meta[name="twitter:description"]') ||
+    '';
+
+  // documentElement.lang \u2192 <html lang> ; fall back to a content-language meta
+  // tag, then default to English.
+  const htmlLang =
+    (doc.documentElement && doc.documentElement.getAttribute('lang')) || '';
+  const metaLang = pick('meta[http-equiv="content-language"]');
+  const lang = normalizeWhitespace(htmlLang || metaLang || 'en')
+    .toLowerCase()
+    .split(/[,\s]/)[0] || 'en';
+
+  return { description, lang };
+}
+
 function extractPageText(doc = document) {
   const title = normalizeWhitespace(doc.title || '');
+  const { description, lang } = extractMetadata(doc);
 
   const clone = doc.body.cloneNode(true);
   BOILERPLATE_TAGS.forEach(tag => {
@@ -87,13 +120,15 @@ function extractPageText(doc = document) {
   return {
     title,
     mainText,
+    description,
+    lang,
     wordCount: mainText.length ? mainText.split(/\s+/).length : 0,
     url: doc.location ? doc.location.href : ''
   };
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { extractPageText, findMainContentElement, textDensityScore };
+  module.exports = { extractPageText, extractMetadata, findMainContentElement, textDensityScore };
 } else if (typeof window !== 'undefined') {
-  window.Web2MusicTextExtractor = { extractPageText };
+  window.Web2MusicTextExtractor = { extractPageText, extractMetadata };
 }

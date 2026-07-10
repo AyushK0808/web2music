@@ -61,8 +61,23 @@ function visibleArea(el) {
 
 function buildHueHistogram(root = document.body) {
   const hueBuckets = new Array(HUE_BUCKET_COUNT).fill(0);
+  // Area-weighted saturation/lightness sums per hue bucket, so we can recover
+  // a representative S/L for the dominant bucket (not just its hue).
+  const bucketSatSum = new Array(HUE_BUCKET_COUNT).fill(0);
+  const bucketLightSum = new Array(HUE_BUCKET_COUNT).fill(0);
+
   let achromaticArea = 0;
   let totalArea = 0;
+
+  // Global area-weighted accumulators used to emit a single representative
+  // { hue, saturation, lightness } for Feature B's colour-bias step. Lightness
+  // is summed over *all* counted area (achromatic greys/blacks/whites included)
+  // so page brightness stays meaningful even on near-monochrome pages;
+  // saturation is summed over chromatic area only (achromatic S ≈ 0).
+  let chromaticSatSum = 0;
+  let chromaticLightSum = 0;
+  let achromaticLightSum = 0;
+  let chromaticArea = 0;
 
   const elements = root.querySelectorAll('*');
 
@@ -82,28 +97,57 @@ function buildHueHistogram(root = document.body) {
 
     if (isAchromatic) {
       achromaticArea += weightedArea;
+      achromaticLightSum += l * weightedArea;
     } else {
       const bucketIndex = Math.floor(h / HUE_BUCKET_SIZE) % HUE_BUCKET_COUNT;
       hueBuckets[bucketIndex] += weightedArea;
+      bucketSatSum[bucketIndex] += s * weightedArea;
+      bucketLightSum[bucketIndex] += l * weightedArea;
+
+      chromaticSatSum += s * weightedArea;
+      chromaticLightSum += l * weightedArea;
+      chromaticArea += weightedArea;
     }
   });
 
-  return { hueBuckets, achromaticArea, totalArea };
+  return {
+    hueBuckets,
+    bucketSatSum,
+    bucketLightSum,
+    achromaticArea,
+    totalArea,
+    chromaticSatSum,
+    chromaticLightSum,
+    achromaticLightSum,
+    chromaticArea,
+  };
 }
 
 function extractDominantColors(root = document.body, topN = 3) {
-  const { hueBuckets, achromaticArea, totalArea } = buildHueHistogram(root);
+  const {
+    hueBuckets,
+    bucketSatSum,
+    bucketLightSum,
+    achromaticArea,
+    totalArea,
+    chromaticSatSum,
+    chromaticLightSum,
+    achromaticLightSum,
+  } = buildHueHistogram(root);
 
   if (totalArea === 0) {
     return {
       dominantHues: [],
       colorEnergy: 0,
       achromaticRatio: 1,
+      // Neutral mid-grey default so Feature B always has a full HSL triple.
+      representativeColor: { hue: 0, saturation: 0, lightness: 0.5 },
     };
   }
 
   const ranked = hueBuckets
     .map((area, i) => ({
+      index: i,
       hue: Math.round(i * HUE_BUCKET_SIZE + HUE_BUCKET_SIZE / 2),
       area,
       coverage: area / totalArea,
@@ -115,11 +159,40 @@ function extractDominantColors(root = document.body, topN = 3) {
   const chromaticArea = totalArea - achromaticArea;
   const colorEnergy = Math.min(1, chromaticArea / totalArea);
 
+  // Representative colour for Handoff 1: dominant hue with area-weighted mean
+  // saturation (chromatic area) and lightness (all counted area). Falls back to
+  // the dominant bucket's own S when there's chromatic area but rounding makes
+  // the global mean vanish.
+  const dominant = ranked[0];
+  const representativeColor = {
+    hue: dominant ? dominant.hue : 0,
+    saturation: chromaticArea > 0
+      ? clamp01(chromaticSatSum / totalArea)
+      : 0,
+    lightness: clamp01((chromaticLightSum + achromaticLightSum) / totalArea),
+  };
+
+  // Prefer the dominant bucket's own S/L when it exists — a truer "this is the
+  // page's main colour" reading than the whole-page mean.
+  if (dominant && hueBuckets[dominant.index] > 0) {
+    representativeColor.saturation = clamp01(
+      bucketSatSum[dominant.index] / hueBuckets[dominant.index]
+    );
+    representativeColor.lightness = clamp01(
+      bucketLightSum[dominant.index] / hueBuckets[dominant.index]
+    );
+  }
+
   return {
-    dominantHues: ranked,
+    dominantHues: ranked.map(({ index, ...rest }) => rest),
     colorEnergy,
     achromaticRatio: achromaticArea / totalArea,
+    representativeColor,
   };
+}
+
+function clamp01(x) {
+  return Math.max(0, Math.min(1, x));
 }
 
 if (typeof module !== 'undefined' && module.exports) {

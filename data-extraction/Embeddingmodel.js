@@ -4,6 +4,10 @@ const DEFAULT_CONFIG = {
   openaiApiKey: null,
   localModel: 'Xenova/all-MiniLM-L6-v2',
   maxInputChars: 8000,
+  // 'service' backend: offload the API call to a local Docker microservice
+  // (docker/embedService.js) so the OpenAI key lives in the container's env,
+  // never in the extension bundle or page context.
+  serviceUrl: 'http://localhost:8077/embed',
 };
 
 let localPipelinePromise = null;
@@ -46,6 +50,30 @@ async function embedWithOpenAI(text, config) {
   };
 }
 
+async function embedWithService(text, config) {
+  const response = await fetch(config.serviceUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ input: text, model: config.openaiModel }),
+  });
+
+  if (!response.ok) {
+    const errBody = await response.text().catch(() => '');
+    throw new Error(`Embedding service request failed (${response.status}): ${errBody}`);
+  }
+
+  const data = await response.json();
+  if (!data || !Array.isArray(data.vector)) {
+    throw new Error('Embedding service returned an unexpected payload (no `vector`).');
+  }
+  return {
+    vector: data.vector,
+    dimensions: data.dimensions || data.vector.length,
+    backend: 'service',
+    model: data.model || config.openaiModel,
+  };
+}
+
 async function embedWithLocalModel(text, config) {
   if (typeof window === 'undefined' || !window.transformersPipeline) {
     throw new Error(
@@ -84,6 +112,9 @@ async function getEmbedding(text, userConfig = {}) {
 
   if (config.backend === 'openai') {
     return embedWithOpenAI(truncated, config);
+  }
+  if (config.backend === 'service') {
+    return embedWithService(truncated, config);
   }
   return embedWithLocalModel(truncated, config);
 }

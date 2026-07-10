@@ -1,12 +1,26 @@
+import os
+import time
 from fastapi import FastAPI
 from d1_validate import validate_profile
 from d2_prompt import build_prompt
 from d3_generate import generate_audio
 from d4_process import process_audio
-from d5_cache import make_cache_key, check_cache, save_to_cache
-import time
+
+# Prod (Supabase-backed) cache vs. local dev cache (Docker Postgres + files on
+# disk). Defaults to dev so the server runs out of the box against `docker
+# compose up` in audio-generation/docker/ without needing a Supabase account.
+IS_PROD = os.getenv("IS_PROD", "false").lower() in ("1", "true", "yes")
+
+if IS_PROD:
+    from d5_cache import make_cache_key, check_cache, save_to_cache
+else:
+    from d5_cache_local import make_cache_key, check_cache, save_to_cache, AUDIO_CACHE_DIR
 
 app = FastAPI()
+
+if not IS_PROD:
+    from fastapi.staticfiles import StaticFiles
+    app.mount("/audio-cache", StaticFiles(directory=AUDIO_CACHE_DIR), name="audio-cache")
 
 @app.post("/generate")
 async def generate(profile: dict):

@@ -1,0 +1,101 @@
+# ─────────────────────────────────────────────────────────────────────────
+# Web2Music — generalised .gitignore (covers all feature modules:
+# JS/Node for A, B, C; Python/FastAPI for D; Docker; editors; OS cruft)
+# ─────────────────────────────────────────────────────────────────────────
+
+# ── Node / JavaScript ──
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+.npm/
+*.tsbuildinfo
+.eslintcache
+
+# Build / bundle output
+dist/
+build/
+out/
+.cache/
+.parcel-cache/
+.next/
+.vite/
+coverage/
+*.min.js.map
+
+# ── Python (Feature D — FastAPI / MusicGen) ──
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+.Python
+venv/
+.venv/
+env/
+ENV/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+pip-log.txt
+
+# ── Secrets / environment ──
+.env
+.env.*
+!.env.example
+!.env.sample
+*.pem
+*.key
+secrets.json
+credentials.json
+
+# ── Docker ──
+# (keep Dockerfile / docker-compose.yml tracked; ignore local overrides)
+docker-compose.override.yml
+*.env.local
+
+# ── Model / media / generated artifacts ──
+*.onnx
+*.bin
+*.pt
+*.ckpt
+*.safetensors
+models/
+*.wav
+*.mp3
+*.flac
+*.ogg
+generated_audio/
+audio_cache/
+
+# ── Editors / IDEs ──
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-workspace
+
+# ── OS ──
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# ── Logs / temp ──
+*.log
+logs/
+tmp/
+temp/
+*.tmp
+.claude/
+*.crx

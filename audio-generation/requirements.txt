@@ -8,4 +8,6 @@ soundfile
 librosa
 pyloudnorm
 pydub
+imageio-ffmpeg
 supabase
+psycopg2-binary
