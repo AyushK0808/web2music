@@ -1,0 +1,413 @@
+/**
+ * FEATURE B — B1: Content Understanding
+ *
+ * Receives raw page data from Feature A (Handoff 1).
+ * Responsibilities:
+ *   - Text cleaning & preprocessing
+ *   - Keyword & topic extraction
+ *   - Metadata analysis
+ *   - Content summarization
+ *
+ * Input:  PageData (JSON) from Feature A
+ * Output: CleanedContent (JSON) → passed to B2
+ */
+
+"use strict";
+
+// ─── Stopword list (English) ──────────────────────────────────────────────────
+const STOPWORDS = new Set([
+  "the","a","an","is","it","in","of","and","or","to","for","on","at","by",
+  "with","as","that","this","from","was","are","be","been","has","have",
+  "had","will","would","could","should","may","might","do","does","did",
+  "not","but","so","if","its","their","they","we","you","he","she","i",
+  "me","my","our","your","his","her","them","us","what","which","who",
+  "when","where","how","all","no","more","also","just","can","up","out",
+]);
+
+// ─── Sensitive content signals (edge case #2 from spec) ─────────────────────
+const SENSITIVE_PATTERNS = [
+  /\b(suicide|self.harm|self-harm|eating disorder|anorexia|bulimia)\b/i,
+  /\b(mental health crisis|grief|bereavement|depression|trauma)\b/i,
+  /\b(rape|sexual assault|domestic violence|abuse)\b/i,
+  /\b(terrorism|mass shooting|genocide)\b/i,
+];
+
+// ─── Keyword → content category map (maps to CONTENT CATEGORIES from spec) ──
+// Each list is 30+ keywords so the tier-1 heuristic clears MIN_CATEGORY_HITS
+// on its own more often, before ever needing the tier-2 LLM escalation below.
+export const CATEGORY_KEYWORDS = {
+  Educational:   ["learn","course","study","tutorial","explain","definition","science","math","history","biology",
+                  "research","scientist","experiment","theory","university","professor","lecture","textbook","curriculum","academic",
+                  "knowledge","education","classroom","chemistry","physics","mathematics","geography","literature","philosophy","laboratory",
+                  "thesis","homework"],
+  News:          ["breaking","report","election","government","policy","president","minister","economy","war","conflict",
+                  "headline","journalist","correspondent","coverage","senate","congress","legislation","diplomat","protest","referendum",
+                  "ceasefire","sanctions","inflation","unemployment","parliament","cabinet","summit","geopolitics","embassy","coup",
+                  "uprising","ambassador"],
+  Horror:        ["horror","thriller","suspense","scary","fear","monster","haunted","death","murder","mystery",
+                  "ghost","demon","possessed","nightmare","terrifying","creepy","sinister","paranormal","exorcism","zombie",
+                  "vampire","werewolf","slasher","cryptic","macabre","gruesome","eerie","chilling","dread","phantom",
+                  "cursed"],
+  Food:          ["recipe","food","eat","cook","restaurant","cuisine","diet","ingredient","meal","taste",
+                  "bake","chef","kitchen","dish","flavor","spice","grill","roast","dessert","appetizer",
+                  "nutrition","calorie","vegan","vegetarian","gourmet","culinary","snack","beverage","seasoning","marinade",
+                  "garnish"],
+  Entertainment: ["movie","music","celebrity","actor","singer","film","show","tv","game","anime",
+                  "concert","album","festival","blockbuster","streaming","playlist","soundtrack","sitcom","drama","sequel",
+                  "franchise","cinema","screenplay","director","casting","premiere","trailer","animation","documentary","remake"],
+  Sports:        ["sports","football","cricket","tennis","basketball","match","tournament","player","score","team",
+                  "athlete","championship","league","coach","referee","stadium","olympics","medal","playoff","goal",
+                  "touchdown","homerun","marathon","wrestling","boxing","hockey","baseball","volleyball","golf","swimming",
+                  "cycling"],
+  Finance:       ["stock","invest","crypto","market","bank","finance","fund","economy","trading","portfolio",
+                  "dividend","equity","bond","mortgage","interest","asset","liability","revenue","profit","budget",
+                  "savings","retirement","cryptocurrency","bitcoin","hedge","broker","ledger","audit","taxation","currency"],
+  Legal:         ["law","court","legal","attorney","case","judgment","rights","contract","regulation","compliance",
+                  "lawsuit","litigation","plaintiff","defendant","verdict","statute","testimony","jurisdiction","appeal","prosecutor",
+                  "judge","jury","evidence","subpoena","deposition","tribunal","arbitration","copyright","patent","indictment"],
+  Health:        ["health","medical","doctor","disease","symptom","treatment","hospital","mental","wellness","therapy",
+                  "diagnosis","surgery","patient","medicine","nurse","clinic","vaccine","infection","chronic","recovery",
+                  "fitness","exercise","insurance","prescription","physician","illness","epidemic","immunity","cardiovascular","rehabilitation"],
+  Comedy:        ["funny","humor","laugh","joke","meme","comedy","hilarious","satire","parody","standup",
+                  "prank","witty","gag","sketch","roast","blooper","punchline","absurd","slapstick","banter",
+                  "quip","farce","lighthearted","comedian","improv","spoof","silly","goofy","amusing","laughter"],
+  Emotional:     ["love","heart","emotion","feeling","relationship","breakup","family","nostalgia","memory","heartbreak",
+                  "affection","intimacy","marriage","wedding","divorce","grief","longing","tenderness","vulnerability","connection",
+                  "bonding","empathy","compassion","heartfelt","sentimental","reunion","farewell","devotion","companionship","soulmate"],
+  Mythological:  ["myth","history","ancient","spiritual","religion","god","temple","tradition","culture","heritage",
+                  "legend","folklore","deity","ritual","sacred","prophecy","mythology","goddess","shrine","pilgrimage",
+                  "scripture","divine","ancestral","ceremonial","supernatural","reincarnation","karma","enlightenment","mysticism","afterlife"],
+  Travel:        ["travel","nature","destination","beach","mountain","hotel","explore","adventure","hiking","park",
+                  "vacation","itinerary","backpacking","tourism","passport","journey","expedition","landmark","resort","excursion",
+                  "sightseeing","wanderlust","roadtrip","cruise","camping","wildlife","safari","trekking","souvenir","scenic"],
+};
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+/**
+ * Naive syllable counter (English approximation).
+ * Used for Flesch Reading Ease score in B1.
+ */
+function countSyllables(word) {
+  word = word.toLowerCase().replace(/[^a-z]/g, "");
+  if (word.length <= 3) return 1;
+  word = word.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, "");
+  const match = word.match(/[aeiouy]{1,2}/g);
+  return match ? match.length : 1;
+}
+
+/**
+ * Flesch Reading Ease → complexity score [0..1].
+ * 206.835 – 1.015(words/sentences) – 84.6(syllables/words)
+ * Higher Flesch = easier to read = lower complexity score.
+ */
+export function computeReadingComplexity(text) {
+  if (!text || text.trim().length === 0) return 0.5;
+
+  const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+  const words     = text.match(/\b\w+\b/g) || [];
+
+  if (words.length === 0) return 0.5;
+
+  const totalSyllables = words.reduce((sum, w) => sum + countSyllables(w), 0);
+  const wordsPerSentence  = words.length / Math.max(sentences.length, 1);
+  const syllablesPerWord  = totalSyllables / words.length;
+
+  const fleschScore = 206.835 - 1.015 * wordsPerSentence - 84.6 * syllablesPerWord;
+  // Clamp to [0,100] then invert & normalise to [0,1] (harder = higher value)
+  const clamped = Math.min(100, Math.max(0, fleschScore));
+  return parseFloat(((100 - clamped) / 100).toFixed(3));
+}
+
+// ─── Main exports ─────────────────────────────────────────────────────────────
+
+/**
+ * cleanText — strip HTML entities, collapse whitespace, remove boilerplate.
+ * @param {string} rawText
+ * @returns {string}
+ */
+export function cleanText(rawText) {
+  if (!rawText) return "";
+
+  return rawText
+    .replace(/&amp;/gi, "&")             // decode common entities first
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&(#39|apos);/gi, "'")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&[a-z]+;/gi, " ")          // strip any other/unknown entities
+    .replace(/<[^>]+>/g, " ")            // any residual tags
+    .replace(/https?:\/\/\S+/g, " ")    // URLs
+    .replace(/[^\w\s.,!?'&-]/g, " ")    // non-meaningful punctuation (now keeps &)
+    .replace(/\s{2,}/g, " ")            // collapsed whitespace
+    .trim();
+}
+
+/**
+ * extractKeywords — TF-style top-N keywords from cleaned text.
+ * Falls back gracefully if text is empty.
+ * @param {string} cleanedText
+ * @param {number} topN
+ * @returns {string[]}
+ */
+export function extractKeywords(cleanedText, topN = 15) {
+  if (!cleanedText) return [];
+
+  const freq = {};
+  const words = cleanedText.toLowerCase().match(/\b[a-z]{3,}\b/g) || [];
+
+  for (const word of words) {
+    if (STOPWORDS.has(word)) continue;
+    freq[word] = (freq[word] || 0) + 1;
+  }
+
+  return Object.entries(freq)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, topN)
+    .map(([word]) => word);
+}
+
+/**
+ * classifyContentCategory — maps keywords to the 13 content categories in spec.
+ * Returns top-2 matching categories with confidence scores.
+ * `primary` is null (not a default guess) when no category clears
+ * MIN_CATEGORY_HITS — callers that want a guaranteed string should go through
+ * resolveContentCategory(), which escalates to the LLM before defaulting.
+ * @param {string[]} keywords
+ * @param {string}   title
+ * @returns {{ primary: string|null, secondary: string|null, scores: Object }}
+ */
+const MIN_CATEGORY_HITS = 3;
+
+export function classifyContentCategory(keywords, title = "") {
+  const scores = {};
+  const allTokens = [...keywords, ...title.toLowerCase().split(/\s+/)];
+
+  for (const [category, categoryKeywords] of Object.entries(CATEGORY_KEYWORDS)) {
+    let hits = 0;
+    for (const token of allTokens) {
+      if (categoryKeywords.includes(token)) hits++;
+    }
+    scores[category] = hits;
+  }
+
+  const sorted = Object.entries(scores)
+    .filter(([, s]) => s >= MIN_CATEGORY_HITS)
+    .sort((a, b) => b[1] - a[1]);
+
+  return {
+    primary:   sorted[0]?.[0] ?? null,
+    secondary: sorted[1]?.[0] ?? null,
+    scores,
+  };
+}
+
+/**
+ * callCategoryLLMClassifier — tier-2 escalation for content category when the
+ * keyword heuristic doesn't clear MIN_CATEGORY_HITS on its own. Same
+ * graceful-fallback contract as B2's callLLMClassifier: null on any failure,
+ * timeout, or hallucinated category name — never throws.
+ * @returns {Promise<string|null>}
+ */
+export async function callCategoryLLMClassifier({ keywords, title, summary }, apiKey) {
+  if (!apiKey) return null;
+
+  const categoryNames = Object.keys(CATEGORY_KEYWORDS);
+  const prompt = `You are a content category classifier for a music-ambient browser extension.
+
+Classify the webpage below into exactly one of these categories:
+${categoryNames.join(" | ")}
+
+Title: "${title}"
+Summary: "${summary}"
+Top keywords: ${keywords.slice(0, 10).join(", ")}
+
+Return ONLY a valid JSON object, no explanation: { "category": "<one of the categories above>" }`;
+
+  const controller = new AbortController();
+  const timeout    = setTimeout(() => controller.abort(), 8000); // 8s timeout, mirrors B2
+
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method:  "POST",
+      signal:  controller.signal,
+      headers: {
+        "Content-Type":      "application/json",
+        "x-api-key":         apiKey,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model:      "claude-haiku-4-5-20251001",
+        max_tokens: 50,
+        messages:   [{ role: "user", content: prompt }],
+      }),
+    });
+    clearTimeout(timeout);
+
+    if (!res.ok) throw new Error(`Category LLM API ${res.status}`);
+    const data = await res.json();
+    const raw  = data?.content?.[0]?.text?.trim() ?? "";
+    const jsonStr = raw.replace(/^```json\s*/i, "").replace(/```$/i, "").trim();
+    const parsed = JSON.parse(jsonStr);
+
+    // Guard against a hallucinated category name that isn't one of ours.
+    return categoryNames.includes(parsed.category) ? parsed.category : null;
+  } catch (err) {
+    clearTimeout(timeout);
+    console.warn("[B1] Category LLM classifier failed:", err.message, "— falling back");
+    return null;
+  }
+}
+
+/**
+ * resolveContentCategory — orchestrates category classification with tier-2
+ * LLM escalation (spec-requested): the keyword heuristic runs first (instant,
+ * no API call); only when it can't clear MIN_CATEGORY_HITS does this escalate
+ * to the LLM, and only the "Entertainment" default fallback fires if the LLM
+ * is unavailable, unconfigured, or fails.
+ * @returns {Promise<{ primary: string, secondary: string|null, scores: Object, source: string }>}
+ */
+export async function resolveContentCategory(keywords, title, summary, apiKey) {
+  const heuristic = classifyContentCategory(keywords, title);
+  if (heuristic.primary) {
+    return { ...heuristic, source: "keyword" };
+  }
+
+  const llmCategory = await callCategoryLLMClassifier({ keywords, title, summary }, apiKey);
+  if (llmCategory) {
+    return { primary: llmCategory, secondary: heuristic.secondary, scores: heuristic.scores, source: "llm" };
+  }
+
+  return { primary: "Entertainment", secondary: heuristic.secondary, scores: heuristic.scores, source: "default" };
+}
+
+/**
+ * checkSensitiveContent — edge case #2: detect crisis / harm pages.
+ * If matched, downstream modules force-override to Uplifting/Spiritual.
+ * @param {string} text
+ * @returns {boolean}
+ */
+export function checkSensitiveContent(text) {
+  if (!text) return false;
+  return SENSITIVE_PATTERNS.some(re => re.test(text));
+}
+
+/**
+ * analyseMetadata — extract signals from page metadata object (from Feature A).
+ * @param {Object} meta  { title, description, ogImage, url, lang }
+ * @returns {Object}     enriched metadata signals
+ */
+export function analyseMetadata(meta = {}) {
+  const url   = meta.url || "";
+  const title = meta.title || "";
+  const desc  = meta.description || "";
+
+  // Detect payment / banking pages (edge case #16)
+  // Word-boundary matched so e.g. "payload" / "repay" / "papaya" don't false-positive.
+  // Joined with a space so a word ending url doesn't fuse with the next title word.
+  const isPaymentPage = /\b(payment|checkout|bank|banking|wallet|invoice|billing)\b/i.test(url + " " + title);
+  // Detect chrome-internal pages (edge case #21)
+  const isChromeInternal = /^chrome(?:-extension)?:\/\//i.test(url);
+  // Detect image-only pages (edge case #15) — no meaningful text
+  const isImageOnly = (desc + title).length < 20;
+
+  return {
+    title,
+    description: desc,
+    isPaymentPage,
+    isChromeInternal,
+    isImageOnly,
+    language: meta.lang || "en",
+  };
+}
+
+/**
+ * summariseContent — produce a short summary string for the LLM prompt later.
+ * Simple extractive summary: first 2 sentences of cleaned body.
+ * @param {string} cleanedText
+ * @returns {string}
+ */
+export function summariseContent(cleanedText) {
+  if (!cleanedText) return "";
+  const sentences = cleanedText.match(/[^.!?]+[.!?]+/g) || [];
+  return sentences.slice(0, 2).join(" ").trim().slice(0, 400);
+}
+
+/**
+ * runB1 — orchestrates the full B1 Content Understanding pipeline.
+ *
+ * @param {Object} pageData   Handoff 1 payload from Feature A:
+ *   {
+ *     rawText:     string,   // first 400-500 words from content_script
+ *     title:       string,
+ *     description: string,   // meta description
+ *     url:         string,
+ *     lang:        string,
+ *     colors:      Object,   // from Feature A colour extraction
+ *     scrollSpeed: number,
+ *     cursorSpeed: number,
+ *     embedding:   number[], // vector from Feature A
+ *   }
+ * @param {string} apiKey   LLM API key, used only to escalate category
+ *   classification when the keyword heuristic can't clear MIN_CATEGORY_HITS.
+ *
+ * @returns {Promise<Object>} CleanedContent — input to B2
+ */
+export async function runB1(pageData, apiKey = "") {
+  const meta = analyseMetadata({
+    title:       pageData.title,
+    description: pageData.description,
+    url:         pageData.url,
+    lang:        pageData.lang,
+  });
+
+  // Short-circuit for special page types
+  if (meta.isChromeInternal) {
+    return { _bypass: "chrome_internal", meta };
+  }
+  if (meta.isPaymentPage) {
+    return { _bypass: "payment_page", meta };
+  }
+
+  const cleaned     = cleanText(pageData.rawText || "");
+  const isSensitive = checkSensitiveContent(cleaned + " " + meta.title);
+  const keywords    = extractKeywords(cleaned);
+  const summary     = summariseContent(cleaned);
+
+  // Sensitive/crisis pages never reach the category LLM — mirrors B2's own
+  // sensitive-override, which never sends this content to the mood LLM either.
+  let category;
+  if (isSensitive) {
+    const heuristicOnly = classifyContentCategory(keywords, meta.title);
+    category = { ...heuristicOnly, primary: heuristicOnly.primary ?? "Entertainment", source: "skipped-sensitive" };
+  } else {
+    category = await resolveContentCategory(keywords, meta.title, summary, apiKey);
+  }
+
+  const complexity  = computeReadingComplexity(cleaned);
+
+  // A short title/description doesn't mean image-only if the page actually
+  // has real body text — require both signals to be minimal (edge case #15).
+  const isImageOnly = meta.isImageOnly && cleaned.length < 60;
+
+  return {
+    // Pass-through signals
+    scrollSpeed:  pageData.scrollSpeed  ?? 0,
+    cursorSpeed:  pageData.cursorSpeed  ?? 0,
+    colors:       pageData.colors       ?? {},
+    embedding:    pageData.embedding    ?? [],
+
+    // B1 outputs
+    meta,
+    cleanedText:       cleaned,
+    keywords,
+    category,          // { primary, secondary, scores }
+    summary,           // short extractive summary for LLM
+    readingComplexity: complexity,    // [0..1], higher = harder
+    isSensitive,       // boolean — triggers override in B2
+
+    // Image-only flag — B2 will skip LLM text call if true
+    isImageOnly,
+  };
+}
