@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+python-dotenv
+transformers
+torch
+numpy
+soundfile
+librosa
+pyloudnorm
+pydub
+supabase

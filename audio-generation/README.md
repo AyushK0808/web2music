@@ -90,8 +90,8 @@ Two requests are treated as identical (cache hit) if they share the same:
 ### Installation
 
 ```bash
-git clone https://github.com/tvxsha/web2music
-cd web2music
+git clone https://github.com/AyushK0808/web2music.git
+cd web2music/feature-d-audio-generation
 python -m venv venv
 
 # Windows
@@ -122,12 +122,10 @@ Swagger UI available at `http://127.0.0.1:8000/docs`
 
 ---
 
-##  Project Structure
 ## 📁 Project Structure
 
 ```
-
-web2music-feature-d/
+feature-d-audio-generation/
 ├── d1_validate.py          # Profile validation & defaults
 ├── d2_prompt.py            # Prompt builder for MusicGen
 ├── d3_generate.py          # MusicGen audio generation
