@@ -397,6 +397,51 @@ const b2FocusedResult = await runB2(
 );
 assert(["focused", "calm"].includes(b2FocusedResult.mood)); // either valid for this signal mix
 
+console.log("B2: tier-2 LLM output validation — hallucinated mood/pageType and out-of-range hints are sanitized");
+global.fetch = async () => ({
+  ok: true,
+  json: async () => ({
+    content: [{
+      text: JSON.stringify({
+        mood:        "furious",        // not a real MOODS value
+        pageType:    "malware-portal", // not a real page type
+        confidence:  5,                // out of [0,1]
+        energyHint:  -3,               // out of [0,1]
+        valenceHint: 10,               // out of [-1,1]
+      }),
+    }],
+  }),
+});
+const b2ValidationResult = await runB2(
+  {
+    isSensitive: false,
+    keywords: [],
+    cleanedText: "the quick brown fox jumps over lazy dog",
+    colors: {},
+    scrollSpeed: 0,
+    cursorSpeed: 0,
+    readingComplexity: 0.5,
+    category: { primary: "Entertainment", secondary: null },
+    meta: { url: "https://example.com" },
+    isImageOnly: false,
+  },
+  "fake-key"
+);
+assert.equal(b2ValidationResult.tier, "tier2-llm");
+assert(
+  Object.values(MOODS).includes(b2ValidationResult.mood),
+  `hallucinated mood must fall back to a valid mood, got ${b2ValidationResult.mood}`
+);
+assert(
+  ["article", "social", "video", "shopping", "news", "work-tool", "entertainment", "educational", "other"]
+    .includes(b2ValidationResult.pageType),
+  `hallucinated pageType must fall back to a valid page type, got ${b2ValidationResult.pageType}`
+);
+assert(b2ValidationResult.confidence <= 1, "confidence must be clamped to <= 1");
+assert(b2ValidationResult.energyHint >= 0, "energyHint must be clamped to >= 0");
+assert(b2ValidationResult.valenceHint <= 1, "valenceHint must be clamped to <= 1");
+global.fetch = originalFetch;
+
 // ── B3 Tests ──────────────────────────────────────────────────────────────────
 import { runB3, pickKey, getTimeOfDayContext } from "./feature_b/b3_musicProfileGenerator.js";
 

@@ -287,6 +287,36 @@ export async function callLLMClassifier(cleanedContent, apiKey) {
   }
 }
 
+// ─── Tier-2 output validation ────────────────────────────────────────────────
+const VALID_MOODS = new Set(Object.values(MOODS));
+const VALID_PAGE_TYPES = new Set([
+  "article", "social", "video", "shopping", "news", "work-tool", "entertainment", "educational", "other",
+]);
+
+function clampHint(value, min, max) {
+  const num = Number(value);
+  return Number.isFinite(num) ? Math.min(max, Math.max(min, num)) : undefined;
+}
+
+/**
+ * Guard against a hallucinated mood/pageType or out-of-range numeric hint —
+ * mirrors B1's guard against hallucinated category names
+ * (b1_contentUnderstanding.js callCategoryLLMClassifier). Unlike category,
+ * mood/pageType fall back to the tier-1 blended values rather than null,
+ * since callers always need a usable result here.
+ */
+function validateLLMResult(result, blendedMood, category) {
+  if (!result || typeof result !== "object") return null;
+  return {
+    mood:        VALID_MOODS.has(result.mood) ? result.mood : blendedMood,
+    pageType:    VALID_PAGE_TYPES.has(result.pageType) ? result.pageType : inferPageType(category?.primary),
+    intent:      typeof result.intent === "string" ? result.intent : "",
+    confidence:  clampHint(result.confidence, 0, 1),
+    energyHint:  clampHint(result.energyHint, 0, 1),
+    valenceHint: clampHint(result.valenceHint, -1, 1),
+  };
+}
+
 // ─── Content category → page type mapper ─────────────────────────────────────
 function inferPageType(category = "Entertainment", url = "") {
   const map = {
@@ -394,17 +424,18 @@ export async function runB2(cleanedContent, apiKey) {
   // ── Tier-2: LLM for low-confidence or ambiguous cases ───────────────────
   let finalResult = null;
   if (blendedConf < 0.5 && apiKey) {
-    finalResult = await callLLMClassifier(cleanedContent, apiKey);
+    const llmResult = await callLLMClassifier(cleanedContent, apiKey);
+    finalResult = validateLLMResult(llmResult, blendedMood, cleanedContent.category);
   }
 
   if (finalResult) {
     return {
-      mood:        finalResult.mood        || blendedMood,
-      pageType:    finalResult.pageType    || inferPageType(cleanedContent.category?.primary),
+      mood:        finalResult.mood,
+      pageType:    finalResult.pageType,
       intent:      finalResult.intent      || "",
       confidence:  finalResult.confidence  ?? blendedConf,
       energyHint:  finalResult.energyHint  ?? computeEnergyHint(cleanedContent),
-      valenceHint: finalResult.valenceHint ?? computeValenceHint(blendedMood),
+      valenceHint: finalResult.valenceHint ?? computeValenceHint(finalResult.mood),
       tier:        "tier2-llm",
       category:    cleanedContent.category,
       colors:      cleanedContent.colors,
