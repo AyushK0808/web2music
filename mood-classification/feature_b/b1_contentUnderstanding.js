@@ -238,9 +238,10 @@ Return ONLY a valid JSON object, no explanation: { "category": "<one of the cate
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        model:      "claude-haiku-4-5-20251001",
-        max_tokens: 50,
-        messages:   [{ role: "user", content: prompt }],
+        model:       "claude-haiku-4-5-20251001",
+        max_tokens:  50,
+        temperature: 0, // deterministic classification — reproducibility over variety
+        messages:    [{ role: "user", content: prompt }],
       }),
     });
     clearTimeout(timeout);
