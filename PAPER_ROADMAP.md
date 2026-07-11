@@ -11,11 +11,13 @@ Using `facebook/musicgen-small` behind FastAPI is engineering, not a contributio
 
 **A second citable contribution is within reach:** a public **webpage→mood annotated corpus** (none exists), which doubles as the eval set.
 
+**A third path, if the fine-tuning track (§4.4) is taken:** conditioning MusicGen directly on continuous valence–arousal + tempo turns Feature D from *substrate* into a candidate **co-contribution** (mood/tempo-controllable ambient generation with a control-fidelity eval). This is a deliberate scope decision, not a free add-on: it is weeks of `[L]` work and shifts the paper's center of gravity. Doing the fine-tuning *and* under-claiming it in the write-up is the worst of both — decide up front whether D is substrate or a second contribution.
+
 | Venue | Fit | Condition |
 |---|---|---|
 | **IUI / ACM Multimedia** (primary) | System + dataset + user study | Do the eval plan in §6 |
 | **CHI / IMWUT** | Interaction contribution | Add a longitudinal field study |
-| **ISMIR / DAFx / ICASSP** | Audio-loop contribution | Only if the seamless-loop work (§4) is deepened into the core claim |
+| **ISMIR / DAFx / ICASSP** | Audio-loop *or* conditioning contribution | Seamless-loop work (§4) **or** the mood/tempo-conditioned fine-tuning track (§4.4) deepened into a core claim, with control-fidelity eval (§6) |
 | **TAFFC** | Affective computing | Lean on the mood-classification eval + calibration |
 
 ---
@@ -31,8 +33,10 @@ Feature B outputs a nested camelCase payload ([b4_promptEngineer.js:191-232](moo
 - [ ] Mood taxonomy mismatch: B emits 11 moods; D's instrument map ([d2_prompt.py:15-22](audio-generation/d2_prompt.py#L15-L22)) covers 6, of which `melancholic`/`positive` are unreachable, and 7 of B's 11 moods silently degrade to "ambient pads".
 - [ ] `contentCategory` (B, camelCase) ≠ `content_category` (D, snake_case).
 - [ ] B4's generic prompt requests "60–90 seconds per loop" ([b4_promptEngineer.js:103](mood-classification/feature_b/b4_promptEngineer.js#L103)); D generates ~5.1 s and accepts no duration parameter.
+- [ ] **No continuous `valence` in the profile** — Handoff-2 today carries `mood` (discrete string), `energy` (≈ arousal), `bpm`, `key`. The fine-tuned model (§4.4) conditions on continuous `(valence, arousal, log bpm)`. B must emit a **`valence` scalar in `[-1, 1]`** (positive = positive affect — depends on X3 being fixed first) and rename/duplicate `energy` → `arousal`. — **Sneha** (emit) `[S–M]`
+- [ ] **`d2_prompt.py` role changes under fine-tuning** — for the conditioned generator, `d2_prompt.py` builds a **conditioning vector** `(v, a, log bpm)` (+ optional text), not a mood→instrument text prompt. The discrete instrument map (`d2_prompt.py:15-22`) is bypassed entirely, which **dissolves the 11-vs-6 mood-taxonomy mismatch** flagged above rather than patching it. — **Tvisha** (consume) `[M]`
 
-**Fix:** one JSON-schema'd Handoff-2 contract validated on both sides; D consumes B4's `prompt`; one shared mood taxonomy; add a `duration` field. Then A/B the two prompt builders (CLAP/FAD) and delete the loser — that's a free ablation for the paper.
+**Fix:** one JSON-schema'd Handoff-2 contract validated on both sides; D consumes B4's `prompt`; one shared mood taxonomy; add a `duration` field, plus `valence`/`arousal` scalars alongside it (keep the discrete `mood`/`style` fields for the `B0` text-prompt baseline in §4.4 so both generators read the same contract). Then A/B the two prompt builders (CLAP/FAD) and delete the loser — that's a free ablation for the paper.
 
 ### X2 · Loop-point detection is degenerate — always returns the full clip `[M]` — **Vedant**
 The self-similarity search ([d4_process.py:42-51](audio-generation/d4_process.py#L42-L51)) compares the first 10 chroma frames against every window **including i=0**, where correlation is exactly 1.0 (self-match). `np.argmax` → always frame 0 → snaps to first beat → the `< 1000 ms` guard ([d4_process.py:62-63](audio-generation/d4_process.py#L62-L63)) fires → `loop_point_ms = len(audio)`, every time. (Any constant window instead propagates NaN through argmax to a garbage index.) The chroma analysis is effectively dead code; the README's `loop_point_ms: 18400` example is not producible.
@@ -137,6 +141,10 @@ The self-similarity search ([d4_process.py:42-51](audio-generation/d4_process.py
 - [ ] **Longer / extendable audio** — raise tokens (500→10 s, 750→15 s; quality degrades past ~1500/30 s = training window); for arbitrary length use MusicGen **audio-continuation** (feed the tail back as audio prompt), or generate a clip whose end resolves toward its own start for intrinsic loopability. — **Tvisha**
 - [ ] **Batch concurrent requests** (MusicGen supports batched generation — near-free throughput) and **pre-warm the cache** for the common mood×style×bpm grid at startup. — **Tvisha**
 - [ ] **Retry logic + fallback clips** (README-planned; `fallback_clips/` referenced but absent). — **Tvisha**
+- [ ] **`d3_generate.py` adapter switch** — when `USE_FINETUNED=true`, load the LoRA adapter + conditioning encoder (§4.4) instead of the stock pipeline; keep stock `facebook/musicgen-small` reachable as the `B0` baseline. Gate behind a config flag so the eval harness can A/B both from one server. — **Tvisha**
+
+**Small `[S]`** (cache correctness under conditioning)
+- [ ] **Cache key under continuous conditioning** — the low/mid/high bpm bucketing + energy-rounded key (README "Caching Logic") is too coarse once `(v, a, bpm)` are continuous and `duration`/`seed`/`guidance` matter. Key on quantized `(v, a, bpm, duration_s, seed, guidance_scales)`; document the granularity. Folds into the existing `d5` cache-key bug. — **Tvisha**
 
 ### 4.2 Additions for the paper `[L]`
 - [ ] **Implement the four empty experiment stubs** — [experiments/](audio-generation/experiments/) (`d1_prompt_ablation.py`, `d2_loop_test.py`, `d3_clip_length.py`, `d4_latency.py`) are 1-line files that map 1:1 onto the results section: — **Tvisha**
@@ -148,6 +156,61 @@ The self-similarity search ([d4_process.py:42-51](audio-generation/d4_process.py
 ### 4.3 Limitations to declare
 - **MusicGen weights are CC-BY-NC 4.0** — fine for research, blocks commercial deployment; must appear in the artifact/limitations statement.
 - musicgen-small quality ceiling; 30 s training-window constraint.
+- **Valence < arousal controllability** — expect a per-axis asymmetry; report both axes, never an average.
+- **Weak training labels** — tag→V-A via NRC-VAD is approximate; DEAM provides the gold continuous labels for eval only.
+
+---
+
+## 4.4 Feature D — Fine-Tuning Track (mood/tempo-conditioned MusicGen)
+
+> Optional but high-value. Only start after X1/X2/X3 (Phase 1) — a conditioned model on a broken handoff still generates constant calm audio. Build the eval harness (§4.4.4) **before** any training run. See [FEATURE_DESCRIPTION.md](audio-generation/FEATURE_DESCRIPTION.md) for the full design.
+
+### 4.4.1 Rationale — why fine-tune vs. prompt stock MusicGen
+
+Three problems in the stock path are structural, not bugs: (1) the 11→6 mood-taxonomy collapse, (2) the lossy prompt rebuild that drops instrument/timbre/reverb tags, (3) text-prompt tempo ("75 bpm") only loosely honored. Continuous `(v, a, log bpm)` conditioning removes all three by construction. **Fine-tuning strategy itself is an ablation, not an assumption** — at 300M params, LoRA is the default for prior-preservation, not for memory (full FT fits the GPU too).
+
+### 4.4.2 Datasets `[L]` — **(FT-lead)** / **Tvisha**
+
+- [ ] **MTG-Jamendo** (mood/theme subset, ~18k CC-licensed tracks) — main training corpus. Instrumental filter via the `instrumental` tag + a vocal-activity check; **no Demucs separation** (artifacts leak into training).
+- [ ] **DEAM** — per-0.5s continuous valence/arousal; the source of the *time-varying* control claim and the gold eval set. Also trains the V-A probe (§4.4.4).
+- [ ] **NRC-VAD norms** — map Jamendo mood tags → weak `(v, a)` labels for the training corpus.
+- [ ] **Tempo pseudo-labels** — beat-track the whole corpus (`madmom` / `BeatThis`); **GiantSteps Tempo** is a tracker sanity-check set only, not training data.
+- [ ] **FAD reference** — held-out Jamendo-test + **Song Describer** (clean CC audio, never trained on).
+- [ ] **Artist-level split** — no artist overlap across train/val/test; DEAM-test artists excluded from generator **and** probe training (track-level splits leak — reviewers catch this).
+- [ ] **Pre-tokenize** with frozen EnCodec offline; cache tokens to disk.
+- [ ] *(Optional)* EMOPIA (piano-only) as a clean single-instrument case study; PMEmo eval-only.
+
+### 4.4.3 Conditioning + training `[L]` — **(FT-lead)** / **Tvisha**
+
+- [ ] **Conditioning encoder** — `(v, a) ∈ [-1,1]²` and `log(bpm)` → Fourier features → MLPs → `K` prefix tokens via cross-attention. FiLM variant reserved as an ablation row.
+- [ ] **Adapter** — LoRA (`r = 16–64`) on attention incl. cross-attention; conditioning MLPs trained in full at higher LR. DoRA as a same-cost drop-in row. Freeze EnCodec + T5.
+- [ ] **Per-stream CFG dropout (~15%)** applied independently to text / mood / tempo → independent guidance scales at inference.
+- [ ] **Train** — bf16 + grad checkpointing + 8-bit Adam, grad-accum to eff. batch 32–64; LR ~1e-4 (LoRA) / ~3e-4 (new MLPs), cosine + short warmup. Select checkpoints on **val control-fidelity, not NLL alone**. Skip QLoRA at 300M.
+- [ ] **Tuning-strategy ablation** — conditioning-only (frozen backbone) → LoRA/DoRA → cross-attn-only unfreeze → full FT. Answers the "why not full FT at 300M?" reviewer question empirically. New stub: `experiments/d5_finetune_ablation.py`.
+
+### 4.4.4 Eval harness — build & freeze BEFORE training `[L]` — **Vedant** (+ **Tvisha**)
+
+Extends §4.2 audio metrics (FAD/CLAP/tempo/key/seam) with **control-fidelity**:
+
+- [ ] **Tempo control** — beat-track *generated* audio → MAE + Accuracy@±4% vs target bpm.
+- [ ] **Mood control** — frozen **MERT** encoder + MLP probe (trained on DEAM-train) → **per-axis** V-A MAE + R² on 5s windows. Report valence and arousal separately (valence is measurably harder to control — expect the asymmetry).
+- [ ] **Trajectory tracking** — piecewise `(v, a, bpm)` ramps → tracking error + control lag.
+- [ ] **Probe sanity** — report the V-A probe's own R² on held-out DEAM artists so control numbers are interpretable.
+
+### 4.4.5 Baselines `[M]` — **Tvisha**
+
+- [ ] `B0` — stock `musicgen-small`, mood+tempo in the **text prompt** (this is the current system; the honest "does fine-tuning help" comparison).
+- [ ] `B1` — identical LoRA recipe but **discrete mood-tag tokens** (isolates the *continuous-V-A* claim from "any fine-tuning helps"). **This is the load-bearing ablation.**
+- [ ] `B2` — MusiConGen (tempo-control comparison, inference only).
+- [ ] `B3` — *(optional)* Magenta RealTime as a streaming-quality reference.
+
+### 4.4.6 Decision gates — **(FT-lead)**
+
+- [ ] **Gate A (improvement):** fine-tuned beats `B0` on tempo + V-A with bootstrap `p < 0.05`, else iterate (FiLM vs prefix, upweight DEAM, LR/rank sweep).
+- [ ] **Gate B (no quality collapse):** FAD within ~10% of `B0`, else lower rank / mix in unconditioned data / fewer epochs.
+- [ ] **Only after both gates:** post-training int8 weight-only quant of the LM (**keep EnCodec decoder fp16**); re-run tempo/V-A/FAD → bf16-vs-int8 RTF table. This is a deployment ablation, not a contribution.
+
+**New experiment stubs:** `d5_finetune_ablation.py` (tuning-strategy sweep), `d6_control_fidelity.py` (tempo/V-A/trajectory metrics vs targets), `d7_baselines.py` (B0/B1/B2 generation + scoring harness) — under `audio-generation/experiments/`. Plus a `finetune/` package (`data/prepare.py`, `train/finetune.py`, `configs/*.yaml`) and `research_log.md` entries per run (data version, run ID, metric deltas).
 
 ---
 
@@ -164,7 +227,7 @@ The self-similarity search ([d4_process.py:42-51](audio-generation/d4_process.py
 ## 6. Evaluation Plan (the actual paper content) `[L]`
 
 1. **Classification eval** on the annotated corpus (§3.2): accuracy + valence-arousal RMSE, κ, baselines, ablations, calibration, escalation analysis, non-English behavior.
-2. **Audio eval** (§4.2): FAD / CLAP / tempo / key / loudness / seam metrics, ablations (prompt builders, loop methods, models, clip lengths), multiple seeds, means ± CI.
+2. **Audio eval** (§4.2): FAD / CLAP / tempo / key / loudness / seam metrics, ablations (prompt builders, loop methods, models, clip lengths), multiple seeds, means ± CI. If the fine-tuning track (§4.4) is taken, add **control-fidelity** (tempo MAE + Acc@±4%, per-axis V-A MAE/R², trajectory tracking) across the fine-tuned model + `B0`/`B1`/`B2`, fixed seeds, means ± CI, bootstrap significance for the fine-tuning vs `B0` deltas. The `B1` discrete-tag row is required to support the continuous-conditioning claim.
 3. **Listening study:** N ≥ 20, MUSHRA-style pairwise on (a) quality, (b) page-mood match, (c) loop seamlessness (your loop vs. naive cut vs. no loop). Power analysis, Holm–Bonferroni, CIs.
 4. **Browsing study (the headline):** adaptive generative music vs. **static playlist** vs. **retrieval from a curated loop library** vs. silence. The retrieval baseline is critical — reviewers *will* ask "why generate at all instead of picking from 50 pre-made loops?"; answer with data (mood-match ratings, annoyance, skip/mute rate, task performance, self-reported affect). Requires IRB/ethics approval.
 5. **Artifact release:** corpus, prompts, generated-clip eval set, code, experiment scripts.
@@ -187,7 +250,8 @@ The self-similarity search ([d4_process.py:42-51](audio-generation/d4_process.py
 | **1 · Correctness** | X1, X2, X3 + all `[S]` items in §2–§4 | Nothing before this counts — the system must actually adapt, loop, and use valence correctly |
 | **2 · Instrumentation** | Telemetry, integration test, Feature C source, experiment harnesses runnable | Can measure the system |
 | **3 · Data** | Corpus annotation ∥ objective audio metrics | Results tables exist |
+| **3b · Fine-tuning** (optional) | Dataset prep → eval harness → training → tuning-strategy ablation → Gates A/B (§4.4) | Runs ∥ to Phase 3; ships only if Gate A beats B0 and Gate B holds FAD. If it doesn't converge, fall back to B0 and D stays substrate — no impact on the Phase 4 studies |
 | **4 · Studies** | Listening study → browsing study | Headline findings exist |
 | **5 · Write** | Paper + reproducibility artifact | Submit |
 
-**One-sentence summary:** the existing findings list is accurate but is mostly Phase-1/2 hygiene; the paper lives or dies on Phases 3–4, and none of it can start until the B→D handoff connects, the valence sign is fixed, and the loop detector stops being a no-op.
+**One-sentence summary:** the existing findings list is accurate but is mostly Phase-1/2 hygiene; the paper lives or dies on Phases 3–4, and none of it can start until the B→D handoff connects, the valence sign is fixed, and the loop detector stops being a no-op. If the fine-tuning track (§4.4) is taken, the audio contribution stands on §4.4's control-fidelity results; if not, D remains substrate and the paper rests on Phases 3–4 as written.
