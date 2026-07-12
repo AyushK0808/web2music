@@ -37,7 +37,7 @@ function extractArticleText(rawHtml) {
 
 const bodyText = extractArticleText(html);
 
-const cleaned = await runB1({ rawText: bodyText, title, description, url }, process.env.ANTHROPIC_API_KEY || "");
+const cleaned = await runB1({ rawText: bodyText, title, description, url }, process.env.GROQ_API_KEY || "");
 console.log("Keywords:", cleaned.keywords);
 console.log("Category scores:", cleaned.category.scores);
 console.log("Primary picked:", cleaned.category.primary, `(source: ${cleaned.category.source})`);

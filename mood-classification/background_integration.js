@@ -14,10 +14,18 @@ import {
   registerFeatureBListener,
 } from "./feature_b/index.js";
 
-// ── 1. Load API key from chrome.storage on startup ───────────────────────────
-chrome.storage.sync.get(["llmApiKey", "targetModel"], (settings) => {
+// ── 1. Load API key / backend choice from chrome.storage on startup ─────────
+// Two LLM backends (see docker/README.md):
+//   "direct" (default) — apiKey ships in this bundle, calls api.groq.com
+//   "proxy"             — no key here; calls docker/classifyService.js, which
+//                          holds GROQ_API_KEY server-side instead
+// llmApiKey should be a GroqCloud key (starts with "gsk_") — get a free one
+// at https://console.groq.com/keys.
+chrome.storage.sync.get(["llmApiKey", "llmBackend", "llmServiceUrl", "targetModel"], (settings) => {
   configureFeatureB({
-    apiKey:      settings.llmApiKey   ?? "",
+    apiKey: settings.llmBackend === "proxy"
+      ? { backend: "proxy", serviceUrl: settings.llmServiceUrl || "http://localhost:8078/v1/chat/completions" }
+      : (settings.llmApiKey ?? ""),
     targetModel: settings.targetModel ?? "musicgen",
   });
 });

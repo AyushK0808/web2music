@@ -1,0 +1,22 @@
+# Feature B — classification proxy (mood + category).
+#
+#   cd mood-classification/docker
+#   cp .env.example .env      # then paste your Groq key into .env
+#   docker compose up --build
+#
+# Then in the extension, use the "proxy" LLM backend instead of a bare key:
+#   configureFeatureB({ apiKey: { backend: 'proxy' } })   // → http://localhost:8078/v1/chat/completions
+#
+# The API key is read from .env into the container's environment and never
+# leaves it; the browser only ever talks to localhost.
+
+services:
+  classify-service:
+    build: .
+    container_name: web2music-classify-service
+    ports:
+      - "8078:8078"
+    environment:
+      GROQ_API_KEY: ${GROQ_API_KEY:?set GROQ_API_KEY in mood-classification/docker/.env}
+      PORT: "8078"
+    restart: unless-stopped

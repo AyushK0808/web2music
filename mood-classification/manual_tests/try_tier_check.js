@@ -1,7 +1,7 @@
 import { runB1 } from "../feature_b/b1_contentUnderstanding.js";
 import { runB2 } from "../feature_b/b2_moodClassifier.js";
 
-const key = process.env.ANTHROPIC_API_KEY || "";
+const key = process.env.GROQ_API_KEY || "";
 
 // Test 1 — obvious keywords, should stay on Tier 1
 const obvious = await runB1({
