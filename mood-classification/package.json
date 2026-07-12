@@ -1,5 +1,12 @@
-﻿{
+{
+  "name": "web2music-mood-classification",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Feature B: two-tier mood & context classification (heuristic + LLM) for the Web2Music extension.",
   "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "test": "node feature_b_test.js"
   }

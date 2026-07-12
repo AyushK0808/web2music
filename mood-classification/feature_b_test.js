@@ -1,7 +1,6 @@
 /**
  * Feature B — Unit Tests
- * Run with: node --experimental-vm-modules feature_b.test.js
- * (or Jest with ESM support)
+ * Run with: node feature_b_test.js
  *
  * Tests cover all 4 sub-modules and the orchestrator edge cases.
  */

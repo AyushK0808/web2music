@@ -25,7 +25,7 @@ Feature D (AI Audio Generation)
 | `b3_musicProfileGenerator.js`| B3 | Map mood → BPM, key, instruments, reverb, ambience, style |
 | `b4_promptEngineer.js`       | B4 | Convert profile → natural-language audio prompt for MusicGen/StableAudio |
 | `index.js`                   | Orchestrator | Chain B1→B2→B3→B4, confidence interval, Chrome message wiring |
-| `feature_b.test.js`          | Tests | Unit tests for all 4 stages + integration |
+| `feature_b_test.js`          | Tests | Unit tests for all 4 stages + integration |
 
 ---
 
@@ -147,31 +147,31 @@ This runs ~20 assertions covering content cleaning, mood detection (both tiers),
 
 ### Manual exploration scripts
 
-All exploratory test scripts are organized in `manual-tests/` for validation and debugging:
+All exploratory test scripts are organized in `manual_tests/` for validation and debugging:
 
 ```bash
 # Test mood detection with real LLM (requires a GroqCloud API key — free at console.groq.com/keys)
 $env:GROQ_API_KEY="gsk_your-key"
-node manual-tests/try_tier_check.js
+node manual_tests/try_tier_check.js
 
 # Test full pipeline on real websites
-node manual-tests/try_real_site.js https://en.wikipedia.org/wiki/Indus_Valley_Civilisation
+node manual_tests/try_real_site.js https://en.wikipedia.org/wiki/Indus_Valley_Civilisation
 
 # Test signal impact on final prompt generation
-node manual-tests/try_signal_in_prompt.js
+node manual_tests/try_signal_in_prompt.js
 
 # Debug content category classification
-node manual-tests/try_category_debug.js https://example.com
+node manual_tests/try_category_debug.js https://example.com
 
 # Test raw GroqCloud API connectivity
-node manual-tests/try_groq_raw.js
+node manual_tests/try_groq_raw.js
 ```
 
 ### Signal capture prototype
 
 To prototype scroll and cursor speed capture (same logic as content_script.js will use):
 
-1. Open `manual-tests/signal_capture_test.html` in a browser (double-click in File Explorer).
+1. Open `manual_tests/signal_capture_test.html` in a browser (double-click in File Explorer).
 2. Move your mouse and scroll on the page.
 3. Watch the live dashboard update with speed measurements (green/yellow/red colour bands).
 4. Verify throttling is working: event rate counters should never exceed 20/sec (mouse) or 10/sec (scroll).
@@ -213,7 +213,7 @@ feature_b/
 ├── b3_musicProfileGenerator.js      # Mood → BPM, key, instruments, reverb, ambience
 └── b4_promptEngineer.js             # Profile → natural-language audio prompt
 
-manual-tests/
+manual_tests/
 ├── signal_capture_test.html         # Browser prototype: scroll/cursor speed capture
 ├── try_tier_check.js                # Validate Tier-1 vs Tier-2 LLM escalation
 ├── try_real_site.js                 # Full pipeline on real website content
