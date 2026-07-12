@@ -16,13 +16,13 @@ function looksLikeBoilerplate(el) {
 }
 
 function textDensityScore(el) {
-  const text = el.innerText || '';
+  const text = el.innerText || el.textContent || '';
   const textLength = text.trim().length;
   if (textLength === 0) return 0;
 
   const tagCount = el.getElementsByTagName('*').length || 1;
   const linkTextLength = Array.from(el.getElementsByTagName('a'))
-    .reduce((sum, a) => sum + (a.innerText || '').length, 0);
+    .reduce((sum, a) => sum + (a.innerText || a.textContent || '').length, 0);
 
   const linkDensity = linkTextLength / textLength;
   const density = textLength / tagCount;
@@ -68,41 +68,17 @@ function normalizeWhitespace(text) {
     .trim();
 }
 
-/**
- * extractMetadata \u2014 cheap DOM reads Feature A owns: the meta description
- * (with og:description / twitter:description fallbacks) and the document
- * language. Both are required inputs for Feature B's B1 (analyseMetadata).
- * @param {Document} doc
- * @returns {{ description: string, lang: string }}
- */
-function extractMetadata(doc = document) {
-  const pick = (selector, attr = 'content') => {
-    const el = doc.querySelector(selector);
-    const val = el && el.getAttribute(attr);
-    return val ? normalizeWhitespace(val) : '';
-  };
-
-  const description =
-    pick('meta[name="description"]') ||
-    pick('meta[property="og:description"]') ||
-    pick('meta[name="twitter:description"]') ||
-    '';
-
-  // documentElement.lang \u2192 <html lang> ; fall back to a content-language meta
-  // tag, then default to English.
-  const htmlLang =
-    (doc.documentElement && doc.documentElement.getAttribute('lang')) || '';
-  const metaLang = pick('meta[http-equiv="content-language"]');
-  const lang = normalizeWhitespace(htmlLang || metaLang || 'en')
-    .toLowerCase()
-    .split(/[,\s]/)[0] || 'en';
-
-  return { description, lang };
-}
-
 function extractPageText(doc = document) {
   const title = normalizeWhitespace(doc.title || '');
-  const { description, lang } = extractMetadata(doc);
+
+  if (!doc.body) {
+    return {
+      title,
+      mainText: '',
+      wordCount: 0,
+      url: doc.location ? doc.location.href : ''
+    };
+  }
 
   const clone = doc.body.cloneNode(true);
   BOILERPLATE_TAGS.forEach(tag => {
@@ -120,15 +96,13 @@ function extractPageText(doc = document) {
   return {
     title,
     mainText,
-    description,
-    lang,
     wordCount: mainText.length ? mainText.split(/\s+/).length : 0,
     url: doc.location ? doc.location.href : ''
   };
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { extractPageText, extractMetadata, findMainContentElement, textDensityScore };
+  module.exports = { extractPageText, findMainContentElement, textDensityScore };
 } else if (typeof window !== 'undefined') {
-  window.Web2MusicTextExtractor = { extractPageText, extractMetadata };
+  window.Web2MusicTextExtractor = { extractPageText };
 }
