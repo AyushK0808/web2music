@@ -264,37 +264,74 @@ Return this exact JSON shape:
 }
 
 /**
+ * normalizeLLMConfig — accepts either a bare API key string (back-compat —
+ * "direct" backend, calling api.anthropic.com straight from the browser with
+ * the key attached) or a config object selecting the "proxy" backend, which
+ * calls a local container that holds the key server-side instead
+ * (docker/classifyService.js — same pattern as Feature A's
+ * data-extraction/docker/embedService.js, which does the equivalent for the
+ * OpenAI embedding key). Mirrors B1's helper of the same name
+ * (b1_contentUnderstanding.js).
+ */
+function normalizeLLMConfig(config) {
+  if (typeof config === "string") return { apiKey: config, backend: "direct" };
+  return {
+    apiKey:     config?.apiKey ?? "",
+    backend:    config?.backend ?? "direct",
+    serviceUrl: config?.serviceUrl ?? "http://localhost:8078/v1/messages",
+  };
+}
+
+/**
  * callLLMClassifier — makes API call to LLM for mood classification.
  * Uses Claude Haiku via the Anthropic API (developer key from config) — fast
  * and cheap enough for a single JSON-classification call on every ambiguous page.
  * Falls back gracefully on timeout / offline (edge case #13).
  *
  * @param {Object} cleanedContent
- * @param {string} apiKey
+ * @param {string|Object} llmConfig  API key string, or { apiKey?, backend?, serviceUrl? }
  * @returns {Promise<Object>} LLM classification result
  */
-export async function callLLMClassifier(cleanedContent, apiKey) {
+export async function callLLMClassifier(cleanedContent, llmConfig) {
+  const { apiKey, backend, serviceUrl } = normalizeLLMConfig(llmConfig);
   const prompt = buildClassificationPrompt(cleanedContent);
 
   const controller = new AbortController();
   const timeout    = setTimeout(() => controller.abort(), 8000); // 8s timeout
 
+  const requestBody = JSON.stringify({
+    model:       "claude-haiku-4-5-20251001",
+    max_tokens:  200,
+    temperature: 0, // deterministic classification — reproducibility over variety
+    messages:    [{ role: "user", content: prompt }],
+  });
+
   try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method:  "POST",
-      signal:  controller.signal,
-      headers: {
-        "Content-Type":      "application/json",
-        "x-api-key":         apiKey,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model:       "claude-haiku-4-5-20251001",
-        max_tokens:  200,
-        temperature: 0, // deterministic classification — reproducibility over variety
-        messages:    [{ role: "user", content: prompt }],
-      }),
-    });
+    // "proxy": local container injects the real key server-side, so none of
+    // it (nor the browser-CORS opt-in header, irrelevant to a same-origin
+    // localhost call) needs to leave this bundle.
+    // "direct": short-term path, ships the key client-side (see fix notes).
+    const res = backend === "proxy"
+      ? await fetch(serviceUrl, {
+          method:  "POST",
+          signal:  controller.signal,
+          headers: { "Content-Type": "application/json" },
+          body:    requestBody,
+        })
+      : await fetch("https://api.anthropic.com/v1/messages", {
+          method:  "POST",
+          signal:  controller.signal,
+          headers: {
+            "Content-Type":      "application/json",
+            "x-api-key":         apiKey,
+            "anthropic-version": "2023-06-01",
+            // Required for "direct" to succeed from a browser/extension
+            // context — Anthropic omits CORS headers for browser-origin
+            // requests unless this is set.
+            "anthropic-dangerous-direct-browser-access": "true",
+          },
+          body: requestBody,
+        });
     clearTimeout(timeout);
 
     if (!res.ok) throw new Error(`LLM API ${res.status}`);

@@ -218,14 +218,35 @@ function escapePromptDelimiters(text = "") {
 }
 
 /**
+ * normalizeLLMConfig — accepts either a bare API key string (back-compat —
+ * "direct" backend, calling api.anthropic.com straight from the browser with
+ * the key attached) or a config object selecting the "proxy" backend, which
+ * calls a local container that holds the key server-side instead
+ * (docker/classifyService.js — same pattern as Feature A's
+ * data-extraction/docker/embedService.js, which does the equivalent for the
+ * OpenAI embedding key). Mirrors B2's helper of the same name
+ * (b2_moodClassifier.js).
+ */
+function normalizeLLMConfig(config) {
+  if (typeof config === "string") return { apiKey: config, backend: "direct" };
+  return {
+    apiKey:     config?.apiKey ?? "",
+    backend:    config?.backend ?? "direct",
+    serviceUrl: config?.serviceUrl ?? "http://localhost:8078/v1/messages",
+  };
+}
+
+/**
  * callCategoryLLMClassifier — tier-2 escalation for content category when the
  * keyword heuristic doesn't clear MIN_CATEGORY_HITS on its own. Same
  * graceful-fallback contract as B2's callLLMClassifier: null on any failure,
  * timeout, or hallucinated category name — never throws.
+ * @param {string|Object} llmConfig  API key string, or { apiKey?, backend?, serviceUrl? }
  * @returns {Promise<string|null>}
  */
-export async function callCategoryLLMClassifier({ keywords, title, summary }, apiKey) {
-  if (!apiKey) return null;
+export async function callCategoryLLMClassifier({ keywords, title, summary }, llmConfig) {
+  const { apiKey, backend, serviceUrl } = normalizeLLMConfig(llmConfig);
+  if (backend === "direct" && !apiKey) return null;
 
   const categoryNames = Object.keys(CATEGORY_KEYWORDS);
   const prompt = `You are a content category classifier for a music-ambient browser extension.
@@ -249,22 +270,39 @@ Return ONLY a valid JSON object, no explanation: { "category": "<one of the cate
   const controller = new AbortController();
   const timeout    = setTimeout(() => controller.abort(), 8000); // 8s timeout, mirrors B2
 
+  const requestBody = JSON.stringify({
+    model:       "claude-haiku-4-5-20251001",
+    max_tokens:  50,
+    temperature: 0, // deterministic classification — reproducibility over variety
+    messages:    [{ role: "user", content: prompt }],
+  });
+
   try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method:  "POST",
-      signal:  controller.signal,
-      headers: {
-        "Content-Type":      "application/json",
-        "x-api-key":         apiKey,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model:       "claude-haiku-4-5-20251001",
-        max_tokens:  50,
-        temperature: 0, // deterministic classification — reproducibility over variety
-        messages:    [{ role: "user", content: prompt }],
-      }),
-    });
+    // "proxy": local container injects the real key server-side, so none of
+    // it (nor the browser-CORS opt-in header, irrelevant to a same-origin
+    // localhost call) needs to leave this bundle.
+    // "direct": short-term path, ships the key client-side (see fix notes).
+    const res = backend === "proxy"
+      ? await fetch(serviceUrl, {
+          method:  "POST",
+          signal:  controller.signal,
+          headers: { "Content-Type": "application/json" },
+          body:    requestBody,
+        })
+      : await fetch("https://api.anthropic.com/v1/messages", {
+          method:  "POST",
+          signal:  controller.signal,
+          headers: {
+            "Content-Type":      "application/json",
+            "x-api-key":         apiKey,
+            "anthropic-version": "2023-06-01",
+            // Required for "direct" to succeed from a browser/extension
+            // context — Anthropic omits CORS headers for browser-origin
+            // requests unless this is set.
+            "anthropic-dangerous-direct-browser-access": "true",
+          },
+          body: requestBody,
+        });
     clearTimeout(timeout);
 
     if (!res.ok) throw new Error(`Category LLM API ${res.status}`);

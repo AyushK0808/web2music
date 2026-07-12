@@ -74,6 +74,48 @@ console.log("B1: callCategoryLLMClassifier — mocked network responses");
 const categoryLLMStub = { keywords: ["bioluminescence", "organism"], title: "Science Article", summary: "A summary about light-producing organisms." };
 const originalCategoryFetch = global.fetch;
 
+console.log("B1: callCategoryLLMClassifier — request carries the browser CORS header and temperature: 0 (regression)");
+// Without anthropic-dangerous-direct-browser-access, this call CORS-fails
+// from the extension's background context even though it works fine here in
+// Node (Node's fetch doesn't enforce CORS) — the gap that made the bug easy
+// to miss in testing. temperature: 0 makes classification reproducible.
+let b1CapturedRequest = null;
+global.fetch = async (url, opts) => {
+  b1CapturedRequest = opts;
+  return { ok: true, json: async () => ({ content: [{ text: JSON.stringify({ category: "Educational" }) }] }) };
+};
+await callCategoryLLMClassifier(categoryLLMStub, "fake-key");
+assert.equal(
+  b1CapturedRequest.headers["anthropic-dangerous-direct-browser-access"], "true",
+  "missing this header CORS-fails the call from a browser/extension context",
+);
+assert.equal(JSON.parse(b1CapturedRequest.body).temperature, 0, "classification calls must be deterministic");
+
+console.log("B1: callCategoryLLMClassifier — 'proxy' backend calls the local service, never api.anthropic.com, and carries no key");
+let b1ProxyUrl = null;
+let b1ProxyRequest = null;
+global.fetch = async (url, opts) => {
+  b1ProxyUrl = url;
+  b1ProxyRequest = opts;
+  return { ok: true, json: async () => ({ content: [{ text: JSON.stringify({ category: "Educational" }) }] }) };
+};
+const b1ProxyResult = await callCategoryLLMClassifier(categoryLLMStub, { backend: "proxy", serviceUrl: "http://localhost:9999/v1/messages" });
+assert.equal(b1ProxyResult, "Educational");
+assert.equal(b1ProxyUrl, "http://localhost:9999/v1/messages", "proxy backend must call the configured serviceUrl, not Anthropic directly");
+assert.equal(b1ProxyRequest.headers["x-api-key"], undefined, "the raw key must never be attached client-side when proxying");
+assert.equal(
+  b1ProxyRequest.headers["anthropic-dangerous-direct-browser-access"], undefined,
+  "the browser-CORS opt-in header is irrelevant to a same-origin localhost call",
+);
+
+console.log("B1: callCategoryLLMClassifier — 'proxy' backend works with no apiKey at all (that's the whole point)");
+global.fetch = async () => ({ ok: true, json: async () => ({ content: [{ text: JSON.stringify({ category: "News" }) }] }) });
+assert.equal(
+  await callCategoryLLMClassifier(categoryLLMStub, { backend: "proxy" }),
+  "News",
+  "proxy backend must not require a client-side apiKey to function",
+);
+
 global.fetch = async () => ({ ok: true, json: async () => ({ content: [{ text: JSON.stringify({ category: "Educational" }) }] }) });
 assert.equal(await callCategoryLLMClassifier(categoryLLMStub, "fake-key"), "Educational");
 
@@ -392,9 +434,39 @@ assert(
   `colour and behaviour biases must add, not overwrite — got confidence ${blendResult.confidence}, expected ~${(0.55 / 3).toFixed(4)}`,
 );
 
-console.log("B2: callLLMClassifier — mocked network responses");
+console.log("B2: callLLMClassifier — request carries the browser CORS header and temperature: 0 (regression)");
 const llmStub = { summary: "test summary", keywords: ["a", "b"], category: { primary: "Entertainment" }, scrollSpeed: 10, cursorSpeed: 10 };
 const originalFetch = global.fetch;
+let b2CapturedRequest = null;
+global.fetch = async (url, opts) => {
+  b2CapturedRequest = opts;
+  return { ok: true, json: async () => ({ content: [{ text: JSON.stringify({ mood: "calm" }) }] }) };
+};
+await callLLMClassifier(llmStub, "fake-key");
+assert.equal(
+  b2CapturedRequest.headers["anthropic-dangerous-direct-browser-access"], "true",
+  "missing this header CORS-fails the call from a browser/extension context",
+);
+assert.equal(JSON.parse(b2CapturedRequest.body).temperature, 0, "classification calls must be deterministic");
+
+console.log("B2: callLLMClassifier — 'proxy' backend calls the local service, never api.anthropic.com, and carries no key");
+let b2ProxyUrl = null;
+let b2ProxyRequest = null;
+global.fetch = async (url, opts) => {
+  b2ProxyUrl = url;
+  b2ProxyRequest = opts;
+  return { ok: true, json: async () => ({ content: [{ text: JSON.stringify({ mood: "joyful" }) }] }) };
+};
+const b2ProxyResult = await callLLMClassifier(llmStub, { backend: "proxy", serviceUrl: "http://localhost:9999/v1/messages" });
+assert.equal(b2ProxyResult.mood, "joyful");
+assert.equal(b2ProxyUrl, "http://localhost:9999/v1/messages", "proxy backend must call the configured serviceUrl, not Anthropic directly");
+assert.equal(b2ProxyRequest.headers["x-api-key"], undefined, "the raw key must never be attached client-side when proxying");
+assert.equal(
+  b2ProxyRequest.headers["anthropic-dangerous-direct-browser-access"], undefined,
+  "the browser-CORS opt-in header is irrelevant to a same-origin localhost call",
+);
+
+console.log("B2: callLLMClassifier — mocked network responses");
 
 global.fetch = async () => ({
   ok: true,
