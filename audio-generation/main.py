@@ -5,6 +5,7 @@ from d3_generate import generate_audio
 from d4_process import process_audio
 from d5_cache import make_cache_key, check_cache, save_to_cache
 import time
+import asyncio
 
 app = FastAPI()
 
@@ -38,14 +39,14 @@ async def generate(payload: dict):
     print(f"[D2] Prompt source: {'Feature B' if prompt_from_b else 'D2 fallback'}")
     print(f"[D2] Prompt: {prompt}")
 
-    # D3 — Generate audio
+    # D3 — Generate audio (run in thread so FastAPI stays responsive)
     t3 = time.time()
-    audio_bytes = generate_audio(prompt)
+    audio_bytes = await asyncio.to_thread(generate_audio, prompt)
     timings["d3_generate_ms"] = int((time.time() - t3) * 1000)
 
-    # D4 — Post-process
+    # D4 — Post-process (run in thread so FastAPI stays responsive)
     t4 = time.time()
-    mp3_bytes, loop_point_ms = process_audio(audio_bytes)
+    mp3_bytes, loop_point_ms = await asyncio.to_thread(process_audio, audio_bytes)
     timings["d4_process_ms"] = int((time.time() - t4) * 1000)
 
     # D5 — Cache & return
