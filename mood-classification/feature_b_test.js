@@ -358,6 +358,34 @@ const trueImageOnlyResult = await runB1({
 });
 assert.equal(trueImageOnlyResult.isImageOnly, true);
 
+console.log("B1: runB1 — Feature A's isImageOnly/readingComplexity/wordCount/colorEnergy are preferred when present (fix 08)");
+// Long real body text — B1's own local heuristic would say isImageOnly=false
+// here (matches the "short title with real body" case above) — but Feature A
+// actually walked the DOM and knows better (e.g. a text article embedded
+// inside a page that's still mostly a video/gallery), so its value must win.
+const preferAResult = await runB1({
+  rawText: "This is a long, detailed article about deep sea creatures and their bioluminescent light patterns found across many ocean species and habitats worldwide today.",
+  title: "Deep", url: "https://example.com/deep-sea",
+  isImageOnly: true, readingComplexity: 0.13, wordCount: 481, colorEnergy: 0.62,
+});
+assert.equal(preferAResult.isImageOnly, true, "Feature A's isImageOnly must override B1's own title/description-length guess");
+assert.equal(preferAResult.readingComplexity, 0.13, "Feature A's readingComplexity must be used as-is, not recomputed from the text");
+assert.equal(preferAResult.wordCount, 481, "wordCount must pass through from Feature A");
+assert.equal(preferAResult.colorEnergy, 0.62, "colorEnergy must pass through from Feature A");
+
+console.log("B1: runB1 — falls back to its own computation when Feature A didn't supply these fields");
+const noAResult = await runB1({
+  rawText: "This is a long, detailed article about deep sea creatures and their bioluminescent light patterns found across many ocean species and habitats worldwide today.",
+  title: "Deep", url: "https://example.com/deep-sea",
+  // no isImageOnly/readingComplexity/wordCount/colorEnergy — a manually-built
+  // pageData, exactly like every other test in this file and every manual
+  // script that doesn't go through Feature A's buildPageData().
+});
+assert.equal(noAResult.isImageOnly, false, "without Feature A's value, B1 must still fall back to its own heuristic");
+assert(noAResult.readingComplexity > 0 && noAResult.readingComplexity <= 1, "without Feature A's value, B1 must still compute its own readingComplexity");
+assert.equal(noAResult.wordCount, 0, "wordCount must default to 0 when Feature A didn't supply it");
+assert.equal(noAResult.colorEnergy, 0, "colorEnergy must default to 0 when Feature A didn't supply it");
+
 // ── B2 Tests ──────────────────────────────────────────────────────────────────
 import {
   runB2,

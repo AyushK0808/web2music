@@ -408,6 +408,12 @@ export function summariseContent(cleanedText) {
  *     scrollSpeed: number,
  *     cursorSpeed: number,
  *     embedding:   number[], // vector from Feature A
+ *     // ── additive enrichment from Feature A (data-extraction/pageData.js) —
+ *     // used when present, otherwise B1 falls back to computing its own ──
+ *     isImageOnly: boolean,        // edge case #15, DOM image/video-count aware
+ *     readingComplexity: number,   // [0..1], Flesch-derived, numerically compatible with computeReadingComplexity()
+ *     wordCount:   number,
+ *     colorEnergy: number,         // [0..1]
  *   }
  * @param {string} apiKey   LLM API key, used only to escalate category
  *   classification when the keyword heuristic can't clear MIN_CATEGORY_HITS.
@@ -461,11 +467,22 @@ export async function runB1(pageData, apiKey = "") {
     category = await resolveContentCategory(keywords, meta.title, summary, apiKey);
   }
 
-  const complexity  = computeReadingComplexity(cleaned);
+  // Prefer Feature A's own readingComplexity when it ran and supplied one —
+  // it's Flesch-derived and numerically compatible with computeReadingComplexity
+  // by design (see data-extraction/Readability.js), so recomputing it here would
+  // just redo the same work. Falls back to B1's own computation when Feature A
+  // didn't run (e.g. a manually-built pageData in tests/manual scripts).
+  const complexity = typeof pageData.readingComplexity === "number"
+    ? pageData.readingComplexity
+    : computeReadingComplexity(cleaned);
 
   // A short title/description doesn't mean image-only if the page actually
   // has real body text — require both signals to be minimal (edge case #15).
-  const isImageOnly = meta.isImageOnly && cleaned.length < 60;
+  // Feature A's isImageOnly is DOM image/video-count aware (a stronger signal
+  // than B1's title/description-length guess) and takes priority when supplied.
+  const isImageOnly = typeof pageData.isImageOnly === "boolean"
+    ? pageData.isImageOnly
+    : (meta.isImageOnly && cleaned.length < 60);
 
   return {
     // Pass-through signals
@@ -473,6 +490,8 @@ export async function runB1(pageData, apiKey = "") {
     cursorSpeed:  pageData.cursorSpeed  ?? 0,
     colors:       pageData.colors       ?? {},
     embedding:    pageData.embedding    ?? [],
+    wordCount:    pageData.wordCount    ?? 0,
+    colorEnergy:  pageData.colorEnergy  ?? 0,
 
     // B1 outputs
     meta,
@@ -480,7 +499,7 @@ export async function runB1(pageData, apiKey = "") {
     keywords,
     category,          // { primary, secondary, scores }
     summary,           // short extractive summary for LLM
-    readingComplexity: complexity,    // [0..1], higher = harder
+    readingComplexity: complexity,    // [0..1], higher = harder — prefers Feature A's value when present
     isSensitive,       // boolean — triggers override in B2
 
     // Image-only flag — B2 will skip LLM text call if true
