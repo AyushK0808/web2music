@@ -212,7 +212,9 @@ export function classifyContentCategory(keywords, title = "") {
  * (prompt-injection via delimiter escape, not just instruction-mimicry).
  */
 function escapePromptDelimiters(text = "") {
-  return String(text).replace(/<\/?page_content>/gi, "");
+  // Whitespace-tolerant so "< / page_content >" can't slip past a naive
+  // exact-match strip and still read as a tag close to a lenient model.
+  return String(text).replace(/<\s*\/?\s*page_content\s*>/gi, "");
 }
 
 /**

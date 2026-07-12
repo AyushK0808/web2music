@@ -216,7 +216,9 @@ export function tier1KeywordMood(keywords = [], cleanedText = "") {
  * Mirrors B1's helper of the same name (b1_contentUnderstanding.js).
  */
 function escapePromptDelimiters(text = "") {
-  return String(text).replace(/<\/?page_content>/gi, "");
+  // Whitespace-tolerant so "< / page_content >" can't slip past a naive
+  // exact-match strip and still read as a tag close to a lenient model.
+  return String(text).replace(/<\s*\/?\s*page_content\s*>/gi, "");
 }
 
 /**
@@ -257,7 +259,7 @@ Return this exact JSON shape:
   "intent": "<one sentence describing what the user is likely doing>",
   "confidence": <0.0 to 1.0>,
   "energyHint": <0.0 to 1.0>,
-  "valenceHint": <-1.0 positive to 1.0 negative>
+  "valenceHint": <-1.0 negative to 1.0 positive>
 }`;
 }
 
@@ -316,8 +318,18 @@ const VALID_PAGE_TYPES = new Set([
 ]);
 
 function clampHint(value, min, max) {
-  const num = Number(value);
-  return Number.isFinite(num) ? Math.min(max, Math.max(min, num)) : undefined;
+  // Reject null/undefined/booleans/objects and empty-ish strings explicitly —
+  // Number(null) === 0 and Number("  ") === 0, so a naive Number(value) would
+  // silently turn a missing/blank field into a "valid" 0 instead of falling
+  // through to the caller's ?? default.
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? Math.min(max, Math.max(min, value)) : undefined;
+  }
+  if (typeof value === "string" && value.trim() !== "") {
+    const num = Number(value);
+    return Number.isFinite(num) ? Math.min(max, Math.max(min, num)) : undefined;
+  }
+  return undefined;
 }
 
 /**
