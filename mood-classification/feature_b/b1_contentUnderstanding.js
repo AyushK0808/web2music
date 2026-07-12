@@ -422,12 +422,28 @@ export async function runB1(pageData, apiKey = "") {
     lang:        pageData.lang,
   });
 
-  // Short-circuit for special page types
+  // Short-circuit for special page types. scrollSpeed/cursorSpeed/colors are
+  // trivial pass-through from pageData (no computation needed), same as the
+  // main return path below — bypass pages still need them forwarded so B2's
+  // own bypass branches have something real to pass through in turn, instead
+  // of downstream code silently defaulting them away.
   if (meta.isChromeInternal) {
-    return { _bypass: "chrome_internal", meta };
+    return {
+      _bypass: "chrome_internal",
+      meta,
+      scrollSpeed: pageData.scrollSpeed ?? 0,
+      cursorSpeed: pageData.cursorSpeed ?? 0,
+      colors:      pageData.colors      ?? {},
+    };
   }
   if (meta.isPaymentPage) {
-    return { _bypass: "payment_page", meta };
+    return {
+      _bypass: "payment_page",
+      meta,
+      scrollSpeed: pageData.scrollSpeed ?? 0,
+      cursorSpeed: pageData.cursorSpeed ?? 0,
+      colors:      pageData.colors      ?? {},
+    };
   }
 
   const cleaned     = cleanText(pageData.rawText || "");

@@ -443,11 +443,34 @@ export async function runB2(cleanedContent, apiKey) {
   }
 
   // ── Bypass for special page types ───────────────────────────────────────
+  // Same pass-through contract as every other return path below (category/
+  // colors/scrollSpeed/cursorSpeed) — omitting them here left B3 with no
+  // real category to read, so it silently fell back to its own generic
+  // "Entertainment" default even for a banking page. category.primary is
+  // set explicitly here rather than left for that downstream default to
+  // guess at: "Finance" is factually accurate for a payment page; chrome
+  // internal pages have no genuine content category, so "Entertainment" is
+  // used deliberately, matching B1's own resolveContentCategory "no real
+  // category" convention, rather than arriving at the same value by accident.
   if (cleanedContent._bypass === "chrome_internal") {
-    return { mood: MOODS.CALM, pageType: "other", intent: "Chrome internal page.", confidence: 1.0, energyHint: 0.2, valenceHint: 0.5, tier: "bypass" };
+    return {
+      mood: MOODS.CALM, pageType: "other", intent: "Chrome internal page.",
+      confidence: 1.0, energyHint: 0.2, valenceHint: 0.5, tier: "bypass",
+      category:    { primary: "Entertainment", secondary: null, scores: {}, source: "bypass" },
+      colors:      cleanedContent.colors,
+      scrollSpeed: cleanedContent.scrollSpeed,
+      cursorSpeed: cleanedContent.cursorSpeed,
+    };
   }
   if (cleanedContent._bypass === "payment_page") {
-    return { mood: MOODS.CALM, pageType: "work-tool", intent: "User is on a payment or banking page.", confidence: 1.0, energyHint: 0.2, valenceHint: 0.5, tier: "bypass" };
+    return {
+      mood: MOODS.CALM, pageType: "work-tool", intent: "User is on a payment or banking page.",
+      confidence: 1.0, energyHint: 0.2, valenceHint: 0.5, tier: "bypass",
+      category:    { primary: "Finance", secondary: null, scores: {}, source: "bypass" },
+      colors:      cleanedContent.colors,
+      scrollSpeed: cleanedContent.scrollSpeed,
+      cursorSpeed: cleanedContent.cursorSpeed,
+    };
   }
 
   // ── Tier-1: Fast heuristic ────────────────────────────────────────────────

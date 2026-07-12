@@ -320,16 +320,27 @@ const paymentResult = await runB1({
   rawText: "Enter your card details",
   title: "Checkout",
   url: "https://shop.com/pay/checkout",
+  scrollSpeed: 42, cursorSpeed: 77, colors: { hue: 210, saturation: 0.4, lightness: 0.5 },
 });
 assert(paymentResult._bypass === "payment_page");
+assert.equal(
+  paymentResult.scrollSpeed, 42,
+  "bypass pages must still forward scrollSpeed/cursorSpeed/colors from pageData (fix 07) — B2's bypass branches have nothing to pass through otherwise",
+);
+assert.equal(paymentResult.cursorSpeed, 77);
+assert.deepEqual(paymentResult.colors, { hue: 210, saturation: 0.4, lightness: 0.5 });
 
 console.log("B1: runB1 — chrome internal bypass");
 const chromeResult = await runB1({
   rawText: "",
   title: "New Tab",
   url: "chrome://newtab",
+  scrollSpeed: 15, cursorSpeed: 5, colors: { hue: 0, saturation: 0, lightness: 0.9 },
 });
 assert(chromeResult._bypass === "chrome_internal");
+assert.equal(chromeResult.scrollSpeed, 15, "chrome-internal bypass must also forward scrollSpeed/cursorSpeed/colors (fix 07)");
+assert.equal(chromeResult.cursorSpeed, 5);
+assert.deepEqual(chromeResult.colors, { hue: 0, saturation: 0, lightness: 0.9 });
 
 console.log("B1: runB1 — short title with real body is not image-only (regression)");
 const shortTitleResult = await runB1({
@@ -374,14 +385,31 @@ const b2SensitiveResult = await runB2(
 assert.equal(b2SensitiveResult.mood, MOODS.UPLIFTING);
 assert(b2SensitiveResult.sensitiveOverride === true);
 
-console.log("B2: payment bypass");
-const b2PaymentResult = await runB2({ _bypass: "payment_page", meta: {} }, null);
+console.log("B2: payment bypass — category/colors/speeds are passed through, not dropped (fix 07 regression)");
+const b2PaymentResult = await runB2(
+  { _bypass: "payment_page", meta: {}, colors: { hue: 210, saturation: 0.4, lightness: 0.5 }, scrollSpeed: 42, cursorSpeed: 77 },
+  null,
+);
 assert.equal(b2PaymentResult.mood, MOODS.CALM);
+assert.equal(
+  b2PaymentResult.category?.primary, "Finance",
+  `a payment/banking page must be labelled "Finance", not silently default to "Entertainment" downstream in B3 — got ${b2PaymentResult.category?.primary}`,
+);
+assert.deepEqual(b2PaymentResult.colors, { hue: 210, saturation: 0.4, lightness: 0.5 });
+assert.equal(b2PaymentResult.scrollSpeed, 42);
+assert.equal(b2PaymentResult.cursorSpeed, 77);
 
-console.log("B2: chrome_internal bypass");
-const b2ChromeResult = await runB2({ _bypass: "chrome_internal", meta: {} }, null);
+console.log("B2: chrome_internal bypass — category/colors/speeds are passed through, not dropped (fix 07 regression)");
+const b2ChromeResult = await runB2(
+  { _bypass: "chrome_internal", meta: {}, colors: { hue: 0, saturation: 0, lightness: 0.9 }, scrollSpeed: 15, cursorSpeed: 5 },
+  null,
+);
 assert.equal(b2ChromeResult.mood, MOODS.CALM);
 assert.equal(b2ChromeResult.tier, "bypass");
+assert.equal(b2ChromeResult.category?.primary, "Entertainment");
+assert.deepEqual(b2ChromeResult.colors, { hue: 0, saturation: 0, lightness: 0.9 });
+assert.equal(b2ChromeResult.scrollSpeed, 15);
+assert.equal(b2ChromeResult.cursorSpeed, 5);
 
 console.log("B2: tier1-visual path — image-only pages skip the LLM");
 const b2ImageOnlyResult = await runB2(
@@ -713,6 +741,24 @@ assert.equal(
 
 // ── B3 Tests ──────────────────────────────────────────────────────────────────
 import { runB3, pickKey, getTimeOfDayContext } from "./feature_b/b3_musicProfileGenerator.js";
+
+console.log("End-to-end: a real payment page is labelled 'Finance' through the full B1→B2→B3 pipeline, not 'Entertainment' (fix 07)");
+// This is the exact reported symptom: B2's bypass branches used to omit
+// category/colors/speeds entirely, so B3's `category.primary ?? "Entertainment"`
+// fallback silently mislabelled every bypassed page (payment pages included)
+// as "Entertainment" — factually wrong for a banking/checkout page.
+const paymentCleaned = await runB1({
+  rawText: "Enter your card details to complete checkout",
+  title: "Checkout", url: "https://shop.example.com/pay/checkout",
+  scrollSpeed: 30, cursorSpeed: 40, colors: { hue: 210, saturation: 0.3, lightness: 0.5 },
+});
+const paymentMoodCtx = await runB2(paymentCleaned, null);
+const paymentProfile = runB3(paymentMoodCtx);
+assert.equal(
+  paymentProfile.contentCategory, "Finance",
+  `a real payment page must end up labelled "Finance" end-to-end, got "${paymentProfile.contentCategory}"`,
+);
+assert.notEqual(paymentProfile.contentCategory, "Entertainment", "the specific bug being fixed — must never default to Entertainment for a payment page");
 
 console.log("B3: music profile structure");
 const moodCtx = {
