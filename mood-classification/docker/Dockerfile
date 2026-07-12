@@ -1,4 +1,4 @@
-# Feature B classification proxy — keeps the Anthropic API key server-side.
+# Feature B classification proxy — keeps the Groq API key server-side.
 FROM node:20-alpine
 
 WORKDIR /app

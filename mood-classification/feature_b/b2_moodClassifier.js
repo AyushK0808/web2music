@@ -9,13 +9,15 @@
  *
  * Uses a two-tier approach:
  *   Tier 1 → Fast keyword heuristic (no API call)
- *   Tier 2 → LLM call (Claude / Gemini) for nuanced ambiguous cases
+ *   Tier 2 → LLM call (GroqCloud) for nuanced ambiguous cases
  *
  * Input:  CleanedContent (from B1)
  * Output: MoodContext (JSON) → passed to B3
  */
 
 "use strict";
+
+import { DEFAULT_MODEL } from "./llmConfig.js";
 
 // ─── Mood definitions (maps to EMOTIONAL TONE from spec) ─────────────────────
 export const MOODS = {
@@ -265,8 +267,8 @@ Return this exact JSON shape:
 
 /**
  * normalizeLLMConfig — accepts either a bare API key string (back-compat —
- * "direct" backend, calling api.anthropic.com straight from the browser with
- * the key attached) or a config object selecting the "proxy" backend, which
+ * "direct" backend, calling api.groq.com straight from the browser with the
+ * key attached) or a config object selecting the "proxy" backend, which
  * calls a local container that holds the key server-side instead
  * (docker/classifyService.js — same pattern as Feature A's
  * data-extraction/docker/embedService.js, which does the equivalent for the
@@ -274,43 +276,47 @@ Return this exact JSON shape:
  * (b1_contentUnderstanding.js).
  */
 function normalizeLLMConfig(config) {
-  if (typeof config === "string") return { apiKey: config, backend: "direct" };
+  if (typeof config === "string") return { apiKey: config, backend: "direct", model: DEFAULT_MODEL };
   return {
     apiKey:     config?.apiKey ?? "",
     backend:    config?.backend ?? "direct",
-    serviceUrl: config?.serviceUrl ?? "http://localhost:8078/v1/messages",
+    serviceUrl: config?.serviceUrl ?? "http://localhost:8078/v1/chat/completions",
+    model:      config?.model ?? DEFAULT_MODEL,
   };
 }
 
 /**
  * callLLMClassifier — makes API call to LLM for mood classification.
- * Uses Claude Haiku via the Anthropic API (developer key from config) — fast
- * and cheap enough for a single JSON-classification call on every ambiguous page.
+ * Uses a GroqCloud model (developer key from config) via its OpenAI-compatible
+ * chat completions API — fast and free-tier-friendly enough for a single
+ * JSON-classification call on every ambiguous page.
  * Falls back gracefully on timeout / offline (edge case #13).
  *
  * @param {Object} cleanedContent
- * @param {string|Object} llmConfig  API key string, or { apiKey?, backend?, serviceUrl? }
+ * @param {string|Object} llmConfig  API key string, or { apiKey?, backend?, serviceUrl?, model? }
  * @returns {Promise<Object>} LLM classification result
  */
 export async function callLLMClassifier(cleanedContent, llmConfig) {
-  const { apiKey, backend, serviceUrl } = normalizeLLMConfig(llmConfig);
+  const { apiKey, backend, serviceUrl, model } = normalizeLLMConfig(llmConfig);
   const prompt = buildClassificationPrompt(cleanedContent);
 
   const controller = new AbortController();
   const timeout    = setTimeout(() => controller.abort(), 8000); // 8s timeout
 
   const requestBody = JSON.stringify({
-    model:       "claude-haiku-4-5-20251001",
-    max_tokens:  200,
+    model,
+    max_completion_tokens: 200,
     temperature: 0, // deterministic classification — reproducibility over variety
     messages:    [{ role: "user", content: prompt }],
   });
 
   try {
-    // "proxy": local container injects the real key server-side, so none of
-    // it (nor the browser-CORS opt-in header, irrelevant to a same-origin
-    // localhost call) needs to leave this bundle.
-    // "direct": short-term path, ships the key client-side (see fix notes).
+    // "proxy": local container injects the real key server-side.
+    // "direct": ships the key client-side. GroqCloud's docs don't document a
+    // browser-CORS opt-in the way Anthropic's API did — whether a direct
+    // browser call CORS-succeeds here is unconfirmed. If it fails in the
+    // actual extension, switch to "proxy", which sidesteps the question
+    // entirely (the container calls Groq server-to-server, no CORS involved).
     const res = backend === "proxy"
       ? await fetch(serviceUrl, {
           method:  "POST",
@@ -318,17 +324,12 @@ export async function callLLMClassifier(cleanedContent, llmConfig) {
           headers: { "Content-Type": "application/json" },
           body:    requestBody,
         })
-      : await fetch("https://api.anthropic.com/v1/messages", {
+      : await fetch("https://api.groq.com/openai/v1/chat/completions", {
           method:  "POST",
           signal:  controller.signal,
           headers: {
-            "Content-Type":      "application/json",
-            "x-api-key":         apiKey,
-            "anthropic-version": "2023-06-01",
-            // Required for "direct" to succeed from a browser/extension
-            // context — Anthropic omits CORS headers for browser-origin
-            // requests unless this is set.
-            "anthropic-dangerous-direct-browser-access": "true",
+            "Content-Type":  "application/json",
+            "Authorization": `Bearer ${apiKey}`,
           },
           body: requestBody,
         });
@@ -336,7 +337,7 @@ export async function callLLMClassifier(cleanedContent, llmConfig) {
 
     if (!res.ok) throw new Error(`LLM API ${res.status}`);
     const data = await res.json();
-    const raw  = data?.content?.[0]?.text?.trim() ?? "";
+    const raw  = data?.choices?.[0]?.message?.content?.trim() ?? "";
 
     // Strip markdown fences if present
     const jsonStr = raw.replace(/^```json\s*/i, "").replace(/```$/i, "").trim();

@@ -20,6 +20,7 @@ import { runB1 } from "./b1_contentUnderstanding.js";
 import { runB2 } from "./b2_moodClassifier.js";
 import { runB3 } from "./b3_musicProfileGenerator.js";
 import { runB4, buildFallbackPrompt } from "./b4_promptEngineer.js";
+import { DEFAULT_MODEL } from "./llmConfig.js";
 
 // ─── Confidence interval logic (spec edge case #1) ───────────────────────────
 // The new mood must be stable for 5 seconds before triggering a music change.
@@ -77,13 +78,25 @@ export function computeFadeVolume(idleMs) {
 
 // ─── Configuration ────────────────────────────────────────────────────────────
 let _config = {
-  apiKey:      "",          // Set via background.js from chrome.storage
-  targetModel: "musicgen",  // "musicgen" | "stable-audio" | "generic"
-  includeAll:  false,       // Include all prompt variants in output
+  apiKey:      "",             // Set via background.js from chrome.storage — string (direct) or { backend: 'proxy', ... }
+  llmModel:    DEFAULT_MODEL,  // GroqCloud model for B1/B2's classification calls — single source of truth (see llmConfig.js)
+  targetModel: "musicgen",     // Audio generation backend — "musicgen" | "stable-audio" | "generic" (unrelated to llmModel)
+  includeAll:  false,          // Include all prompt variants in output
 };
 
 export function configureFeatureB(config = {}) {
   _config = { ..._config, ...config };
+}
+
+// Merges the configured apiKey (a bare string, or a { backend: 'proxy', ... }
+// object) with the configured llmModel into the single config object B1/B2's
+// callCategoryLLMClassifier/callLLMClassifier expect — so both calls always
+// use the same model without either file hardcoding it.
+function buildLLMConfig() {
+  const base = typeof _config.apiKey === "string"
+    ? { apiKey: _config.apiKey }
+    : { ..._config.apiKey };
+  return { ...base, model: _config.llmModel };
 }
 
 // ─── Main pipeline ────────────────────────────────────────────────────────────
@@ -102,10 +115,10 @@ export function configureFeatureB(config = {}) {
 export async function runFeatureB(pageData) {
   try {
     // ── B1: Content Understanding ──────────────────────────────────────────
-    const cleanedContent = await runB1(pageData, _config.apiKey);
+    const cleanedContent = await runB1(pageData, buildLLMConfig());
 
     // ── B2: Mood & Context Classification ─────────────────────────────────
-    const moodContext = await runB2(cleanedContent, _config.apiKey);
+    const moodContext = await runB2(cleanedContent, buildLLMConfig());
 
     // ── Confidence interval check (spec edge case #1) ─────────────────────
     if (!shouldTransition(moodContext.mood)) {

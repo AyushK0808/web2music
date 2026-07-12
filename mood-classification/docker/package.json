@@ -2,7 +2,7 @@
   "name": "web2music-classify-service",
   "version": "1.0.0",
   "private": true,
-  "description": "Containerised Anthropic Messages API proxy for Feature B (keeps the API key out of the browser).",
+  "description": "Containerised GroqCloud chat-completions proxy for Feature B (keeps the API key out of the browser).",
   "main": "classifyService.js",
   "scripts": {
     "start": "node classifyService.js"

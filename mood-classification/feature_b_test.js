@@ -7,6 +7,7 @@
  */
 
 import { strict as assert } from "assert";
+import { DEFAULT_MODEL } from "./feature_b/llmConfig.js";
 
 // ── B1 Tests ──────────────────────────────────────────────────────────────────
 import {
@@ -74,52 +75,61 @@ console.log("B1: callCategoryLLMClassifier — mocked network responses");
 const categoryLLMStub = { keywords: ["bioluminescence", "organism"], title: "Science Article", summary: "A summary about light-producing organisms." };
 const originalCategoryFetch = global.fetch;
 
-console.log("B1: callCategoryLLMClassifier — request carries the browser CORS header and temperature: 0 (regression)");
-// Without anthropic-dangerous-direct-browser-access, this call CORS-fails
-// from the extension's background context even though it works fine here in
-// Node (Node's fetch doesn't enforce CORS) — the gap that made the bug easy
-// to miss in testing. temperature: 0 makes classification reproducible.
+console.log("B1: callCategoryLLMClassifier — request uses Groq's Bearer auth and temperature: 0 (regression)");
 let b1CapturedRequest = null;
 global.fetch = async (url, opts) => {
   b1CapturedRequest = opts;
-  return { ok: true, json: async () => ({ content: [{ text: JSON.stringify({ category: "Educational" }) }] }) };
+  return { ok: true, json: async () => ({ choices: [{ message: { content: JSON.stringify({ category: "Educational" }) } }] }) };
 };
 await callCategoryLLMClassifier(categoryLLMStub, "fake-key");
 assert.equal(
-  b1CapturedRequest.headers["anthropic-dangerous-direct-browser-access"], "true",
-  "missing this header CORS-fails the call from a browser/extension context",
+  b1CapturedRequest.headers["Authorization"], "Bearer fake-key",
+  "direct-mode requests must authenticate with GroqCloud's Bearer token format",
 );
 assert.equal(JSON.parse(b1CapturedRequest.body).temperature, 0, "classification calls must be deterministic");
 
-console.log("B1: callCategoryLLMClassifier — 'proxy' backend calls the local service, never api.anthropic.com, and carries no key");
+console.log("B1: callCategoryLLMClassifier — 'proxy' backend calls the local service, never api.groq.com, and carries no key");
 let b1ProxyUrl = null;
 let b1ProxyRequest = null;
 global.fetch = async (url, opts) => {
   b1ProxyUrl = url;
   b1ProxyRequest = opts;
-  return { ok: true, json: async () => ({ content: [{ text: JSON.stringify({ category: "Educational" }) }] }) };
+  return { ok: true, json: async () => ({ choices: [{ message: { content: JSON.stringify({ category: "Educational" }) } }] }) };
 };
-const b1ProxyResult = await callCategoryLLMClassifier(categoryLLMStub, { backend: "proxy", serviceUrl: "http://localhost:9999/v1/messages" });
+const b1ProxyResult = await callCategoryLLMClassifier(categoryLLMStub, { backend: "proxy", serviceUrl: "http://localhost:9999/v1/chat/completions" });
 assert.equal(b1ProxyResult, "Educational");
-assert.equal(b1ProxyUrl, "http://localhost:9999/v1/messages", "proxy backend must call the configured serviceUrl, not Anthropic directly");
-assert.equal(b1ProxyRequest.headers["x-api-key"], undefined, "the raw key must never be attached client-side when proxying");
+assert.equal(b1ProxyUrl, "http://localhost:9999/v1/chat/completions", "proxy backend must call the configured serviceUrl, not Groq directly");
+assert.equal(b1ProxyRequest.headers["Authorization"], undefined, "the raw key must never be attached client-side when proxying");
+
+console.log("B1: callCategoryLLMClassifier — model ID defaults from the shared constant and is overridable (regression — was hardcoded)");
+let b1ModelRequest = null;
+global.fetch = async (url, opts) => {
+  b1ModelRequest = opts;
+  return { ok: true, json: async () => ({ choices: [{ message: { content: JSON.stringify({ category: "Educational" }) } }] }) };
+};
+await callCategoryLLMClassifier(categoryLLMStub, "fake-key");
 assert.equal(
-  b1ProxyRequest.headers["anthropic-dangerous-direct-browser-access"], undefined,
-  "the browser-CORS opt-in header is irrelevant to a same-origin localhost call",
+  JSON.parse(b1ModelRequest.body).model, DEFAULT_MODEL,
+  "with no model override, the request must use the shared DEFAULT_MODEL constant",
+);
+await callCategoryLLMClassifier(categoryLLMStub, { apiKey: "fake-key", model: "custom-model-override" });
+assert.equal(
+  JSON.parse(b1ModelRequest.body).model, "custom-model-override",
+  "an explicit model in the config object must override the default",
 );
 
 console.log("B1: callCategoryLLMClassifier — 'proxy' backend works with no apiKey at all (that's the whole point)");
-global.fetch = async () => ({ ok: true, json: async () => ({ content: [{ text: JSON.stringify({ category: "News" }) }] }) });
+global.fetch = async () => ({ ok: true, json: async () => ({ choices: [{ message: { content: JSON.stringify({ category: "News" }) } }] }) });
 assert.equal(
   await callCategoryLLMClassifier(categoryLLMStub, { backend: "proxy" }),
   "News",
   "proxy backend must not require a client-side apiKey to function",
 );
 
-global.fetch = async () => ({ ok: true, json: async () => ({ content: [{ text: JSON.stringify({ category: "Educational" }) }] }) });
+global.fetch = async () => ({ ok: true, json: async () => ({ choices: [{ message: { content: JSON.stringify({ category: "Educational" }) } }] }) });
 assert.equal(await callCategoryLLMClassifier(categoryLLMStub, "fake-key"), "Educational");
 
-global.fetch = async () => ({ ok: true, json: async () => ({ content: [{ text: JSON.stringify({ category: "NotARealCategory" }) }] }) });
+global.fetch = async () => ({ ok: true, json: async () => ({ choices: [{ message: { content: JSON.stringify({ category: "NotARealCategory" }) } }] }) });
 assert.equal(
   await callCategoryLLMClassifier(categoryLLMStub, "fake-key"),
   null,
@@ -128,7 +138,7 @@ assert.equal(
 
 assert.equal(await callCategoryLLMClassifier(categoryLLMStub, ""), null, "no api key must skip the network call entirely");
 
-global.fetch = async () => ({ ok: true, json: async () => ({ content: [{ text: "not valid json {" }] }) });
+global.fetch = async () => ({ ok: true, json: async () => ({ choices: [{ message: { content: "not valid json {" } }] }) });
 assert.equal(await callCategoryLLMClassifier(categoryLLMStub, "fake-key"), null, "malformed JSON must fall back to null, not throw");
 
 global.fetch = async () => ({ ok: false, status: 500, json: async () => ({}) });
@@ -144,7 +154,7 @@ const keywordWinResult = await resolveContentCategory(["stock", "invest", "portf
 assert.equal(keywordWinResult.primary, "Finance");
 assert.equal(keywordWinResult.source, "keyword", "a clear keyword win must never touch the LLM at all");
 
-global.fetch = async () => ({ ok: true, json: async () => ({ content: [{ text: JSON.stringify({ category: "Educational" }) }] }) });
+global.fetch = async () => ({ ok: true, json: async () => ({ choices: [{ message: { content: JSON.stringify({ category: "Educational" }) } }] }) });
 const llmWinResult = await resolveContentCategory(["culture"], "Some Article", "A summary.", "fake-key");
 assert.equal(llmWinResult.primary, "Educational");
 assert.equal(llmWinResult.source, "llm");
@@ -171,7 +181,7 @@ console.log("B1: prompt-injection robustness — untrusted title/summary/keyword
 let b1CapturedPrompt = null;
 global.fetch = async (url, opts) => {
   b1CapturedPrompt = JSON.parse(opts.body).messages[0].content;
-  return { ok: true, json: async () => ({ content: [{ text: JSON.stringify({ category: "Entertainment" }) }] }) };
+  return { ok: true, json: async () => ({ choices: [{ message: { content: JSON.stringify({ category: "Entertainment" }) } }] }) };
 };
 await callCategoryLLMClassifier(
   {
@@ -294,7 +304,7 @@ const originalSensitiveFetch = global.fetch;
 let categoryLLMWasCalled = false;
 global.fetch = async () => {
   categoryLLMWasCalled = true;
-  return { ok: true, json: async () => ({ content: [{ text: JSON.stringify({ category: "Health" }) }] }) };
+  return { ok: true, json: async () => ({ choices: [{ message: { content: JSON.stringify({ category: "Health" }) } }] }) };
 };
 const sensitiveCategoryResult = await runB1({
   rawText: "This article discusses suicide and self-harm resources for people in crisis.",
@@ -434,55 +444,68 @@ assert(
   `colour and behaviour biases must add, not overwrite — got confidence ${blendResult.confidence}, expected ~${(0.55 / 3).toFixed(4)}`,
 );
 
-console.log("B2: callLLMClassifier — request carries the browser CORS header and temperature: 0 (regression)");
+console.log("B2: callLLMClassifier — request uses Groq's Bearer auth and temperature: 0 (regression)");
 const llmStub = { summary: "test summary", keywords: ["a", "b"], category: { primary: "Entertainment" }, scrollSpeed: 10, cursorSpeed: 10 };
 const originalFetch = global.fetch;
 let b2CapturedRequest = null;
 global.fetch = async (url, opts) => {
   b2CapturedRequest = opts;
-  return { ok: true, json: async () => ({ content: [{ text: JSON.stringify({ mood: "calm" }) }] }) };
+  return { ok: true, json: async () => ({ choices: [{ message: { content: JSON.stringify({ mood: "calm" }) } }] }) };
 };
 await callLLMClassifier(llmStub, "fake-key");
 assert.equal(
-  b2CapturedRequest.headers["anthropic-dangerous-direct-browser-access"], "true",
-  "missing this header CORS-fails the call from a browser/extension context",
+  b2CapturedRequest.headers["Authorization"], "Bearer fake-key",
+  "direct-mode requests must authenticate with GroqCloud's Bearer token format",
 );
 assert.equal(JSON.parse(b2CapturedRequest.body).temperature, 0, "classification calls must be deterministic");
 
-console.log("B2: callLLMClassifier — 'proxy' backend calls the local service, never api.anthropic.com, and carries no key");
+console.log("B2: callLLMClassifier — 'proxy' backend calls the local service, never api.groq.com, and carries no key");
 let b2ProxyUrl = null;
 let b2ProxyRequest = null;
 global.fetch = async (url, opts) => {
   b2ProxyUrl = url;
   b2ProxyRequest = opts;
-  return { ok: true, json: async () => ({ content: [{ text: JSON.stringify({ mood: "joyful" }) }] }) };
+  return { ok: true, json: async () => ({ choices: [{ message: { content: JSON.stringify({ mood: "joyful" }) } }] }) };
 };
-const b2ProxyResult = await callLLMClassifier(llmStub, { backend: "proxy", serviceUrl: "http://localhost:9999/v1/messages" });
+const b2ProxyResult = await callLLMClassifier(llmStub, { backend: "proxy", serviceUrl: "http://localhost:9999/v1/chat/completions" });
 assert.equal(b2ProxyResult.mood, "joyful");
-assert.equal(b2ProxyUrl, "http://localhost:9999/v1/messages", "proxy backend must call the configured serviceUrl, not Anthropic directly");
-assert.equal(b2ProxyRequest.headers["x-api-key"], undefined, "the raw key must never be attached client-side when proxying");
+assert.equal(b2ProxyUrl, "http://localhost:9999/v1/chat/completions", "proxy backend must call the configured serviceUrl, not Groq directly");
+assert.equal(b2ProxyRequest.headers["Authorization"], undefined, "the raw key must never be attached client-side when proxying");
+
+console.log("B2: callLLMClassifier — model ID defaults from the shared constant and is overridable (regression — was hardcoded)");
+let b2ModelRequest = null;
+global.fetch = async (url, opts) => {
+  b2ModelRequest = opts;
+  return { ok: true, json: async () => ({ choices: [{ message: { content: JSON.stringify({ mood: "calm" }) } }] }) };
+};
+await callLLMClassifier(llmStub, "fake-key");
 assert.equal(
-  b2ProxyRequest.headers["anthropic-dangerous-direct-browser-access"], undefined,
-  "the browser-CORS opt-in header is irrelevant to a same-origin localhost call",
+  JSON.parse(b2ModelRequest.body).model, DEFAULT_MODEL,
+  "with no model override, the request must use the same shared DEFAULT_MODEL constant B1 uses",
+);
+await callLLMClassifier(llmStub, { apiKey: "fake-key", model: "custom-model-override" });
+assert.equal(
+  JSON.parse(b2ModelRequest.body).model, "custom-model-override",
+  "an explicit model in the config object must override the default",
 );
 
 console.log("B2: callLLMClassifier — mocked network responses");
 
 global.fetch = async () => ({
   ok: true,
-  json: async () => ({ content: [{ text: JSON.stringify({ mood: "joyful", pageType: "entertainment", confidence: 0.9 }) }] }),
+  json: async () => ({ choices: [{ message: { content: JSON.stringify({ mood: "joyful", pageType: "entertainment", confidence: 0.9 }) } }] }),
 });
 const validLLMResult = await callLLMClassifier(llmStub, "fake-key");
 assert.equal(validLLMResult.mood, "joyful");
 
 global.fetch = async () => ({
   ok: true,
-  json: async () => ({ content: [{ text: "```json\n" + JSON.stringify({ mood: "sad" }) + "\n```" }] }),
+  json: async () => ({ choices: [{ message: { content: "```json\n" + JSON.stringify({ mood: "sad" }) + "\n```" } }] }),
 });
 const fencedLLMResult = await callLLMClassifier(llmStub, "fake-key");
 assert.equal(fencedLLMResult.mood, "sad", "markdown code-fences around the JSON must be stripped");
 
-global.fetch = async () => ({ ok: true, json: async () => ({ content: [{ text: "not valid json {" }] }) });
+global.fetch = async () => ({ ok: true, json: async () => ({ choices: [{ message: { content: "not valid json {" } }] }) });
 assert.equal(await callLLMClassifier(llmStub, "fake-key"), null, "malformed JSON must fall back to null, not throw");
 
 global.fetch = async () => ({ ok: false, status: 500, json: async () => ({}) });
@@ -574,14 +597,16 @@ console.log("B2: tier-2 LLM output validation — hallucinated mood/pageType and
 global.fetch = async () => ({
   ok: true,
   json: async () => ({
-    content: [{
-      text: JSON.stringify({
-        mood:        "furious",        // not a real MOODS value
-        pageType:    "malware-portal", // not a real page type
-        confidence:  5,                // out of [0,1]
-        energyHint:  -3,               // out of [0,1]
-        valenceHint: 10,               // out of [-1,1]
-      }),
+    choices: [{
+      message: {
+        content: JSON.stringify({
+          mood:        "furious",        // not a real MOODS value
+          pageType:    "malware-portal", // not a real page type
+          confidence:  5,                // out of [0,1]
+          energyHint:  -3,               // out of [0,1]
+          valenceHint: 10,               // out of [-1,1]
+        }),
+      },
     }],
   }),
 });
@@ -624,11 +649,13 @@ console.log("B2: tier-2 output validation — null/blank numeric hints fall back
 global.fetch = async () => ({
   ok: true,
   json: async () => ({
-    content: [{
-      text: JSON.stringify({
-        mood: "calm", pageType: "article",
-        confidence: null, energyHint: "   ", valenceHint: undefined,
-      }),
+    choices: [{
+      message: {
+        content: JSON.stringify({
+          mood: "calm", pageType: "article",
+          confidence: null, energyHint: "   ", valenceHint: undefined,
+        }),
+      },
     }],
   }),
 });
@@ -846,6 +873,43 @@ const transitionResult = await runFeatureB(stablePageData);
 assert(transitionResult !== null, "a mood held stable for 5s must produce a real handoff2, not null");
 assert.equal(transitionResult.musicProfile.mood, "focused");
 assert.equal(transitionResult.targetModel, "musicgen");
+
+console.log("Integration: configureFeatureB({ llmModel }) is the single knob for both B1's and B2's LLM calls (regression — model was hardcoded separately in each file)");
+resetConfidenceWindow();
+const integrationCapturedBodies = [];
+const originalIntegrationFetch = global.fetch;
+global.fetch = async (url, opts) => {
+  integrationCapturedBodies.push(JSON.parse(opts.body));
+  // Response shape usable as either a category or a mood classification —
+  // whichever parser is reading it ignores the fields it doesn't need.
+  return {
+    ok: true,
+    json: async () => ({
+      choices: [{ message: { content: JSON.stringify({ category: "Educational", mood: "calm", pageType: "article", confidence: 0.6 }) } }],
+    }),
+  };
+};
+configureFeatureB({ apiKey: "fake-key", llmModel: "custom-model-integration-test", targetModel: "musicgen" });
+// Vocabulary deliberately avoids every CATEGORY_KEYWORDS/MOOD_RULES entry so
+// both B1's category heuristic and B2's mood heuristic miss and escalate.
+await runFeatureB({
+  rawText: "Zorblex quantum ripple diagrams illustrate abstract lattice configurations across variable frameworks and modular assemblies.",
+  title:   "Lattice Notes", url: "https://example.com/lattice-notes",
+  scrollSpeed: 50, cursorSpeed: 100,
+});
+global.fetch = originalIntegrationFetch;
+
+assert(
+  integrationCapturedBodies.length >= 2,
+  `expected both B1's category call and B2's mood call to escalate to the LLM, got ${integrationCapturedBodies.length} call(s)`,
+);
+for (const body of integrationCapturedBodies) {
+  assert.equal(
+    body.model, "custom-model-integration-test",
+    "every LLM call made through the orchestrator must use the single configured llmModel",
+  );
+}
+configureFeatureB({ apiKey: "", llmModel: DEFAULT_MODEL, targetModel: "musicgen" }); // restore default for later tests
 
 console.log("Integration: mood-flicker resets the stability window instead of carrying progress over");
 resetConfidenceWindow();

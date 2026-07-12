@@ -14,6 +14,8 @@
 
 "use strict";
 
+import { DEFAULT_MODEL } from "./llmConfig.js";
+
 // ─── Stopword list (English) ──────────────────────────────────────────────────
 const STOPWORDS = new Set([
   "the","a","an","is","it","in","of","and","or","to","for","on","at","by",
@@ -219,8 +221,8 @@ function escapePromptDelimiters(text = "") {
 
 /**
  * normalizeLLMConfig — accepts either a bare API key string (back-compat —
- * "direct" backend, calling api.anthropic.com straight from the browser with
- * the key attached) or a config object selecting the "proxy" backend, which
+ * "direct" backend, calling api.groq.com straight from the browser with the
+ * key attached) or a config object selecting the "proxy" backend, which
  * calls a local container that holds the key server-side instead
  * (docker/classifyService.js — same pattern as Feature A's
  * data-extraction/docker/embedService.js, which does the equivalent for the
@@ -228,11 +230,12 @@ function escapePromptDelimiters(text = "") {
  * (b2_moodClassifier.js).
  */
 function normalizeLLMConfig(config) {
-  if (typeof config === "string") return { apiKey: config, backend: "direct" };
+  if (typeof config === "string") return { apiKey: config, backend: "direct", model: DEFAULT_MODEL };
   return {
     apiKey:     config?.apiKey ?? "",
     backend:    config?.backend ?? "direct",
-    serviceUrl: config?.serviceUrl ?? "http://localhost:8078/v1/messages",
+    serviceUrl: config?.serviceUrl ?? "http://localhost:8078/v1/chat/completions",
+    model:      config?.model ?? DEFAULT_MODEL,
   };
 }
 
@@ -241,11 +244,11 @@ function normalizeLLMConfig(config) {
  * keyword heuristic doesn't clear MIN_CATEGORY_HITS on its own. Same
  * graceful-fallback contract as B2's callLLMClassifier: null on any failure,
  * timeout, or hallucinated category name — never throws.
- * @param {string|Object} llmConfig  API key string, or { apiKey?, backend?, serviceUrl? }
+ * @param {string|Object} llmConfig  API key string, or { apiKey?, backend?, serviceUrl?, model? }
  * @returns {Promise<string|null>}
  */
 export async function callCategoryLLMClassifier({ keywords, title, summary }, llmConfig) {
-  const { apiKey, backend, serviceUrl } = normalizeLLMConfig(llmConfig);
+  const { apiKey, backend, serviceUrl, model } = normalizeLLMConfig(llmConfig);
   if (backend === "direct" && !apiKey) return null;
 
   const categoryNames = Object.keys(CATEGORY_KEYWORDS);
@@ -271,17 +274,19 @@ Return ONLY a valid JSON object, no explanation: { "category": "<one of the cate
   const timeout    = setTimeout(() => controller.abort(), 8000); // 8s timeout, mirrors B2
 
   const requestBody = JSON.stringify({
-    model:       "claude-haiku-4-5-20251001",
-    max_tokens:  50,
+    model,
+    max_completion_tokens: 50,
     temperature: 0, // deterministic classification — reproducibility over variety
     messages:    [{ role: "user", content: prompt }],
   });
 
   try {
-    // "proxy": local container injects the real key server-side, so none of
-    // it (nor the browser-CORS opt-in header, irrelevant to a same-origin
-    // localhost call) needs to leave this bundle.
-    // "direct": short-term path, ships the key client-side (see fix notes).
+    // "proxy": local container injects the real key server-side.
+    // "direct": ships the key client-side. GroqCloud's docs don't document a
+    // browser-CORS opt-in the way Anthropic's API did — whether a direct
+    // browser call CORS-succeeds here is unconfirmed. If it fails in the
+    // actual extension, switch to "proxy", which sidesteps the question
+    // entirely (the container calls Groq server-to-server, no CORS involved).
     const res = backend === "proxy"
       ? await fetch(serviceUrl, {
           method:  "POST",
@@ -289,17 +294,12 @@ Return ONLY a valid JSON object, no explanation: { "category": "<one of the cate
           headers: { "Content-Type": "application/json" },
           body:    requestBody,
         })
-      : await fetch("https://api.anthropic.com/v1/messages", {
+      : await fetch("https://api.groq.com/openai/v1/chat/completions", {
           method:  "POST",
           signal:  controller.signal,
           headers: {
-            "Content-Type":      "application/json",
-            "x-api-key":         apiKey,
-            "anthropic-version": "2023-06-01",
-            // Required for "direct" to succeed from a browser/extension
-            // context — Anthropic omits CORS headers for browser-origin
-            // requests unless this is set.
-            "anthropic-dangerous-direct-browser-access": "true",
+            "Content-Type":  "application/json",
+            "Authorization": `Bearer ${apiKey}`,
           },
           body: requestBody,
         });
@@ -307,7 +307,7 @@ Return ONLY a valid JSON object, no explanation: { "category": "<one of the cate
 
     if (!res.ok) throw new Error(`Category LLM API ${res.status}`);
     const data = await res.json();
-    const raw  = data?.content?.[0]?.text?.trim() ?? "";
+    const raw  = data?.choices?.[0]?.message?.content?.trim() ?? "";
     const jsonStr = raw.replace(/^```json\s*/i, "").replace(/```$/i, "").trim();
     const parsed = JSON.parse(jsonStr);
 

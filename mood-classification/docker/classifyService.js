@@ -1,28 +1,28 @@
 /*
- * classifyService.js — containerised Anthropic Messages API proxy for
+ * classifyService.js — containerised GroqCloud chat-completions proxy for
  * Feature B (mood + category classification).
  *
  * B1/B2 already build the exact classification prompts they always have
  * (buildClassificationPrompt in b2_moodClassifier.js, the category prompt in
  * b1_contentUnderstanding.js's callCategoryLLMClassifier — including the
  * prompt-injection delimiters and output validation). This container's only
- * job is to hold ANTHROPIC_API_KEY server-side and forward the already-built
- * request to Anthropic, so the key never enters the browser/extension
+ * job is to hold GROQ_API_KEY server-side and forward the already-built
+ * request to GroqCloud, so the key never enters the browser/extension
  * bundle. It does NOT duplicate any prompt-building, delimiter-escaping, or
  * output-validation logic — all of that stays in feature_b/*.js and is
  * reused unchanged regardless of which backend ("direct" vs "proxy") is
  * selected there.
  *
- *   POST /v1/messages   <same body shape as the Anthropic Messages API>
- *     → whatever Anthropic returns, forwarded verbatim (status + JSON)
+ *   POST /v1/chat/completions   <same body shape as Groq's OpenAI-compatible API>
+ *     → whatever Groq returns, forwarded verbatim (status + JSON)
  *   GET  /health  → 200 { "ok": true, "keyConfigured": boolean }
  *
  * Same pattern as Feature A's data-extraction/docker/embedService.js, which
  * does the equivalent for the OpenAI embedding key.
  *
  * Env:
- *   ANTHROPIC_API_KEY   (required) — the key, injected by docker compose from .env
- *   PORT                (optional) — listen port, defaults to 8078
+ *   GROQ_API_KEY   (required) — the key, injected by docker compose from .env
+ *   PORT           (optional) — listen port, defaults to 8078
  *
  * No npm dependencies: uses Node 18+ built-in global fetch and the http module.
  */
@@ -32,8 +32,7 @@
 const http = require('http');
 
 const PORT = parseInt(process.env.PORT, 10) || 8078;
-const API_KEY = process.env.ANTHROPIC_API_KEY || '';
-const ANTHROPIC_VERSION = '2023-06-01';
+const API_KEY = process.env.GROQ_API_KEY || '';
 
 function sendJson(res, status, body) {
   const payload = JSON.stringify(body);
@@ -59,26 +58,23 @@ function readBody(req) {
   });
 }
 
-// Forwards the client's already-built Messages API request body to Anthropic,
+// Forwards the client's already-built chat-completions request body to Groq,
 // with the real key attached server-side, and returns the raw status + body
 // text so the caller can relay it byte-for-byte without reinterpreting it.
-async function forwardToAnthropic(rawBody) {
+async function forwardToGroq(rawBody) {
   if (!API_KEY) {
-    const err = new Error('ANTHROPIC_API_KEY not configured in the container environment.');
+    const err = new Error('GROQ_API_KEY not configured in the container environment.');
     err.status = 500;
     throw err;
   }
 
-  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+  const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-api-key': API_KEY,
-      'anthropic-version': ANTHROPIC_VERSION,
-      // No anthropic-dangerous-direct-browser-access header here — this is a
-      // server-to-server call (container → Anthropic), not a browser request,
-      // so the browser-CORS opt-in Anthropic requires for direct-from-browser
-      // calls doesn't apply.
+      'Authorization': `Bearer ${API_KEY}`,
+      // This is a server-to-server call (container → Groq), not a browser
+      // request, so no CORS opt-in of any kind is relevant here.
     },
     body: rawBody,
   });
@@ -94,13 +90,13 @@ const server = http.createServer(async (req, res) => {
     return sendJson(res, 200, { ok: true, keyConfigured: Boolean(API_KEY) });
   }
 
-  if (req.method === 'POST' && req.url === '/v1/messages') {
+  if (req.method === 'POST' && req.url === '/v1/chat/completions') {
     try {
       const raw = await readBody(req);
       if (!raw || !raw.trim()) {
         return sendJson(res, 400, { error: 'Missing request body.' });
       }
-      const { status, text } = await forwardToAnthropic(raw);
+      const { status, text } = await forwardToGroq(raw);
       res.writeHead(status, {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
@@ -111,7 +107,7 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
-  return sendJson(res, 404, { error: 'Not found. Use POST /v1/messages or GET /health.' });
+  return sendJson(res, 404, { error: 'Not found. Use POST /v1/chat/completions or GET /health.' });
 });
 
 server.listen(PORT, () => {

@@ -54,7 +54,7 @@ const pageData = {
 
 resetConfidenceWindow();
 configureFeatureB({
-  apiKey:      process.env.ANTHROPIC_API_KEY || "",
+  apiKey:      process.env.GROQ_API_KEY || "",
   targetModel: "musicgen",
 });
 
