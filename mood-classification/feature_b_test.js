@@ -171,6 +171,29 @@ assert.equal(llmFailsDefaultResult.source, "default");
 global.fetch = originalCategoryFetch;
 assert.equal(noKeyDefaultResult.source, "default");
 
+console.log("B1: resolveContentCategory — non-English pages skip the keyword heuristic entirely, even with a clear keyword win (fix 08)");
+// CATEGORY_KEYWORDS is English-only vocabulary — an English keyword match on
+// non-English text isn't a real classification, it's a coincidence. This
+// exact keyword combo wins decisively in English (see the keywordWinResult
+// test above); on a non-English page it must not be trusted at all.
+global.fetch = async () => ({ ok: true, json: async () => ({ choices: [{ message: { content: JSON.stringify({ category: "Educational" }) } }] }) });
+const nonEnglishResult = await resolveContentCategory(
+  ["stock", "invest", "portfolio", "market", "trading"], "Finance News", "", "fake-key", "fr",
+);
+assert.equal(
+  nonEnglishResult.source, "llm",
+  `a non-English page must escalate to the LLM even when the keyword heuristic would otherwise win — got source "${nonEnglishResult.source}"`,
+);
+assert.equal(nonEnglishResult.primary, "Educational");
+global.fetch = originalCategoryFetch;
+
+console.log("B1: resolveContentCategory — English pages still use the free, instant keyword heuristic (no regression)");
+const stillFastResult = await resolveContentCategory(
+  ["stock", "invest", "portfolio", "market", "trading"], "Finance News", "", "fake-key-that-would-error-if-called",
+);
+assert.equal(stillFastResult.source, "keyword", "the default lang='en' path must be unaffected by this fix — no unnecessary LLM calls for English pages");
+assert.equal(stillFastResult.primary, "Finance");
+
 // ── B1: prompt-injection robustness ─────────────────────────────────────────
 // A page's title/summary/keywords are attacker-controlled — they're raw text
 // scraped straight off the page. Demonstrate that a page trying to smuggle
@@ -648,6 +671,49 @@ const b2FocusedResult = await runB2(
   null
 );
 assert(["focused", "calm"].includes(b2FocusedResult.mood)); // either valid for this signal mix
+
+console.log("B2: non-English pages escalate to the LLM even when tier-1 looks confident (fix 08)");
+// MOOD_RULES is English-only vocabulary — these keywords give tier-1 a
+// confidence of ~0.95 in English (would normally short-circuit straight to
+// the heuristic result, no LLM call). On a non-English page that's not a
+// real classification, just a coincidence — must still escalate.
+global.fetch = async () => ({
+  ok: true,
+  json: async () => ({ choices: [{ message: { content: JSON.stringify({ mood: "sad", pageType: "article", confidence: 0.8 }) } }] }),
+});
+const nonEnglishMoodResult = await runB2(
+  {
+    isSensitive: false,
+    keywords: ["study", "research", "focus", "code", "task"],
+    cleanedText: "study code focus work research task",
+    colors: {}, scrollSpeed: 50, cursorSpeed: 100, readingComplexity: 0.5,
+    category: { primary: "Educational" },
+    meta: { url: "https://example.fr", language: "fr" },
+    isImageOnly: false,
+  },
+  "fake-key",
+);
+assert.equal(
+  nonEnglishMoodResult.tier, "tier2-llm",
+  `a non-English page must escalate to the LLM even when the English keyword heuristic looks confident — got tier "${nonEnglishMoodResult.tier}"`,
+);
+assert.equal(nonEnglishMoodResult.mood, "sad");
+global.fetch = originalFetch;
+
+console.log("B2: English pages are unaffected — a confident tier-1 result still short-circuits (no regression)");
+const stillFastMoodResult = await runB2(
+  {
+    isSensitive: false,
+    keywords: ["study", "research", "focus", "code", "task"],
+    cleanedText: "study code focus work research task",
+    colors: {}, scrollSpeed: 50, cursorSpeed: 100, readingComplexity: 0.5,
+    category: { primary: "Educational" },
+    meta: { url: "https://example.com", language: "en" },
+    isImageOnly: false,
+  },
+  "fake-key-that-would-error-if-called",
+);
+assert.equal(stillFastMoodResult.tier, "tier1-heuristic", "English pages must still skip the LLM when tier-1 is confident enough — no unnecessary LLM calls");
 
 console.log("B2: tier-2 LLM output validation — hallucinated mood/pageType and out-of-range hints are sanitized");
 global.fetch = async () => ({

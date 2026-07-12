@@ -323,14 +323,21 @@ Return ONLY a valid JSON object, no explanation: { "category": "<one of the cate
 /**
  * resolveContentCategory — orchestrates category classification with tier-2
  * LLM escalation (spec-requested): the keyword heuristic runs first (instant,
- * no API call); only when it can't clear MIN_CATEGORY_HITS does this escalate
- * to the LLM, and only the "Entertainment" default fallback fires if the LLM
- * is unavailable, unconfigured, or fails.
+ * no API call); only when it can't clear MIN_CATEGORY_HITS — or the page
+ * isn't English, where the heuristic can't meaningfully run at all — does
+ * this escalate to the LLM. The "Entertainment" default fallback fires only
+ * if the LLM is unavailable, unconfigured, or fails.
+ * @param {string} [lang="en"]  BCP-47-ish language code from Feature A/pageData.lang
  * @returns {Promise<{ primary: string, secondary: string|null, scores: Object, source: string }>}
  */
-export async function resolveContentCategory(keywords, title, summary, apiKey) {
+export async function resolveContentCategory(keywords, title, summary, apiKey, lang = "en") {
   const heuristic = classifyContentCategory(keywords, title);
-  if (heuristic.primary) {
+  // CATEGORY_KEYWORDS is English-only vocabulary — on a non-English page the
+  // keyword heuristic would either find nothing or false-positive match short
+  // substrings, either way not a real classification. Skip straight to the
+  // LLM, which can actually read the page's language, still computing the
+  // heuristic above only for its secondary/scores metadata.
+  if (heuristic.primary && lang === "en") {
     return { ...heuristic, source: "keyword" };
   }
 
@@ -464,7 +471,7 @@ export async function runB1(pageData, apiKey = "") {
     const heuristicOnly = classifyContentCategory(keywords, meta.title);
     category = { ...heuristicOnly, primary: heuristicOnly.primary ?? "Entertainment", source: "skipped-sensitive" };
   } else {
-    category = await resolveContentCategory(keywords, meta.title, summary, apiKey);
+    category = await resolveContentCategory(keywords, meta.title, summary, apiKey, meta.language);
   }
 
   // Prefer Feature A's own readingComplexity when it ran and supplied one —

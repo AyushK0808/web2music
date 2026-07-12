@@ -516,9 +516,16 @@ export async function runB2(cleanedContent, apiKey) {
     };
   }
 
-  // ── Tier-2: LLM for low-confidence or ambiguous cases ───────────────────
+  // ── Tier-2: LLM for low-confidence, ambiguous, or non-English cases ─────
+  // MOOD_RULES is English-only vocabulary, so tier1's keyword component
+  // contributes nothing real on a non-English page — but colour/behaviour
+  // bias alone can still push blendedConf above the 0.5 threshold (a very
+  // dark page, a fast scroll), which would wrongly skip the LLM even though
+  // no actual language understanding went into the guess. Force escalation
+  // whenever the page isn't English, regardless of blendedConf.
+  const isNonEnglish = Boolean(cleanedContent.meta?.language) && cleanedContent.meta.language !== "en";
   let finalResult = null;
-  if (blendedConf < 0.5 && apiKey) {
+  if ((blendedConf < 0.5 || isNonEnglish) && apiKey) {
     const llmResult = await callLLMClassifier(cleanedContent, apiKey);
     finalResult = validateLLMResult(llmResult, blendedMood, cleanedContent.category);
   }
