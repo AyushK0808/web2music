@@ -23,9 +23,11 @@ import { runB4, buildFallbackPrompt } from "./b4_promptEngineer.js";
 import { DEFAULT_MODEL } from "./llmConfig.js";
 
 // ─── Confidence interval logic (spec edge case #1) ───────────────────────────
-// The new mood must be stable for 5 seconds before triggering a music change.
-
-const CONFIDENCE_WINDOW_MS = 5000;
+// The new mood must be stable for confidenceWindowMs (default 5s, spec-
+// mandated in production) before triggering a music change. Injectable via
+// _config.confidenceWindowMs (see configureFeatureB below) specifically so
+// tests don't have to sleep out a real 5s per assertion — production code
+// never needs to touch it, since the 5000 default matches the spec.
 
 let _pendingMood       = null;
 let _pendingMoodSince  = 0;
@@ -34,7 +36,8 @@ let _currentMoodSince  = 0;
 
 /**
  * shouldTransition — returns true only if the new mood has been
- * consistently detected for ≥5 seconds (spec: "Confidence Interval: 5 seconds").
+ * consistently detected for ≥_config.confidenceWindowMs (spec: "Confidence
+ * Interval: 5 seconds", default).
  */
 function shouldTransition(newMood) {
   const now = Date.now();
@@ -51,7 +54,7 @@ function shouldTransition(newMood) {
     return false;
   }
 
-  return (now - _pendingMoodSince) >= CONFIDENCE_WINDOW_MS;
+  return (now - _pendingMoodSince) >= _config.confidenceWindowMs;
 }
 
 // ─── Idle fade-out (same mood held too long) ─────────────────────────────────
@@ -78,10 +81,11 @@ export function computeFadeVolume(idleMs) {
 
 // ─── Configuration ────────────────────────────────────────────────────────────
 let _config = {
-  apiKey:      "",             // Set via background.js from chrome.storage — string (direct) or { backend: 'proxy', ... }
-  llmModel:    DEFAULT_MODEL,  // GroqCloud model for B1/B2's classification calls — single source of truth (see llmConfig.js)
-  targetModel: "musicgen",     // Audio generation backend — "musicgen" | "stable-audio" | "generic" (unrelated to llmModel)
-  includeAll:  false,          // Include all prompt variants in output
+  apiKey:             "",            // Set via background.js from chrome.storage — string (direct) or { backend: 'proxy', ... }
+  llmModel:           DEFAULT_MODEL, // GroqCloud model for B1/B2's classification calls — single source of truth (see llmConfig.js)
+  targetModel:        "musicgen",    // Audio generation backend — "musicgen" | "stable-audio" | "generic" (unrelated to llmModel)
+  includeAll:         false,         // Include all prompt variants in output
+  confidenceWindowMs: 5000,          // Spec-mandated 5s stability window — override only in tests, never in production
 };
 
 export function configureFeatureB(config = {}) {

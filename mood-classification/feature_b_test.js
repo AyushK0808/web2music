@@ -979,6 +979,14 @@ assert(!dayFallback.prompt.includes("Late night"));
 // ── Integration test (no Chrome APIs — mock the config) ───────────────────────
 import { runFeatureB, configureFeatureB, resetConfidenceWindow, registerFeatureBListener, computeFadeVolume } from "./feature_b/index.js";
 
+// Production's confidence window is a spec-mandated 5s, but nothing about
+// these tests actually needs 5 real seconds to elapse — they just need
+// *some* window to expire (fix 09). Every Integration test below configures
+// this tiny window instead, so "waiting out the window" costs milliseconds,
+// not 5.1s apiece.
+const TEST_CONFIDENCE_WINDOW_MS = 50;
+const TEST_WINDOW_WAIT_MS       = TEST_CONFIDENCE_WINDOW_MS + 20; // small margin over the window for scheduling jitter
+
 console.log("Integration: computeFadeVolume — idle fade curve (4min start, 5min silent)");
 assert.equal(computeFadeVolume(3 * 60 * 1000), null, "under 4 minutes idle, no fade should be due yet");
 assert.equal(computeFadeVolume(4 * 60 * 1000), 1, "exactly at 4 minutes, volume should still be full (fade just starting)");
@@ -988,7 +996,7 @@ assert.equal(computeFadeVolume(10 * 60 * 1000), 0, "well past 5 minutes, volume 
 
 console.log("Integration: confidence interval — first call returns null");
 resetConfidenceWindow();
-configureFeatureB({ apiKey: "", targetModel: "musicgen" });
+configureFeatureB({ apiKey: "", targetModel: "musicgen", confidenceWindowMs: TEST_CONFIDENCE_WINDOW_MS });
 const firstCall = await runFeatureB({
   rawText: "study code focus research", title: "Docs", url: "https://docs.test.com",
   scrollSpeed: 50, cursorSpeed: 100,
@@ -997,7 +1005,7 @@ assert(firstCall === null, "First call should return null (confidence window not
 
 console.log("Integration: fallback on error — a single transient error does not hard-switch (fix 06 regression)");
 resetConfidenceWindow();
-configureFeatureB({ apiKey: "", targetModel: "musicgen" });
+configureFeatureB({ apiKey: "", targetModel: "musicgen", confidenceWindowMs: TEST_CONFIDENCE_WINDOW_MS });
 
 // Establish a real, confirmed mood first — something has to be "already
 // playing" for the transient error below to (pre-fix) wrongly interrupt.
@@ -1006,7 +1014,7 @@ const errFixPage = {
   scrollSpeed: 50, cursorSpeed: 100,
 };
 await runFeatureB(errFixPage); // starts the pending window, returns null
-await new Promise((r) => setTimeout(r, 5100));
+await new Promise((r) => setTimeout(r, TEST_WINDOW_WAIT_MS));
 const establishedResult = await runFeatureB(errFixPage);
 assert(establishedResult !== null, "setup: a real mood must be confirmed playing before testing that an error doesn't interrupt it");
 assert.equal(establishedResult.musicProfile.mood, "focused");
@@ -1024,7 +1032,7 @@ assert.equal(
 // If the pipeline keeps failing for the full 5s window, it should still
 // eventually settle into the calm fallback (edge case #13) — just gated by
 // the same stability rule as any other mood, not bypassing it.
-await new Promise((r) => setTimeout(r, 5100));
+await new Promise((r) => setTimeout(r, TEST_WINDOW_WAIT_MS));
 const persistentErrorResult = await runFeatureB(null);
 assert(persistentErrorResult !== null, "a persistent error (stable for 5s) must eventually fall back to calm, same as any other confirmed mood");
 assert.equal(persistentErrorResult.isFallback, true);
@@ -1032,13 +1040,13 @@ assert.equal(persistentErrorResult.musicProfile.mood, "calm");
 
 console.log("Integration: confidence interval — stable mood triggers a real transition");
 resetConfidenceWindow();
-configureFeatureB({ apiKey: "", targetModel: "musicgen" });
+configureFeatureB({ apiKey: "", targetModel: "musicgen", confidenceWindowMs: TEST_CONFIDENCE_WINDOW_MS });
 const stablePageData = {
   rawText: "study code focus research task", title: "Docs", url: "https://docs.test.com",
   scrollSpeed: 50, cursorSpeed: 100,
 };
 await runFeatureB(stablePageData); // starts the pending window, returns null
-await new Promise((r) => setTimeout(r, 5100));
+await new Promise((r) => setTimeout(r, TEST_WINDOW_WAIT_MS));
 const transitionResult = await runFeatureB(stablePageData);
 assert(transitionResult !== null, "a mood held stable for 5s must produce a real handoff2, not null");
 assert.equal(transitionResult.musicProfile.mood, "focused");
@@ -1059,7 +1067,7 @@ global.fetch = async (url, opts) => {
     }),
   };
 };
-configureFeatureB({ apiKey: "fake-key", llmModel: "custom-model-integration-test", targetModel: "musicgen" });
+configureFeatureB({ apiKey: "fake-key", llmModel: "custom-model-integration-test", targetModel: "musicgen", confidenceWindowMs: TEST_CONFIDENCE_WINDOW_MS });
 // Vocabulary deliberately avoids every CATEGORY_KEYWORDS/MOOD_RULES entry so
 // both B1's category heuristic and B2's mood heuristic miss and escalate.
 await runFeatureB({
@@ -1079,11 +1087,11 @@ for (const body of integrationCapturedBodies) {
     "every LLM call made through the orchestrator must use the single configured llmModel",
   );
 }
-configureFeatureB({ apiKey: "", llmModel: DEFAULT_MODEL, targetModel: "musicgen" }); // restore default for later tests
+configureFeatureB({ apiKey: "", llmModel: DEFAULT_MODEL, targetModel: "musicgen", confidenceWindowMs: TEST_CONFIDENCE_WINDOW_MS }); // restore default for later tests
 
 console.log("Integration: mood-flicker resets the stability window instead of carrying progress over");
 resetConfidenceWindow();
-configureFeatureB({ apiKey: "", targetModel: "musicgen" });
+configureFeatureB({ apiKey: "", targetModel: "musicgen", confidenceWindowMs: TEST_CONFIDENCE_WINDOW_MS });
 const moodAPage = { rawText: "study code focus research task", title: "Docs",    url: "https://a.test.com", scrollSpeed: 50, cursorSpeed: 100 };
 const moodBPage = { rawText: "workout gym hustle power intense", title: "Fitness", url: "https://b.test.com", scrollSpeed: 50, cursorSpeed: 100 };
 
@@ -1091,23 +1099,24 @@ await runFeatureB(moodAPage); // pending = focused
 const flickerResult = await runFeatureB(moodBPage); // flips before the window elapses
 assert.equal(flickerResult, null, "switching mood before the window elapses must reset the timer, not transition early");
 
-await new Promise((r) => setTimeout(r, 5100));
+await new Promise((r) => setTimeout(r, TEST_WINDOW_WAIT_MS));
 const postFlickerResult = await runFeatureB(moodBPage); // held stable for its own fresh window
 assert(postFlickerResult !== null, "mood B held stable for its own fresh 5s window must now transition");
 assert.equal(postFlickerResult.musicProfile.mood, "energetic");
 
 console.log("Integration: active-tab guard — inactive tabs are ignored, the active tab passes through");
 resetConfidenceWindow();
-configureFeatureB({ apiKey: "", targetModel: "musicgen" });
-// A real page + a real 5s wait, not payload: null — since fix 06, a null
-// payload's pipeline error no longer produces an instant result (that was
-// the bug), so this test needs a genuine confirmed transition instead.
+configureFeatureB({ apiKey: "", targetModel: "musicgen", confidenceWindowMs: TEST_CONFIDENCE_WINDOW_MS });
+// A real page + waiting out the (tiny, injected) confidence window, not
+// payload: null — since fix 06, a null payload's pipeline error no longer
+// produces an instant result (that was the bug), so this test needs a
+// genuine confirmed transition instead.
 const guardPageData = {
   rawText: "relax peaceful quiet serene breathe meditate", title: "Calm Space", url: "https://guard.test.com",
   scrollSpeed: 50, cursorSpeed: 100,
 };
 await runFeatureB(guardPageData); // starts the pending window
-await new Promise((r) => setTimeout(r, 5100)); // let it become eligible to confirm
+await new Promise((r) => setTimeout(r, TEST_WINDOW_WAIT_MS)); // let it become eligible to confirm
 
 const sentMessages = [];
 let capturedListener = null;
