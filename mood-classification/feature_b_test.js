@@ -855,10 +855,40 @@ const firstCall = await runFeatureB({
 });
 assert(firstCall === null, "First call should return null (confidence window not yet met)");
 
-console.log("Integration: fallback on error");
-const errorResult = await runFeatureB(null); // null input → should fallback gracefully
-assert(errorResult !== null);
-assert(errorResult.isFallback === true);
+console.log("Integration: fallback on error — a single transient error does not hard-switch (fix 06 regression)");
+resetConfidenceWindow();
+configureFeatureB({ apiKey: "", targetModel: "musicgen" });
+
+// Establish a real, confirmed mood first — something has to be "already
+// playing" for the transient error below to (pre-fix) wrongly interrupt.
+const errFixPage = {
+  rawText: "study code focus research task", title: "Docs", url: "https://docs.test.com",
+  scrollSpeed: 50, cursorSpeed: 100,
+};
+await runFeatureB(errFixPage); // starts the pending window, returns null
+await new Promise((r) => setTimeout(r, 5100));
+const establishedResult = await runFeatureB(errFixPage);
+assert(establishedResult !== null, "setup: a real mood must be confirmed playing before testing that an error doesn't interrupt it");
+assert.equal(establishedResult.musicProfile.mood, "focused");
+
+// A single transient pipeline error (null payload throws inside B1) must NOT
+// immediately switch to the calm fallback. Pre-fix, the catch block returned
+// buildFallbackPrompt() directly, bypassing shouldTransition entirely — one
+// bad call would hard-switch the music mid-session.
+const transientErrorResult = await runFeatureB(null);
+assert.equal(
+  transientErrorResult, null,
+  "a single transient pipeline error must not hard-switch to the calm fallback while a real mood is already playing",
+);
+
+// If the pipeline keeps failing for the full 5s window, it should still
+// eventually settle into the calm fallback (edge case #13) — just gated by
+// the same stability rule as any other mood, not bypassing it.
+await new Promise((r) => setTimeout(r, 5100));
+const persistentErrorResult = await runFeatureB(null);
+assert(persistentErrorResult !== null, "a persistent error (stable for 5s) must eventually fall back to calm, same as any other confirmed mood");
+assert.equal(persistentErrorResult.isFallback, true);
+assert.equal(persistentErrorResult.musicProfile.mood, "calm");
 
 console.log("Integration: confidence interval — stable mood triggers a real transition");
 resetConfidenceWindow();
@@ -927,6 +957,18 @@ assert(postFlickerResult !== null, "mood B held stable for its own fresh 5s wind
 assert.equal(postFlickerResult.musicProfile.mood, "energetic");
 
 console.log("Integration: active-tab guard — inactive tabs are ignored, the active tab passes through");
+resetConfidenceWindow();
+configureFeatureB({ apiKey: "", targetModel: "musicgen" });
+// A real page + a real 5s wait, not payload: null — since fix 06, a null
+// payload's pipeline error no longer produces an instant result (that was
+// the bug), so this test needs a genuine confirmed transition instead.
+const guardPageData = {
+  rawText: "relax peaceful quiet serene breathe meditate", title: "Calm Space", url: "https://guard.test.com",
+  scrollSpeed: 50, cursorSpeed: 100,
+};
+await runFeatureB(guardPageData); // starts the pending window
+await new Promise((r) => setTimeout(r, 5100)); // let it become eligible to confirm
+
 const sentMessages = [];
 let capturedListener = null;
 global.chrome = {
@@ -941,18 +983,20 @@ global.chrome = {
 registerFeatureBListener();
 assert.equal(typeof capturedListener, "function", "registerFeatureBListener must register a runtime.onMessage listener");
 
-// Inactive tab (sender.tab.id = 2 ≠ active tab id = 1) must never reach Feature D.
-// payload: null hits the synchronous fallback path so no confidence-window wait is needed.
-capturedListener({ type: "FEATURE_A_HANDOFF", payload: null }, { tab: { id: 2 } }, () => {});
+// Inactive tab (sender.tab.id = 2 ≠ active tab id = 1) must never reach Feature D —
+// the tab check happens before runFeatureB is even called, so this doesn't
+// touch the confidence window at all.
+capturedListener({ type: "FEATURE_A_HANDOFF", payload: guardPageData }, { tab: { id: 2 } }, () => {});
 await new Promise((r) => setTimeout(r, 20));
 assert.equal(sentMessages.length, 0, "signals from an inactive tab must never reach Feature D (edge case #4)");
 
-// Active tab (sender.tab.id = 1) must pass through to Feature D.
-capturedListener({ type: "FEATURE_A_HANDOFF", payload: null }, { tab: { id: 1 } }, () => {});
+// Active tab (sender.tab.id = 1) must pass through to Feature D. The pending
+// window established above has already elapsed, so this confirms the transition.
+capturedListener({ type: "FEATURE_A_HANDOFF", payload: guardPageData }, { tab: { id: 1 } }, () => {});
 await new Promise((r) => setTimeout(r, 20));
 assert.equal(sentMessages.length, 1, "signals from the active tab must reach Feature D");
 assert.equal(sentMessages[0].type, "FEATURE_B_HANDOFF");
-assert.equal(sentMessages[0].payload.isFallback, true);
+assert.equal(sentMessages[0].payload.musicProfile.mood, "calm");
 
 delete global.chrome;
 

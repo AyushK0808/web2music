@@ -99,6 +99,34 @@ function buildLLMConfig() {
   return { ...base, model: _config.llmModel };
 }
 
+// Shared by the success path and the error-fallback path so both are gated
+// by the same 5s confidence interval — a candidate mood only ever becomes
+// "current" (and only then updates the tracker / resets idle timing) once
+// shouldTransition confirms it's held stable. Used with candidateMood =
+// "calm" for pipeline errors too (fix 06): a single transient error must not
+// hard-switch the music mid-session just because it happened once, same as
+// a single ambiguous mood reading doesn't. buildHandoff2 is only invoked
+// when actually needed, so failed/held calls don't do wasted work.
+function decideTransition(candidateMood, buildHandoff2) {
+  if (!shouldTransition(candidateMood)) {
+    // Not a confirmed transition. If this is the same mood that's already
+    // playing and it's been idle 4+ minutes, emit a fade-volume update
+    // instead of staying silent — the track shouldn't loop forever unheard.
+    if (_currentMood === candidateMood && _currentMoodSince) {
+      const fadeVolume = computeFadeVolume(Date.now() - _currentMoodSince);
+      if (fadeVolume !== null) {
+        return { ...buildHandoff2(), volume: fadeVolume, isFadeUpdate: true };
+      }
+    }
+    return null; // Not yet stable — hold current music
+  }
+
+  // Mood confirmed stable — update tracker
+  _currentMood      = candidateMood;
+  _currentMoodSince = Date.now();
+  return { ...buildHandoff2(), volume: 1, isFadeUpdate: false };
+}
+
 // ─── Main pipeline ────────────────────────────────────────────────────────────
 
 /**
@@ -121,46 +149,23 @@ export async function runFeatureB(pageData) {
     const moodContext = await runB2(cleanedContent, buildLLMConfig());
 
     // ── Confidence interval check (spec edge case #1) ─────────────────────
-    if (!shouldTransition(moodContext.mood)) {
-      // Not a confirmed transition. If this is the same mood that's already
-      // playing and it's been idle 4+ minutes, emit a fade-volume update
-      // instead of staying silent — the track shouldn't loop forever unheard.
-      if (_currentMood === moodContext.mood && _currentMoodSince) {
-        const fadeVolume = computeFadeVolume(Date.now() - _currentMoodSince);
-        if (fadeVolume !== null) {
-          const musicProfile = runB3(moodContext);
-          const handoff2 = runB4(musicProfile, {
-            targetModel: _config.targetModel,
-            includeAll:  _config.includeAll,
-          });
-          return { ...handoff2, volume: fadeVolume, isFadeUpdate: true };
-        }
-      }
-      return null; // Not yet stable — hold current music
-    }
-
-    // Mood confirmed stable — update tracker
-    _currentMood      = moodContext.mood;
-    _currentMoodSince = Date.now();
-
-    // ── B3: Music Profile Generation ──────────────────────────────────────
-    const musicProfile = runB3(moodContext);
-
-    // ── B4: Prompt Engineering ────────────────────────────────────────────
-    const handoff2 = runB4(musicProfile, {
+    return decideTransition(moodContext.mood, () => runB4(runB3(moodContext), {
       targetModel: _config.targetModel,
       includeAll:  _config.includeAll,
-    });
-
-    return { ...handoff2, volume: 1, isFadeUpdate: false };
+    }));
 
   } catch (err) {
     console.error("[FeatureB] Pipeline error:", err.message);
 
-    // Edge case #13: LLM API offline or pipeline crash → fallback to calm
-    const hour       = new Date().getHours();
-    const timeOfDay  = hour >= 20 || hour < 5 ? "night" : "day";
-    return buildFallbackPrompt(timeOfDay);
+    // Edge case #13: LLM API offline or pipeline crash → fall back to calm —
+    // but routed through the same confidence-interval gate as a real mood
+    // (fix 06), so one transient error can't hard-switch away from whatever
+    // is already playing. Only after "calm" has been the outcome — real or
+    // erroring — for a full 5s does this actually take over, exactly like a
+    // genuine mood change would.
+    const hour      = new Date().getHours();
+    const timeOfDay = hour >= 20 || hour < 5 ? "night" : "day";
+    return decideTransition("calm", () => buildFallbackPrompt(timeOfDay));
   }
 }
 
