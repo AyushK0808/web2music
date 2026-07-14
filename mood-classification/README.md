@@ -143,7 +143,7 @@ Run all Feature B tests (B1, B2, B3, B4, and integration):
 npm test
 ```
 
-This runs ~20 assertions covering content cleaning, mood detection (both tiers), music profile generation, prompt engineering, and the 5-second confidence interval.
+This runs 147 assertions covering content cleaning, mood detection (both tiers), music profile generation, prompt engineering, and the 5-second confidence interval.
 
 ### Manual exploration scripts
 
@@ -223,7 +223,7 @@ manual-tests/
 ├── try_it_out.js                    # Quick test with synthetic data
 └── try_signal_test.js               # Test energy/intensity scaling with behaviour signals
 
-feature_b_test.js                    # Main test suite (20+ assertions)
+feature_b_test.js                    # Main test suite (147 assertions)
 background_integration.js            # Reference: wiring into Chrome extension
 package.json                         # Node.js project config
 README.md                            # This file

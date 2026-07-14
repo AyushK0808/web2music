@@ -191,7 +191,12 @@ export function registerFeatureBListener() {
       });
     });
 
-    return true; // Keep message channel open for async response
+    // This handler never calls sendResponse — the actual result is delivered
+    // via a separate chrome.runtime.sendMessage broadcast (FEATURE_B_HANDOFF)
+    // above, not through the reply channel. Returning true here without ever
+    // calling sendResponse leaves the message port open until Chrome times it
+    // out, leaking a port per message. Return false so Chrome closes it now.
+    return false;
   });
 }
 

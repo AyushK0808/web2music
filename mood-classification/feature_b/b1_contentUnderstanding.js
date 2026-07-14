@@ -24,12 +24,46 @@ const STOPWORDS = new Set([
   "when","where","how","all","no","more","also","just","can","up","out",
 ]);
 
+// ─── Handoff 1 version check ──────────────────────────────────────────────────
+// Feature A stamps handoffVersion: "1.0.0" on every PageData payload. Mirrors
+// d1_validate.py's philosophy (audio-generation/d1_validate.py): never hard-
+// reject on a mismatch — log it and keep going with best-effort parsing, since
+// a version bump on one side shouldn't take down the whole pipeline.
+const EXPECTED_HANDOFF1_VERSION = "1.0.0";
+
+/**
+ * validateHandoff1 — checks the Handoff 1 payload's version stamp.
+ * @param {Object} pageData
+ * @returns {Object} pageData, unchanged
+ */
+export function validateHandoff1(pageData) {
+  const version = pageData?.handoffVersion;
+  if (version !== EXPECTED_HANDOFF1_VERSION) {
+    console.warn(
+      `[B1] Handoff 1 version mismatch: expected "${EXPECTED_HANDOFF1_VERSION}", got "${version ?? "missing"}" — proceeding anyway`
+    );
+  }
+  return pageData;
+}
+
 // ─── Sensitive content signals (edge case #2 from spec) ─────────────────────
-const SENSITIVE_PATTERNS = [
+// Split into high-confidence terms (rarely used outside a genuine crisis, so
+// one hit is enough) and ambiguous terms that double as ordinary vocabulary
+// elsewhere — "depression"/"grief" ("The Great Depression", "grief counselling
+// degree programs"), "genocide" (a single mention in a war-history article),
+// "abuse" ("abuse of power"). An ambiguous term only counts once corroborated
+// by a second sensitive-term hit.
+const SENSITIVE_PATTERNS_HIGH_CONFIDENCE = [
   /\b(suicide|self.harm|self-harm|eating disorder|anorexia|bulimia)\b/i,
-  /\b(mental health crisis|grief|bereavement|depression|trauma)\b/i,
-  /\b(rape|sexual assault|domestic violence|abuse)\b/i,
-  /\b(terrorism|mass shooting|genocide)\b/i,
+  /\b(mental health crisis|bereavement)\b/i,
+  /\b(rape|sexual assault|domestic violence)\b/i,
+  /\b(terrorism|mass shooting)\b/i,
+];
+
+const SENSITIVE_PATTERNS_AMBIGUOUS = [
+  /\b(grief|depression|trauma)\b/i,
+  /\bgenocide\b/i,
+  /\babuse\b/i,
 ];
 
 // ─── Keyword → content category map (maps to CONTENT CATEGORIES from spec) ──
@@ -290,7 +324,16 @@ export async function resolveContentCategory(keywords, title, summary, apiKey) {
  */
 export function checkSensitiveContent(text) {
   if (!text) return false;
-  return SENSITIVE_PATTERNS.some(re => re.test(text));
+  if (SENSITIVE_PATTERNS_HIGH_CONFIDENCE.some(re => re.test(text))) return true;
+
+  // A lone ambiguous hit ("The Great Depression", a war-history article's
+  // "genocide", "grief counselling degree programs") isn't enough on its own —
+  // require a second sensitive-term hit before treating it as a crisis page.
+  const ambiguousHits = SENSITIVE_PATTERNS_AMBIGUOUS.reduce(
+    (count, re) => count + (text.match(new RegExp(re.source, "gi"))?.length ?? 0),
+    0
+  );
+  return ambiguousHits >= 2;
 }
 
 /**
@@ -355,6 +398,8 @@ export function summariseContent(cleanedText) {
  * @returns {Promise<Object>} CleanedContent — input to B2
  */
 export async function runB1(pageData, apiKey = "") {
+  validateHandoff1(pageData);
+
   const meta = analyseMetadata({
     title:       pageData.title,
     description: pageData.description,
