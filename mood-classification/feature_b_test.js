@@ -305,6 +305,39 @@ assert(checkSensitiveContent("Reports on the recent terrorism attack in the city
 assert(checkSensitiveContent("The article discusses domestic violence support hotlines"));
 assert(!checkSensitiveContent("A news piece about local zoning laws"));
 
+console.log("B1: checkSensitiveContent — one incidental ambiguous word must not force-override the whole page (fix 12 regression)");
+// The exact three reported false positives — a single ambiguous term used in
+// its ordinary, non-crisis sense must not trigger the sensitive override.
+assert(
+  !checkSensitiveContent("The Great Depression was a severe worldwide economic downturn in the 1930s."),
+  '"depression" used in its economic-history sense alone must not flag the page as sensitive',
+);
+assert(
+  !checkSensitiveContent("Explore accredited grief counselling degree programs and certification paths."),
+  '"grief" in an education/career-listing context alone must not flag the page as sensitive',
+);
+assert(
+  !checkSensitiveContent("This textbook chapter examines the Armenian genocide and its long-term historical impact on the region."),
+  '"genocide" discussed as history at a distance, alone, must not flag the page as sensitive',
+);
+
+console.log("B1: checkSensitiveContent — two distinct ambiguous hits still correctly flag real crisis-adjacent content");
+// Hits are counted per distinct term, not per source pattern group — grief
+// and trauma correctly count as 2 distinct hits even though they're declared
+// together in the same AMBIGUOUS_SENSITIVE_TERMS list.
+assert(
+  checkSensitiveContent("Coping with grief and trauma after a personal loss — resources for mental wellbeing."),
+  "grief + trauma together (2 distinct ambiguous terms) is a real signal, not incidental vocabulary",
+);
+assert(
+  checkSensitiveContent("Coping with grief after surviving abuse — resources for mental wellbeing."),
+  "grief + abuse together (2 distinct ambiguous terms) is also a real signal",
+);
+assert(
+  !checkSensitiveContent("This article on grief studies references grief, grief, grief throughout."),
+  "repeating the same ambiguous word must not count as multiple distinct hits — that would trivially defeat the threshold",
+);
+
 console.log("B1: summariseContent");
 const summary = summariseContent("First sentence here. Second sentence here. Third sentence here.");
 assert(summary.includes("First sentence"));
@@ -407,6 +440,42 @@ assert.equal(noAResult.isImageOnly, false, "without Feature A's value, B1 must s
 assert(noAResult.readingComplexity > 0 && noAResult.readingComplexity <= 1, "without Feature A's value, B1 must still compute its own readingComplexity");
 assert.equal(noAResult.wordCount, 0, "wordCount must default to 0 when Feature A didn't supply it");
 assert.equal(noAResult.colorEnergy, 0, "colorEnergy must default to 0 when Feature A didn't supply it");
+
+console.log("B1: runB1 — handoffVersion compatibility is checked, never enforced (fix 12)");
+// Feature A (data-extraction/pageData.js) stamps handoffVersion and its own
+// comment claims B validates it — this closes that gap, mirroring
+// d1_validate.py's never-throw philosophy: warn on a real mismatch, but
+// always still produce a usable result.
+const versionTestPage = {
+  rawText: "study code focus research task", title: "Docs", url: "https://docs.test.com",
+};
+const originalWarn = console.warn;
+
+let warnCalls = [];
+console.warn = (...args) => { warnCalls.push(args.join(" ")); };
+
+warnCalls = [];
+const compatibleResult = await runB1({ ...versionTestPage, handoffVersion: "1.0.0" });
+assert.equal(warnCalls.length, 0, "a matching major version (1.x.x) must not warn");
+assert(compatibleResult.keywords, "a compatible handoff must still produce a normal result");
+
+warnCalls = [];
+const patchBumpResult = await runB1({ ...versionTestPage, handoffVersion: "1.4.2" });
+assert.equal(warnCalls.length, 0, "a minor/patch version bump within the same major (1.4.2) must not warn — only a major mismatch is a real schema break");
+assert(patchBumpResult.keywords);
+
+warnCalls = [];
+const noVersionResult = await runB1({ ...versionTestPage }); // no handoffVersion at all — every hand-built pageData in this file
+assert.equal(warnCalls.length, 0, "an unstamped pageData (every manually-built test fixture) must not warn — this must stay backward compatible");
+assert(noVersionResult.keywords);
+
+warnCalls = [];
+const mismatchResult = await runB1({ ...versionTestPage, handoffVersion: "2.0.0" });
+assert.equal(warnCalls.length, 1, "a real major-version mismatch (2.0.0 vs expected 1.x.x) must warn exactly once");
+assert(warnCalls[0].includes("2.0.0"), "the warning must name the actual received version for debuggability");
+assert(mismatchResult.keywords, "a version mismatch must never throw or block processing — d1_validate.py-style: warn and still produce a usable result");
+
+console.warn = originalWarn;
 
 // ── B2 Tests ──────────────────────────────────────────────────────────────────
 import {
@@ -566,6 +635,28 @@ assert.equal(
   JSON.parse(b2ModelRequest.body).model, "custom-model-override",
   "an explicit model in the config object must override the default",
 );
+
+console.log("B2: callLLMClassifier — an object with an empty apiKey must skip the network call, same as a bare empty string (audit regression)");
+// buildLLMConfig() in index.js always wraps apiKey in an object — even with
+// no key configured, { apiKey: "" } is still an object, and objects are
+// always truthy. Without an explicit guard here (B1's callCategoryLLMClassifier
+// already has one), runB2's "(blendedConf < 0.5 || isNonEnglish) && apiKey"
+// check would treat that object as "a key is configured" and fire a real
+// network call with an empty Authorization header whenever called through
+// the orchestrator with no key set — wasted requests against free-tier quota,
+// unnecessary latency, and a real fetch() nobody asked for.
+let noKeyCallCount = 0;
+const originalNoKeyFetch = global.fetch;
+global.fetch = async () => { noKeyCallCount++; return { ok: true, json: async () => ({}) }; };
+const emptyStringResult = await callLLMClassifier(llmStub, "");
+assert.equal(emptyStringResult, null, "a bare empty string must skip the network call and return null immediately");
+assert.equal(noKeyCallCount, 0, "a bare empty string must never reach fetch()");
+
+const emptyObjectResult = await callLLMClassifier(llmStub, { apiKey: "" });
+assert.equal(emptyObjectResult, null, "an object with an empty apiKey must behave identically to a bare empty string — skip the network call");
+assert.equal(noKeyCallCount, 0, "an object with an empty apiKey must never reach fetch() either");
+global.fetch = originalNoKeyFetch;
+
 
 console.log("B2: callLLMClassifier — mocked network responses");
 
@@ -869,6 +960,28 @@ assert(Array.isArray(profile.instruments) && profile.instruments.length > 0);
 assert(typeof profile.key === "string");
 assert(profile.musicCategory.includes("Productive") || profile.musicCategory.includes("Focused"));
 
+console.log("B3: hour is injectable via moodContext, making the full pipeline reproducible at a fixed time (fix 13)");
+// getTimeOfDayContext already supported an injectable hour, but runB3 never
+// passed one through — every call was pinned to the real wall clock, so the
+// full pipeline could never be tested deterministically (only loose ranges,
+// like the bpm/energy checks above).
+const morningProfile1 = runB3({ ...moodCtx, hour: 10 }); // mid-morning bracket
+const morningProfile2 = runB3({ ...moodCtx, hour: 10 });
+assert.equal(morningProfile1.timeOfDay, "mid-morning");
+assert.equal(morningProfile1.bpm, morningProfile2.bpm, "same mood + same injected hour must produce the exact same bpm — this is what makes the pipeline testable");
+assert.equal(morningProfile1.energy, morningProfile2.energy, "same mood + same injected hour must produce the exact same energy");
+
+const nightProfile = runB3({ ...moodCtx, hour: 23 }); // late-night bracket
+assert.equal(nightProfile.timeOfDay, "late-night");
+assert.notEqual(nightProfile.bpm, morningProfile1.bpm, "a different injected hour must actually change the output — proves the value flows through to getTimeOfDayContext, not just accepted and ignored");
+assert(nightProfile.bpm < morningProfile1.bpm, "late-night carries a more negative bpmAdjust than mid-morning, so its bpm must be lower for the same mood");
+
+const wallClockProfile = runB3(moodCtx); // no hour supplied
+assert.equal(
+  wallClockProfile.timeOfDay, getTimeOfDayContext().label,
+  "omitting hour must still fall back to the real current hour, unchanged from before this fix",
+);
+
 console.log("B3: BPM scales with energy");
 const lowEnergyProfile  = runB3({ ...moodCtx, energyHint: 0.1 });
 const highEnergyProfile = runB3({ ...moodCtx, energyHint: 0.9 });
@@ -1001,6 +1114,29 @@ const firstCall = await runFeatureB({
   scrollSpeed: 50, cursorSpeed: 100,
 });
 assert(firstCall === null, "First call should return null (confidence window not yet met)");
+
+console.log("Integration: runFeatureB never calls fetch when no API key is configured, even on ambiguous content (audit regression)");
+// buildLLMConfig() always wraps apiKey in an object, which is always
+// truthy — without B2's guard (added in this audit pass), runB2's escalation
+// check would treat "no key configured" as "a key is configured" whenever
+// called through the real orchestrator, firing a real network call nobody
+// asked for. Content here is deliberately low-confidence/ambiguous so tier-2
+// escalation would be attempted if a key were actually configured.
+resetConfidenceWindow();
+let noKeyOrchestratorFetchCount = 0;
+const originalNoKeyOrchestratorFetch = global.fetch;
+global.fetch = async () => { noKeyOrchestratorFetchCount++; return { ok: false, status: 401, json: async () => ({}) }; };
+configureFeatureB({ apiKey: "", targetModel: "musicgen", confidenceWindowMs: TEST_CONFIDENCE_WINDOW_MS });
+await runFeatureB({
+  rawText: "Zorblex quantum ripple diagrams illustrate abstract lattice configurations across variable frameworks and modular assemblies.",
+  title: "Lattice Notes", url: "https://example.com/lattice-notes",
+  scrollSpeed: 50, cursorSpeed: 100,
+});
+assert.equal(
+  noKeyOrchestratorFetchCount, 0,
+  `runFeatureB with no apiKey configured must never call fetch, even for low-confidence/ambiguous content — got ${noKeyOrchestratorFetchCount} call(s)`,
+);
+global.fetch = originalNoKeyOrchestratorFetch;
 
 console.log("Integration: fallback on error — a single transient error does not hard-switch (fix 06 regression)");
 resetConfidenceWindow();
@@ -1145,6 +1281,22 @@ await new Promise((r) => setTimeout(r, 20));
 assert.equal(sentMessages.length, 1, "signals from the active tab must reach Feature D");
 assert.equal(sentMessages[0].type, "FEATURE_B_HANDOFF");
 assert.equal(sentMessages[0].payload.musicProfile.mood, "calm");
+
+console.log("Integration: registerFeatureBListener never claims an async sendResponse it doesn't deliver (fix 11 regression)");
+// The listener's actual result goes out via a separate runtime.sendMessage
+// broadcast, never via sendResponse — returning true here (pre-fix) told
+// Chrome to hold this message's port open forever waiting for a reply that
+// was never coming, leaking one open port per FEATURE_A_HANDOFF message for
+// the life of the service worker.
+let sendResponseCalled = false;
+const listenerReturnValue = capturedListener(
+  { type: "FEATURE_A_HANDOFF", payload: guardPageData },
+  { tab: { id: 1 } },
+  () => { sendResponseCalled = true; },
+);
+assert.equal(listenerReturnValue, false, "the listener must return false — it never calls sendResponse, so it must not claim an async response is coming");
+await new Promise((r) => setTimeout(r, 20));
+assert.equal(sendResponseCalled, false, "sanity check: sendResponse is genuinely never called by this listener");
 
 delete global.chrome;
 

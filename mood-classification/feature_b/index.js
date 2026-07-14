@@ -213,7 +213,15 @@ export function registerFeatureBListener() {
       });
     });
 
-    return true; // Keep message channel open for async response
+    // sendResponse is never called — the result goes out via a separate
+    // runtime.sendMessage broadcast above, not as a reply on this message's
+    // own channel. Returning true here without ever calling sendResponse
+    // told Chrome to keep this message port open indefinitely, leaking it
+    // for the lifetime of the service worker. false tells Chrome this
+    // listener is synchronous-done and the port can close immediately; the
+    // async work above (tabs.query, runFeatureB, sendMessage) runs
+    // independently of this listener's return value either way.
+    return false;
   });
 }
 
