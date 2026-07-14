@@ -1,14 +1,28 @@
-from fastapi import FastAPI
+import os
+import time
+import asyncio
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import JSONResponse
 from d1_validate import validate_profile
 from d2_prompt import build_prompt
 from d3_generate import generate_audio, GenerationError
 from d4_process import process_audio
-from d5_cache import make_cache_key, check_cache, save_to_cache
 from fallback import get_fallback_clip
-import time
-import asyncio
+
+# Prod (Supabase-backed) cache vs. local dev cache (Docker Postgres + files on
+# disk). Defaults to dev so the server runs out of the box against `docker
+# compose up` in audio-generation/docker/ without needing a Supabase account.
+IS_PROD = os.getenv("IS_PROD", "false").lower() in ("1", "true", "yes")
+if IS_PROD:
+    from d5_cache import make_cache_key, check_cache, save_to_cache
+else:
+    from d5_cache_local import make_cache_key, check_cache, save_to_cache, AUDIO_CACHE_DIR
 
 app = FastAPI()
+
+if not IS_PROD:
+    from fastapi.staticfiles import StaticFiles
+    app.mount("/audio-cache", StaticFiles(directory=AUDIO_CACHE_DIR), name="audio-cache")
 
 @app.post("/generate")
 async def generate(payload: dict):
@@ -42,9 +56,9 @@ async def generate(payload: dict):
 
     # D3 — Generate audio with retry logic
     t3 = time.time()
-    is_fallback = False
+    generation_seed = None
     try:
-        audio_bytes = await asyncio.to_thread(generate_audio, prompt)
+        audio_bytes, generation_seed = await asyncio.to_thread(generate_audio, prompt)
     except GenerationError as e:
         print(f"[MAIN] Generation failed after all retries: {e}")
         print(f"[MAIN] Attempting fallback clip for mood: {profile['mood']}")
@@ -52,29 +66,29 @@ async def generate(payload: dict):
         fallback_bytes = await asyncio.to_thread(get_fallback_clip, profile["mood"])
 
         if fallback_bytes is None:
-            return {
-                "error":   "Audio generation failed and no fallback clips available",
-                "detail":  str(e),
-                "cache":   "miss",
-                "timings": timings
-            }
+            raise HTTPException(
+                status_code=503,
+                detail="Audio generation failed and no fallback clips are available. Please try again later."
+            )
 
-        # Return fallback directly — skip post-processing and caching
         print("[MAIN] Returning fallback clip")
-        return {
-            "audio_url": None,   # no URL, raw bytes served differently in production
-            "metadata": {
-                "mood":        profile["mood"],
-                "bpm":         profile["bpm"],
-                "key":         profile["key"],
-                "energy":      profile["energy"],
-                "is_fallback": True,
-                "loopable":    True
-            },
-            "cache":   "miss",
-            "fallback": True,
-            "timings": timings
-        }
+        return JSONResponse(
+            status_code=200,
+            content={
+                "audio_url": None,
+                "metadata": {
+                    "mood":        profile["mood"],
+                    "bpm":         profile["bpm"],
+                    "key":         profile["key"],
+                    "energy":      profile["energy"],
+                    "is_fallback": True,
+                    "loopable":    True
+                },
+                "cache":    "miss",
+                "fallback": True,
+                "timings":  timings
+            }
+        )
 
     timings["d3_generate_ms"] = int((time.time() - t3) * 1000)
 
@@ -95,18 +109,19 @@ async def generate(payload: dict):
     return {
         "audio_url": audio_url,
         "metadata": {
-            "cache_key":     cache_key,
-            "mood":          profile["mood"],
-            "bpm":           profile["bpm"],
-            "key":           profile["key"],
-            "energy":        profile["energy"],
-            "valence":       profile["valence"],
-            "intensity":     profile["intensity"],
-            "loop_point_ms": loop_point_ms,
-            "prompt_used":   prompt,
-            "prompt_source": "feature_b" if prompt_from_b else "d2_fallback",
-            "is_fallback":   False,
-            "loopable":      True
+            "cache_key":       cache_key,
+            "mood":            profile["mood"],
+            "bpm":             profile["bpm"],
+            "key":             profile["key"],
+            "energy":          profile["energy"],
+            "valence":         profile["valence"],
+            "intensity":       profile["intensity"],
+            "loop_point_ms":   loop_point_ms,
+            "prompt_used":     prompt,
+            "prompt_source":   "feature_b" if prompt_from_b else "d2_fallback",
+            "generation_seed": generation_seed,
+            "is_fallback":     False,
+            "loopable":        True
         },
         "cache":   "miss",
         "timings": timings

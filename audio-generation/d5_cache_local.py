@@ -3,34 +3,27 @@ import psycopg2
 from dotenv import load_dotenv
 load_dotenv()
 
-# Dev stand-in for d5_cache.py (Supabase): metadata lives in a local Postgres
-# container (see docker/docker-compose.yml), audio files live on disk and are
-# served by the StaticFiles mount in main.py. Same function signatures as
-# d5_cache.py so main.py can swap backends on IS_PROD alone.
-
 AUDIO_CACHE_DIR = os.path.join(os.path.dirname(__file__), "audio-cache")
 os.makedirs(AUDIO_CACHE_DIR, exist_ok=True)
 
 LOCAL_DB_URL = os.getenv("LOCAL_DB_URL", "postgresql://postgres:postgres@localhost:5432/audio_cache")
 LOCAL_SERVER_URL = os.getenv("LOCAL_SERVER_URL", "http://127.0.0.1:8000")
 
-
 def _connect():
     return psycopg2.connect(LOCAL_DB_URL)
-
 
 def make_cache_key(profile: dict) -> str:
     bpm = profile["bpm"]
     canonical = {
-        "mood": profile["mood"],
-        "bpm_bucket": "low" if bpm < 76 else "mid" if bpm < 101 else "high",
+        "mood":        profile["mood"],
+        "bpm_bucket":  "low" if bpm < 76 else "mid" if bpm < 101 else "high",
         "energy_tier": round(float(profile["energy"]), 1),
-        "style": profile["style"]
+        "style":       profile["style"],
+        "key":         profile["key"],  # ← added
     }
     return hashlib.sha256(
         json.dumps(canonical, sort_keys=True).encode()
     ).hexdigest()
-
 
 def check_cache(cache_key: str):
     conn = _connect()
@@ -44,7 +37,6 @@ def check_cache(cache_key: str):
             return dict(zip(columns, row))
     finally:
         conn.close()
-
 
 def save_to_cache(cache_key, mp3_bytes, profile, loop_point_ms, generation_time_ms, prompt_used):
     filename = f"{cache_key}.mp3"
