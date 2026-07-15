@@ -1,13 +1,42 @@
-fastapi
-uvicorn[standard]
-python-dotenv
-transformers
-torch
-numpy
-soundfile
-librosa
-pyloudnorm
-pydub
-imageio-ffmpeg
-supabase
-psycopg2-binary
+# API server
+fastapi==0.137.2
+uvicorn==0.49.0
+starlette==1.3.1
+python-dotenv==1.2.2
+pydantic==2.13.4
+pydantic_core==2.46.4
+
+# Audio generation
+torch==2.12.1
+transformers==5.12.1
+tokenizers==0.22.2
+safetensors==0.8.0
+huggingface_hub==1.20.1
+
+# Audio processing
+soundfile==0.14.0
+librosa==0.11.0
+pyloudnorm==0.2.0
+pydub==0.25.1
+imageio-ffmpeg==0.6.0
+numpy==2.4.6
+scipy==1.17.1
+scikit-learn==1.9.0
+
+# Cache & storage
+supabase==2.31.0
+psycopg2-binary==2.9.12
+
+# Utilities
+requests==2.34.2
+httpx==0.28.1
+anyio==4.14.0
+filelock==3.29.4
+packaging==26.2
+tqdm==4.68.3
+regex==2026.5.9
+sympy==1.14.0
+networkx==3.6.1
+fsspec==2026.6.0
+PyYAML==6.0.3
+typing_extensions==4.15.0
