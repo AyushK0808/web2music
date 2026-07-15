@@ -8,6 +8,7 @@ from d2_prompt import build_prompt
 from d3_generate import generate_audio, GenerationError
 from d4_process import process_audio
 from fallback import get_fallback_clip
+from models import HandoffPayload
 
 # Prod (Supabase-backed) cache vs. local dev cache (Docker Postgres + files on
 # disk). Defaults to dev so the server runs out of the box against `docker
@@ -25,7 +26,7 @@ if not IS_PROD:
     app.mount("/audio-cache", StaticFiles(directory=AUDIO_CACHE_DIR), name="audio-cache")
 
 @app.post("/generate")
-async def generate(payload: dict):
+async def generate(payload: HandoffPayload):
     timings = {}
 
     # D1 — Validate & unwrap Sneha's Handoff 2 payload
