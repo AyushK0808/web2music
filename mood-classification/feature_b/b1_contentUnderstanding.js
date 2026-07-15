@@ -16,6 +16,24 @@
 
 import { DEFAULT_MODEL } from "./llmConfig.js";
 
+// ─── Handoff-1 version compatibility ─────────────────────────────────────────
+// Feature A (data-extraction/pageData.js) stamps every pageData object with
+// handoffVersion (currently "1.0.0") and its own comment claims "so B can
+// validate the handoff before trusting it" — B never actually did. Mirrors
+// Feature D's d1_validate.py philosophy: never throw on a mismatch (Feature A
+// might be mid-rollout, or this is a hand-built pageData from a test/manual
+// script that never stamped a version at all), just don't silently trust data
+// shaped by assumptions that may no longer hold — log it so a real schema
+// drift is visible instead of silently misclassifying pages forever.
+// Keep EXPECTED_HANDOFF_MAJOR in sync with data-extraction/pageData.js's
+// HANDOFF_VERSION major version.
+const EXPECTED_HANDOFF_MAJOR = "1";
+
+function isCompatibleHandoffVersion(version) {
+  if (typeof version !== "string" || !version) return true; // unstamped — trust it, same as every hand-built pageData in tests/manual scripts
+  return version.split(".")[0] === EXPECTED_HANDOFF_MAJOR;
+}
+
 // ─── Stopword list (English) ──────────────────────────────────────────────────
 const STOPWORDS = new Set([
   "the","a","an","is","it","in","of","and","or","to","for","on","at","by",
@@ -27,12 +45,45 @@ const STOPWORDS = new Set([
 ]);
 
 // ─── Sensitive content signals (edge case #2 from spec) ─────────────────────
-const SENSITIVE_PATTERNS = [
-  /\b(suicide|self.harm|self-harm|eating disorder|anorexia|bulimia)\b/i,
-  /\b(mental health crisis|grief|bereavement|depression|trauma)\b/i,
-  /\b(rape|sexual assault|domestic violence|abuse)\b/i,
-  /\b(terrorism|mass shooting|genocide)\b/i,
+// Split by false-positive risk rather than one flat list, and matched one
+// term at a time (not one regex per bundled group) so that "distinct hit"
+// means "distinct term" — grief + trauma appearing together must count as 2
+// hits even though they were previously bundled into the same alternation.
+//
+// SEVERE terms are specific/clinical enough — or, for "terrorism"/"mass
+// shooting", tied tightly enough to present-tense news reporting — that
+// they're rarely used outside an actual crisis or breaking-news context, so
+// a single mention is trusted on its own (e.g. "Reports on the recent
+// terrorism attack..." must still be flagged).
+//
+// AMBIGUOUS terms are common vocabulary that shows up constantly in
+// non-crisis writing — "The Great Depression" (economics), "grief
+// counselling degree programs" (education), a war-history article's
+// "genocide" (history discussed at a distance, not a live event) — so one
+// incidental mention isn't treated as a real signal; checkSensitiveContent
+// below requires ≥2 distinct ambiguous terms before it counts.
+const SEVERE_SENSITIVE_TERMS = [
+  "suicide", "self.harm", "self-harm", "eating disorder", "anorexia", "bulimia",
+  "rape", "sexual assault", "domestic violence",
+  "terrorism", "mass shooting",
 ];
+const AMBIGUOUS_SENSITIVE_TERMS = [
+  "mental health crisis", "grief", "bereavement", "depression", "trauma",
+  "abuse",
+  "genocide",
+];
+
+// Counts how many distinct terms from the list appear in text at least once —
+// repeating the same term many times still only counts once, and terms are
+// checked individually so bundling them in a source array never merges them
+// into a single hit the way one shared regex alternation would.
+function countDistinctTermHits(text, terms) {
+  let count = 0;
+  for (const term of terms) {
+    if (new RegExp(`\\b(${term})\\b`, "i").test(text)) count++;
+  }
+  return count;
+}
 
 // ─── Keyword → content category map (maps to CONTENT CATEGORIES from spec) ──
 // Each list is 30+ keywords so the tier-1 heuristic clears MIN_CATEGORY_HITS
@@ -352,12 +403,22 @@ export async function resolveContentCategory(keywords, title, summary, apiKey, l
 /**
  * checkSensitiveContent — edge case #2: detect crisis / harm pages.
  * If matched, downstream modules force-override to Uplifting/Spiritual.
+ *
+ * A single SEVERE hit (suicide, self-harm, sexual assault, etc.) is enough —
+ * those terms are specific enough that false positives are rare and the cost
+ * of a false negative on genuine crisis content is high. AMBIGUOUS hits
+ * (depression, grief, trauma, genocide, ...) are common in ordinary
+ * historical/educational/news writing, so at least 2 distinct ones are
+ * required before treating it as a real signal — one incidental word (e.g.
+ * "The Great Depression", "grief counselling degree programs") must not
+ * force-override an entire page's mood.
  * @param {string} text
  * @returns {boolean}
  */
 export function checkSensitiveContent(text) {
   if (!text) return false;
-  return SENSITIVE_PATTERNS.some(re => re.test(text));
+  if (countDistinctTermHits(text, SEVERE_SENSITIVE_TERMS) > 0) return true;
+  return countDistinctTermHits(text, AMBIGUOUS_SENSITIVE_TERMS) >= 2;
 }
 
 /**
@@ -421,6 +482,7 @@ export function summariseContent(cleanedText) {
  *     readingComplexity: number,   // [0..1], Flesch-derived, numerically compatible with computeReadingComplexity()
  *     wordCount:   number,
  *     colorEnergy: number,         // [0..1]
+ *     handoffVersion: string,      // e.g. "1.0.0" — checked against EXPECTED_HANDOFF_MAJOR, never required
  *   }
  * @param {string} apiKey   LLM API key, used only to escalate category
  *   classification when the keyword heuristic can't clear MIN_CATEGORY_HITS.
@@ -428,6 +490,13 @@ export function summariseContent(cleanedText) {
  * @returns {Promise<Object>} CleanedContent — input to B2
  */
 export async function runB1(pageData, apiKey = "") {
+  if (!isCompatibleHandoffVersion(pageData.handoffVersion)) {
+    console.warn(
+      `[B1] Handoff version mismatch: received "${pageData.handoffVersion}", expected ${EXPECTED_HANDOFF_MAJOR}.x.x — ` +
+      `Feature A's schema may have changed in a way B1 doesn't account for yet. Proceeding anyway.`
+    );
+  }
+
   const meta = analyseMetadata({
     title:       pageData.title,
     description: pageData.description,

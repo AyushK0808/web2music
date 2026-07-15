@@ -195,6 +195,11 @@ function interpolateBPM(range, energyHint, modifier = 0, timeAdjust = 0) {
  * runB3 — generates a full MusicProfile from the MoodContext produced by B2.
  *
  * @param {Object} moodContext  Output of B2.runB2()
+ * @param {number} [moodContext.hour]  Optional 0-23 hour override, forwarded to
+ *   getTimeOfDayContext() — that function already supported injecting an hour
+ *   for deterministic testing, but runB3 never passed one through, so any
+ *   caller (production or test) was always pinned to the real wall clock with
+ *   no way to reach that injectability. Omit to use the real current hour.
  * @returns {Object}            MusicProfile — input to B4 and Feature D
  */
 export function runB3(moodContext) {
@@ -207,11 +212,12 @@ export function runB3(moodContext) {
     cursorSpeed = 0,
     colors      = {},
     category    = {},
+    hour,
   } = moodContext;
 
   const base       = MOOD_PARAMS[mood] ?? MOOD_PARAMS.neutral;
   const pageModifier = PAGE_TYPE_MODIFIERS[pageType] ?? PAGE_TYPE_MODIFIERS.other;
-  const timeCtx    = getTimeOfDayContext();
+  const timeCtx    = getTimeOfDayContext(hour);
 
   // ── BPM ────────────────────────────────────────────────────────────────────
   const bpm = interpolateBPM(

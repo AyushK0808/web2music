@@ -45,9 +45,16 @@ Feature D (AI Audio Generation)
   },
   "scrollSpeed":  120,
   "cursorSpeed":  300,
-  "embedding":    [0.12, -0.34, ...]
+  "embedding":    [0.12, -0.34, ...],
+
+  "isImageOnly":       false,
+  "readingComplexity": 0.42,
+  "wordCount":         318,
+  "colorEnergy":       0.6
 }
 ```
+
+The last four fields are additive enrichment from Feature A (`data-extraction/pageData.js`) — B1 uses them when present (they're cheaper and more accurate than B1's own fallback heuristics — `isImageOnly` is DOM image/video-count aware, `readingComplexity` is Flesch-derived and numerically compatible with B1's own computation) and falls back to computing its own when they're absent, e.g. in tests or manual scripts that build `pageData` by hand.
 
 ---
 
@@ -122,15 +129,25 @@ Tier 1 (always runs, ~0ms)
 // In background.js
 import { configureFeatureB, registerFeatureBListener } from "./feature_b/index.js";
 
-chrome.storage.sync.get(["llmApiKey", "targetModel"], (settings) => {
+// Two LLM backends (see docker/README.md):
+//   "direct" (default) — apiKey ships in this bundle, calls api.groq.com
+//   "proxy"             — no key here; calls docker/classifyService.js, which
+//                          holds GROQ_API_KEY server-side instead
+// llmApiKey should be a GroqCloud key (starts with "gsk_") — get a free one
+// at https://console.groq.com/keys.
+chrome.storage.sync.get(["llmApiKey", "llmBackend", "llmServiceUrl", "targetModel"], (settings) => {
   configureFeatureB({
-    apiKey:      settings.llmApiKey   ?? "",
+    apiKey: settings.llmBackend === "proxy"
+      ? { backend: "proxy", serviceUrl: settings.llmServiceUrl || "http://localhost:8078/v1/chat/completions" }
+      : (settings.llmApiKey ?? ""),
     targetModel: settings.targetModel ?? "musicgen",
   });
 });
 
 registerFeatureBListener();
 ```
+
+See [`background_integration.js`](./background_integration.js) for the canonical, always-up-to-date version of this wiring, and [`docker/README.md`](./docker/README.md) for the proxy backend setup.
 
 ---
 ## Testing & Validation
@@ -143,7 +160,7 @@ Run all Feature B tests (B1, B2, B3, B4, and integration):
 npm test
 ```
 
-This runs ~20 assertions covering content cleaning, mood detection (both tiers), music profile generation, prompt engineering, and the 5-second confidence interval.
+This runs a comprehensive suite (80+ named test blocks) covering content cleaning, mood detection (both tiers), music profile generation, prompt engineering, and the confidence interval — it finishes in under a second (the confidence-interval window is injectable via `configureFeatureB({ confidenceWindowMs })`, so tests don't sleep out the real 5s).
 
 ### Manual exploration scripts
 
@@ -223,7 +240,7 @@ manual_tests/
 ├── try_it_out.js                    # Quick test with synthetic data
 └── try_signal_test.js               # Test energy/intensity scaling with behaviour signals
 
-feature_b_test.js                    # Main test suite (20+ assertions)
+feature_b_test.js                    # Main test suite (80+ test blocks)
 background_integration.js            # Reference: wiring into Chrome extension
 package.json                         # Node.js project config
 README.md                            # This file

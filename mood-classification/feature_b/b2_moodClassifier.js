@@ -298,6 +298,12 @@ function normalizeLLMConfig(config) {
  */
 export async function callLLMClassifier(cleanedContent, llmConfig) {
   const { apiKey, backend, serviceUrl, model } = normalizeLLMConfig(llmConfig);
+  // Mirrors B1's callCategoryLLMClassifier guard. Without this, a caller that
+  // passes an object with an empty apiKey (e.g. the orchestrator's
+  // buildLLMConfig(), which always wraps the key in an object — objects are
+  // always truthy) would fire a real network call with no key attached,
+  // instead of skipping it the way passing a bare empty string always did.
+  if (backend === "direct" && !apiKey) return null;
   const prompt = buildClassificationPrompt(cleanedContent);
 
   const controller = new AbortController();
