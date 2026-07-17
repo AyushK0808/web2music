@@ -1090,6 +1090,7 @@ assert(!dayFallback.prompt.includes("Late night"));
 
 // ── Integration test (no Chrome APIs — mock the config) ───────────────────────
 import { runFeatureB, configureFeatureB, resetConfidenceWindow, registerFeatureBListener, computeFadeVolume } from "./feature_b/index.js";
+import { getTabState, setTabState } from "./feature_b/tabState.js";
 
 // Production's confidence window is a spec-mandated 5s, but nothing about
 // these tests actually needs 5 real seconds to elapse — they just need
@@ -1107,7 +1108,7 @@ assert.equal(computeFadeVolume(5 * 60 * 1000), 0, "exactly at 5 minutes, volume 
 assert.equal(computeFadeVolume(10 * 60 * 1000), 0, "well past 5 minutes, volume must stay at 0, not go negative");
 
 console.log("Integration: confidence interval — first call returns null");
-resetConfidenceWindow();
+await resetConfidenceWindow();
 configureFeatureB({ apiKey: "", targetModel: "musicgen", confidenceWindowMs: TEST_CONFIDENCE_WINDOW_MS });
 const firstCall = await runFeatureB({
   rawText: "study code focus research", title: "Docs", url: "https://docs.test.com",
@@ -1122,7 +1123,7 @@ console.log("Integration: runFeatureB never calls fetch when no API key is confi
 // called through the real orchestrator, firing a real network call nobody
 // asked for. Content here is deliberately low-confidence/ambiguous so tier-2
 // escalation would be attempted if a key were actually configured.
-resetConfidenceWindow();
+await resetConfidenceWindow();
 let noKeyOrchestratorFetchCount = 0;
 const originalNoKeyOrchestratorFetch = global.fetch;
 global.fetch = async () => { noKeyOrchestratorFetchCount++; return { ok: false, status: 401, json: async () => ({}) }; };
@@ -1139,7 +1140,7 @@ assert.equal(
 global.fetch = originalNoKeyOrchestratorFetch;
 
 console.log("Integration: fallback on error — a single transient error does not hard-switch (fix 06 regression)");
-resetConfidenceWindow();
+await resetConfidenceWindow();
 configureFeatureB({ apiKey: "", targetModel: "musicgen", confidenceWindowMs: TEST_CONFIDENCE_WINDOW_MS });
 
 // Establish a real, confirmed mood first — something has to be "already
@@ -1174,7 +1175,7 @@ assert.equal(persistentErrorResult.isFallback, true);
 assert.equal(persistentErrorResult.musicProfile.mood, "calm");
 
 console.log("Integration: confidence interval — stable mood triggers a real transition");
-resetConfidenceWindow();
+await resetConfidenceWindow();
 configureFeatureB({ apiKey: "", targetModel: "musicgen", confidenceWindowMs: TEST_CONFIDENCE_WINDOW_MS });
 const stablePageData = {
   rawText: "study code focus research task", title: "Docs", url: "https://docs.test.com",
@@ -1188,7 +1189,7 @@ assert.equal(transitionResult.musicProfile.mood, "focused");
 assert.equal(transitionResult.targetModel, "musicgen");
 
 console.log("Integration: configureFeatureB({ llmModel }) is the single knob for both B1's and B2's LLM calls (regression — model was hardcoded separately in each file)");
-resetConfidenceWindow();
+await resetConfidenceWindow();
 const integrationCapturedBodies = [];
 const originalIntegrationFetch = global.fetch;
 global.fetch = async (url, opts) => {
@@ -1225,7 +1226,7 @@ for (const body of integrationCapturedBodies) {
 configureFeatureB({ apiKey: "", llmModel: DEFAULT_MODEL, targetModel: "musicgen", confidenceWindowMs: TEST_CONFIDENCE_WINDOW_MS }); // restore default for later tests
 
 console.log("Integration: mood-flicker resets the stability window instead of carrying progress over");
-resetConfidenceWindow();
+await resetConfidenceWindow();
 configureFeatureB({ apiKey: "", targetModel: "musicgen", confidenceWindowMs: TEST_CONFIDENCE_WINDOW_MS });
 const moodAPage = { rawText: "study code focus research task", title: "Docs",    url: "https://a.test.com", scrollSpeed: 50, cursorSpeed: 100 };
 const moodBPage = { rawText: "workout gym hustle power intense", title: "Fitness", url: "https://b.test.com", scrollSpeed: 50, cursorSpeed: 100 };
@@ -1239,8 +1240,132 @@ const postFlickerResult = await runFeatureB(moodBPage); // held stable for its o
 assert(postFlickerResult !== null, "mood B held stable for its own fresh 5s window must now transition");
 assert.equal(postFlickerResult.musicProfile.mood, "energetic");
 
+console.log("Integration: tab state is genuinely persisted, not just held in a closure — models surviving a service-worker restart (fix 13)");
+// MV3 kills the service worker after ~30s idle and respawns a fresh JS
+// context, wiping any module-level `let`. The fix moves tracking into
+// tabState.js instead — this proves the state is readable through that
+// completely separate access path, the same way a freshly-respawned worker
+// would read it back, not just relying on a closure this process happens to
+// still have around.
+await resetConfidenceWindow();
+configureFeatureB({ apiKey: "", targetModel: "musicgen", confidenceWindowMs: TEST_CONFIDENCE_WINDOW_MS });
+const restartTabId = "restart-test-tab";
+await runFeatureB(
+  { rawText: "study code focus research task", title: "Docs", url: "https://docs.test.com", scrollSpeed: 50, cursorSpeed: 100 },
+  restartTabId,
+);
+const persistedState = await getTabState(restartTabId);
+assert.equal(
+  persistedState.pendingMood, "focused",
+  "the pending mood must be readable via a fresh getTabState() call, independent of any in-process variable",
+);
+assert(
+  persistedState.lastRecord,
+  "the last classification record must be persisted too, so an alarm-driven re-check has something to replay without fresh pageData",
+);
+
+console.log("Integration: two tabs' pending moods are tracked independently (fix 13)");
+await resetConfidenceWindow();
+configureFeatureB({ apiKey: "", targetModel: "musicgen", confidenceWindowMs: TEST_CONFIDENCE_WINDOW_MS });
+const tabAPage = { rawText: "study code focus research task", title: "Docs",    url: "https://a.test.com", scrollSpeed: 50, cursorSpeed: 100 };
+const tabBPage = { rawText: "workout gym hustle power intense", title: "Fitness", url: "https://b.test.com", scrollSpeed: 50, cursorSpeed: 100 };
+
+await runFeatureB(tabAPage, "tab-A");
+await runFeatureB(tabBPage, "tab-B");
+
+const tabAState = await getTabState("tab-A");
+const tabBState = await getTabState("tab-B");
+assert.equal(tabAState.pendingMood, "focused", "tab A's pending mood must be unaffected by tab B's activity");
+assert.equal(tabBState.pendingMood, "energetic", "tab B's pending mood must be unaffected by tab A's activity");
+
+await new Promise((r) => setTimeout(r, TEST_WINDOW_WAIT_MS));
+const tabAResult = await runFeatureB(tabAPage, "tab-A");
+assert(tabAResult !== null, "tab A's own window must confirm on its own schedule");
+assert.equal(tabAResult.musicProfile.mood, "focused");
+
+const tabBStateAfter = await getTabState("tab-B");
+assert.equal(
+  tabBStateAfter.currentMood, null,
+  "tab B must still be unconfirmed — it never got a second call, so tab A's activity must not have nudged it along",
+);
+
+console.log("Integration: the heartbeat alarm resolves a stuck-pending mood and an idle fade with no new handoff (fix 13)");
+// The core failure this fixes: on a static page, nothing ever sends a second
+// FEATURE_A_HANDOFF, so runFeatureB never gets a chance to re-check whether
+// the window has elapsed, and the idle fade (needs 4-5 real minutes to have
+// passed) never gets re-evaluated either. The heartbeat alarm is the only
+// thing that can resolve either case without a fresh handoff.
+await resetConfidenceWindow();
+configureFeatureB({ apiKey: "", targetModel: "musicgen", confidenceWindowMs: TEST_CONFIDENCE_WINDOW_MS });
+
+const heartbeatSentMessages = [];
+let capturedAlarmCallback = null;
+const createdAlarms = [];
+global.chrome = {
+  runtime: {
+    onMessage:   { addListener: () => {} },
+    sendMessage: (msg) => { heartbeatSentMessages.push(msg); },
+  },
+  tabs: {
+    query:     (opts, cb) => cb([{ id: 42 }]), // the mocked "active" tab is always id 42
+    onRemoved: { addListener: () => {} },
+  },
+  alarms: {
+    create:  (name, opts) => { createdAlarms.push({ name, opts }); },
+    onAlarm: { addListener: (fn) => { capturedAlarmCallback = fn; } },
+  },
+};
+registerFeatureBListener();
+assert(
+  createdAlarms.some((a) => a.opts && a.opts.periodInMinutes),
+  "registerFeatureBListener must schedule a periodic heartbeat alarm",
+);
+assert.equal(typeof capturedAlarmCallback, "function", "registerFeatureBListener must register an onAlarm listener");
+
+// Establish a pending mood for the mocked active tab directly — the
+// message-routing path itself is already covered by the active-tab-guard
+// test below, this test is specifically about the alarm path.
+await runFeatureB(
+  { rawText: "study code focus research task", title: "Docs", url: "https://docs.test.com", scrollSpeed: 50, cursorSpeed: 100 },
+  42,
+);
+heartbeatSentMessages.length = 0;
+
+// Too soon — the heartbeat firing before the window has elapsed must not
+// force an early transition.
+capturedAlarmCallback({ name: "feature-b-heartbeat" });
+await new Promise((r) => setTimeout(r, 20));
+assert.equal(heartbeatSentMessages.length, 0, "the heartbeat must not force a transition before the window has actually elapsed");
+
+// Wait out the window with no new handoff arriving at all — the static-page
+// scenario. Only the heartbeat can resolve this now.
+await new Promise((r) => setTimeout(r, TEST_WINDOW_WAIT_MS));
+capturedAlarmCallback({ name: "feature-b-heartbeat" });
+await new Promise((r) => setTimeout(r, 20));
+assert.equal(heartbeatSentMessages.length, 1, "the heartbeat must resolve a stuck-pending mood on a static page with no new handoff");
+assert.equal(heartbeatSentMessages[0].type, "FEATURE_B_HANDOFF");
+assert.equal(heartbeatSentMessages[0].payload.musicProfile.mood, "focused");
+
+// Idle fade: age the tracked current-mood timestamp by hand (same principle
+// as computeFadeVolume's own unit test — fake elapsed time instead of
+// actually waiting 4.5 real minutes) and confirm the heartbeat catches it.
+const agedState = await getTabState(42);
+agedState.currentMoodSince = Date.now() - 4.5 * 60 * 1000;
+await setTabState(42, agedState);
+heartbeatSentMessages.length = 0;
+capturedAlarmCallback({ name: "feature-b-heartbeat" });
+await new Promise((r) => setTimeout(r, 20));
+assert.equal(heartbeatSentMessages.length, 1, "the heartbeat must also resolve an idle-fade deadline with no new handoff");
+assert.equal(heartbeatSentMessages[0].payload.isFadeUpdate, true);
+assert(
+  heartbeatSentMessages[0].payload.volume > 0 && heartbeatSentMessages[0].payload.volume < 1,
+  "a 4.5-minute idle mood should be partway through the fade, not silent and not full volume",
+);
+
+delete global.chrome;
+
 console.log("Integration: active-tab guard — inactive tabs are ignored, the active tab passes through");
-resetConfidenceWindow();
+await resetConfidenceWindow();
 configureFeatureB({ apiKey: "", targetModel: "musicgen", confidenceWindowMs: TEST_CONFIDENCE_WINDOW_MS });
 // A real page + waiting out the (tiny, injected) confidence window, not
 // payload: null — since fix 06, a null payload's pipeline error no longer
@@ -1250,7 +1375,10 @@ const guardPageData = {
   rawText: "relax peaceful quiet serene breathe meditate", title: "Calm Space", url: "https://guard.test.com",
   scrollSpeed: 50, cursorSpeed: 100,
 };
-await runFeatureB(guardPageData); // starts the pending window
+// tabId 1 explicitly — must match the mocked "active tab" id the listener
+// below resolves to, since state is now tracked per tab (fix 13): a pending
+// window started under one tabId no longer carries over to another.
+await runFeatureB(guardPageData, 1); // starts the pending window for tab 1
 await new Promise((r) => setTimeout(r, TEST_WINDOW_WAIT_MS)); // let it become eligible to confirm
 
 const sentMessages = [];
