@@ -533,13 +533,22 @@ for (const rule of MOOD_RULES) {
   assert.equal(new Set(rule.keywords).size, rule.keywords.length, `${rule.mood} has a duplicate keyword`);
 }
 
-console.log("B2: sensitive content override");
-const b2SensitiveResult = await runB2(
-  { isSensitive: true, keywords: [], cleanedText: "", colors: {}, scrollSpeed: 0, cursorSpeed: 0, readingComplexity: 0.5, category: {} },
-  null
+console.log("B2: sensitive content override — silence is the default, not auto-played uplifting music (fix 16)");
+const sensitivePageStub = { isSensitive: true, keywords: [], cleanedText: "", colors: {}, scrollSpeed: 0, cursorSpeed: 0, readingComplexity: 0.5, category: {} };
+const b2SensitiveDefaultResult = await runB2(sensitivePageStub, null);
+assert.equal(
+  b2SensitiveDefaultResult.mood, "silence",
+  "with no sensitiveContentMode specified, sensitive content must default to silence, not an auto-played mood",
 );
-assert.equal(b2SensitiveResult.mood, MOODS.UPLIFTING);
-assert(b2SensitiveResult.sensitiveOverride === true);
+assert.equal(b2SensitiveDefaultResult.silent, true, "the silent flag must be set so index.js knows to force volume:0");
+assert(b2SensitiveDefaultResult.sensitiveOverride === true);
+assert.notEqual(b2SensitiveDefaultResult.mood, MOODS.UPLIFTING, "must not silently keep the old auto-play-uplifting-music behaviour as the default");
+
+console.log("B2: sensitive content override — 'uplifting' mode remains available as an explicit opt-in");
+const b2SensitiveUpliftingResult = await runB2(sensitivePageStub, null, { sensitiveContentMode: "uplifting" });
+assert.equal(b2SensitiveUpliftingResult.mood, MOODS.UPLIFTING, "explicitly opting in must still produce the original uplifting-music behaviour");
+assert(b2SensitiveUpliftingResult.sensitiveOverride === true);
+assert.equal(b2SensitiveUpliftingResult.silent, undefined, "opted-in uplifting mode must not also carry the silent flag");
 
 console.log("B2: payment bypass — category/colors/speeds are passed through, not dropped (fix 07 regression)");
 const b2PaymentResult = await runB2(
@@ -1460,6 +1469,35 @@ assert(
   Date.now() - readerStateAfter.lastActivityAt < 1000,
   "lastActivityAt must be refreshed by the real handoff regardless of how stale currentMoodSince has become",
 );
+
+console.log("Integration: sensitive content produces genuine silence end-to-end — volume:0, isSilent:true (fix 16)");
+await resetConfidenceWindow();
+configureFeatureB({ apiKey: "", targetModel: "musicgen", confidenceWindowMs: TEST_CONFIDENCE_WINDOW_MS });
+
+const sensitivePageData = {
+  rawText: "This page discusses suicide prevention resources and hotlines for people in crisis.",
+  title: "Crisis Resources", url: "https://example.com/help",
+  scrollSpeed: 20, cursorSpeed: 10,
+};
+
+await runFeatureB(sensitivePageData, "sensitive-tab");
+await new Promise((r) => setTimeout(r, TEST_WINDOW_WAIT_MS));
+const silenceEndToEndResult = await runFeatureB(sensitivePageData, "sensitive-tab");
+assert(silenceEndToEndResult !== null, "setup: the silence outcome must still confirm through the normal confidence-interval gate");
+assert.equal(silenceEndToEndResult.volume, 0, "sensitive content must produce genuine silence (volume:0) end-to-end by default");
+assert.equal(silenceEndToEndResult.isSilent, true);
+
+console.log("Integration: sensitiveContentMode: 'uplifting' still works end-to-end when explicitly opted in");
+await resetConfidenceWindow();
+configureFeatureB({ apiKey: "", targetModel: "musicgen", confidenceWindowMs: TEST_CONFIDENCE_WINDOW_MS, sensitiveContentMode: "uplifting" });
+await runFeatureB(sensitivePageData, "sensitive-tab-2");
+await new Promise((r) => setTimeout(r, TEST_WINDOW_WAIT_MS));
+const upliftingResult = await runFeatureB(sensitivePageData, "sensitive-tab-2");
+assert(upliftingResult !== null);
+assert.equal(upliftingResult.volume, 1, "opted-in uplifting mode must play music normally, not force silence");
+assert.equal(upliftingResult.isSilent, undefined);
+assert.equal(upliftingResult.musicProfile.mood, "uplifting");
+configureFeatureB({ sensitiveContentMode: "silence" }); // restore default for tests after this one
 
 console.log("Integration: active-tab guard — inactive tabs are ignored, the active tab passes through");
 await resetConfidenceWindow();

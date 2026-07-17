@@ -78,6 +78,7 @@ let _config = {
   targetModel:        "musicgen",    // Audio generation backend — "musicgen" | "stable-audio" | "generic" (unrelated to llmModel)
   includeAll:         false,         // Include all prompt variants in output
   confidenceWindowMs: 5000,          // Spec-mandated 5s stability window — override only in tests, never in production
+  sensitiveContentMode: "silence",   // "silence" (default) | "uplifting" (opt-in) — see the ethics note in b2_moodClassifier.js's runB2
 };
 
 export function configureFeatureB(config = {}) {
@@ -164,6 +165,14 @@ async function decideTransition(tabId, candidateMood, record, { isFreshActivity 
     }
   }
 
+  // Sensitive-content silence (fix 16) overrides whatever volume the normal
+  // transition/fade math produced — going quiet is an active choice made
+  // once B2 flags the page, not a side effect of the fade curve, and it
+  // applies immediately rather than fading gradually like idle-fade does.
+  if (result && record.kind === "mood" && record.moodContext.silent) {
+    result = { ...result, volume: 0, isSilent: true };
+  }
+
   await setTabState(tabId, state);
   return result;
 }
@@ -192,7 +201,9 @@ export async function runFeatureB(pageData, tabId = DEFAULT_TAB_ID) {
     const cleanedContent = await runB1(pageData, buildLLMConfig());
 
     // ── B2: Mood & Context Classification ─────────────────────────────────
-    const moodContext = await runB2(cleanedContent, buildLLMConfig());
+    const moodContext = await runB2(cleanedContent, buildLLMConfig(), {
+      sensitiveContentMode: _config.sensitiveContentMode,
+    });
 
     // ── Confidence interval check (spec edge case #1) ─────────────────────
     return await decideTransition(tabId, moodContext.mood, { kind: "mood", moodContext });
