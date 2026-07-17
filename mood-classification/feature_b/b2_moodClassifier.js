@@ -426,19 +426,86 @@ function inferPageType(category = "Entertainment", url = "") {
  *
  * @param {Object} cleanedContent  Output of B1.runB1()
  * @param {string} apiKey          LLM API key (from config/settings)
+ * @param {Object} [options]
+ * @param {"silence"|"uplifting"} [options.sensitiveContentMode="silence"]
+ *   What to do when B1 flags the page as sensitive/crisis-related — see the
+ *   ethics note on the override branch below for the full rationale.
+ *   "uplifting" (the original behaviour) is an explicit opt-in, not the default.
  * @returns {Promise<Object>}      MoodContext — input to B3
  */
-export async function runB2(cleanedContent, apiKey) {
+export async function runB2(cleanedContent, apiKey, options = {}) {
+  const { sensitiveContentMode = "silence" } = options;
+
   // ── Edge case #2: sensitive content override ─────────────────────────────
   if (cleanedContent.isSensitive) {
+    /*
+     * ETHICS NOTE (fix 16) — read before changing the default back.
+     *
+     * Detecting this locally and never sending it anywhere is a genuine
+     * privacy protection: B1 already skips the category LLM on a sensitive
+     * page, and this branch never reaches B2's mood LLM either — the most
+     * sensitive text a user reads never leaves the device.
+     *
+     * What to DO once detected is a separate, contestable question. The
+     * original design auto-played "uplifting/spiritual" music on the theory
+     * that it's gentler than whatever the raw classification would have
+     * produced. But that's still the extension unilaterally intervening in
+     * a user's emotional state at a moment they never asked for help —
+     * someone reading about a friend's suicide risk, researching a
+     * diagnosis, or looking up a domestic-violence shelter may find ANY
+     * auto-played music intrusive right then, however well-intentioned, and
+     * unexpected audio in a sensitive moment (a shared workspace, a quiet
+     * room) can itself be an unwanted disclosure that something is wrong.
+     *
+     * The detector is also a blunt instrument — a fixed list of ~18 English
+     * terms, word-boundary regex, no semantic understanding (see
+     * SEVERE_SENSITIVE_TERMS/AMBIGUOUS_SENSITIVE_TERMS in
+     * b1_contentUnderstanding.js). Its false-negative rate is high:
+     * euphemisms ("ending it all"), non-English pages (this check has no LLM
+     * fallback — content flagged sensitive is deliberately kept off any LLM,
+     * so language escalation never applies here), and entire topics outside
+     * the list (addiction, miscarriage, a terminal diagnosis) all pass
+     * through silently undetected. Its false-positive rate is low-to-moderate
+     * after requiring 2+ distinct ambiguous terms, but clinical/academic/
+     * journalistic writing using a SEVERE single-hit term (a psychology
+     * textbook chapter on eating disorders, a nurse's reference material)
+     * still triggers it.
+     *
+     * That asymmetry is why silence is the safer default: a false positive
+     * under "go quiet" costs the user a few seconds of missing ambient
+     * music; a false positive under "auto-play uplifting music" imposes an
+     * unwanted emotional intervention on someone who was never in crisis at
+     * all. Silence is low-cost in both directions the detector can be
+     * wrong; forced positivity is not. "uplifting" stays available for
+     * anyone who explicitly wants it (sensitiveContentMode: "uplifting").
+     */
+    if (sensitiveContentMode === "uplifting") {
+      return {
+        mood:        MOODS.UPLIFTING,
+        pageType:    "article",
+        intent:      "User is viewing sensitive or crisis-related content.",
+        confidence:  1.0,
+        energyHint:  0.3,
+        valenceHint: 0.7,
+        sensitiveOverride: true,
+        tier:        "override",
+        // Pass-through
+        category:    cleanedContent.category,
+        colors:      cleanedContent.colors,
+        scrollSpeed: cleanedContent.scrollSpeed,
+        cursorSpeed: cleanedContent.cursorSpeed,
+      };
+    }
+
     return {
-      mood:        MOODS.UPLIFTING,
+      mood:        "silence",
       pageType:    "article",
-      intent:      "User is viewing sensitive or crisis-related content.",
+      intent:      "User is viewing sensitive or crisis-related content — going quiet by default rather than auto-playing music no one asked for.",
       confidence:  1.0,
-      energyHint:  0.3,
-      valenceHint: 0.7,
+      energyHint:  0,
+      valenceHint: 0,
       sensitiveOverride: true,
+      silent:      true, // index.js forces volume:0/isSilent:true on the final handoff2 when this is set
       tier:        "override",
       // Pass-through
       category:    cleanedContent.category,

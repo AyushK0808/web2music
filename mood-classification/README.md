@@ -184,6 +184,27 @@ node manual_tests/try_category_debug.js https://example.com
 node manual_tests/try_groq_raw.js
 ```
 
+### Golden fixtures (fix 15)
+
+`feature_b_test.js`'s mocked network responses are hand-typed — they encode
+what we *assume* Groq's response shape looks like, not what it actually
+returns. If Groq's real format ever drifts (a renamed field, different
+nesting, a new wrapper), the hand-typed mocks would keep "passing" while the
+real integration silently broke. `fixtures/groq_category_response.json` and
+`fixtures/groq_mood_response.json` are real recorded API responses, checked
+into the repo; `feature_b_test.js` replays them through `callCategoryLLMClassifier`/
+`callLLMClassifier` to prove parsing is checked against reality, not just our
+own assumptions — this runs by default with every `npm test`, no key needed.
+
+To refresh the fixtures (do this periodically, or if Groq changes something):
+
+```bash
+GROQ_API_KEY="gsk_your-key" node manual_tests/record_groq_fixtures.js
+```
+
+This makes two real classification calls (small free-tier cost) and
+overwrites both fixture files with freshly captured responses.
+
 ### Signal capture prototype
 
 To prototype scroll and cursor speed capture (same logic as content_script.js will use):
@@ -238,7 +259,12 @@ manual_tests/
 ├── try_category_debug.js            # Debug content category classification
 ├── try_groq_raw.js                  # Test GroqCloud API connectivity directly
 ├── try_it_out.js                    # Quick test with synthetic data
-└── try_signal_test.js               # Test energy/intensity scaling with behaviour signals
+├── try_signal_test.js               # Test energy/intensity scaling with behaviour signals
+└── record_groq_fixtures.js          # Records real Groq API responses as golden fixtures (fix 15)
+
+fixtures/
+├── groq_category_response.json      # Real recorded category-classification response
+└── groq_mood_response.json          # Real recorded mood-classification response
 
 feature_b_test.js                    # Main test suite (80+ test blocks)
 background_integration.js            # Reference: wiring into Chrome extension
