@@ -35,20 +35,34 @@ import { getTabState, setTabState, clearTabState, clearAllTabStates, DEFAULT_TAB
 // wiping any `let`. Tracking now lives in tabState.js (chrome.storage.session,
 // per tabId), which survives a respawn and never mixes up two tabs.
 
-// ─── Idle fade-out (same mood held too long) ─────────────────────────────────
-// If the same track has been playing for 5+ minutes with no mood change, the
-// music fades out rather than looping the same mood indefinitely: the fade
-// starts at the 4-minute mark and reaches silence exactly at 5 minutes.
+// ─── Idle fade-out (the user has actually gone quiet, not just steady) ───────
+// If nothing has been heard from the tab for 5+ minutes, the music fades out
+// rather than looping forever unheard: the fade starts at the 4-minute mark
+// and reaches silence exactly at 5 minutes.
+//
+// fix 14: this used to measure idleMs as "time since the current mood was
+// confirmed" — which conflates "mood hasn't changed" with "user went idle".
+// Someone reading one long, engaging article has a perfectly stable mood
+// (say, "focused") for the whole visit; under the old logic their music
+// would silently fade to nothing at the 5-minute mark purely because the
+// mood never changed, which is the opposite of what a background-ambiance
+// product should do. idleMs is now measured from lastActivityAt instead —
+// the last time a *real* FEATURE_A_HANDOFF was received for this tab,
+// refreshed on every genuine handoff regardless of whether the mood changed.
+// The heartbeat alarm's own re-checks (fix 13) do NOT count as activity —
+// only Feature A actually observing the tab does — otherwise the alarm
+// itself would keep the clock alive forever and the fade could never fire.
 const IDLE_FADE_START_MS    = 4 * 60 * 1000;
 const IDLE_FADE_COMPLETE_MS = 5 * 60 * 1000;
 
 /**
  * computeFadeVolume — pure function so the fade curve is unit-testable
  * without waiting out real 4-5 minute windows.
- * @param {number} idleMs   Milliseconds since the current mood started playing.
+ * @param {number} idleMs   Milliseconds since the tab was last heard from
+ *   (lastActivityAt) — not since the current mood was confirmed (fix 14).
  * @returns {number|null}   null if no fade is due yet, else a 0..1 volume
  *   multiplier that reaches exactly 0 at IDLE_FADE_COMPLETE_MS and stays 0
- *   for as long as the mood remains unchanged after that.
+ *   for as long as no further activity is observed after that.
  */
 export function computeFadeVolume(idleMs) {
   if (idleMs < IDLE_FADE_START_MS) return null;
@@ -104,9 +118,19 @@ function buildHandoffFromRecord(record) {
 // this survives a service-worker restart between calls and never crosses
 // tabs. record is only used to build a handoff2 when one is actually needed,
 // so held/no-op calls don't do wasted work.
-async function decideTransition(tabId, candidateMood, record) {
+//
+// isFreshActivity (fix 14): true for a real FEATURE_A_HANDOFF (runFeatureB),
+// false for the heartbeat's own re-check (reEvaluateActiveTab) — only real
+// activity should reset the idle-fade clock, otherwise the heartbeat firing
+// on its own schedule would keep the clock alive forever and the fade could
+// never trigger regardless of whether the user is actually still there.
+async function decideTransition(tabId, candidateMood, record, { isFreshActivity = true } = {}) {
   const state = await getTabState(tabId);
   const now = Date.now();
+
+  if (isFreshActivity) {
+    state.lastActivityAt = now;
+  }
 
   let isTransition = false;
   if (candidateMood !== state.pendingMood) {
@@ -127,11 +151,14 @@ async function decideTransition(tabId, candidateMood, record) {
     state.currentMood = candidateMood;
     state.currentMoodSince = now;
     result = { ...buildHandoffFromRecord(record), volume: 1, isFadeUpdate: false };
-  } else if (state.currentMood === candidateMood && state.currentMoodSince) {
-    // Not a new transition. If this is the same mood that's already playing
-    // and it's been idle 4+ minutes, emit a fade-volume update instead of
-    // staying silent — the track shouldn't loop forever unheard.
-    const fadeVolume = computeFadeVolume(now - state.currentMoodSince);
+  } else if (state.currentMood === candidateMood) {
+    // Not a new transition. Fade is driven by genuine inactivity (fix 14),
+    // not by "the mood hasn't changed" — someone reading one long article
+    // has a stable mood the whole time but isn't idle. If nothing real has
+    // been heard from this tab for 4+ minutes, emit a fade-volume update
+    // instead of staying silent — the track shouldn't loop forever unheard.
+    const idleMs = now - (state.lastActivityAt || now);
+    const fadeVolume = computeFadeVolume(idleMs);
     if (fadeVolume !== null) {
       result = { ...buildHandoffFromRecord(record), volume: fadeVolume, isFadeUpdate: true };
     }
@@ -217,7 +244,10 @@ async function reEvaluateActiveTab() {
     const candidateMood = state.pendingMood ?? state.currentMood;
     if (!candidateMood) return;
 
-    const handoff2 = await decideTransition(activeTabId, candidateMood, state.lastRecord);
+    // isFreshActivity: false — this is Chrome's own timer firing, not a
+    // signal that the user is still there (fix 14). Must not reset the
+    // idle-fade clock, or the heartbeat would keep it alive forever.
+    const handoff2 = await decideTransition(activeTabId, candidateMood, state.lastRecord, { isFreshActivity: false });
     if (handoff2) {
       chrome.runtime.sendMessage({ type: "FEATURE_B_HANDOFF", payload: handoff2 });
     }

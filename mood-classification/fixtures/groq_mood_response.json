@@ -1,0 +1,36 @@
+{
+  "status": 200,
+  "body": {
+    "id": "chatcmpl-749f3389-dd4c-4334-8f71-fbe6c64e3dab",
+    "object": "chat.completion",
+    "created": 1784272243,
+    "model": "llama-3.1-8b-instant",
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "{\n  \"mood\": \"calm\",\n  \"pageType\": \"article\",\n  \"intent\": \"The user is likely reading an article about relaxation and self-care.\",\n  \"confidence\": 0.9,\n  \"energyHint\": 0.2,\n  \"valenceHint\": 0.8\n}"
+        },
+        "logprobs": null,
+        "finish_reason": "stop"
+      }
+    ],
+    "usage": {
+      "queue_time": 0.159231901,
+      "prompt_tokens": 327,
+      "prompt_time": 0.020802657,
+      "completion_tokens": 68,
+      "completion_time": 0.071775504,
+      "total_tokens": 395,
+      "total_time": 0.092578161
+    },
+    "usage_breakdown": null,
+    "system_fingerprint": "fp_7ccc667439",
+    "x_groq": {
+      "id": "req_01kxqekjprfgwawr5bpv1607gb",
+      "seed": 924247992
+    },
+    "service_tier": "on_demand"
+  }
+}

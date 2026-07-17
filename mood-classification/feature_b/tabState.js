@@ -47,6 +47,11 @@ function defaultState() {
     pendingMoodSince: 0,
     currentMood:      null,
     currentMoodSince: 0,
+    // Last time a *real* handoff (not a heartbeat re-check) was received for
+    // this tab — drives the idle-fade curve (fix 14). Deliberately separate
+    // from currentMoodSince: a stable mood over a long single-article read
+    // shouldn't fade to silence just because the mood never changed.
+    lastActivityAt: 0,
     // Enough context to rebuild the last handoff2 without a fresh
     // classification — needed so the alarm-driven re-check (index.js) can
     // re-evaluate a deadline on a static page with no new pageData.

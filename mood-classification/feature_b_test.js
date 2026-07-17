@@ -6,7 +6,26 @@
  */
 
 import { strict as assert } from "assert";
+import { readFileSync, existsSync } from "fs";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
 import { DEFAULT_MODEL } from "./feature_b/llmConfig.js";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const FIXTURES_DIR = join(__dirname, "fixtures");
+
+// Golden fixtures (fix 15) — real recorded Groq API responses, not hand-typed
+// mocks. Hand-typed mocks encode what we assume the response shape looks
+// like; a real recording catches drift the mocks can't (extra wrapper
+// fields, a renamed field, etc.). Refresh with:
+//   GROQ_API_KEY=gsk_... node manual_tests/record_groq_fixtures.js
+function loadFixture(name) {
+  const path = join(FIXTURES_DIR, name);
+  if (!existsSync(path)) {
+    throw new Error(`Missing fixture: ${path} — run manual_tests/record_groq_fixtures.js with a real GROQ_API_KEY to generate it.`);
+  }
+  return JSON.parse(readFileSync(path, "utf8"));
+}
 
 // ── B1 Tests ──────────────────────────────────────────────────────────────────
 import {
@@ -73,6 +92,24 @@ assert.equal(weakResult.primary, null);
 console.log("B1: callCategoryLLMClassifier — mocked network responses");
 const categoryLLMStub = { keywords: ["bioluminescence", "organism"], title: "Science Article", summary: "A summary about light-producing organisms." };
 const originalCategoryFetch = global.fetch;
+
+console.log("B1: callCategoryLLMClassifier — parses a real recorded Groq response correctly (golden fixture, fix 15)");
+// Every other test in this file mocks fetch with a hand-typed response body —
+// that only proves our parsing matches our own assumptions about the shape,
+// not what Groq actually sends (extra wrapper fields like usage/x_groq/
+// system_fingerprint, etc.). This replays an actual captured API response.
+const categoryFixture = loadFixture("groq_category_response.json");
+global.fetch = async () => ({
+  ok:     categoryFixture.status < 400,
+  status: categoryFixture.status,
+  json:   async () => categoryFixture.body,
+});
+const fixtureCategoryResult = await callCategoryLLMClassifier(categoryLLMStub, "fake-key");
+assert.equal(
+  fixtureCategoryResult, "Educational",
+  "parsing a real captured Groq response must still extract the correct category",
+);
+global.fetch = originalCategoryFetch;
 
 console.log("B1: callCategoryLLMClassifier — request uses Groq's Bearer auth and temperature: 0 (regression)");
 let b1CapturedRequest = null;
@@ -657,6 +694,22 @@ assert.equal(emptyObjectResult, null, "an object with an empty apiKey must behav
 assert.equal(noKeyCallCount, 0, "an object with an empty apiKey must never reach fetch() either");
 global.fetch = originalNoKeyFetch;
 
+console.log("B2: callLLMClassifier — parses a real recorded Groq response correctly (golden fixture, fix 15)");
+// Same principle as B1's fixture test — replays an actual captured Groq API
+// response (not a hand-typed guess) through our parsing/validation code.
+const moodFixture = loadFixture("groq_mood_response.json");
+global.fetch = async () => ({
+  ok:     moodFixture.status < 400,
+  status: moodFixture.status,
+  json:   async () => moodFixture.body,
+});
+const fixtureMoodResult = await callLLMClassifier(llmStub, "fake-key");
+assert.equal(fixtureMoodResult.mood, "calm", "parsing a real captured Groq response must extract the correct mood");
+assert.equal(fixtureMoodResult.pageType, "article");
+assert.equal(fixtureMoodResult.confidence, 0.9);
+assert.equal(typeof fixtureMoodResult.intent, "string");
+assert(fixtureMoodResult.intent.length > 0, "the real response's free-text intent sentence must come through, not just the structured fields");
+global.fetch = originalFetch;
 
 console.log("B2: callLLMClassifier — mocked network responses");
 
@@ -1346,11 +1399,13 @@ assert.equal(heartbeatSentMessages.length, 1, "the heartbeat must resolve a stuc
 assert.equal(heartbeatSentMessages[0].type, "FEATURE_B_HANDOFF");
 assert.equal(heartbeatSentMessages[0].payload.musicProfile.mood, "focused");
 
-// Idle fade: age the tracked current-mood timestamp by hand (same principle
-// as computeFadeVolume's own unit test — fake elapsed time instead of
-// actually waiting 4.5 real minutes) and confirm the heartbeat catches it.
+// Idle fade: age lastActivityAt by hand (same principle as computeFadeVolume's
+// own unit test — fake elapsed time instead of actually waiting 4.5 real
+// minutes) and confirm the heartbeat catches it. Ages lastActivityAt, not
+// currentMoodSince (fix 14) — the fade tracks genuine inactivity, not how
+// long the mood has been stable.
 const agedState = await getTabState(42);
-agedState.currentMoodSince = Date.now() - 4.5 * 60 * 1000;
+agedState.lastActivityAt = Date.now() - 4.5 * 60 * 1000;
 await setTabState(42, agedState);
 heartbeatSentMessages.length = 0;
 capturedAlarmCallback({ name: "feature-b-heartbeat" });
@@ -1363,6 +1418,48 @@ assert(
 );
 
 delete global.chrome;
+
+console.log("Integration: a long, steady read does not fade to silence — idle-fade tracks real inactivity, not how long the mood has been stable (fix 14)");
+// The exact reported bug: someone reading one long, engaging article keeps
+// the same mood (e.g. "focused") for the whole visit. The pre-fix logic
+// measured idleMs as time-since-mood-confirmed, so their music would fade to
+// nothing at the 5-minute mark purely because the mood never changed —
+// even though they never stopped reading.
+await resetConfidenceWindow();
+configureFeatureB({ apiKey: "", targetModel: "musicgen", confidenceWindowMs: TEST_CONFIDENCE_WINDOW_MS });
+
+const articlePage = {
+  rawText: "study code focus research task", title: "Docs", url: "https://article.test.com",
+  scrollSpeed: 20, cursorSpeed: 10,
+};
+
+await runFeatureB(articlePage, "reader-tab");
+await new Promise((r) => setTimeout(r, TEST_WINDOW_WAIT_MS));
+const established = await runFeatureB(articlePage, "reader-tab");
+assert(
+  established !== null && established.musicProfile.mood === "focused",
+  "setup: mood must be confirmed before testing the idle-fade behaviour",
+);
+
+// Simulate the mood having been stable for 6 minutes (past the old,
+// buggy fade-complete threshold) — but the user is still actively reading,
+// so a fresh real handoff keeps arriving, same as it would every time
+// Feature A observes so much as continued scroll/cursor activity.
+const readerState = await getTabState("reader-tab");
+readerState.currentMoodSince = Date.now() - 6 * 60 * 1000;
+await setTabState("reader-tab", readerState);
+
+const stillReadingResult = await runFeatureB(articlePage, "reader-tab");
+assert.equal(
+  stillReadingResult, null,
+  "a fresh real handoff must reset the idle clock and produce no fade update — under the pre-fix logic (idleMs measured from currentMoodSince) this would have wrongly returned a fading/silent volume purely because the mood never changed",
+);
+
+const readerStateAfter = await getTabState("reader-tab");
+assert(
+  Date.now() - readerStateAfter.lastActivityAt < 1000,
+  "lastActivityAt must be refreshed by the real handoff regardless of how stale currentMoodSince has become",
+);
 
 console.log("Integration: active-tab guard — inactive tabs are ignored, the active tab passes through");
 await resetConfidenceWindow();

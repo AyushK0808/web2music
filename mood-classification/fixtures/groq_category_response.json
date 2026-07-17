@@ -1,0 +1,36 @@
+{
+  "status": 200,
+  "body": {
+    "id": "chatcmpl-478f9822-31a4-4131-add2-e01a1dbcb3c4",
+    "object": "chat.completion",
+    "created": 1784272243,
+    "model": "llama-3.1-8b-instant",
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": "{ \"category\": \"Educational\" }"
+        },
+        "logprobs": null,
+        "finish_reason": "stop"
+      }
+    ],
+    "usage": {
+      "queue_time": 0.049378658,
+      "prompt_tokens": 223,
+      "prompt_time": 0.016289691,
+      "completion_tokens": 10,
+      "completion_time": 0.015783068,
+      "total_tokens": 233,
+      "total_time": 0.032072759
+    },
+    "usage_breakdown": null,
+    "system_fingerprint": "fp_4387d3edbb",
+    "x_groq": {
+      "id": "req_01kxqekjfyfgtvsveqt7wcy0sw",
+      "seed": 1210752427
+    },
+    "service_tier": "on_demand"
+  }
+}
