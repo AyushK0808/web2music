@@ -21,7 +21,11 @@ def make_cache_key(profile: dict) -> str:
         "energy_tier":     round(float(profile["energy"]), 1),
         "style":           profile["style"],
         "key":             profile["key"],
+        "valence_tier":    round(float(profile.get("valence", 0.0)), 1),
         "duration_bucket": (duration // 2) * 2,  # 2s tolerance: 27,28→28  29,30→30
+         # Note: seed is intentionally excluded from the cache key.
+        # Including it would mean each retry attempt (seed 43, 44, 45)
+        # generates a separate cache entry, defeating the purpose of caching.
     }
     return hashlib.sha256(
         json.dumps(canonical, sort_keys=True).encode()
@@ -66,4 +70,4 @@ def save_to_cache(cache_key, mp3_bytes, profile, loop_point_ms, generation_time_
     finally:
         conn.close()
 
-    return audio_url
+    return audio_url 
