@@ -17,10 +17,6 @@ synthesiser = pipeline(
     torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32
 )
 
-# Compile model for faster warm inference (~1.5-2x speedup after first call)
-# Only on NVIDIA GPU — torch.compile has no benefit on CPU and adds overhead
-# First call traces and compiles the graph (slightly slower),
-# all subsequent warm calls get the speedup
 if torch.cuda.is_available():
     synthesiser.model = torch.compile(synthesiser.model)
     print("Model compiled with torch.compile ✅")
@@ -29,33 +25,35 @@ else:
 
 print("Model loaded!")
 
-MAX_RETRIES = 3
-RETRY_DELAY = 2
+MAX_RETRIES    = 3
+RETRY_DELAY    = 2
+TOKENS_PER_SEC = 50  # MusicGen audio codec runs at ~50 tokens/second
 
-def generate_audio(prompt: str, max_tokens: int = 1400) -> tuple[bytes, int]:
+def generate_audio(prompt: str, duration_seconds: int = 28) -> tuple[bytes, int]:
     """
     Generate audio from prompt using MusicGen.
     Retries up to MAX_RETRIES times with exponential backoff.
     Returns (audio_bytes, seed_used) tuple.
     Raises GenerationError if all retries fail.
 
+    duration_seconds: target clip length (5-30s).
+    Token count = duration_seconds * TOKENS_PER_SEC (~50 tokens/sec).
+
     Note on guidance_scale (CFG):
     Lowering guidance_scale from default (3.0) to 1.0 would halve
     forward passes per step and reduce latency. However,
     guidance_scale is not supported as a parameter by
-    TextToAudioPipeline in the current transformers version:
-        TextToAudioPipeline._sanitize_parameters() got an
-        unexpected keyword argument 'guidance_scale'
-    Accessing CFG requires calling synthesiser.model.generate()
-    directly and manually handling EnCodec tokenization and output.
+    TextToAudioPipeline in the current transformers version.
     Flagged for future optimisation when latency becomes a bottleneck.
     """
+    max_tokens = duration_seconds * TOKENS_PER_SEC
     last_error = None
 
     for attempt in range(1, MAX_RETRIES + 1):
         seed = 42 + attempt
         try:
             print(f"[D3] Generation attempt {attempt}/{MAX_RETRIES} with seed {seed}")
+            print(f"[D3] Target duration: {duration_seconds}s ({max_tokens} tokens)")
             print(f"[D3] Prompt: {prompt}")
 
             torch.manual_seed(seed)

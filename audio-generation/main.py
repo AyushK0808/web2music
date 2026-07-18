@@ -59,7 +59,9 @@ async def generate(payload: HandoffPayload):
     t3 = time.time()
     generation_seed = None
     try:
-        audio_bytes, generation_seed = await asyncio.to_thread(generate_audio, prompt)
+         audio_bytes, generation_seed = await asyncio.to_thread(
+             generate_audio, prompt, profile["duration_seconds"]
+             )
     except GenerationError as e:
         print(f"[MAIN] Generation failed after all retries: {e}")
         print(f"[MAIN] Attempting fallback clip for mood: {profile['mood']}")
@@ -117,6 +119,7 @@ async def generate(payload: HandoffPayload):
             "energy":          profile["energy"],
             "valence":         profile["valence"],
             "intensity":       profile["intensity"],
+            "duration_seconds": profile["duration_seconds"],
             "loop_point_ms":   loop_point_ms,
             "prompt_used":     prompt,
             "prompt_source":   "feature_b" if prompt_from_b else "d2_fallback",

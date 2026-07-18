@@ -4,7 +4,7 @@ from typing import Optional
 class MusicProfile(BaseModel):
     # Core fields
     mood:              str   = Field(default="calm",    description="Emotional tone of the music")
-    bpm:               int   = Field(default=80,        description="Beats per minute", ge=40, le=200)
+    bpm:               int   = Field(default=80,        description="Beats per minute", ge=20, le=200)  # ge=40 → ge=20 to match B3's actual range
     key:               str   = Field(default="C major", description="Musical key e.g. C major, D minor")
     energy:            float = Field(default=0.5,       description="Energy level 0.0-1.0", ge=0.0, le=1.0)
     style:             str   = Field(default="ambient", description="Music style e.g. ambient, lo-fi, cinematic")
@@ -23,6 +23,16 @@ class MusicProfile(BaseModel):
     time_of_day:       str   = Field(default="day",     description="Time of day")
     sensitive_override: bool = Field(default=False,     description="True if sensitive content detected")
 
+    # Duration parameter — exposed as API field so Feature B can request length
+    # MusicGen audio codec runs at ~50 tokens/second
+    # musicgen-small quality degrades past ~30s (training window limit)
+    duration_seconds:  int   = Field(
+        default=28,
+        description="Target clip duration in seconds. Max 30 for musicgen-small.",
+        ge=5,
+        le=30
+    )
+
     @field_validator("mood")
     @classmethod
     def validate_mood(cls, v):
@@ -38,7 +48,6 @@ class MusicProfile(BaseModel):
     @field_validator("bpm", mode="before")
     @classmethod
     def coerce_bpm(cls, v):
-        # handles "120.5" decimal strings
         return int(float(v))
 
 
@@ -51,9 +60,6 @@ class HandoffPayload(BaseModel):
     musicProfile: Optional[MusicProfile] = None
     prompt:       Optional[str]          = None
 
-    # Flat dict fields — used when musicProfile is not present
-    # bpm is float here to handle decimal strings like "120.5"
-    # coerced to int in d1_validate.py
     mood:              Optional[str]   = None
     bpm:               Optional[float] = None
     key:               Optional[str]   = None
@@ -71,3 +77,4 @@ class HandoffPayload(BaseModel):
     listening_context: Optional[str]   = None
     time_of_day:       Optional[str]   = None
     sensitive_override: Optional[bool] = None
+    duration_seconds:  Optional[int]   = None  # ← added
