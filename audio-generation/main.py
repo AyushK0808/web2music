@@ -8,6 +8,7 @@ from d2_prompt import build_prompt
 from d3_generate import generate_audio, GenerationError
 from d4_process import process_audio
 from fallback import get_fallback_clip
+from models import HandoffPayload
 
 # Prod (Supabase-backed) cache vs. local dev cache (Docker Postgres + files on
 # disk). Defaults to dev so the server runs out of the box against `docker
@@ -25,7 +26,7 @@ if not IS_PROD:
     app.mount("/audio-cache", StaticFiles(directory=AUDIO_CACHE_DIR), name="audio-cache")
 
 @app.post("/generate")
-async def generate(payload: dict):
+async def generate(payload: HandoffPayload):
     timings = {}
 
     # D1 — Validate & unwrap Sneha's Handoff 2 payload
@@ -58,7 +59,9 @@ async def generate(payload: dict):
     t3 = time.time()
     generation_seed = None
     try:
-        audio_bytes, generation_seed = await asyncio.to_thread(generate_audio, prompt)
+        audio_bytes, generation_seed = await asyncio.to_thread(
+            generate_audio, prompt, profile["duration_seconds"]
+        )
     except GenerationError as e:
         print(f"[MAIN] Generation failed after all retries: {e}")
         print(f"[MAIN] Attempting fallback clip for mood: {profile['mood']}")
@@ -116,6 +119,7 @@ async def generate(payload: dict):
             "energy":          profile["energy"],
             "valence":         profile["valence"],
             "intensity":       profile["intensity"],
+            "duration_seconds": profile["duration_seconds"],
             "loop_point_ms":   loop_point_ms,
             "prompt_used":     prompt,
             "prompt_source":   "feature_b" if prompt_from_b else "d2_fallback",

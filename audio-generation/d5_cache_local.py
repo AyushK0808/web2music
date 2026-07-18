@@ -14,12 +14,18 @@ def _connect():
 
 def make_cache_key(profile: dict) -> str:
     bpm = profile["bpm"]
+    duration = profile.get("duration_seconds", 28)
     canonical = {
-        "mood":        profile["mood"],
-        "bpm_bucket":  "low" if bpm < 76 else "mid" if bpm < 101 else "high",
-        "energy_tier": round(float(profile["energy"]), 1),
-        "style":       profile["style"],
-        "key":         profile["key"],  # ← added
+        "mood":            profile["mood"],
+        "bpm_bucket":      "low" if bpm < 76 else "mid" if bpm < 101 else "high",
+        "energy_tier":     round(float(profile["energy"]), 1),
+        "style":           profile["style"],
+        "key":             profile["key"],
+        "valence_tier":    round(float(profile.get("valence", 0.0)), 1),
+        "duration_bucket": (duration // 2) * 2,  # 2s tolerance: 28,29→28  30,31→30
+        # Note: seed is intentionally excluded from the cache key.
+        # Including it would mean each retry attempt (seed 43, 44, 45)
+        # generates a separate cache entry, defeating the purpose of caching.
     }
     return hashlib.sha256(
         json.dumps(canonical, sort_keys=True).encode()
