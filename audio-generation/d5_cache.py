@@ -7,12 +7,14 @@ supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
 
 def make_cache_key(profile: dict) -> str:
     bpm = profile["bpm"]
+    duration = profile.get("duration_seconds", 28)
     canonical = {
-        "mood":        profile["mood"],
-        "bpm_bucket":  "low" if bpm < 76 else "mid" if bpm < 101 else "high",
-        "energy_tier": round(float(profile["energy"]), 1),
-        "style":       profile["style"],
-        "key":         profile["key"],  # ← added
+        "mood":            profile["mood"],
+        "bpm_bucket":      "low" if bpm < 76 else "mid" if bpm < 101 else "high",
+        "energy_tier":     round(float(profile["energy"]), 1),
+        "style":           profile["style"],
+        "key":             profile["key"],
+        "duration_bucket": (duration // 2) * 2,  # 2s tolerance: 27,28→28  29,30→30
     }
     return hashlib.sha256(
         json.dumps(canonical, sort_keys=True).encode()
