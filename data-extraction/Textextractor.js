@@ -9,20 +9,28 @@ const BOILERPLATE_CLASS_HINTS = [
   'social', 'share', 'comment', 'related', 'newsletter'
 ];
 
+function classOrIdTokens(el) {
+  const classAttr = typeof el.className === 'string'
+    ? el.className
+    : (el.getAttribute && el.getAttribute('class')) || '';
+  const idAttr = el.id || '';
+  return `${idAttr} ${classAttr}`.toLowerCase().split(/\s+/).filter(Boolean);
+}
+
 function looksLikeBoilerplate(el) {
   if (BOILERPLATE_TAGS.has(el.tagName)) return true;
-  const identifier = `${el.id || ''} ${el.className || ''}`.toLowerCase();
-  return BOILERPLATE_CLASS_HINTS.some(hint => identifier.includes(hint));
+  const tokens = classOrIdTokens(el);
+  return tokens.some(token => BOILERPLATE_CLASS_HINTS.includes(token));
 }
 
 function textDensityScore(el) {
-  const text = el.innerText || '';
+  const text = el.innerText || el.textContent || '';
   const textLength = text.trim().length;
   if (textLength === 0) return 0;
 
   const tagCount = el.getElementsByTagName('*').length || 1;
   const linkTextLength = Array.from(el.getElementsByTagName('a'))
-    .reduce((sum, a) => sum + (a.innerText || '').length, 0);
+    .reduce((sum, a) => sum + (a.innerText || a.textContent || '').length, 0);
 
   const linkDensity = linkTextLength / textLength;
   const density = textLength / tagCount;
@@ -61,6 +69,16 @@ function findMainContentElement(root = document.body) {
   return best;
 }
 
+function stripHintedElements(root) {
+  const hints = new Set(BOILERPLATE_CLASS_HINTS);
+  Array.from(root.querySelectorAll('*')).forEach(el => {
+    const tokens = classOrIdTokens(el);
+    if (tokens.some(token => hints.has(token))) {
+      el.remove();
+    }
+  });
+}
+
 function normalizeWhitespace(text) {
   return text
     .replace(/\s+/g, ' ')
@@ -69,7 +87,7 @@ function normalizeWhitespace(text) {
 }
 
 /**
- * extractMetadata \u2014 cheap DOM reads Feature A owns: the meta description
+ * extractMetadata — cheap DOM reads Feature A owns: the meta description
  * (with og:description / twitter:description fallbacks) and the document
  * language. Both are required inputs for Feature B's B1 (analyseMetadata).
  * @param {Document} doc
@@ -88,7 +106,7 @@ function extractMetadata(doc = document) {
     pick('meta[name="twitter:description"]') ||
     '';
 
-  // documentElement.lang \u2192 <html lang> ; fall back to a content-language meta
+  // documentElement.lang → <html lang> ; fall back to a content-language meta
   // tag, then default to English.
   const htmlLang =
     (doc.documentElement && doc.documentElement.getAttribute('lang')) || '';
@@ -104,14 +122,22 @@ function extractPageText(doc = document) {
   const title = normalizeWhitespace(doc.title || '');
   const { description, lang } = extractMetadata(doc);
 
+  if (!doc.body) {
+    return {
+      title,
+      mainText: '',
+      description,
+      lang,
+      wordCount: 0,
+      url: doc.location ? doc.location.href : ''
+    };
+  }
+
   const clone = doc.body.cloneNode(true);
   BOILERPLATE_TAGS.forEach(tag => {
     clone.querySelectorAll(tag.toLowerCase()).forEach(el => el.remove());
   });
-  BOILERPLATE_CLASS_HINTS.forEach(hint => {
-    clone.querySelectorAll(`[class*="${hint}"], [id*="${hint}"]`)
-      .forEach(el => el.remove());
-  });
+  stripHintedElements(clone);
 
   const mainEl = findMainContentElement(clone);
   const rawText = mainEl.innerText || mainEl.textContent || '';
@@ -128,7 +154,10 @@ function extractPageText(doc = document) {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { extractPageText, extractMetadata, findMainContentElement, textDensityScore };
+  module.exports = {
+    extractPageText, extractMetadata, findMainContentElement,
+    textDensityScore, classOrIdTokens, stripHintedElements
+  };
 } else if (typeof window !== 'undefined') {
   window.Web2MusicTextExtractor = { extractPageText, extractMetadata };
 }
