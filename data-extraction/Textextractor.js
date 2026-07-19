@@ -20,6 +20,9 @@ function classOrIdTokens(el) {
 function looksLikeBoilerplate(el) {
   if (BOILERPLATE_TAGS.has(el.tagName)) return true;
   const tokens = classOrIdTokens(el);
+  // Match whole tokens only (not substrings): we favor precision over recall
+  // so hyphenated compound classes like "main-nav" or "related-posts" and
+  // values like "document-menu" or "shadow-gradient" aren't wrongly stripped.
   return tokens.some(token => BOILERPLATE_CLASS_HINTS.includes(token));
 }
 
