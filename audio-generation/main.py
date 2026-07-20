@@ -9,6 +9,7 @@ from d3_generate import generate_audio, GenerationError
 from d4_process import process_audio
 from fallback import get_fallback_clip
 from models import HandoffPayload
+from prewarm import prewarm_cache
 
 # Prod (Supabase-backed) cache vs. local dev cache (Docker Postgres + files on
 # disk). Defaults to dev so the server runs out of the box against `docker
@@ -19,7 +20,18 @@ if IS_PROD:
 else:
     from d5_cache_local import make_cache_key, check_cache, save_to_cache, AUDIO_CACHE_DIR
 
-app = FastAPI()
+from contextlib import asynccontextmanager
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Fire-and-forget: don't await this, or the server won't start accepting
+    # real requests until the entire pre-warm grid finishes generating.
+    asyncio.create_task(prewarm_cache(make_cache_key, check_cache, save_to_cache))
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
 
 if not IS_PROD:
     from fastapi.staticfiles import StaticFiles
@@ -59,8 +71,8 @@ async def generate(payload: HandoffPayload):
     t3 = time.time()
     generation_seed = None
     try:
-        audio_bytes, generation_seed = await asyncio.to_thread(
-            generate_audio, prompt, profile["duration_seconds"]
+        audio_bytes, generation_seed = await generate_audio(
+            prompt, profile["duration_seconds"]
         )
     except GenerationError as e:
         print(f"[MAIN] Generation failed after all retries: {e}")
