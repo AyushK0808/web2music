@@ -101,7 +101,8 @@ def _run_batch(batch):
     prompts = [b.prompt for b in batch]
     # A single batched forward pass needs one decode length for the whole
     # batch -- use the longest of what was individually requested so nobody
-    # gets cut short; D4 can still trim per-clip afterwards.
+    # gets cut short mid-generation. Each item gets trimmed back to its own
+    # requested duration after generation, in the per-item loop below.
     max_tokens = max(b.max_tokens for b in batch)
 
     try:
@@ -132,13 +133,23 @@ def _run_batch(batch):
                 audio_data = out["audio"]
                 sample_rate = out["sampling_rate"]
 
-                duration = audio_data.shape[-1] / sample_rate
-                print(f"[D3] Raw generated duration: {duration:.2f}s")
-                if duration < 5.0:
-                    raise ValueError(f"Generated clip too short: {duration:.2f}s")
-
                 if audio_data.ndim > 1:
                     audio_data = audio_data[0]
+
+                # Batched generation decodes every item in the batch out to
+                # the same (longest-requested) token length. Trim this
+                # item's clip back down to what THIS caller actually asked
+                # for, so duration_seconds is honored per-request rather
+                # than silently returning the longest duration in the batch
+                # to everyone in it.
+                target_samples = int(sample_rate * (item.max_tokens / TOKENS_PER_SEC))
+                target_samples = min(target_samples, audio_data.shape[-1])
+                audio_data = audio_data[:target_samples]
+
+                duration = audio_data.shape[-1] / sample_rate
+                print(f"[D3] Raw generated duration: {duration:.2f}s (trimmed to this item's requested length)")
+                if duration < 5.0:
+                    raise ValueError(f"Generated clip too short: {duration:.2f}s")
 
                 out_buffer = io.BytesIO()
                 sf.write(out_buffer, audio_data, sample_rate, format='WAV')

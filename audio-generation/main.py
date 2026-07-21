@@ -27,7 +27,12 @@ from contextlib import asynccontextmanager
 async def lifespan(app: FastAPI):
     # Fire-and-forget: don't await this, or the server won't start accepting
     # real requests until the entire pre-warm grid finishes generating.
-    asyncio.create_task(prewarm_cache(make_cache_key, check_cache, save_to_cache))
+    # The task is held on app.state so it isn't garbage-collected mid-run --
+    # asyncio only keeps a weak reference to tasks created via create_task,
+    # so an unreferenced task can silently vanish before it completes.
+    app.state.prewarm_task = asyncio.create_task(
+        prewarm_cache(make_cache_key, check_cache, save_to_cache)
+    )
     yield
 
 

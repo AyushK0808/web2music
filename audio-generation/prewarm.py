@@ -44,15 +44,29 @@ async def prewarm_cache(make_cache_key, check_cache, save_to_cache):
             for bpm in PREWARM_BPMS.values():
                 combos.append((mood, style, bpm))
 
-    to_generate = []
-    for mood, style, bpm in combos:
-        profile = MusicProfile(
+    profiles = [
+        MusicProfile(
             mood=mood, style=style, bpm=bpm,
             duration_seconds=PREWARM_DURATION_SECONDS
         ).model_dump()
-        cache_key = make_cache_key(profile)
-        if check_cache(cache_key) is None:
-            to_generate.append(profile)
+        for mood, style, bpm in combos
+    ]
+
+    # check_cache() is a blocking network/DB call (Supabase REST or
+    # psycopg2) -- running 45 of them directly on the event loop would
+    # block it for the full duration of 45 sequential round trips before
+    # any real request could be served. Fire them concurrently off-thread
+    # instead.
+    scan_semaphore = asyncio.Semaphore(PREWARM_CONCURRENCY)
+
+    async def _is_cached(profile):
+        async with scan_semaphore:
+            cache_key = make_cache_key(profile)
+            cached = await asyncio.to_thread(check_cache, cache_key)
+            return cached is not None
+
+    cached_flags = await asyncio.gather(*(_is_cached(p) for p in profiles))
+    to_generate = [p for p, is_cached in zip(profiles, cached_flags) if not is_cached]
 
     if not to_generate:
         print("[PREWARM] Cache already warm for the full grid, nothing to do.")
@@ -70,7 +84,9 @@ async def prewarm_cache(make_cache_key, check_cache, save_to_cache):
                 prompt = build_prompt(profile)
                 audio_bytes, _seed = await generate_audio(prompt, profile["duration_seconds"])
                 mp3_bytes, loop_point_ms = await asyncio.to_thread(process_audio, audio_bytes)
-                save_to_cache(cache_key, mp3_bytes, profile, loop_point_ms, 0, prompt)
+                await asyncio.to_thread(
+                    save_to_cache, cache_key, mp3_bytes, profile, loop_point_ms, 0, prompt
+                )
                 print(f"[PREWARM] Cached {label}")
                 return True
             except GenerationError as e:
