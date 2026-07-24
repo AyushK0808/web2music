@@ -34,13 +34,30 @@ chrome.storage.sync.get(["llmApiKey", "llmBackend", "llmServiceUrl", "targetMode
 registerFeatureBListener();
 
 // ── 3. Forward Feature B's Handoff 2 output → Feature D (offscreen audio) ───
+// Feature D's /generate endpoint (audio-generation/main.py) POSTs the
+// request body straight through to d1_validate.py, which only recognises a
+// flat, snake_case profile (mood, energy, bpm, key, style, content_category,
+// ...). Forwarding the whole nested, camelCase Handoff 2 payload verbatim
+// meant every one of those fields was missing, so every page silently
+// generated identical default audio ("calm", 80 bpm, "C major") regardless
+// of what B actually classified (fix 17). handoff2.profile (built in
+// b4_promptEngineer.js) is the correct, already-flattened shape to send.
 chrome.runtime.onMessage.addListener((message) => {
   if (message.type !== "FEATURE_B_HANDOFF") return;
 
-  // Send to Feature D (audio generation system)
+  const handoff2 = message.payload;
+
+  // Sensitive-content silence (fix 16) means "go quiet", not "generate a new
+  // calm track and immediately mute it" — asking Feature D to generate audio
+  // it'll never be heard playing is pure waste. Signal a local mute instead.
+  if (handoff2.isSilent) {
+    chrome.runtime.sendMessage({ type: "FEATURE_D_SILENCE" });
+    return;
+  }
+
   chrome.runtime.sendMessage({
     type:    "FEATURE_D_REQUEST",
-    payload: message.payload,
+    payload: handoff2.profile,
   });
 });
 
