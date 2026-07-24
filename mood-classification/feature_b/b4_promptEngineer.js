@@ -125,6 +125,58 @@ export function selectAtmosphereTags(mood, count = 2) {
   return tags.slice(0, count).join(", ");
 }
 
+// ─── Feature D handoff — flat snake_case profile (fix 17) ────────────────────
+// Feature D's /generate endpoint (audio-generation/main.py) takes the POST
+// body directly as a flat profile dict, and d1_validate.py only recognises
+// top-level snake_case keys (mood, energy, bpm, key, style, content_category).
+// B's own MusicProfile is a rich, nested, camelCase object used throughout
+// B3/B4 — forwarding that verbatim (as background_integration.js used to)
+// meant every one of D's expected keys was simply missing, so
+// d1_validate.py silently filled all of them with its own hardcoded
+// defaults ("calm", 80 bpm, "C major", ...) regardless of what B actually
+// classified: every page produced identical audio.
+//
+// This flattens B's profile into exactly the shape D expects, entirely on
+// the B side (D's files are out of scope for this fix). The original nested
+// musicProfile is kept alongside it, unchanged, for any other B-internal
+// consumer that wants the richer shape.
+//
+// Known remaining gap, left for a D-side fix: D's own mood vocabulary
+// (d2_prompt.py's instrument map only recognises "melancholic"/"positive")
+// doesn't line up with B's ("sad"/"joyful"/"uplifting"), so B's real mood
+// values fall through to D's generic "ambient pads" fallback for most
+// moods. Not fixable from the B side without redefining B's own mood
+// taxonomy to match D's, which is a bigger, separate decision.
+function toFeatureDProfile(musicProfile, prompt) {
+  return {
+    mood:             musicProfile.mood,
+    energy:           musicProfile.energy,
+    bpm:              musicProfile.bpm,
+    key:              musicProfile.key,
+    style:            musicProfile.style,
+    content_category: musicProfile.contentCategory ?? "general",
+    // arousal — D expects a valence/arousal pair; B never sent one. intensity
+    // (energy blended with real scroll-speed behaviour) is a closer proxy for
+    // behavioural activation than the mood's base energy alone.
+    arousal:          musicProfile.intensity,
+    valence:          musicProfile.valence,
+    // Not read by D's current code, but flattened + snake_cased now so a
+    // future D-side change to use them doesn't need another round-trip
+    // through this same bug.
+    instruments:        musicProfile.instruments,
+    timbre:             musicProfile.timbre,
+    reverb:             musicProfile.reverb,
+    ambience:           musicProfile.ambience,
+    tempo:              musicProfile.tempo,
+    dynamics:           musicProfile.dynamics,
+    listening_context:  musicProfile.listeningContext,
+    time_of_day:        musicProfile.timeOfDay,
+    atmosphere_tags:    musicProfile.atmosphereTags,
+    sensitive_override: musicProfile.sensitiveOverride ?? false,
+    prompt,
+  };
+}
+
 // ─── Prompt validation ────────────────────────────────────────────────────────
 
 // The multi-sentence "generic" template (with its closing loop/no-vocals
@@ -189,7 +241,12 @@ export function runB4(musicProfile, options = {}) {
 
   // ── Assemble Handoff 2 payload ────────────────────────────────────────────
   const handoff2 = {
-    // ── Core music profile (sent to Feature D) ──────────────────────────────
+    // ── Flat snake_case profile — this, not musicProfile, is what should be
+    // POSTed as-is to Feature D's /generate endpoint (fix 17). ─────────────
+    profile: toFeatureDProfile(enrichedProfile, primaryPrompt),
+
+    // ── Rich nested camelCase profile — kept for any other B-internal
+    // consumer that wants the fuller shape; not what Feature D expects. ────
     musicProfile: {
       mood:            musicProfile.mood,
       musicCategory:   musicProfile.musicCategory,
@@ -243,30 +300,38 @@ export function runB4(musicProfile, options = {}) {
 export function buildFallbackPrompt(timeOfDay = "day") {
   const nightVariant = timeOfDay === "late-night" || timeOfDay === "night";
 
+  const musicProfile = {
+    mood:          "calm",
+    musicCategory: "Chill Out / Lounge / Calm / Relaxing",
+    bpm:           70,
+    key:           "C major",
+    energy:        0.25,
+    intensity:     0.2,
+    valence:       0.4,
+    reverb:        0.6,
+    ambience:      0.7,
+    timbre:        "warm, soft",
+    instruments:   nightVariant ? ["ambient pad", "soft piano"] : ["acoustic guitar", "piano", "ambient pad"],
+    style:         "calm ambient",
+    dynamics:      "gentle, unobtrusive",
+    tempo:         "adagio",
+    atmosphereTags: "peaceful, meditative",
+    listeningContext: `fallback calm ${timeOfDay}`,
+    timeOfDay,
+    sensitiveOverride: false,
+    contentCategory: "general",
+  };
+
+  const prompt = nightVariant
+    ? "Late night ambient music. Soft piano, minimal pads, very quiet. 65 BPM, C major. No vocals. Loopable."
+    : "Calm acoustic ambient music. Acoustic guitar, soft piano, light ambient pads. 70 BPM, C major. No vocals. Loopable.";
+
   return {
-    musicProfile: {
-      mood:          "calm",
-      musicCategory: "Chill Out / Lounge / Calm / Relaxing",
-      bpm:           70,
-      key:           "C major",
-      energy:        0.25,
-      intensity:     0.2,
-      valence:       0.4,
-      reverb:        0.6,
-      ambience:      0.7,
-      timbre:        "warm, soft",
-      instruments:   nightVariant ? ["ambient pad", "soft piano"] : ["acoustic guitar", "piano", "ambient pad"],
-      style:         "calm ambient",
-      dynamics:      "gentle, unobtrusive",
-      tempo:         "adagio",
-      atmosphereTags: "peaceful, meditative",
-      listeningContext: `fallback calm ${timeOfDay}`,
-      timeOfDay,
-      sensitiveOverride: false,
-    },
-    prompt: nightVariant
-      ? "Late night ambient music. Soft piano, minimal pads, very quiet. 65 BPM, C major. No vocals. Loopable."
-      : "Calm acoustic ambient music. Acoustic guitar, soft piano, light ambient pads. 70 BPM, C major. No vocals. Loopable.",
+    // Same flat/nested split as runB4's real handoff2 (fix 17) — the
+    // fallback path must also reach Feature D in the shape it expects.
+    profile:      toFeatureDProfile(musicProfile, prompt),
+    musicProfile,
+    prompt,
     targetModel:    "musicgen",
     handoffVersion: "2.0",
     generatedAt:    Date.now(),

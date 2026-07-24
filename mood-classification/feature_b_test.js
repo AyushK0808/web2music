@@ -1093,6 +1093,45 @@ assert(handoff2.musicProfile.mood === "focused");
 assert(handoff2.targetModel === "musicgen");
 assert(typeof handoff2.handoffVersion === "string");
 
+console.log("B4: runB4 output includes a flat snake_case profile for Feature D (fix 17)");
+// Feature D's /generate endpoint (audio-generation/main.py) POSTs the
+// request body straight to d1_validate.py, which only recognises flat,
+// snake_case top-level keys. Forwarding the nested camelCase musicProfile
+// verbatim meant every one of D's expected fields was missing, so
+// d1_validate.py silently filled all of them with its own hardcoded
+// defaults regardless of what B actually classified.
+assert(handoff2.profile, "runB4 must attach a flat `profile` field alongside the existing nested musicProfile");
+assert.equal(handoff2.profile.mood, "focused");
+assert.equal(handoff2.profile.energy, profile.energy);
+assert.equal(handoff2.profile.bpm, profile.bpm);
+assert.equal(handoff2.profile.key, profile.key);
+assert.equal(handoff2.profile.style, profile.style);
+assert.equal(
+  handoff2.profile.content_category, profile.contentCategory,
+  "content_category (snake_case) must carry B3's contentCategory (camelCase) — this is the exact field d1_validate.py checks for",
+);
+assert.equal(
+  handoff2.profile.arousal, profile.intensity,
+  "arousal (previously never sent at all) must be present — intensity is the closer behavioural-activation proxy than raw energy",
+);
+assert.equal(handoff2.profile.valence, profile.valence);
+assert.equal(
+  Object.prototype.hasOwnProperty.call(handoff2.profile, "contentCategory"), false,
+  "the flat profile must use content_category, never leak the camelCase contentCategory key",
+);
+assert.equal(
+  Object.prototype.hasOwnProperty.call(handoff2.profile, "listeningContext"), false,
+  "the flat profile must use listening_context, never leak a camelCase key",
+);
+
+console.log("B4: fallback prompt also includes the flat Feature D profile (fix 17)");
+const fallbackForD = buildFallbackPrompt("day");
+assert(fallbackForD.profile, "the fallback path must reach Feature D in the same flat shape as the real pipeline");
+assert.equal(fallbackForD.profile.mood, "calm");
+assert.equal(fallbackForD.profile.bpm, 70);
+assert.equal(fallbackForD.profile.key, "C major");
+assert.equal(fallbackForD.profile.content_category, "general");
+
 console.log("B4: prompt generation — stable-audio");
 const saHandoff = runB4(profile, { targetModel: "stable-audio" });
 assert(typeof saHandoff.prompt.positive === "string");
