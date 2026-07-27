@@ -54,8 +54,25 @@ def main_client(call_log, monkeypatch):
         return fake_db.get(cache_key)
 
     def fake_save_to_cache(cache_key, mp3_bytes, profile, loop_point_ms, gen_time_ms, prompt):
+        # Mirrors the REAL DB schema (docker/init.sql) exactly -- only these
+        # columns exist, matching what d5_cache.py/d5_cache_local.py
+        # actually persist. Anything else main.py's miss-path metadata
+        # returns (valence, intensity, duration_seconds, seam_discontinuity,
+        # prompt_source, generation_seed) is intentionally absent here too,
+        # so this test reflects production, not a more generous mock.
         url = f"fake://{cache_key}"
-        fake_db[cache_key] = {"audio_url": url, "loop_point_ms": loop_point_ms}
+        fake_db[cache_key] = {
+            "cache_key": cache_key,
+            "audio_url": url,
+            "mood": profile["mood"],
+            "bpm": profile["bpm"],
+            "key": profile["key"],
+            "energy": profile["energy"],
+            "style": profile.get("style"),
+            "loop_point_ms": loop_point_ms,
+            "generation_time_ms": gen_time_ms,
+            "prompt_used": prompt,
+        }
         return url
 
     monkeypatch.setattr(main_module, "check_cache", fake_check_cache)
@@ -102,3 +119,50 @@ def test_cache_hit_still_returns_the_same_loop_point_ms(main_client):
     # the same loop_point_ms that was originally computed and saved
     assert second["cache"] == "hit"
     assert second["metadata"]["loop_point_ms"] == first["metadata"]["loop_point_ms"]
+
+
+def test_cache_hit_response_has_same_metadata_shape_as_miss(main_client):
+    """
+    Regression test for the full bug class, not just seam_discontinuity:
+    several fields (valence, intensity, duration_seconds,
+    seam_discontinuity, prompt_source, generation_seed) exist in the
+    miss-path metadata but aren't columns in the cache DB (see
+    docker/init.sql) -- a naive `"metadata": cached` on cache hits let ALL
+    of these silently vanish, not just one. Any consumer doing
+    metadata["valence"] or metadata["generation_seed"] would KeyError on
+    every cache hit -- the MORE common path once the cache warms up.
+
+    This asserts: (1) hit and miss responses have identical metadata key
+    sets, and (2) fields that genuinely persist to the DB (mood, bpm, key,
+    energy, loop_point_ms, prompt_used) carry the same value on both.
+    """
+    payload = {
+        "mood": "sad", "bpm": 70, "key": "A minor",
+        "energy": 0.3, "style": "acoustic", "duration_seconds": 6,
+    }
+
+    first = main_client.post("/generate", json=payload).json()
+    assert first["cache"] == "miss"
+
+    second = main_client.post("/generate", json=payload).json()
+    assert second["cache"] == "hit"
+
+    miss_keys = set(first["metadata"].keys())
+    hit_keys = set(second["metadata"].keys())
+    assert hit_keys == miss_keys, (
+        f"cache-hit metadata is missing keys the miss-path returns: "
+        f"{miss_keys - hit_keys}"
+    )
+
+    # Genuinely persisted fields (see docker/init.sql) must match exactly
+    for field in ("mood", "bpm", "key", "energy", "loop_point_ms", "prompt_used"):
+        assert second["metadata"][field] == first["metadata"][field], field
+
+    # Fields NOT persisted to the DB come back null on cache-hit, not
+    # missing -- present-but-null is the whole point of the fix
+    for field in ("valence", "intensity", "duration_seconds",
+                  "seam_discontinuity", "prompt_source", "generation_seed"):
+        assert field in second["metadata"], f"{field} went missing on cache hit"
+        assert second["metadata"][field] is None, (
+            f"{field} isn't persisted to the DB, expected null on cache hit"
+        )
