@@ -31,6 +31,20 @@ def process_audio(audio_bytes: bytes):
 
     audio = AudioSegment.from_wav(out_buffer)
 
+    if audio.channels > 1:
+        # get_array_of_samples() returns interleaved L,R,L,R,... samples for
+        # multi-channel audio. _detect_loop_point_ms treats that flat array
+        # as mono, which silently doubles the apparent duration and corrupts
+        # every frame-to-time conversion downstream (confirmed: a 20s
+        # stereo clip was seen producing loop points past 30s). Dormant
+        # today since musicgen-small is mono-only -- fail loud here instead
+        # of shipping wrong loop points if a stereo checkpoint is ever used.
+        raise ValueError(
+            f"process_audio only supports mono audio (got {audio.channels} channels). "
+            "Stereo support requires fixing the interleaved-sample handling in "
+            "_detect_loop_point_ms and _crossfade_loop before this guard can be removed."
+        )
+
     def trim_silence(audio, silence_thresh=-50):
         start = detect_leading_silence(audio, silence_threshold=silence_thresh)
         end = detect_leading_silence(audio.reverse(), silence_threshold=silence_thresh)
@@ -45,16 +59,61 @@ def process_audio(audio_bytes: bytes):
     loop_point_ms = _detect_loop_point_ms(audio_array, sr, len(audio))
     print(f"Loop point detected at {loop_point_ms}ms")
 
-    if loop_point_ms < 1000:
-        loop_point_ms = len(audio)
+    pre_crossfade_clip = audio[:loop_point_ms]
+    seam_discontinuity = _seam_discontinuity(pre_crossfade_clip, crossfade_ms=CROSSFADE_MS)
 
-    audio_loopable = _crossfade_loop(audio[:loop_point_ms], crossfade_ms=CROSSFADE_MS)
+    audio_loopable = _crossfade_loop(pre_crossfade_clip, crossfade_ms=CROSSFADE_MS)
 
     mp3_buffer = io.BytesIO()
     audio_loopable.export(mp3_buffer, format="mp3", bitrate="128k")
     mp3_buffer.seek(0)
 
-    return mp3_buffer.read(), loop_point_ms
+    return mp3_buffer.read(), loop_point_ms, seam_discontinuity
+
+
+def _seam_discontinuity(audio: AudioSegment, crossfade_ms: int = CROSSFADE_MS) -> dict:
+    """
+    Measures how large a jump exists at the loop seam BEFORE crossfading is
+    applied -- i.e. what a naive cut (or the old fade_out) would have
+    produced audibly. Compares a short window at the very end of the clip
+    against a short window at the very start, in both energy (RMS, dB) and
+    timbre (spectral centroid). This is diagnostic/logging only: it does not
+    change what gets exported, just quantifies how much work the crossfade
+    is doing on this particular clip.
+    """
+    window_ms = min(crossfade_ms, len(audio) // 2)
+    if window_ms <= 0:
+        return {"energy_delta_db": 0.0, "spectral_centroid_delta_hz": None}
+
+    tail = audio[-window_ms:]
+    head = audio[:window_ms]
+
+    tail_samples = np.array(tail.get_array_of_samples()).astype(np.float32)
+    head_samples = np.array(head.get_array_of_samples()).astype(np.float32)
+
+    max_val = float(np.iinfo(tail.array_type).max)
+    tail_norm = tail_samples / max_val
+    head_norm = head_samples / max_val
+
+    tail_rms = float(np.sqrt(np.mean(tail_norm ** 2)) + 1e-12)
+    head_rms = float(np.sqrt(np.mean(head_norm ** 2)) + 1e-12)
+    energy_delta_db = round(float(20 * np.log10(tail_rms / head_rms)), 2)
+
+    sr = tail.frame_rate
+    try:
+        tail_centroid = float(librosa.feature.spectral_centroid(y=tail_norm, sr=sr).mean())
+        head_centroid = float(librosa.feature.spectral_centroid(y=head_norm, sr=sr).mean())
+        spectral_centroid_delta_hz = round(abs(tail_centroid - head_centroid), 1)
+    except Exception:
+        # Spectral centroid needs enough samples for at least one FFT frame;
+        # degrade gracefully on very short crossfade windows rather than
+        # failing the whole request over a diagnostic metric.
+        spectral_centroid_delta_hz = None
+
+    return {
+        "energy_delta_db": energy_delta_db,
+        "spectral_centroid_delta_hz": spectral_centroid_delta_hz,
+    }
 
 
 def _detect_loop_point_ms(audio_array: np.ndarray, sr: int, audio_len_ms: int) -> int:

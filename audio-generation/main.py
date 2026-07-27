@@ -114,7 +114,7 @@ async def generate(payload: HandoffPayload):
 
     # D4 — Post-process
     t4 = time.time()
-    mp3_bytes, loop_point_ms = await asyncio.to_thread(process_audio, audio_bytes)
+    mp3_bytes, loop_point_ms, seam_discontinuity = await asyncio.to_thread(process_audio, audio_bytes)
     timings["d4_process_ms"] = int((time.time() - t4) * 1000)
 
     # D5 — Cache & return
@@ -138,6 +138,7 @@ async def generate(payload: HandoffPayload):
             "intensity":       profile["intensity"],
             "duration_seconds": profile["duration_seconds"],
             "loop_point_ms":   loop_point_ms,
+            "seam_discontinuity": seam_discontinuity,
             "prompt_used":     prompt,
             "prompt_source":   "feature_b" if prompt_from_b else "d2_fallback",
             "generation_seed": generation_seed,
