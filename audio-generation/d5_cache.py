@@ -14,9 +14,9 @@ def make_cache_key(profile: dict) -> str:
         "energy_tier":     round(float(profile["energy"]), 1),
         "style":           profile["style"],
         "key":             profile["key"],
-         "valence_tier":    round(float(profile.get("valence", 0.0)), 1),
-        "duration_bucket": (duration // 2) * 2,  # 2s tolerance: 27,28→28  29,30→30
-         # Note: seed is intentionally excluded from the cache key.
+        "valence_tier":    round(float(profile.get("valence", 0.0)), 1),
+        "duration_bucket": (duration // 2) * 2,  # 2s tolerance: 28,29→28  30,31→30
+        # Note: seed is intentionally excluded from the cache key.
         # Including it would mean each retry attempt (seed 43, 44, 45)
         # generates a separate cache entry, defeating the purpose of caching.
     }
