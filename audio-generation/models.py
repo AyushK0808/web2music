@@ -1,31 +1,37 @@
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 from typing import Optional
 
 class MusicProfile(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
     # Core fields
     mood:              str   = Field(default="calm",    description="Emotional tone of the music")
-    bpm:               int   = Field(default=80,        description="Beats per minute", ge=20, le=200)  # ge=40 → ge=20 to match B3's actual range
+    bpm:               int   = Field(default=80,        description="Beats per minute", ge=20, le=200)
     key:               str   = Field(default="C major", description="Musical key e.g. C major, D minor")
     energy:            float = Field(default=0.5,       description="Energy level 0.0-1.0", ge=0.0, le=1.0)
     style:             str   = Field(default="ambient", description="Music style e.g. ambient, lo-fi, cinematic")
     content_category:  str   = Field(default="general", description="Webpage content category")
 
-    # Extended fields from Sneha's Handoff 2
-    valence:           float = Field(default=0.0,   description="Valence -1.0 to 1.0", ge=-1.0, le=1.0)
-    intensity:         float = Field(default=0.5,   description="Intensity 0.0-1.0", ge=0.0, le=1.0)
-    reverb:            float = Field(default=0.5,   description="Reverb amount 0.0-1.0", ge=0.0, le=1.0)
-    ambience:          float = Field(default=0.5,   description="Ambience amount 0.0-1.0", ge=0.0, le=1.0)
-    timbre:            str   = Field(default="warm",    description="Tonal quality e.g. warm, bright, dark")
-    instruments:       list  = Field(default=[],        description="List of instruments")
-    dynamics:          str   = Field(default="steady",  description="Dynamic description")
-    atmosphere_tags:   str   = Field(default="",        description="Atmosphere descriptors")
-    listening_context: str   = Field(default="",        description="Context e.g. mid-morning study session")
-    time_of_day:       str   = Field(default="day",     description="Time of day")
-    sensitive_override: bool = Field(default=False,     description="True if sensitive content detected")
+    # Extended fields from G's Handoff 2
+    valence:           float = Field(default=0.0,  description="Valence -1.0 to 1.0", ge=-1.0, le=1.0)
+    arousal:           float = Field(default=0.5,  description="Arousal 0.0-1.0 (continuous V-A axis)", ge=0.0, le=1.0)
+    intensity:         float = Field(default=0.5,  description="Intensity 0.0-1.0", ge=0.0, le=1.0)
+    reverb:            float = Field(default=0.5,  description="Reverb amount 0.0-1.0", ge=0.0, le=1.0)
+    ambience:          float = Field(default=0.5,  description="Ambience amount 0.0-1.0", ge=0.0, le=1.0)
+    timbre:            str   = Field(default="warm",   description="Tonal quality e.g. warm, bright, dark")
+    instruments:       list  = Field(default=[],       description="List of instruments")
+    dynamics:          str   = Field(default="steady", description="Dynamic description")
 
-    # Duration parameter — exposed as API field so Feature B can request length
-    # MusicGen audio codec runs at ~50 tokens/second
-    # musicgen-small quality degrades past ~30s (training window limit)
+    # camelCase aliases — B sends camelCase, D stores as snake_case
+    atmosphere_tags:   str   = Field(default="",    alias="atmosphereTags",    description="Atmosphere descriptors")
+    listening_context: str   = Field(default="",    alias="listeningContext",  description="Context e.g. mid-morning study session")
+    time_of_day:       str   = Field(default="day", alias="timeOfDay",         description="Time of day")
+    sensitive_override: bool = Field(default=False, alias="sensitiveOverride", description="True if sensitive content detected")
+
+    # Silent flag — B2 sets mood:"silence" + silent:True for sensitive pages
+    silent:            bool  = Field(default=False, description="True if B2 detected sensitive content and wants silence")
+
+    # Duration parameter
     duration_seconds:  int   = Field(
         default=28,
         description="Target clip duration in seconds. Max 30 for musicgen-small.",
@@ -38,7 +44,8 @@ class MusicProfile(BaseModel):
     def validate_mood(cls, v):
         valid_moods = {
             "calm", "focused", "joyful", "energetic", "sad",
-            "dark", "nostalgic", "curious", "tense", "uplifting", "neutral"
+            "dark", "nostalgic", "curious", "tense", "uplifting", "neutral",
+            "silence"  # B2 sends this for sensitive pages
         }
         if v not in valid_moods:
             print(f"[D1] Unknown mood '{v}' — falling back to neutral")
@@ -54,12 +61,20 @@ class MusicProfile(BaseModel):
 class HandoffPayload(BaseModel):
     """
     Accepts both:
-    1. Sneha's Handoff 2 shape: { "musicProfile": {...}, "prompt": "..." }
+    1. B's Handoff 2 shape: { "musicProfile": {...}, "prompt": "..." }
     2. Flat dict for direct Swagger testing: { "mood": "calm", "bpm": 80, ... }
     """
+    model_config = ConfigDict(populate_by_name=True)
+
     musicProfile: Optional[MusicProfile] = None
     prompt:       Optional[str]          = None
 
+    # Top-level fields from B's Handoff 2
+    contentCategory: Optional[str]   = None  # camelCase at top level in B4
+    volume:          Optional[float] = None  # 0.0-1.0, set by index.js
+    isSilent:        Optional[bool]  = None  # True when sensitive content detected
+
+    # Flat dict fields — used when musicProfile is not present
     mood:              Optional[str]   = None
     bpm:               Optional[float] = None
     key:               Optional[str]   = None
@@ -67,6 +82,7 @@ class HandoffPayload(BaseModel):
     style:             Optional[str]   = None
     content_category:  Optional[str]   = None
     valence:           Optional[float] = None
+    arousal:           Optional[float] = None
     intensity:         Optional[float] = None
     reverb:            Optional[float] = None
     ambience:          Optional[float] = None
@@ -77,4 +93,5 @@ class HandoffPayload(BaseModel):
     listening_context: Optional[str]   = None
     time_of_day:       Optional[str]   = None
     sensitive_override: Optional[bool] = None
-    duration_seconds:  Optional[int]   = None  # ← added
+    duration_seconds:  Optional[int]   = None
+    silent:            Optional[bool]  = None

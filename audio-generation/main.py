@@ -10,9 +10,6 @@ from d4_process import process_audio
 from fallback import get_fallback_clip
 from models import HandoffPayload
 
-# Prod (Supabase-backed) cache vs. local dev cache (Docker Postgres + files on
-# disk). Defaults to dev so the server runs out of the box against `docker
-# compose up` in audio-generation/docker/ without needing a Supabase account.
 IS_PROD = os.getenv("IS_PROD", "false").lower() in ("1", "true", "yes")
 if IS_PROD:
     from d5_cache import make_cache_key, check_cache, save_to_cache
@@ -29,10 +26,29 @@ if not IS_PROD:
 async def generate(payload: HandoffPayload):
     timings = {}
 
-    # D1 — Validate & unwrap Sneha's Handoff 2 payload
+    # D1 — Validate & unwrap B's Handoff 2 payload
     t0 = time.time()
     profile, prompt_from_b = validate_profile(payload)
     timings["d1_validate_ms"] = int((time.time() - t0) * 1000)
+
+    # Silent mode — B2 detected sensitive content, skip generation entirely
+    # Avoids burning GPU-minutes generating audio that will be muted anyway
+    if profile.get("silent") or payload.isSilent:
+        print("[MAIN] Silent mode — sensitive content detected by Feature B, skipping generation")
+        return JSONResponse(
+            status_code=200,
+            content={
+                "audio_url": None,
+                "metadata": {
+                    "mood":   profile["mood"],
+                    "silent": True,
+                    "reason": "Sensitive content detected — silence by default"
+                },
+                "cache":   "miss",
+                "silent":  True,
+                "timings": timings
+            }
+        )
 
     # Cache check
     t1 = time.time()
@@ -48,7 +64,7 @@ async def generate(payload: HandoffPayload):
             "timings":   timings
         }
 
-    # D2 — Use Sneha's prompt if available, else build our own
+    # D2 — Use B's prompt if available, else build our own
     t2 = time.time()
     prompt = build_prompt(profile, prompt_from_b)
     timings["d2_prompt_ms"] = int((time.time() - t2) * 1000)
@@ -59,9 +75,9 @@ async def generate(payload: HandoffPayload):
     t3 = time.time()
     generation_seed = None
     try:
-         audio_bytes, generation_seed = await asyncio.to_thread(
-             generate_audio, prompt, profile["duration_seconds"]
-             )
+        audio_bytes, generation_seed = await asyncio.to_thread(
+            generate_audio, prompt, profile["duration_seconds"]
+        )
     except GenerationError as e:
         print(f"[MAIN] Generation failed after all retries: {e}")
         print(f"[MAIN] Attempting fallback clip for mood: {profile['mood']}")
@@ -112,20 +128,20 @@ async def generate(payload: HandoffPayload):
     return {
         "audio_url": audio_url,
         "metadata": {
-            "cache_key":       cache_key,
-            "mood":            profile["mood"],
-            "bpm":             profile["bpm"],
-            "key":             profile["key"],
-            "energy":          profile["energy"],
-            "valence":         profile["valence"],
-            "intensity":       profile["intensity"],
+            "cache_key":        cache_key,
+            "mood":             profile["mood"],
+            "bpm":              profile["bpm"],
+            "key":              profile["key"],
+            "energy":           profile["energy"],
+            "valence":          profile["valence"],
+            "intensity":        profile["intensity"],
             "duration_seconds": profile["duration_seconds"],
-            "loop_point_ms":   loop_point_ms,
-            "prompt_used":     prompt,
-            "prompt_source":   "feature_b" if prompt_from_b else "d2_fallback",
-            "generation_seed": generation_seed,
-            "is_fallback":     False,
-            "loopable":        True
+            "loop_point_ms":    loop_point_ms,
+            "prompt_used":      prompt,
+            "prompt_source":    "feature_b" if prompt_from_b else "d2_fallback",
+            "generation_seed":  generation_seed,
+            "is_fallback":      False,
+            "loopable":         True
         },
         "cache":   "miss",
         "timings": timings
