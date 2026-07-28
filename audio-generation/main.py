@@ -26,29 +26,10 @@ if not IS_PROD:
 async def generate(payload: HandoffPayload):
     timings = {}
 
-    # D1 — Validate & unwrap B's Handoff 2 payload
+    # D1 — Validate & unwrap Sneha's Handoff 2 payload
     t0 = time.time()
     profile, prompt_from_b = validate_profile(payload)
     timings["d1_validate_ms"] = int((time.time() - t0) * 1000)
-
-    # Silent mode — B2 detected sensitive content, skip generation entirely
-    # Avoids burning GPU-minutes generating audio that will be muted anyway
-    if profile.get("silent") or payload.isSilent:
-        print("[MAIN] Silent mode — sensitive content detected by Feature B, skipping generation")
-        return JSONResponse(
-            status_code=200,
-            content={
-                "audio_url": None,
-                "metadata": {
-                    "mood":   profile["mood"],
-                    "silent": True,
-                    "reason": "Sensitive content detected — silence by default"
-                },
-                "cache":   "miss",
-                "silent":  True,
-                "timings": timings
-            }
-        )
 
     # Cache check
     t1 = time.time()
@@ -64,7 +45,7 @@ async def generate(payload: HandoffPayload):
             "timings":   timings
         }
 
-    # D2 — Use B's prompt if available, else build our own
+    # D2 — Use Sneha's prompt if available, else build our own
     t2 = time.time()
     prompt = build_prompt(profile, prompt_from_b)
     timings["d2_prompt_ms"] = int((time.time() - t2) * 1000)
