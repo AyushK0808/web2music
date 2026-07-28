@@ -17,6 +17,23 @@ MIN_LOOP_SECONDS = 3.0      # never propose a loop point earlier than this
 BEATS_PER_BAR = 4           # assume 4/4; librosa doesn't give true downbeats
 CROSSFADE_MS = 50           # length of the equal-power crossfade at the loop seam
 
+# MP3 pads audio to fixed-size encoder frames (LAME adds ~576 samples of
+# priming silence at the start plus padding to fill the last frame), which
+# is audible as a click/gap on every loop repeat even with a perfect cut --
+# the crossfade above smooths the CONTENT of the seam, but the container
+# format itself was still reintroducing a gap underneath it. Ogg/Opus is
+# genuinely gapless: the container carries pre-skip/granule-position
+# metadata that a real decoder (ffmpeg, browser Web Audio, Chrome's native
+# <audio>/Opus support -- relevant since Feature C is a Chrome extension)
+# uses to trim the priming/padding samples automatically. Also comes out
+# smaller than MP3 at the same bitrate. Note: libopus only supports a fixed
+# set of sample rates and will internally resample to 48000 Hz regardless
+# of the source rate -- harmless here since loop_point_ms is a millisecond
+# timestamp, not sample-rate dependent.
+EXPORT_FORMAT = "ogg"
+EXPORT_CODEC = "libopus"
+EXPORT_BITRATE = "128k"
+
 
 def process_audio(audio_bytes: bytes):
     audio_buffer = io.BytesIO(audio_bytes)
@@ -64,11 +81,13 @@ def process_audio(audio_bytes: bytes):
 
     audio_loopable = _crossfade_loop(pre_crossfade_clip, crossfade_ms=CROSSFADE_MS)
 
-    mp3_buffer = io.BytesIO()
-    audio_loopable.export(mp3_buffer, format="mp3", bitrate="128k")
-    mp3_buffer.seek(0)
+    clip_buffer = io.BytesIO()
+    audio_loopable.export(
+        clip_buffer, format=EXPORT_FORMAT, codec=EXPORT_CODEC, bitrate=EXPORT_BITRATE
+    )
+    clip_buffer.seek(0)
 
-    return mp3_buffer.read(), loop_point_ms, seam_discontinuity
+    return clip_buffer.read(), loop_point_ms, seam_discontinuity
 
 
 def _seam_discontinuity(audio: AudioSegment, crossfade_ms: int = CROSSFADE_MS) -> dict:

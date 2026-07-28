@@ -143,14 +143,14 @@ async def generate(payload: HandoffPayload):
 
     # D4 — Post-process
     t4 = time.time()
-    mp3_bytes, loop_point_ms, seam_discontinuity = await asyncio.to_thread(process_audio, audio_bytes)
+    clip_bytes, loop_point_ms, seam_discontinuity = await asyncio.to_thread(process_audio, audio_bytes)
     timings["d4_process_ms"] = int((time.time() - t4) * 1000)
 
     # D5 — Cache & return
     t5 = time.time()
     total_gen_ms = int((time.time() - t0) * 1000)
     audio_url = save_to_cache(
-        cache_key, mp3_bytes, profile,
+        cache_key, clip_bytes, profile,
         loop_point_ms, total_gen_ms, prompt
     )
     timings["d5_save_ms"] = int((time.time() - t5) * 1000)

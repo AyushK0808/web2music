@@ -178,3 +178,29 @@ class TestVectorizedCorrelationCorrectness:
 
         result = _vectorized_chroma_similarity(chroma, window=CHROMA_WINDOW)
         assert not np.isnan(result).any()
+
+
+class TestGaplessExport:
+    def test_exported_clip_is_valid_decodable_ogg_opus(self):
+        """
+        Regression test for the MP3-to-Ogg/Opus gapless export switch: MP3
+        pads to fixed-size encoder frames (audible click/gap on loop even
+        with a perfect cut) -- confirms the exported bytes are genuinely
+        Ogg/Opus and actually decodable, not just "some bytes came back".
+        """
+        from pydub import AudioSegment
+        import imageio_ffmpeg
+        AudioSegment.converter = imageio_ffmpeg.get_ffmpeg_exe()
+
+        audio = _make_phrase_audio(duration_s=20)
+        clip_bytes, loop_point_ms, seam = process_audio(_to_wav_bytes(audio))
+
+        # Ogg files start with the "OggS" capture pattern magic bytes
+        assert clip_bytes[:4] == b"OggS", "exported bytes don't start with the Ogg container magic number"
+
+        decoded = AudioSegment.from_file(io.BytesIO(clip_bytes), format="ogg")
+        assert len(decoded) > 0
+        # libopus only supports a fixed set of rates and resamples to 48kHz
+        # internally regardless of source rate -- this is expected, not a bug
+        assert decoded.frame_rate == 48000
+        assert decoded.channels == 1
