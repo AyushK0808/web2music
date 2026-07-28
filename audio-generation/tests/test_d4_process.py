@@ -139,6 +139,26 @@ class TestSeamDiscontinuity:
         result = _seam_discontinuity(seg, crossfade_ms=CROSSFADE_MS)
         assert abs(result["energy_delta_db"]) < 3.0  # same amplitude tone throughout
 
+    def test_seam_discontinuity_does_not_fire_n_fft_warning(self):
+        """
+        Regression test: librosa's default n_fft=2048 is larger than the
+        crossfade window (1600 samples for the default 50ms at 32kHz),
+        which fired 'n_fft=2048 is too large for input signal of
+        length=1600' on every real request. n_fft must be sized to the
+        actual window instead of left at the library default.
+        """
+        import warnings
+        from pydub import AudioSegment
+        tone = (0.5 * np.sin(2 * np.pi * 440 * np.linspace(0, 28, int(SR * 28)))).astype(np.float32)
+        tone_i16 = (tone * 32767).astype(np.int16)
+        seg = AudioSegment(tone_i16.tobytes(), frame_rate=SR, sample_width=2, channels=1)
+
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            _seam_discontinuity(seg, crossfade_ms=CROSSFADE_MS)
+            n_fft_warnings = [x for x in w if "n_fft" in str(x.message)]
+            assert len(n_fft_warnings) == 0, [str(x.message) for x in n_fft_warnings]
+
 
 class TestVectorizedCorrelationCorrectness:
     def test_vectorized_matches_naive_per_frame_corrcoef(self):

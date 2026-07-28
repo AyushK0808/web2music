@@ -120,8 +120,17 @@ def _seam_discontinuity(audio: AudioSegment, crossfade_ms: int = CROSSFADE_MS) -
 
     sr = tail.frame_rate
     try:
-        tail_centroid = float(librosa.feature.spectral_centroid(y=tail_norm, sr=sr).mean())
-        head_centroid = float(librosa.feature.spectral_centroid(y=head_norm, sr=sr).mean())
+        # librosa's default n_fft=2048 assumes a signal at least that long;
+        # the crossfade window here is typically far shorter (e.g. 1600
+        # samples for the default 50ms at 32kHz), which fired a UserWarning
+        # on every single call ("n_fft=2048 is too large for input signal
+        # of length=1600") without actually failing -- librosa just
+        # zero-pads, silently degrading the estimate. Size n_fft to the
+        # actual window instead, rounded down to a power of 2 for a real
+        # FFT rather than a padded one.
+        n_fft = 1 << int(np.floor(np.log2(max(2, min(2048, len(tail_norm))))))
+        tail_centroid = float(librosa.feature.spectral_centroid(y=tail_norm, sr=sr, n_fft=n_fft, hop_length=n_fft).mean())
+        head_centroid = float(librosa.feature.spectral_centroid(y=head_norm, sr=sr, n_fft=n_fft, hop_length=n_fft).mean())
         spectral_centroid_delta_hz = round(abs(tail_centroid - head_centroid), 1)
     except Exception:
         # Spectral centroid needs enough samples for at least one FFT frame;
