@@ -40,3 +40,7 @@ networkx==3.6.1
 fsspec==2026.6.0
 PyYAML==6.0.3
 typing_extensions==4.15.0
+
+# Testing
+pytest==9.1.1
+pytest-asyncio==1.4.0

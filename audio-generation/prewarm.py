@@ -83,7 +83,7 @@ async def prewarm_cache(make_cache_key, check_cache, save_to_cache):
                 cache_key = make_cache_key(profile)
                 prompt = build_prompt(profile)
                 audio_bytes, _seed = await generate_audio(prompt, profile["duration_seconds"])
-                mp3_bytes, loop_point_ms = await asyncio.to_thread(process_audio, audio_bytes)
+                mp3_bytes, loop_point_ms, _seam_discontinuity = await asyncio.to_thread(process_audio, audio_bytes)
                 await asyncio.to_thread(
                     save_to_cache, cache_key, mp3_bytes, profile, loop_point_ms, 0, prompt
                 )

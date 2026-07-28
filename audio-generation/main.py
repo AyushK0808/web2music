@@ -58,9 +58,38 @@ async def generate(payload: HandoffPayload):
     timings["d5_cache_check_ms"] = int((time.time() - t1) * 1000)
 
     if cached:
+        # Not every field in the miss-path metadata below is persisted to
+        # the cache DB (see the column list in docker/init.sql) -- only
+        # cache_key/mood/bpm/key/energy/style/loop_point_ms/prompt_used
+        # actually round-trip. Rather than spreading `cached` directly and
+        # letting whichever fields didn't make the DB schema silently
+        # vanish from the response (the seam_discontinuity bug from
+        # review), every key the miss-path can return is explicitly
+        # declared here too, so hit and miss responses always have the
+        # same shape -- unpersisted fields come back as null instead of
+        # missing outright. Full persistence (DB columns for valence,
+        # intensity, duration_seconds, prompt_source, generation_seed) is
+        # a bigger schema-migration change; flagged as a follow-up rather
+        # than done here.
         return {
             "audio_url": cached["audio_url"],
-            "metadata":  cached,
+            "metadata": {
+                "cache_key":          cached.get("cache_key", cache_key),
+                "mood":               cached.get("mood"),
+                "bpm":                cached.get("bpm"),
+                "key":                cached.get("key"),
+                "energy":             cached.get("energy"),
+                "valence":            cached.get("valence"),
+                "intensity":          cached.get("intensity"),
+                "duration_seconds":   cached.get("duration_seconds"),
+                "loop_point_ms":      cached.get("loop_point_ms"),
+                "seam_discontinuity": cached.get("seam_discontinuity"),
+                "prompt_used":        cached.get("prompt_used"),
+                "prompt_source":      cached.get("prompt_source"),
+                "generation_seed":    cached.get("generation_seed"),
+                "is_fallback":        False,
+                "loopable":           True,
+            },
             "cache":     "hit",
             "timings":   timings
         }
@@ -114,7 +143,7 @@ async def generate(payload: HandoffPayload):
 
     # D4 — Post-process
     t4 = time.time()
-    mp3_bytes, loop_point_ms = await asyncio.to_thread(process_audio, audio_bytes)
+    mp3_bytes, loop_point_ms, seam_discontinuity = await asyncio.to_thread(process_audio, audio_bytes)
     timings["d4_process_ms"] = int((time.time() - t4) * 1000)
 
     # D5 — Cache & return
@@ -138,6 +167,7 @@ async def generate(payload: HandoffPayload):
             "intensity":       profile["intensity"],
             "duration_seconds": profile["duration_seconds"],
             "loop_point_ms":   loop_point_ms,
+            "seam_discontinuity": seam_discontinuity,
             "prompt_used":     prompt,
             "prompt_source":   "feature_b" if prompt_from_b else "d2_fallback",
             "generation_seed": generation_seed,
