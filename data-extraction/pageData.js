@@ -47,6 +47,7 @@ function getDeps() {
       embedding: require('./Embeddingmodel.js'),
       scoreReadability: require('./Readability.js').scoreReadability,
       behavior: require('./behaviorTracker.js'),
+      vectorStore: require('./VectorStore.js'),
     };
   }
   // Browser
@@ -57,7 +58,22 @@ function getDeps() {
     embedding: w.Web2MusicEmbedding,
     scoreReadability: w.Web2MusicReadability && w.Web2MusicReadability.scoreReadability,
     behavior: w.Web2MusicBehaviorTracker,
+    vectorStore: w.Web2MusicVectorStore,
   };
+}
+
+/* ── Embedding backend/model resolution (shared by cache key + vector store) ─ */
+/*
+ * Single source of truth for "which model produced this vector". The cache key
+ * and the vector-store namespace MUST agree: if they disagree, one of them will
+ * happily compare vectors from different embedding spaces.
+ */
+function resolveEmbeddingIdentity(embeddingConfig = {}) {
+  const backend = embeddingConfig.backend || 'local';
+  const model = (backend === 'openai' || backend === 'service')
+    ? (embeddingConfig.openaiModel || 'text-embedding-3-small')
+    : (embeddingConfig.localModel || 'Xenova/all-MiniLM-L6-v2');
+  return { backend, model };
 }
 
 /* ── Safe defaults (mirrors d1_validate.py) ──────────────────────────────── */
@@ -154,10 +170,7 @@ function djb2(str) {
 }
 
 function cacheKey(url, text, embeddingConfig = {}) {
-  const backend = embeddingConfig.backend || 'local';
-  const model = (backend === 'openai' || backend === 'service')
-    ? (embeddingConfig.openaiModel || 'text-embedding-3-small')
-    : (embeddingConfig.localModel || 'Xenova/all-MiniLM-L6-v2');
+  const { backend, model } = resolveEmbeddingIdentity(embeddingConfig);
   return `${url || ''}::${djb2(text || '')}::${backend}:${model}`;
 }
 
@@ -189,7 +202,7 @@ function clearPageDataCache() {
  * calls is what the paper's systems-eval section needs to characterize
  * extraction cost/reliability on real pages — nothing previously recorded it.
  */
-const STAGE_NAMES = ['text', 'colors', 'behavior', 'readability', 'embedding'];
+const STAGE_NAMES = ['text', 'colors', 'behavior', 'readability', 'embedding', 'similarity'];
 
 function freshTelemetry() {
   const stages = {};
@@ -252,6 +265,24 @@ async function timeStage(name, fn) {
   }
 }
 
+/* ── Default vector store (lazy: don't open IndexedDB until first use) ────── */
+
+let _defaultVectorStore = null;
+
+function getDefaultVectorStore(deps) {
+  if (_defaultVectorStore) return _defaultVectorStore;
+  const vs = deps && deps.vectorStore;
+  if (!vs || typeof vs.createVectorStore !== 'function') return null;
+  _defaultVectorStore = vs.createVectorStore();
+  return _defaultVectorStore;
+}
+
+/** Reset the module-default store (tests; also clears its contents). */
+async function resetDefaultVectorStore() {
+  if (_defaultVectorStore) await _defaultVectorStore.clear().catch(() => {});
+  _defaultVectorStore = null;
+}
+
 /* ── isImageOnly heuristic (edge case #15) ────────────────────────────────── */
 
 function estimateImageOnly(doc, wordCount) {
@@ -295,11 +326,20 @@ async function buildPageData(options = {}) {
     // compare mood-classification accuracy with fullyLocal:true vs a
     // network-backed embedding backend on the same corpus.
     fullyLocal = false,
+    // Similarity engine. Pass a store to enable it, `false` to explicitly opt
+    // out, or leave undefined to use the lazily-created module default
+    // (IndexedDB in the extension, memory elsewhere).
+    vectorStore: vectorStoreOption,
+    similarityOptions,
   } = options;
 
   const embeddingConfig = fullyLocal
     ? { ...options.embeddingConfig, backend: 'local' }
     : (options.embeddingConfig || {});
+
+  const vectorStore = vectorStoreOption === false
+    ? null
+    : (vectorStoreOption || getDefaultVectorStore(deps));
 
   const warnings = [];
 
@@ -362,6 +402,36 @@ async function buildPageData(options = {}) {
     }
   }
 
+  // 6) Similarity — has a page like this been seen before? A hit lets the rest
+  // of the pipeline reuse a previous mood/track instead of re-running B's LLM
+  // and C's generation. Namespaced by backend/model inside the store, so
+  // vectors from different embedding spaces are never compared.
+  let similarity = null;
+  if (vectorStore && embedding.length) {
+    try {
+      similarity = await timeStage('similarity', async () => {
+        const { backend, model } = resolveEmbeddingIdentity(embeddingConfig);
+        const found = await vectorStore.search(embedding, {
+          backend,
+          model,
+          excludeUrl: page.url, // the page's own prior record isn't a "similar page"
+          ...(similarityOptions || {}),
+        });
+        // Record this page after searching, so it can't match itself.
+        await vectorStore.upsert({
+          url: page.url,
+          vector: embedding,
+          backend,
+          model,
+          title: page.title || '',
+        });
+        return found;
+      });
+    } catch (err) {
+      warnings.push(`similarity: ${err.message}`);
+    }
+  }
+
   const isImageOnly = estimateImageOnly(doc, page.wordCount || 0);
 
   const assembled = {
@@ -380,6 +450,17 @@ async function buildPageData(options = {}) {
     readingComplexity: readability.readingComplexity,
     colorEnergy: colorResult.colorEnergy || 0,
   };
+
+  // Additive similarity fields (B ignores unknown fields). `isRevisit` is the
+  // actionable one: at/above the revisit threshold the previous mood/track can
+  // be reused instead of re-running the pipeline.
+  if (similarity) {
+    assembled.isRevisit = similarity.isRevisit;
+    assembled.nearestScore = similarity.best ? similarity.best.score : null;
+    assembled.similarPages = similarity.matches.map(m => ({
+      url: m.url, score: m.score, title: m.title, mood: m.mood,
+    }));
+  }
 
   if (warnings.length) assembled.warnings = warnings;
 
@@ -450,6 +531,7 @@ if (typeof module !== 'undefined' && module.exports) {
     clearPageDataCache,
     getExtractionTelemetry,
     resetExtractionTelemetry,
+    resetDefaultVectorStore,
     HANDOFF_VERSION,
   };
 } else if (typeof window !== 'undefined') {
@@ -461,6 +543,7 @@ if (typeof module !== 'undefined' && module.exports) {
     clearPageDataCache,
     getExtractionTelemetry,
     resetExtractionTelemetry,
+    resetDefaultVectorStore,
     HANDOFF_VERSION,
   };
 }

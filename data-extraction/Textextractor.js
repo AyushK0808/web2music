@@ -6,7 +6,13 @@ const BOILERPLATE_TAGS = new Set([
 const BOILERPLATE_CLASS_HINTS = [
   'nav', 'footer', 'header', 'sidebar', 'ad', 'ads', 'advert',
   'banner', 'cookie', 'popup', 'modal', 'menu', 'breadcrumb',
-  'social', 'share', 'comment', 'related', 'newsletter'
+  'social', 'share', 'comment', 'related', 'newsletter',
+  // Index/homepage chrome. These pages have no single article container, so the
+  // content walk legitimately stops near <body> and this chrome would otherwise
+  // land in the extracted text (observed as "Skip to contentAdvertisement…" on
+  // news front pages). Matched as whole tokens, so these can't clip real words.
+  'advertisement', 'masthead', 'navigation', 'toolbar', 'skip', 'skiplink',
+  'submenu', 'megamenu', 'promo', 'subscribe', 'paywall'
 ];
 
 function classOrIdTokens(el) {
@@ -23,50 +29,118 @@ function looksLikeBoilerplate(el) {
   return tokens.some(token => BOILERPLATE_CLASS_HINTS.includes(token));
 }
 
-function textDensityScore(el) {
-  const text = el.innerText || el.textContent || '';
-  const textLength = text.trim().length;
+/*
+ * Content selection: find the tightest element that still holds essentially all
+ * of the page's prose.
+ *
+ * The previous scorer divided text length by DESCENDANT TAG COUNT, which is
+ * structurally biased toward leaves: a caption with no descendants divided by 1
+ * (via `|| 1`) and scored its full text length, while a real article divided by
+ * its thousands of descendants. On en.wikipedia.org/wiki/Espresso that made a
+ * 61-char image caption outscore the 30k-char article ~8x, so extraction
+ * returned 10 words of 4,616 and tripped the isImageOnly fallback. Measured
+ * across a small site sample, 5 of 7 text-rich pages lost >90% of their text
+ * this way.
+ *
+ * Instead: start at the root (or a semantic container that holds most of the
+ * text) and walk DOWN only while a single child still contains nearly all the
+ * non-link text. The walk stops exactly where content fans out into sibling
+ * paragraphs — the article container — and can never descend into one paragraph
+ * or caption, because a single child holding ~all the text is precisely what
+ * stops being true there.
+ */
+
+// A child must hold at least this share of its parent's non-link text to be
+// considered "the same content, just more tightly wrapped".
+const DOMINANT_CHILD_SHARE = 0.9;
+
+// Never descend into (or select) a block below this much text; keeps the walk
+// from bottoming out into a single sentence on sparse pages.
+const MIN_CONTENT_TEXT_LENGTH = 200;
+
+// A semantic <article>/<main> must hold at least this share of the root's text
+// to be trusted as the starting point (some sites wrap a teaser in <article>).
+const SEMANTIC_MIN_SHARE = 0.25;
+
+/**
+ * Non-link text length, via textContent rather than innerText.
+ *
+ * Deliberate: innerText forces layout on every call, and this runs over many
+ * nodes during the descent — that made text the most expensive extraction stage.
+ * textContent is layout-free. Hidden boilerplate is handled by stripping instead
+ * (see stripHintedElements / BOILERPLATE_TAGS), and innerText is still used once
+ * on the final selection so the returned text keeps visibility filtering.
+ */
+function nonLinkTextLength(el) {
+  const textLength = (el.textContent || '').trim().length;
   if (textLength === 0) return 0;
 
-  const tagCount = el.getElementsByTagName('*').length || 1;
-  const linkTextLength = Array.from(el.getElementsByTagName('a'))
-    .reduce((sum, a) => sum + (a.innerText || a.textContent || '').length, 0);
+  let linkTextLength = 0;
+  const anchors = el.getElementsByTagName('a');
+  for (let i = 0; i < anchors.length; i++) {
+    linkTextLength += (anchors[i].textContent || '').length;
+  }
 
-  const linkDensity = linkTextLength / textLength;
-  const density = textLength / tagCount;
+  return Math.max(0, textLength - linkTextLength);
+}
 
-  return density * (1 - linkDensity);
+/**
+ * textDensityScore — non-link text weighted by how little of it is links.
+ * Kept as a named export for inspection/debugging. No longer divided by
+ * descendant count; see the note above for why that was the whole bug.
+ */
+function textDensityScore(el) {
+  const textLength = (el.textContent || '').trim().length;
+  if (textLength === 0) return 0;
+  const nonLink = nonLinkTextLength(el);
+  return nonLink * (nonLink / textLength); // penalises link-heavy blocks
 }
 
 function findMainContentElement(root = document.body) {
-  const candidates = [];
+  if (!root) return root;
 
-  const semanticSelectors = ['article', 'main', '[role="main"]'];
-  for (const sel of semanticSelectors) {
-    const el = root.querySelector(sel);
-    if (el) candidates.push(el);
-  }
+  const rootText = nonLinkTextLength(root);
+  if (rootText < MIN_CONTENT_TEXT_LENGTH) return root;
 
-  const blockTags = root.querySelectorAll('div, section');
-  blockTags.forEach(el => {
-    if (!looksLikeBoilerplate(el)) candidates.push(el);
-  });
-
-  if (candidates.length === 0) return root;
-
-  let best = candidates[0];
-  let bestScore = -Infinity;
-
-  for (const el of candidates) {
-    if (looksLikeBoilerplate(el)) continue;
-    const score = textDensityScore(el);
-    if (score > bestScore) {
-      bestScore = score;
-      best = el;
+  // Prefer a semantic container, but only if it actually holds the content.
+  let current = root;
+  for (const sel of ['article', 'main', '[role="main"]']) {
+    let el;
+    try {
+      el = root.querySelector(sel);
+    } catch {
+      el = null; // querySelector can throw on exotic selectors in some engines
+    }
+    if (el && !looksLikeBoilerplate(el) &&
+        nonLinkTextLength(el) >= rootText * SEMANTIC_MIN_SHARE) {
+      current = el;
+      break;
     }
   }
 
-  return best;
+  // Descend while one child still holds nearly all the non-link text.
+  for (;;) {
+    const currentText = nonLinkTextLength(current);
+    if (currentText < MIN_CONTENT_TEXT_LENGTH) break;
+
+    let dominant = null;
+    const children = current.children || [];
+    for (let i = 0; i < children.length; i++) {
+      const child = children[i];
+      if (looksLikeBoilerplate(child)) continue;
+      const childText = nonLinkTextLength(child);
+      if (childText >= currentText * DOMINANT_CHILD_SHARE &&
+          childText >= MIN_CONTENT_TEXT_LENGTH) {
+        dominant = child;
+        break; // only one child can hold >=90%, so the first is the one
+      }
+    }
+
+    if (!dominant) break; // content fans out here — this is the container
+    current = dominant;
+  }
+
+  return current;
 }
 
 function stripHintedElements(root) {
@@ -77,6 +151,19 @@ function stripHintedElements(root) {
       el.remove();
     }
   });
+}
+
+/**
+ * stripHiddenElements — remove content hidden via attributes.
+ *
+ * Selection now walks the DOM with textContent (layout-free, but unlike
+ * innerText it does NOT skip hidden nodes), so hidden menus/dialogs would
+ * otherwise count toward the descent. These are attribute checks only — no
+ * getComputedStyle, so still no forced layout.
+ */
+function stripHiddenElements(root) {
+  Array.from(root.querySelectorAll('[hidden], [aria-hidden="true"], template'))
+    .forEach(el => el.remove());
 }
 
 function normalizeWhitespace(text) {
@@ -138,8 +225,13 @@ function extractPageText(doc = document) {
     clone.querySelectorAll(tag.toLowerCase()).forEach(el => el.remove());
   });
   stripHintedElements(clone);
+  stripHiddenElements(clone);
 
   const mainEl = findMainContentElement(clone);
+  // innerText once, on the final selection only — it forces layout, so calling
+  // it during selection (as this used to) was the bulk of the text-stage cost.
+  // A detached clone has no layout box in some engines, hence the textContent
+  // fallback (that is also the jsdom path, where innerText is undefined).
   const rawText = mainEl.innerText || mainEl.textContent || '';
   const mainText = normalizeWhitespace(rawText);
 
@@ -156,7 +248,8 @@ function extractPageText(doc = document) {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     extractPageText, extractMetadata, findMainContentElement,
-    textDensityScore, classOrIdTokens, stripHintedElements
+    textDensityScore, nonLinkTextLength, classOrIdTokens,
+    stripHintedElements, stripHiddenElements
   };
 } else if (typeof window !== 'undefined') {
   window.Web2MusicTextExtractor = { extractPageText, extractMetadata };
