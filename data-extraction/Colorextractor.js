@@ -3,6 +3,9 @@ const HUE_BUCKET_SIZE = 360 / HUE_BUCKET_COUNT;
 
 const MIN_ELEMENT_AREA_PX = 400;
 const MIN_ALPHA_TO_COUNT = 0.05;
+const MAX_ELEMENTS_TO_SAMPLE = 800; // caps getComputedStyle/getBoundingClientRect
+                                     // calls per page — every element read is a
+                                     // forced-layout risk if layout is dirty
 
 function parseRgba(colorString) {
   if (!colorString || colorString === 'transparent') return null;
@@ -59,27 +62,36 @@ function visibleArea(el) {
   return clippedWidth * clippedHeight;
 }
 
+/**
+ * Evenly-spaced sample of a NodeList/array down to `cap` items, instead of
+ * processing every element on huge DOMs. Even spacing (rather than a naive
+ * first-N slice) avoids biasing toward whatever section of the DOM happens
+ * to come first in document order.
+ */
+function sampleElements(nodeList, cap) {
+  const all = Array.from(nodeList);
+  if (all.length <= cap) return all;
+
+  const step = all.length / cap;
+  const sampled = [];
+  for (let i = 0; i < cap; i++) {
+    sampled.push(all[Math.floor(i * step)]);
+  }
+  return sampled;
+}
+
 function buildHueHistogram(root = document.body) {
   const hueBuckets = new Array(HUE_BUCKET_COUNT).fill(0);
-  // Area-weighted saturation/lightness sums per hue bucket, so we can recover
-  // a representative S/L for the dominant bucket (not just its hue).
-  const bucketSatSum = new Array(HUE_BUCKET_COUNT).fill(0);
-  const bucketLightSum = new Array(HUE_BUCKET_COUNT).fill(0);
-
+  // Weighted sums of saturation/lightness per bucket, so the winning bucket's
+  // representative color can report its own s/l rather than a fixed guess.
+  const hueBucketSatWeighted = new Array(HUE_BUCKET_COUNT).fill(0);
+  const hueBucketLightWeighted = new Array(HUE_BUCKET_COUNT).fill(0);
   let achromaticArea = 0;
+  let achromaticLightWeighted = 0;
   let totalArea = 0;
 
-  // Global area-weighted accumulators used to emit a single representative
-  // { hue, saturation, lightness } for Feature B's colour-bias step. Lightness
-  // is summed over *all* counted area (achromatic greys/blacks/whites included)
-  // so page brightness stays meaningful even on near-monochrome pages;
-  // saturation is summed over chromatic area only (achromatic S ≈ 0).
-  let chromaticSatSum = 0;
-  let chromaticLightSum = 0;
-  let achromaticLightSum = 0;
-  let chromaticArea = 0;
-
-  const elements = root.querySelectorAll('*');
+  const allElements = root.querySelectorAll('*');
+  const elements = sampleElements(allElements, MAX_ELEMENTS_TO_SAMPLE);
 
   elements.forEach(el => {
     const area = visibleArea(el);
@@ -97,42 +109,32 @@ function buildHueHistogram(root = document.body) {
 
     if (isAchromatic) {
       achromaticArea += weightedArea;
-      achromaticLightSum += l * weightedArea;
+      achromaticLightWeighted += l * weightedArea;
     } else {
       const bucketIndex = Math.floor(h / HUE_BUCKET_SIZE) % HUE_BUCKET_COUNT;
       hueBuckets[bucketIndex] += weightedArea;
-      bucketSatSum[bucketIndex] += s * weightedArea;
-      bucketLightSum[bucketIndex] += l * weightedArea;
-
-      chromaticSatSum += s * weightedArea;
-      chromaticLightSum += l * weightedArea;
-      chromaticArea += weightedArea;
+      hueBucketSatWeighted[bucketIndex] += s * weightedArea;
+      hueBucketLightWeighted[bucketIndex] += l * weightedArea;
     }
   });
 
   return {
     hueBuckets,
-    bucketSatSum,
-    bucketLightSum,
+    hueBucketSatWeighted,
+    hueBucketLightWeighted,
     achromaticArea,
+    achromaticLightWeighted,
     totalArea,
-    chromaticSatSum,
-    chromaticLightSum,
-    achromaticLightSum,
-    chromaticArea,
+    sampledCount: elements.length,
+    totalElementCount: allElements.length,
   };
 }
 
 function extractDominantColors(root = document.body, topN = 3) {
   const {
-    hueBuckets,
-    bucketSatSum,
-    bucketLightSum,
-    achromaticArea,
-    totalArea,
-    chromaticSatSum,
-    chromaticLightSum,
-    achromaticLightSum,
+    hueBuckets, hueBucketSatWeighted, hueBucketLightWeighted,
+    achromaticArea, achromaticLightWeighted, totalArea,
+    sampledCount, totalElementCount,
   } = buildHueHistogram(root);
 
   if (totalArea === 0) {
@@ -140,17 +142,18 @@ function extractDominantColors(root = document.body, topN = 3) {
       dominantHues: [],
       colorEnergy: 0,
       achromaticRatio: 1,
-      // Neutral mid-grey default so Feature B always has a full HSL triple.
       representativeColor: { hue: 0, saturation: 0, lightness: 0.5 },
+      sampledCount,
+      totalElementCount,
     };
   }
 
   const ranked = hueBuckets
     .map((area, i) => ({
-      index: i,
       hue: Math.round(i * HUE_BUCKET_SIZE + HUE_BUCKET_SIZE / 2),
       area,
       coverage: area / totalArea,
+      bucketIndex: i,
     }))
     .filter(bucket => bucket.area > 0)
     .sort((a, b) => b.area - a.area)
@@ -159,44 +162,38 @@ function extractDominantColors(root = document.body, topN = 3) {
   const chromaticArea = totalArea - achromaticArea;
   const colorEnergy = Math.min(1, chromaticArea / totalArea);
 
-  // Representative colour for Handoff 1: dominant hue with area-weighted mean
-  // saturation (chromatic area) and lightness (all counted area). Falls back to
-  // the dominant bucket's own S when there's chromatic area but rounding makes
-  // the global mean vanish.
-  const dominant = ranked[0];
-  const representativeColor = {
-    hue: dominant ? dominant.hue : 0,
-    saturation: chromaticArea > 0
-      ? clamp01(chromaticSatSum / totalArea)
-      : 0,
-    lightness: clamp01((chromaticLightSum + achromaticLightSum) / totalArea),
-  };
-
-  // Prefer the dominant bucket's own S/L when it exists — a truer "this is the
-  // page's main colour" reading than the whole-page mean.
-  if (dominant && hueBuckets[dominant.index] > 0) {
-    representativeColor.saturation = clamp01(
-      bucketSatSum[dominant.index] / hueBuckets[dominant.index]
-    );
-    representativeColor.lightness = clamp01(
-      bucketLightSum[dominant.index] / hueBuckets[dominant.index]
-    );
+  // Representative color = the winning hue bucket's own weighted s/l average
+  // (not a fixed guess), so downstream mood scoring gets real saturation and
+  // lightness rather than defaults. Falls back to the achromatic average
+  // lightness when no chromatic bucket won (e.g. an all-greyscale page).
+  let representativeColor;
+  if (ranked.length > 0) {
+    const top = ranked[0];
+    representativeColor = {
+      hue: top.hue,
+      saturation: hueBucketSatWeighted[top.bucketIndex] / hueBuckets[top.bucketIndex],
+      lightness: hueBucketLightWeighted[top.bucketIndex] / hueBuckets[top.bucketIndex],
+    };
+  } else {
+    representativeColor = {
+      hue: 0,
+      saturation: 0,
+      lightness: achromaticArea > 0 ? achromaticLightWeighted / achromaticArea : 0.5,
+    };
   }
 
   return {
-    dominantHues: ranked.map(({ index, ...rest }) => rest),
+    dominantHues: ranked.map(({ hue, area, coverage }) => ({ hue, area, coverage })),
     colorEnergy,
     achromaticRatio: achromaticArea / totalArea,
     representativeColor,
+    sampledCount,
+    totalElementCount,
   };
 }
 
-function clamp01(x) {
-  return Math.max(0, Math.min(1, x));
-}
-
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { extractDominantColors, rgbToHsl, parseRgba };
+  module.exports = { extractDominantColors, rgbToHsl, parseRgba, sampleElements };
 } else if (typeof window !== 'undefined') {
   window.Web2MusicColorExtractor = { extractDominantColors };
 }

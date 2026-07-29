@@ -4,9 +4,15 @@
   "private": true,
   "description": "Feature A content-script modules: text, embedding, and colour extraction.",
   "scripts": {
-    "play": "node playground.js"
+    "test": "node globals_test.js && node vectorStore_test.js && node pageData_test.js && node qdrant_test.js",
+    "test:qdrant": "node qdrant_test.js",
+    "qdrant:up": "docker compose -f docker/docker-compose.yml up -d qdrant",
+    "qdrant:down": "docker compose -f docker/docker-compose.yml stop qdrant",
+    "play": "node playground.js",
+    "bench": "node benchmark/extractionCost.js"
   },
   "devDependencies": {
-    "jsdom": "^24.0.0"
+    "jsdom": "^24.0.0",
+    "puppeteer-core": "^25.4.0"
   }
 }

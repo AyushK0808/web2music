@@ -1,23 +1,89 @@
-# Feature A — embedding microservice.
+# Feature A services: the embedding microservice and the Qdrant vector database.
 #
 #   cd data-extraction/docker
-#   cp .env.example .env      # then paste your OpenAI key into .env
-#   docker compose up --build
+#   cp .env.example .env          # then paste your OpenAI key into .env
+#   docker compose up -d          # both services
+#   docker compose up -d qdrant   # just the vector DB (needs no OpenAI key)
 #
-# Then in the extension / page, use the embedding backend:
-#   getEmbedding(text, { backend: 'service' })   // → http://localhost:8077/embed
-#
-# The API key is read from .env into the container's environment and never
-# leaves it; the browser only ever talks to localhost.
+# Every port is published on 127.0.0.1 only. A bare "8077:8077" binds all
+# interfaces and exposes these to the local network; embedService.js already
+# defaults to a loopback bind internally, and this makes the published port
+# match that intent.
 
 services:
+  # ── Embedding microservice ────────────────────────────────────────────────
+  # Holds the OpenAI key in its environment so it never reaches the extension
+  # bundle or page context. Use via: getEmbedding(text, { backend: 'service' })
   embed-service:
     build: .
     container_name: web2music-embed-service
     ports:
-      - "8077:8077"
+      - "127.0.0.1:8077:8077"
     environment:
-      OPENAI_API_KEY: ${OPENAI_API_KEY:?set OPENAI_API_KEY in data-extraction/docker/.env}
-      EMBED_MODEL: ${EMBED_MODEL:-text-embedding-3-small}
-      PORT: "8077"
+      # Name-only pass-through for the secrets, NOT `${OPENAI_API_KEY:?...}`.
+      # A `:?` required-variable guard is evaluated for the whole file on every
+      # compose invocation, so it made unrelated commands fail — you could not run
+      # `compose stop qdrant` without an OpenAI key. embedService.js already
+      # reports a missing key clearly (/health returns keyConfigured:false, /embed
+      # returns a 500 naming the variable), so the guard bought an earlier error
+      # at the cost of breaking the rest of the stack.
+      - OPENAI_API_KEY
+      - SERVICE_SECRET      # see .env.example — strongly recommended
+      - ALLOWED_ORIGIN      # unset ⇒ no browser origin may call this directly
+      - EMBED_MODEL=${EMBED_MODEL:-text-embedding-3-small}
+      - PORT=8077
+      # Inside the container, listen on all interfaces: Docker's port mapping is
+      # what restricts exposure to the host, and a loopback-only bind in here
+      # would make the service unreachable through that mapping.
+      - BIND_HOST=0.0.0.0
     restart: unless-stopped
+
+  # ── Qdrant vector database ────────────────────────────────────────────────
+  # The scale-up path for VectorStore.js. IndexedDB stays the zero-setup default
+  # in the extension; this is for corpus-scale work (the §6/§7 evaluations),
+  # where a client-side entry cap and a client-side scan stop making sense.
+  #
+  #   const { createVectorStore, createQdrantAdapter } = require('./VectorStore.js');
+  #   const store = createVectorStore({ adapter: createQdrantAdapter() });
+  qdrant:
+    # Pinned deliberately: `latest` would let the engine change underneath a
+    # half-finished evaluation, which is not something a paper can absorb.
+    image: qdrant/qdrant:v1.18.3
+    container_name: web2music-qdrant
+    ports:
+      - "127.0.0.1:6333:6333"   # REST — what VectorStore.js talks to
+      - "127.0.0.1:6334:6334"   # gRPC — unused by us, handy for qdrant tooling
+    environment:
+      # Pass-through list form (name only, no `= value`) on purpose: Qdrant reads
+      # an EMPTY api-key as "auth is enabled" and then rejects every request with
+      # 401 — while /readyz keeps returning 200, so the container still looks
+      # healthy. Writing `QDRANT__SERVICE__API_KEY: ${QDRANT_API_KEY:-}` therefore
+      # bricks the database whenever .env is absent. With the name-only form,
+      # unset in the environment means unset in the container: no auth, works out
+      # of the box, and loopback-only publishing remains the real control.
+      #
+      # To enable auth, export QDRANT__SERVICE__API_KEY (or set it in .env) and
+      # pass the same value as createQdrantAdapter({ apiKey }).
+      - QDRANT__SERVICE__API_KEY
+      - QDRANT__LOG_LEVEL
+    volumes:
+      # Named volume so embeddings survive `docker compose down`. Use
+      # `docker compose down -v` when you want a genuinely clean corpus run.
+      - qdrant-storage:/qdrant/storage
+    healthcheck:
+      # The image ships no curl/wget/nc, so the usual `curl -f .../readyz` can't
+      # run. bash IS present, so use its /dev/tcp pseudo-device to speak HTTP
+      # directly. Invoked as ["CMD", "bash", ...] rather than CMD-SHELL because
+      # /bin/sh here is dash, which has no /dev/tcp support.
+      #
+      # Checks /readyz (shards actually ready), not just that the port accepts a
+      # connection — Qdrant listens before it can serve queries.
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/6333 && printf 'GET /readyz HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 && head -1 <&3 | grep -q '200 OK'"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+volumes:
+  qdrant-storage:

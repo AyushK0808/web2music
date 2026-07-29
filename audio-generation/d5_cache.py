@@ -30,10 +30,10 @@ def check_cache(cache_key: str):
         return result.data[0]
     return None
 
-def save_to_cache(cache_key, mp3_bytes, profile, loop_point_ms, generation_time_ms, prompt_used):
-    filename = f"{cache_key}.mp3"
+def save_to_cache(cache_key, clip_bytes, profile, loop_point_ms, generation_time_ms, prompt_used):
+    filename = f"{cache_key}.ogg"
     supabase.storage.from_("audio-cache").upload(
-        filename, mp3_bytes, {"content-type": "audio/mpeg"}
+        filename, clip_bytes, {"content-type": "audio/ogg"}
     )
     audio_url = supabase.storage.from_("audio-cache").get_public_url(filename)
 

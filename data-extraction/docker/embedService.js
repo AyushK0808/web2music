@@ -17,6 +17,13 @@
  *   OPENAI_API_KEY   (required) — the key, injected by docker compose from .env
  *   EMBED_MODEL      (optional) — default model, defaults to text-embedding-3-small
  *   PORT             (optional) — listen port, defaults to 8077
+ *   BIND_HOST        (optional) — listen address, defaults to 127.0.0.1 (loopback-only)
+ *   SERVICE_SECRET   (optional) — if set, requests must send it via the
+ *                                  `X-Service-Secret` header; without this any
+ *                                  local process/webpage that can reach the
+ *                                  port could burn the OpenAI key
+ *   ALLOWED_ORIGIN   (optional) — CORS origin to allow, defaults to none (no
+ *                                  browser page origin can call this directly)
  *
  * No npm dependencies: uses Node 18+ built-in global fetch and the http module.
  */
@@ -24,31 +31,59 @@
 'use strict';
 
 const http = require('http');
+const crypto = require('crypto');
 
 const PORT = parseInt(process.env.PORT, 10) || 8077;
+const BIND_HOST = process.env.BIND_HOST || '127.0.0.1';
 const DEFAULT_MODEL = process.env.EMBED_MODEL || 'text-embedding-3-small';
 const API_KEY = process.env.OPENAI_API_KEY || '';
+const SERVICE_SECRET = process.env.SERVICE_SECRET || '';
+const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || '';
+const MAX_BODY_BYTES = 1e6; // 1 MB guard
+
+function corsHeaders() {
+  return ALLOWED_ORIGIN
+    ? {
+        'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
+        'Access-Control-Allow-Headers': 'Content-Type, X-Service-Secret',
+        'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+      }
+    : {};
+}
 
 function sendJson(res, status, body) {
   const payload = JSON.stringify(body);
   res.writeHead(status, {
     'Content-Type': 'application/json',
-    // Local-only dev convenience; tighten/remove for real deployments.
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+    ...corsHeaders(),
   });
   res.end(payload);
+}
+
+function isAuthorized(req) {
+  if (!SERVICE_SECRET) return true; // no secret configured — dev convenience
+  const provided = req.headers['x-service-secret'] || '';
+  const a = Buffer.from(String(provided));
+  const b = Buffer.from(SERVICE_SECRET);
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
 }
 
 function readBody(req) {
   return new Promise((resolve, reject) => {
     let data = '';
+    let destroyed = false;
     req.on('data', (chunk) => {
+      if (destroyed) return;
       data += chunk;
-      if (data.length > 1e6) reject(new Error('payload too large')); // 1 MB guard
+      if (data.length > MAX_BODY_BYTES) {
+        destroyed = true;
+        req.destroy();
+        reject(new Error('payload too large'));
+      }
     });
-    req.on('end', () => resolve(data));
+    req.on('end', () => {
+      if (!destroyed) resolve(data);
+    });
     req.on('error', reject);
   });
 }
@@ -88,6 +123,9 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (req.method === 'POST' && req.url === '/embed') {
+    if (!isAuthorized(req)) {
+      return sendJson(res, 401, { error: 'Missing or invalid X-Service-Secret.' });
+    }
     try {
       const raw = await readBody(req);
       const { input, model } = JSON.parse(raw || '{}');
@@ -104,6 +142,9 @@ const server = http.createServer(async (req, res) => {
   return sendJson(res, 404, { error: 'Not found. Use POST /embed or GET /health.' });
 });
 
-server.listen(PORT, () => {
-  console.log(`[embedService] listening on :${PORT} (model=${DEFAULT_MODEL}, key=${API_KEY ? 'set' : 'MISSING'})`);
+server.listen(PORT, BIND_HOST, () => {
+  console.log(
+    `[embedService] listening on ${BIND_HOST}:${PORT} (model=${DEFAULT_MODEL}, ` +
+    `key=${API_KEY ? 'set' : 'MISSING'}, secret=${SERVICE_SECRET ? 'set' : 'unset'})`
+  );
 });

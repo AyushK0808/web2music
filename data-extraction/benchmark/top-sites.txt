@@ -1,0 +1,138 @@
+# Sites for the §6 extraction-cost benchmark — one origin per line.
+# Lines starting with '#' and blank lines are ignored.
+#
+# This is a stand-in for "top 100 sites": a spread of the page archetypes that
+# stress extraction differently, NOT a ranking. Swap in a real Tranco/Alexa
+# slice (`--sites path`) for a citable sample — and say which list and which
+# snapshot date you used in the paper.
+#
+# Deliberately mixed: text-heavy news, JS-heavy SPAs, image grids, docs,
+# forums, and a few deep DOMs, since colour extraction cost scales with
+# element count and layout complexity rather than with word count.
+
+# ── Reference / text-heavy ──
+https://en.wikipedia.org/wiki/Espresso
+https://en.wikipedia.org/wiki/Music
+https://simple.wikipedia.org/wiki/Computer
+https://www.gutenberg.org/ebooks/1342
+https://plato.stanford.edu/entries/consciousness/
+
+# ── News ──
+https://www.bbc.com/news
+https://apnews.com
+https://www.reuters.com
+https://www.npr.org
+https://www.theguardian.com/international
+https://text.npr.org
+https://www.aljazeera.com
+https://www.cbc.ca/news
+https://www.dw.com/en/top-stories/s-9097
+https://abcnews.go.com
+
+# ── Tech news / aggregators (deep comment DOMs) ──
+https://news.ycombinator.com
+https://lobste.rs
+https://slashdot.org
+https://arstechnica.com
+https://www.theverge.com
+https://techcrunch.com
+https://www.wired.com
+https://hackaday.com
+https://www.engadget.com
+https://www.zdnet.com
+
+# ── Developer docs (long, structured, code-heavy) ──
+https://developer.mozilla.org/en-US/docs/Web/JavaScript
+https://developer.mozilla.org/en-US/docs/Web/CSS
+https://docs.python.org/3/tutorial/index.html
+https://nodejs.org/en/docs
+https://react.dev/learn
+https://developer.chrome.com/docs/devtools
+https://web.dev/articles
+https://caniuse.com
+https://devdocs.io
+https://www.w3.org/TR/html52/
+
+# ── Q&A / forums ──
+https://stackoverflow.com/questions
+https://superuser.com
+https://serverfault.com
+https://askubuntu.com
+https://www.quora.com
+https://old.reddit.com/r/programming
+https://www.reddit.com/r/webdev
+https://discourse.mozilla.org
+https://forum.arduino.cc
+https://community.cloudflare.com
+
+# ── Code hosting / SPA-ish ──
+https://github.com/nodejs/node
+https://github.com/trending
+https://gitlab.com/explore
+https://codeberg.org/explore/repos
+https://sourceforge.net
+https://bitbucket.org/product
+https://pypi.org
+https://www.npmjs.com
+https://crates.io
+https://rubygems.org
+
+# ── Image / media grids (isImageOnly + heavy colour) ──
+https://unsplash.com
+https://www.pexels.com
+https://pixabay.com
+https://commons.wikimedia.org/wiki/Main_Page
+https://www.flickr.com/explore
+https://imgur.com
+https://giphy.com
+https://www.behance.net
+https://dribbble.com
+https://www.artstation.com
+
+# ── Video / audio ──
+https://www.youtube.com
+https://vimeo.com
+https://soundcloud.com
+https://bandcamp.com
+https://archive.org
+https://www.twitch.tv
+https://podcasts.apple.com/us/browse
+https://open.spotify.com
+https://www.dailymotion.com
+https://ted.com/talks
+
+# ── Commerce (dense grids, many computed styles) ──
+https://www.amazon.com
+https://www.ebay.com
+https://www.etsy.com
+https://www.walmart.com
+https://www.target.com
+https://www.bestbuy.com
+https://www.ikea.com/us/en/
+https://www.newegg.com
+https://www.aliexpress.com
+https://www.wayfair.com
+
+# ── Reference / data / gov ──
+https://www.nasa.gov
+https://www.noaa.gov
+https://www.cdc.gov
+https://www.who.int
+https://data.gov
+https://www.census.gov
+https://www.usa.gov
+https://europa.eu/european-union/index_en
+https://www.nih.gov
+https://arxiv.org/list/cs.HC/recent
+
+# ── Blogs / long-form / misc ──
+https://css-tricks.com
+https://smashingmagazine.com
+https://a11yproject.com
+https://blog.cloudflare.com
+https://stackoverflow.blog
+https://medium.com
+https://substack.com
+https://dev.to
+https://hashnode.com
+https://www.smashingmagazine.com/articles/

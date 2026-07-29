@@ -11,9 +11,6 @@ from fallback import get_fallback_clip
 from models import HandoffPayload
 from prewarm import prewarm_cache
 
-# Prod (Supabase-backed) cache vs. local dev cache (Docker Postgres + files on
-# disk). Defaults to dev so the server runs out of the box against `docker
-# compose up` in audio-generation/docker/ without needing a Supabase account.
 IS_PROD = os.getenv("IS_PROD", "false").lower() in ("1", "true", "yes")
 if IS_PROD:
     from d5_cache import make_cache_key, check_cache, save_to_cache
@@ -42,6 +39,44 @@ if not IS_PROD:
     from fastapi.staticfiles import StaticFiles
     app.mount("/audio-cache", StaticFiles(directory=AUDIO_CACHE_DIR), name="audio-cache")
 
+
+async def _fallback_response(profile: dict, timings: dict) -> JSONResponse:
+    """
+    Shared fallback path for both D3 (generation) and D4 (post-processing /
+    encode) failures. From the caller's perspective "no clip was produced"
+    is the same outcome regardless of which stage failed -- D4 in
+    particular can now fail on a codec-availability issue (see the Ogg/Opus
+    switch) that libmp3lame never could, so it needs the same safety net
+    D3 already had rather than propagating into an unhandled 500.
+    """
+    fallback_bytes = await asyncio.to_thread(get_fallback_clip, profile["mood"])
+
+    if fallback_bytes is None:
+        raise HTTPException(
+            status_code=503,
+            detail="Audio generation failed and no fallback clips are available. Please try again later."
+        )
+
+    print("[MAIN] Returning fallback clip")
+    return JSONResponse(
+        status_code=200,
+        content={
+            "audio_url": None,
+            "metadata": {
+                "mood":        profile["mood"],
+                "bpm":         profile["bpm"],
+                "key":         profile["key"],
+                "energy":      profile["energy"],
+                "is_fallback": True,
+                "loopable":    True
+            },
+            "cache":    "miss",
+            "fallback": True,
+            "timings":  timings
+        }
+    )
+
+
 @app.post("/generate")
 async def generate(payload: HandoffPayload):
     timings = {}
@@ -54,7 +89,14 @@ async def generate(payload: HandoffPayload):
     # Cache check
     t1 = time.time()
     cache_key = make_cache_key(profile)
-    cached = check_cache(cache_key)
+    try:
+        cached = await asyncio.to_thread(check_cache, cache_key)
+    except Exception as e:
+        # A broken cache lookup (Supabase/DB down, network blip) shouldn't
+        # block generation entirely -- degrade to a cache miss and generate
+        # fresh instead of failing the request over an unrelated subsystem.
+        print(f"[MAIN] check_cache failed, treating as cache miss: {e}")
+        cached = None
     timings["d5_cache_check_ms"] = int((time.time() - t1) * 1000)
 
     if cached:
@@ -111,68 +153,57 @@ async def generate(payload: HandoffPayload):
     except GenerationError as e:
         print(f"[MAIN] Generation failed after all retries: {e}")
         print(f"[MAIN] Attempting fallback clip for mood: {profile['mood']}")
-
-        fallback_bytes = await asyncio.to_thread(get_fallback_clip, profile["mood"])
-
-        if fallback_bytes is None:
-            raise HTTPException(
-                status_code=503,
-                detail="Audio generation failed and no fallback clips are available. Please try again later."
-            )
-
-        print("[MAIN] Returning fallback clip")
-        return JSONResponse(
-            status_code=200,
-            content={
-                "audio_url": None,
-                "metadata": {
-                    "mood":        profile["mood"],
-                    "bpm":         profile["bpm"],
-                    "key":         profile["key"],
-                    "energy":      profile["energy"],
-                    "is_fallback": True,
-                    "loopable":    True
-                },
-                "cache":    "miss",
-                "fallback": True,
-                "timings":  timings
-            }
-        )
+        return await _fallback_response(profile, timings)
 
     timings["d3_generate_ms"] = int((time.time() - t3) * 1000)
 
     # D4 — Post-process
     t4 = time.time()
-    mp3_bytes, loop_point_ms, seam_discontinuity = await asyncio.to_thread(process_audio, audio_bytes)
+    try:
+        clip_bytes, loop_point_ms, seam_discontinuity = await asyncio.to_thread(process_audio, audio_bytes)
+    except Exception as e:
+        print(f"[MAIN] D4 post-processing failed: {e}")
+        print(f"[MAIN] Attempting fallback clip for mood: {profile['mood']}")
+        return await _fallback_response(profile, timings)
     timings["d4_process_ms"] = int((time.time() - t4) * 1000)
 
     # D5 — Cache & return
     t5 = time.time()
     total_gen_ms = int((time.time() - t0) * 1000)
-    audio_url = save_to_cache(
-        cache_key, mp3_bytes, profile,
-        loop_point_ms, total_gen_ms, prompt
-    )
+    try:
+        audio_url = await asyncio.to_thread(
+            save_to_cache, cache_key, clip_bytes, profile,
+            loop_point_ms, total_gen_ms, prompt
+        )
+    except Exception as e:
+        # We already have a good, correctly-generated clip at this point --
+        # only the storage/DB write failed. The API only ever returns a
+        # URL (never raw bytes), so there's no way to hand the client a
+        # working result without a successful save; treat this the same
+        # as a generation/encode failure rather than a bare 500.
+        print(f"[MAIN] save_to_cache failed: {e}")
+        print(f"[MAIN] Attempting fallback clip for mood: {profile['mood']}")
+        return await _fallback_response(profile, timings)
     timings["d5_save_ms"] = int((time.time() - t5) * 1000)
 
     return {
         "audio_url": audio_url,
         "metadata": {
-            "cache_key":       cache_key,
-            "mood":            profile["mood"],
-            "bpm":             profile["bpm"],
-            "key":             profile["key"],
-            "energy":          profile["energy"],
-            "valence":         profile["valence"],
-            "intensity":       profile["intensity"],
+            "cache_key":        cache_key,
+            "mood":             profile["mood"],
+            "bpm":              profile["bpm"],
+            "key":              profile["key"],
+            "energy":           profile["energy"],
+            "valence":          profile["valence"],
+            "intensity":        profile["intensity"],
             "duration_seconds": profile["duration_seconds"],
-            "loop_point_ms":   loop_point_ms,
+            "loop_point_ms":      loop_point_ms,
             "seam_discontinuity": seam_discontinuity,
-            "prompt_used":     prompt,
-            "prompt_source":   "feature_b" if prompt_from_b else "d2_fallback",
-            "generation_seed": generation_seed,
-            "is_fallback":     False,
-            "loopable":        True
+            "prompt_used":        prompt,
+            "prompt_source":      "feature_b" if prompt_from_b else "d2_fallback",
+            "generation_seed":    generation_seed,
+            "is_fallback":        False,
+            "loopable":           True
         },
         "cache":   "miss",
         "timings": timings

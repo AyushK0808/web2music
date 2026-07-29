@@ -305,6 +305,17 @@ async function runPageDataAssembly() {
   if (!Array.isArray(handoff.embedding)) problems.push('embedding is not an array');
   console.log('\n  Contract check:', problems.length ? '❌ ' + problems.join('; ') : '✅ all B-required fields present & typed');
 
+  // Regression guard: `colors` being *shaped* right is not enough. If
+  // Colorextractor stops returning representativeColor, pageData silently falls
+  // back to the grey default {0,0,0.5} and the whole colour→mood signal goes
+  // dead while every type check above still passes. This page has a big red
+  // article, so a grey/zero-saturation result here means the signal is broken.
+  const isGreyDefault = c.hue === 0 && c.saturation === 0 && c.lightness === 0.5;
+  console.log('  Colour signal    :',
+    isGreyDefault
+      ? '❌ grey default — representativeColor missing, colour→mood signal is DEAD'
+      : `✅ live (hue ${Math.round(c.hue)}, sat ${c.saturation.toFixed(2)}, light ${c.lightness.toFixed(2)})`);
+
   // Cache: a second identical build should reuse the cached embedding vector.
   const again = await buildPageData({ doc: win.document, embeddingConfig: { backend: 'local' }, behaviorTracker });
   const sameVec = JSON.stringify(again.embedding) === JSON.stringify(handoff.embedding);
@@ -315,8 +326,51 @@ async function runPageDataAssembly() {
   console.log('\nvalidatePageData({title:"Bare"}) fills defaults:');
   console.log('  colors:', JSON.stringify(filled.colors), '| embedding:', JSON.stringify(filled.embedding),
               '| lang:', filled.lang, '| handoffVersion:', filled.handoffVersion);
+
+  // Fully-local mode (§7 privacy/utility ablation): forces backend:'local' even
+  // when the caller asks for a network backend, so no page text ever leaves the
+  // machine. Here the request asks for 'openai' with no key — under fullyLocal
+  // it still succeeds via the mocked local embedder instead of erroring/calling out.
+  const local = await buildPageData({
+    doc: win.document,
+    embeddingConfig: { backend: 'openai', openaiApiKey: null },
+    behaviorTracker,
+    fullyLocal: true,
+    useCache: false,
+  });
+  console.log('\nfullyLocal:true with embeddingConfig.backend="openai" (no key):');
+  console.log('  embedding dims   :', local.embedding.length,
+              local.embedding.length ? '✅ served locally, no network call' : '❌ produced no vector');
+  console.log('  warnings         :', local.warnings ? local.warnings.join('; ') : '(none)');
+
   console.log('\n  Eyeball check: colours should read as a warm red (hue ~0-15), scroll/cursor');
-  console.log('  reflect the stub, and the contract check + cache line should both be ✅.');
+  console.log('  reflect the stub, and the contract/colour/cache lines should all be ✅.');
+}
+
+/* --------------------------------------------------------------------- */
+/* 6. Per-stage extraction telemetry (feeds the §6 systems eval).         */
+/* --------------------------------------------------------------------- */
+
+function runTelemetry() {
+  heading('6. Per-stage extraction telemetry');
+
+  const { getExtractionTelemetry } = require('./pageData.js');
+  const telemetry = getExtractionTelemetry();
+
+  console.log('\nAggregated across every buildPageData() call above:');
+  console.log('  stage        calls  fails  failRate   avgMs');
+  for (const [stage, s] of Object.entries(telemetry)) {
+    console.log(
+      '  ' + stage.padEnd(13) +
+      String(s.count).padEnd(7) +
+      String(s.failures).padEnd(7) +
+      s.failureRate.toFixed(2).padEnd(11) +
+      s.avgMs.toFixed(2)
+    );
+  }
+  console.log('\n  Eyeball check: every stage should show calls > 0. avgMs here is');
+  console.log('  jsdom timing, NOT representative of a real browser — the point is');
+  console.log('  that latency/failure-rate is now measurable per stage on real sites.');
 }
 
 async function main() {
@@ -325,6 +379,7 @@ async function main() {
   runColorExtraction();
   await runEmbeddingFlow();
   await runPageDataAssembly();
+  runTelemetry();
   console.log('\nDone. Nothing above is asserted — read the output and judge for yourself.\n');
 }
 
