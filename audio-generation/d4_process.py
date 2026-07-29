@@ -17,6 +17,23 @@ MIN_LOOP_SECONDS = 3.0      # never propose a loop point earlier than this
 BEATS_PER_BAR = 4           # assume 4/4; librosa doesn't give true downbeats
 CROSSFADE_MS = 50           # length of the equal-power crossfade at the loop seam
 
+# MP3 pads audio to fixed-size encoder frames (LAME adds ~576 samples of
+# priming silence at the start plus padding to fill the last frame), which
+# is audible as a click/gap on every loop repeat even with a perfect cut --
+# the crossfade above smooths the CONTENT of the seam, but the container
+# format itself was still reintroducing a gap underneath it. Ogg/Opus is
+# genuinely gapless: the container carries pre-skip/granule-position
+# metadata that a real decoder (ffmpeg, browser Web Audio, Chrome's native
+# <audio>/Opus support -- relevant since Feature C is a Chrome extension)
+# uses to trim the priming/padding samples automatically. Also comes out
+# smaller than MP3 at the same bitrate. Note: libopus only supports a fixed
+# set of sample rates and will internally resample to 48000 Hz regardless
+# of the source rate -- harmless here since loop_point_ms is a millisecond
+# timestamp, not sample-rate dependent.
+EXPORT_FORMAT = "ogg"
+EXPORT_CODEC = "libopus"
+EXPORT_BITRATE = "128k"
+
 
 def process_audio(audio_bytes: bytes):
     audio_buffer = io.BytesIO(audio_bytes)
@@ -64,11 +81,13 @@ def process_audio(audio_bytes: bytes):
 
     audio_loopable = _crossfade_loop(pre_crossfade_clip, crossfade_ms=CROSSFADE_MS)
 
-    mp3_buffer = io.BytesIO()
-    audio_loopable.export(mp3_buffer, format="mp3", bitrate="128k")
-    mp3_buffer.seek(0)
+    clip_buffer = io.BytesIO()
+    audio_loopable.export(
+        clip_buffer, format=EXPORT_FORMAT, codec=EXPORT_CODEC, bitrate=EXPORT_BITRATE
+    )
+    clip_buffer.seek(0)
 
-    return mp3_buffer.read(), loop_point_ms, seam_discontinuity
+    return clip_buffer.read(), loop_point_ms, seam_discontinuity
 
 
 def _seam_discontinuity(audio: AudioSegment, crossfade_ms: int = CROSSFADE_MS) -> dict:
@@ -101,8 +120,17 @@ def _seam_discontinuity(audio: AudioSegment, crossfade_ms: int = CROSSFADE_MS) -
 
     sr = tail.frame_rate
     try:
-        tail_centroid = float(librosa.feature.spectral_centroid(y=tail_norm, sr=sr).mean())
-        head_centroid = float(librosa.feature.spectral_centroid(y=head_norm, sr=sr).mean())
+        # librosa's default n_fft=2048 assumes a signal at least that long;
+        # the crossfade window here is typically far shorter (e.g. 1600
+        # samples for the default 50ms at 32kHz), which fired a UserWarning
+        # on every single call ("n_fft=2048 is too large for input signal
+        # of length=1600") without actually failing -- librosa just
+        # zero-pads, silently degrading the estimate. Size n_fft to the
+        # actual window instead, rounded down to a power of 2 for a real
+        # FFT rather than a padded one.
+        n_fft = 1 << int(np.floor(np.log2(max(2, min(2048, len(tail_norm))))))
+        tail_centroid = float(librosa.feature.spectral_centroid(y=tail_norm, sr=sr, n_fft=n_fft, hop_length=n_fft).mean())
+        head_centroid = float(librosa.feature.spectral_centroid(y=head_norm, sr=sr, n_fft=n_fft, hop_length=n_fft).mean())
         spectral_centroid_delta_hz = round(abs(tail_centroid - head_centroid), 1)
     except Exception:
         # Spectral centroid needs enough samples for at least one FFT frame;

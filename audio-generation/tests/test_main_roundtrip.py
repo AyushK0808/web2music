@@ -166,3 +166,131 @@ def test_cache_hit_response_has_same_metadata_shape_as_miss(main_client):
         assert second["metadata"][field] is None, (
             f"{field} isn't persisted to the DB, expected null on cache hit"
         )
+
+
+def test_d4_encode_failure_falls_back_instead_of_hard_500(main_client, monkeypatch):
+    """
+    Regression test: D4's export codec switch (MP3 -> Ogg/Opus) introduced
+    a new failure mode -- if the deploy host's ffmpeg build lacks libopus,
+    process_audio() raises and used to propagate straight out of
+    asyncio.to_thread as an unhandled 500, unlike D3's generation failures
+    which already degrade to a fallback clip. Simulates a D4 failure
+    (any exception -- codec, corrupt audio, whatever) and asserts the
+    request still returns 200 with a fallback clip when one is available.
+    """
+    import main as main_module
+
+    def broken_process_audio(audio_bytes):
+        raise RuntimeError("Encoder not found for codec 'libopus'")
+
+    monkeypatch.setattr(main_module, "process_audio", broken_process_audio)
+
+    def fake_get_fallback_clip(mood):
+        return b"fake fallback mp3 bytes"
+
+    monkeypatch.setattr(main_module, "get_fallback_clip", fake_get_fallback_clip)
+
+    response = main_client.post("/generate", json={
+        "mood": "calm", "bpm": 90, "key": "C major",
+        "energy": 0.5, "style": "ambient", "duration_seconds": 6,
+    })
+
+    assert response.status_code == 200, (
+        f"D4 failure should degrade to a fallback clip, not a hard 500 "
+        f"(got {response.status_code}: {response.text})"
+    )
+    body = response.json()
+    assert body["fallback"] is True
+    assert body["metadata"]["is_fallback"] is True
+    assert body["audio_url"] is None
+
+
+def test_d4_encode_failure_with_no_fallback_clips_returns_503_not_500(main_client, monkeypatch):
+    """
+    Same D4 failure, but with no fallback clip available either (matches
+    production today -- fallback_clips/ is empty). Must return a clean 503
+    with an explanatory detail, not an unhandled 500 with a stack trace.
+    """
+    import main as main_module
+
+    def broken_process_audio(audio_bytes):
+        raise RuntimeError("Encoder not found for codec 'libopus'")
+
+    monkeypatch.setattr(main_module, "process_audio", broken_process_audio)
+
+    def no_fallback_clip(mood):
+        return None
+
+    monkeypatch.setattr(main_module, "get_fallback_clip", no_fallback_clip)
+
+    response = main_client.post("/generate", json={
+        "mood": "calm", "bpm": 90, "key": "C major",
+        "energy": 0.5, "style": "ambient", "duration_seconds": 6,
+    })
+
+    assert response.status_code == 503
+    assert "fallback" in response.json()["detail"].lower()
+
+
+def test_check_cache_failure_degrades_to_cache_miss_not_500(main_client, monkeypatch):
+    """
+    Regression test found during the same audit as the D4 fallback fix:
+    check_cache() was a blocking DB/Supabase call running directly on the
+    event loop with no error handling at all -- not even the D3/D4 pattern
+    of "fail then fall back", just a bare unhandled exception. A broken
+    cache lookup (DB down, network blip) shouldn't block generation
+    entirely; it should degrade to a cache miss and generate fresh.
+    """
+    import main as main_module
+
+    def broken_check_cache(cache_key):
+        raise ConnectionError("could not connect to cache backend")
+
+    monkeypatch.setattr(main_module, "check_cache", broken_check_cache)
+
+    response = main_client.post("/generate", json={
+        "mood": "focused", "bpm": 100, "key": "D major",
+        "energy": 0.6, "style": "electronic", "duration_seconds": 6,
+    })
+
+    assert response.status_code == 200, (
+        f"a broken cache lookup should degrade to a cache miss and still "
+        f"generate, not fail the request (got {response.status_code}: {response.text})"
+    )
+    assert response.json()["cache"] == "miss"
+
+
+def test_save_to_cache_failure_falls_back_instead_of_hard_500(main_client, monkeypatch):
+    """
+    Regression test found in the same audit: save_to_cache() -- the worst
+    spot for this bug, since it runs AFTER a successful generation -- was
+    also blocking and unhandled. A storage/DB write failure at this point
+    would throw away an already-correctly-generated clip with a bare 500.
+    Since the API only ever returns a URL (never raw bytes), there's no
+    way to hand back a working result without a successful save, so this
+    degrades through the same fallback path as a generation/encode failure.
+    """
+    import main as main_module
+
+    def broken_save_to_cache(cache_key, clip_bytes, profile, loop_point_ms, gen_time_ms, prompt):
+        raise ConnectionError("could not reach storage backend")
+
+    monkeypatch.setattr(main_module, "save_to_cache", broken_save_to_cache)
+
+    def fake_get_fallback_clip(mood):
+        return b"fake fallback mp3 bytes"
+
+    monkeypatch.setattr(main_module, "get_fallback_clip", fake_get_fallback_clip)
+
+    response = main_client.post("/generate", json={
+        "mood": "joyful", "bpm": 110, "key": "G major",
+        "energy": 0.7, "style": "acoustic", "duration_seconds": 6,
+    })
+
+    assert response.status_code == 200, (
+        f"a save_to_cache failure should degrade to a fallback clip, not a "
+        f"hard 500 (got {response.status_code}: {response.text})"
+    )
+    body = response.json()
+    assert body["fallback"] is True
+    assert body["metadata"]["is_fallback"] is True

@@ -44,10 +44,10 @@ def check_cache(cache_key: str):
     finally:
         conn.close()
 
-def save_to_cache(cache_key, mp3_bytes, profile, loop_point_ms, generation_time_ms, prompt_used):
-    filename = f"{cache_key}.mp3"
+def save_to_cache(cache_key, clip_bytes, profile, loop_point_ms, generation_time_ms, prompt_used):
+    filename = f"{cache_key}.ogg"
     with open(os.path.join(AUDIO_CACHE_DIR, filename), "wb") as f:
-        f.write(mp3_bytes)
+        f.write(clip_bytes)
 
     audio_url = f"{LOCAL_SERVER_URL}/audio-cache/{filename}"
 

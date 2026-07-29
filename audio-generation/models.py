@@ -60,6 +60,12 @@ class HandoffPayload(BaseModel):
     """
     model_config = ConfigDict(populate_by_name=True)
 
+    # Sneha's fix-17: B's dedicated flat, snake_case profile built
+    # specifically for Feature D (see b4_promptEngineer.js's
+    # toFeatureDProfile) -- this, not musicProfile, is what B intends D to
+    # read. Kept as a raw dict rather than typed as MusicProfile so
+    # validate_profile() can field-by-field default anything B omits.
+    profile:      Optional[dict]         = None
     musicProfile: Optional[MusicProfile] = None
     prompt:       Optional[str]          = None
 

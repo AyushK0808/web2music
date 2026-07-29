@@ -139,6 +139,26 @@ class TestSeamDiscontinuity:
         result = _seam_discontinuity(seg, crossfade_ms=CROSSFADE_MS)
         assert abs(result["energy_delta_db"]) < 3.0  # same amplitude tone throughout
 
+    def test_seam_discontinuity_does_not_fire_n_fft_warning(self):
+        """
+        Regression test: librosa's default n_fft=2048 is larger than the
+        crossfade window (1600 samples for the default 50ms at 32kHz),
+        which fired 'n_fft=2048 is too large for input signal of
+        length=1600' on every real request. n_fft must be sized to the
+        actual window instead of left at the library default.
+        """
+        import warnings
+        from pydub import AudioSegment
+        tone = (0.5 * np.sin(2 * np.pi * 440 * np.linspace(0, 28, int(SR * 28)))).astype(np.float32)
+        tone_i16 = (tone * 32767).astype(np.int16)
+        seg = AudioSegment(tone_i16.tobytes(), frame_rate=SR, sample_width=2, channels=1)
+
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            _seam_discontinuity(seg, crossfade_ms=CROSSFADE_MS)
+            n_fft_warnings = [x for x in w if "n_fft" in str(x.message)]
+            assert len(n_fft_warnings) == 0, [str(x.message) for x in n_fft_warnings]
+
 
 class TestVectorizedCorrelationCorrectness:
     def test_vectorized_matches_naive_per_frame_corrcoef(self):
@@ -178,3 +198,29 @@ class TestVectorizedCorrelationCorrectness:
 
         result = _vectorized_chroma_similarity(chroma, window=CHROMA_WINDOW)
         assert not np.isnan(result).any()
+
+
+class TestGaplessExport:
+    def test_exported_clip_is_valid_decodable_ogg_opus(self):
+        """
+        Regression test for the MP3-to-Ogg/Opus gapless export switch: MP3
+        pads to fixed-size encoder frames (audible click/gap on loop even
+        with a perfect cut) -- confirms the exported bytes are genuinely
+        Ogg/Opus and actually decodable, not just "some bytes came back".
+        """
+        from pydub import AudioSegment
+        import imageio_ffmpeg
+        AudioSegment.converter = imageio_ffmpeg.get_ffmpeg_exe()
+
+        audio = _make_phrase_audio(duration_s=20)
+        clip_bytes, loop_point_ms, seam = process_audio(_to_wav_bytes(audio))
+
+        # Ogg files start with the "OggS" capture pattern magic bytes
+        assert clip_bytes[:4] == b"OggS", "exported bytes don't start with the Ogg container magic number"
+
+        decoded = AudioSegment.from_file(io.BytesIO(clip_bytes), format="ogg")
+        assert len(decoded) > 0
+        # libopus only supports a fixed set of rates and resamples to 48kHz
+        # internally regardless of source rate -- this is expected, not a bug
+        assert decoded.frame_rate == 48000
+        assert decoded.channels == 1

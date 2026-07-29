@@ -9,5 +9,8 @@
   },
   "scripts": {
     "test": "node feature_b_test.js"
+  },
+  "devDependencies": {
+    "jsdom": "^24.0.0"
   }
 }
