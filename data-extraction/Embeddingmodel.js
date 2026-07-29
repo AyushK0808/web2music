@@ -4,10 +4,7 @@ const DEFAULT_CONFIG = {
   openaiApiKey: null,
   localModel: 'Xenova/all-MiniLM-L6-v2',
   maxInputChars: 8000,
-  // 'service' backend: offload the API call to a local Docker microservice
-  // (docker/embedService.js) so the OpenAI key lives in the container's env,
-  // never in the extension bundle or page context.
-  serviceUrl: 'http://localhost:8077/embed',
+  fetchTimeoutMs: 8000, // matches Feature B's 8s AbortController convention
 };
 
 let localPipelinePromise = null;
@@ -24,17 +21,31 @@ async function embedWithOpenAI(text, config) {
     throw new Error('OpenAI backend selected but no API key configured.');
   }
 
-  const response = await fetch('https://api.openai.com/v1/embeddings', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${config.openaiApiKey}`,
-    },
-    body: JSON.stringify({
-      model: config.openaiModel,
-      input: text,
-    }),
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), config.fetchTimeoutMs);
+
+  let response;
+  try {
+    response = await fetch('https://api.openai.com/v1/embeddings', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${config.openaiApiKey}`,
+      },
+      body: JSON.stringify({
+        model: config.openaiModel,
+        input: text,
+      }),
+      signal: controller.signal,
+    });
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      throw new Error(`OpenAI embedding request timed out after ${config.fetchTimeoutMs}ms`);
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   if (!response.ok) {
     const errBody = await response.text().catch(() => '');
@@ -50,30 +61,6 @@ async function embedWithOpenAI(text, config) {
   };
 }
 
-async function embedWithService(text, config) {
-  const response = await fetch(config.serviceUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ input: text, model: config.openaiModel }),
-  });
-
-  if (!response.ok) {
-    const errBody = await response.text().catch(() => '');
-    throw new Error(`Embedding service request failed (${response.status}): ${errBody}`);
-  }
-
-  const data = await response.json();
-  if (!data || !Array.isArray(data.vector)) {
-    throw new Error('Embedding service returned an unexpected payload (no `vector`).');
-  }
-  return {
-    vector: data.vector,
-    dimensions: data.dimensions || data.vector.length,
-    backend: 'service',
-    model: data.model || config.openaiModel,
-  };
-}
-
 async function embedWithLocalModel(text, config) {
   if (typeof window === 'undefined' || !window.transformersPipeline) {
     throw new Error(
@@ -86,7 +73,12 @@ async function embedWithLocalModel(text, config) {
     localPipelinePromise = window.transformersPipeline(
       'feature-extraction',
       config.localModel
-    );
+    ).catch(err => {
+      // Don't leave a rejected promise cached — clear it so the next
+      // call gets a fresh attempt instead of failing forever.
+      localPipelinePromise = null;
+      throw err;
+    });
   }
   const extractor = await localPipelinePromise;
 
@@ -113,10 +105,18 @@ async function getEmbedding(text, userConfig = {}) {
   if (config.backend === 'openai') {
     return embedWithOpenAI(truncated, config);
   }
-  if (config.backend === 'service') {
-    return embedWithService(truncated, config);
-  }
   return embedWithLocalModel(truncated, config);
+}
+
+/**
+ * Cache keys must include backend + model, not just url/text-hash.
+ * A 384-dim local vector and a 1536-dim OpenAI vector are not
+ * interchangeable — reusing a cache entry across backends returns a
+ * vector of the wrong shape/space. pageData.js should call this
+ * instead of hashing url + text alone.
+ */
+function buildCacheKey(url, textHash, backend, model) {
+  return `${url}::${textHash}::${backend}::${model}`;
 }
 
 function cosineSimilarity(a, b) {
@@ -134,7 +134,7 @@ function cosineSimilarity(a, b) {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { getEmbedding, cosineSimilarity, DEFAULT_CONFIG };
+  module.exports = { getEmbedding, cosineSimilarity, buildCacheKey, DEFAULT_CONFIG };
 } else if (typeof window !== 'undefined') {
-  window.Web2MusicEmbedding = { getEmbedding, cosineSimilarity };
+  window.Web2MusicEmbedding = { getEmbedding, cosineSimilarity, buildCacheKey };
 }
