@@ -1,0 +1,63 @@
+{
+  "profile": {
+    "mood": "curious",
+    "energy": 0.193,
+    "bpm": 80,
+    "key": "E minor",
+    "style": "world-ambient, minimalist wonder, documentary score",
+    "content_category": "Educational",
+    "arousal": 0.171,
+    "valence": 0.5,
+    "instruments": [
+      "marimba",
+      "pizzicato strings",
+      "electronic bells",
+      "piano",
+      "light synth arpeggios"
+    ],
+    "timbre": "ethereal, textured, sparkling",
+    "reverb": 0.56,
+    "ambience": 0.605,
+    "tempo": "andante mosso",
+    "dynamics": "playful movement, evolving textures",
+    "listening_context": "late-afternoon educational session",
+    "time_of_day": "late-afternoon",
+    "atmosphere_tags": "exploratory, wonder",
+    "sensitive_override": false,
+    "prompt": "world-ambient, minimalist wonder, documentary score. Instruments: marimba, pizzicato strings, electronic bells, piano. ethereal, textured, sparkling timbre, playful movement, evolving textures. Key: E minor, 80 BPM. low energy, gentle, moderate room reverb, atmospheric, layered textures. Mood: curious. Context: late-afternoon educational session. No vocals. Seamlessly loopable. Instrumental only."
+  },
+  "musicProfile": {
+    "mood": "curious",
+    "musicCategory": "Epic / Cinematic",
+    "bpm": 80,
+    "key": "E minor",
+    "energy": 0.193,
+    "intensity": 0.171,
+    "valence": 0.5,
+    "reverb": 0.56,
+    "ambience": 0.605,
+    "timbre": "ethereal, textured, sparkling",
+    "instruments": [
+      "marimba",
+      "pizzicato strings",
+      "electronic bells",
+      "piano",
+      "light synth arpeggios"
+    ],
+    "style": "world-ambient, minimalist wonder, documentary score",
+    "dynamics": "playful movement, evolving textures",
+    "tempo": "andante mosso",
+    "atmosphereTags": "exploratory, wonder",
+    "listeningContext": "late-afternoon educational session",
+    "timeOfDay": "late-afternoon",
+    "sensitiveOverride": false
+  },
+  "prompt": "world-ambient, minimalist wonder, documentary score. Instruments: marimba, pizzicato strings, electronic bells, piano. ethereal, textured, sparkling timbre, playful movement, evolving textures. Key: E minor, 80 BPM. low energy, gentle, moderate room reverb, atmospheric, layered textures. Mood: curious. Context: late-afternoon educational session. No vocals. Seamlessly loopable. Instrumental only.",
+  "targetModel": "musicgen",
+  "handoffVersion": "2.0",
+  "generatedAt": 1785316724099,
+  "contentCategory": "Educational",
+  "pageType": "educational",
+  "volume": 1,
+  "isFadeUpdate": false
+}

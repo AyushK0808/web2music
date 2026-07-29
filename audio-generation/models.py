@@ -57,6 +57,14 @@ class HandoffPayload(BaseModel):
     1. Sneha's Handoff 2 shape: { "musicProfile": {...}, "prompt": "..." }
     2. Flat dict for direct Swagger testing: { "mood": "calm", "bpm": 80, ... }
     """
+    # Sneha's fix-17: B's dedicated flat, snake_case profile built
+    # specifically for Feature D (see b4_promptEngineer.js's
+    # toFeatureDProfile) -- this, not musicProfile, is what B intends D to
+    # read. Kept as a raw dict rather than typed as MusicProfile so
+    # validate_profile() can explicitly map "arousal" -> "intensity" (B
+    # sends arousal; MusicProfile has no arousal field, so a direct
+    # MusicProfile(**profile) parse would silently drop it).
+    profile:      Optional[dict]         = None
     musicProfile: Optional[MusicProfile] = None
     prompt:       Optional[str]          = None
 
