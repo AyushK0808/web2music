@@ -1,170 +1,118 @@
-/*
- * behaviorTracker.js — Feature A browsing-behaviour capture.
- *
- * Feature A's Handoff 1 is defined as "text, embedding, colours, behaviour",
- * and Feature B's B2 weights mood heavily on scrollSpeed / cursorSpeed
- * (scroll > 800 px/s → energetic, < 100 → calm; cursor > 600 → restless).
- * Until now that signal only existed as a throwaway prototype on B's side
- * (manual_tests/signal_capture_test.html) — this module is the real,
- * reusable content-script implementation of it.
- *
- * It is STATEFUL: attach throttled scroll/mousemove listeners once, then let
- * buildPageData() snapshot the current rolling speeds whenever it assembles a
- * Handoff. Throttle caps mirror B's prototype (spec edge case #22):
- *   - mousemove ≤ 20 events/sec (50 ms)
- *   - scroll    ≤ 10 events/sec (100 ms)
- * Speeds are averaged over a sliding window of the last N readings and decay
- * back to 0 shortly after the user goes idle, so a snapshot taken while the
- * page is still reflects "not moving" rather than a stale burst.
- *
- * Usage (browser / content script):
- *   const tracker = createBehaviorTracker();
- *   tracker.start();
- *   ...
- *   const { scrollSpeed, cursorSpeed } = tracker.snapshot();
- *
- * A lazily-started default singleton is exported for the common case.
- */
+const DEBOUNCE_MS = 100;
 
-const DEFAULTS = {
-  mouseThrottleMs: 50,   // ≤ 20 events/sec
-  scrollThrottleMs: 100, // ≤ 10 events/sec
-  windowSize: 5,         // sliding average over last N readings
-  idleResetMs: 500,      // clear readings this long after last event
-};
-
-function now() {
-  return (typeof performance !== 'undefined' && performance.now)
-    ? performance.now()
-    : Date.now();
+function scheduleIdle(fn, delayMs) {
+  return setTimeout(() => {
+    if (typeof requestIdleCallback === 'function') {
+      requestIdleCallback(fn);
+    } else {
+      fn();
+    }
+  }, delayMs);
 }
 
-function createBehaviorTracker(userConfig = {}) {
-  const config = { ...DEFAULTS, ...userConfig };
-
+/**
+ * Tracks scroll velocity, cursor speed, and click density for the current
+ * page. Starts immediately on construction (content-script init) rather
+ * than lazily on first event — otherwise the very first handoff to
+ * Feature B always reports zero activity, even if the user has already
+ * been engaged with the page.
+ */
+function createBehaviorTracker(target = window) {
   const state = {
-    running: false,
-    // cursor
-    lastMouseX: null,
-    lastMouseY: null,
-    lastMouseTime: null,
-    lastMouseEventTime: 0,
-    cursorReadings: [],
-    // scroll
-    lastScrollY: 0,
-    lastScrollTime: 0,
-    lastScrollEventTime: 0,
-    scrollReadings: [],
+    scrollVelocity: 0,   // px/sec
+    cursorSpeed: 0,      // px/sec
+    clickCount: 0,
+    startedAt: Date.now(),
   };
 
-  const avg = (arr) =>
-    arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+  let lastScrollPos = target.scrollY || 0;
+  let lastScrollT = Date.now();
+  let scrollDebounceHandle = null;
 
-  const pushReading = (arr, value) => {
-    arr.push(value);
-    if (arr.length > config.windowSize) arr.shift();
-  };
+  let lastMouseX = null;
+  let lastMouseY = null;
+  let lastMouseT = Date.now();
+  let mouseDebounceHandle = null;
 
-  function onMouseMove(e) {
-    const t = now();
-    if (t - state.lastMouseEventTime < config.mouseThrottleMs) return; // throttle
-    state.lastMouseEventTime = t;
+  /**
+   * Scroll events do not bubble — only capture-phase listening on the
+   * document sees scroll fire on descendant elements (nested scrollable
+   * containers), not just window-level scroll. This also catches
+   * horizontal scroll (scrollLeft) alongside vertical.
+   */
+  function handleScroll(evt) {
+    if (scrollDebounceHandle) return;
+    scrollDebounceHandle = scheduleIdle(() => {
+      scrollDebounceHandle = null;
 
-    if (state.lastMouseX !== null) {
-      const dx = e.clientX - state.lastMouseX;
-      const dy = e.clientY - state.lastMouseY;
-      const dt = (t - state.lastMouseTime) / 1000;
-      if (dt > 0) {
-        pushReading(state.cursorReadings, Math.sqrt(dx * dx + dy * dy) / dt);
+      const scrollTarget = evt.target === document || evt.target === window
+        ? target
+        : evt.target;
+
+      const posY = scrollTarget.scrollY ?? scrollTarget.scrollTop ?? 0;
+      const posX = scrollTarget.scrollX ?? scrollTarget.scrollLeft ?? 0;
+      const pos = Math.hypot(posY, posX);
+
+      const now = Date.now();
+      const dt = Math.max(1, now - lastScrollT);
+      const dPos = Math.abs(pos - lastScrollPos);
+
+      state.scrollVelocity = (dPos / dt) * 1000;
+      lastScrollPos = pos;
+      lastScrollT = now;
+    }, DEBOUNCE_MS);
+  }
+
+  function handleMouseMove(evt) {
+    if (mouseDebounceHandle) return;
+    mouseDebounceHandle = scheduleIdle(() => {
+      mouseDebounceHandle = null;
+      const now = Date.now();
+
+      if (lastMouseX !== null) {
+        const dt = Math.max(1, now - lastMouseT);
+        const dx = evt.clientX - lastMouseX;
+        const dy = evt.clientY - lastMouseY;
+        const dist = Math.hypot(dx, dy);
+        state.cursorSpeed = (dist / dt) * 1000;
       }
-    }
-    state.lastMouseX = e.clientX;
-    state.lastMouseY = e.clientY;
-    state.lastMouseTime = t;
+
+      lastMouseX = evt.clientX;
+      lastMouseY = evt.clientY;
+      lastMouseT = now;
+    }, DEBOUNCE_MS);
   }
 
-  function onScroll() {
-    const t = now();
-    if (t - state.lastScrollEventTime < config.scrollThrottleMs) return; // throttle
-    state.lastScrollEventTime = t;
-
-    const currentY = (typeof window !== 'undefined' && window.scrollY) || 0;
-    const dy = Math.abs(currentY - state.lastScrollY);
-    const dt = (t - state.lastScrollTime) / 1000;
-    if (dt > 0) {
-      pushReading(state.scrollReadings, dy / dt);
-    }
-    state.lastScrollY = currentY;
-    state.lastScrollTime = t;
+  function handleClick() {
+    state.clickCount += 1;
   }
-
-  function decayTick() {
-    const t = now();
-    if (t - state.lastMouseEventTime > config.idleResetMs) {
-      state.cursorReadings.length = 0;
-    }
-    if (t - state.lastScrollEventTime > config.idleResetMs) {
-      state.scrollReadings.length = 0;
-    }
-  }
-
-  let decayTimer = null;
 
   function start() {
-    if (state.running) return api;
-    if (typeof window === 'undefined') {
-      // No DOM (e.g. Node test harness) — tracker stays a safe zero source.
-      state.running = true;
-      return api;
-    }
-    state.lastScrollY = window.scrollY || 0;
-    state.lastScrollTime = now();
-    window.addEventListener('mousemove', onMouseMove, { passive: true });
-    window.addEventListener('scroll', onScroll, { passive: true });
-    decayTimer = setInterval(decayTick, config.idleResetMs);
-    state.running = true;
-    return api;
+    // capture: true so nested scrollable containers, not just window, are seen
+    target.addEventListener('scroll', handleScroll, { capture: true, passive: true });
+    target.addEventListener('touchmove', handleScroll, { capture: true, passive: true });
+    target.addEventListener('mousemove', handleMouseMove, { passive: true });
+    target.addEventListener('click', handleClick, { capture: true });
   }
 
   function stop() {
-    if (!state.running) return api;
-    if (typeof window !== 'undefined') {
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('scroll', onScroll);
-    }
-    if (decayTimer) clearInterval(decayTimer);
-    decayTimer = null;
-    state.running = false;
-    return api;
+    target.removeEventListener('scroll', handleScroll, { capture: true });
+    target.removeEventListener('touchmove', handleScroll, { capture: true });
+    target.removeEventListener('mousemove', handleMouseMove);
+    target.removeEventListener('click', handleClick, { capture: true });
   }
 
-  /**
-   * snapshot — current rolling behaviour speeds in px/s. Always returns finite
-   * numbers, so it's safe to spread straight into Handoff 1.
-   */
-  function snapshot() {
-    return {
-      scrollSpeed: Math.round(avg(state.scrollReadings)),
-      cursorSpeed: Math.round(avg(state.cursorReadings)),
-    };
+  function getState() {
+    return { ...state };
   }
 
-  const api = { start, stop, snapshot, config, _state: state };
-  return api;
-}
+  start(); // start at construction, not on first event
 
-// Lazily-started default singleton for the common single-page case.
-let _defaultTracker = null;
-function getDefaultTracker() {
-  if (!_defaultTracker) {
-    _defaultTracker = createBehaviorTracker();
-    if (typeof window !== 'undefined') _defaultTracker.start();
-  }
-  return _defaultTracker;
+  return { start, stop, getState };
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { createBehaviorTracker, getDefaultTracker };
+  module.exports = { createBehaviorTracker };
 } else if (typeof window !== 'undefined') {
-  window.Web2MusicBehaviorTracker = { createBehaviorTracker, getDefaultTracker };
+  window.Web2MusicBehaviorTracker = { createBehaviorTracker };
 }
