@@ -1,5 +1,7 @@
 # Web2Music — Roadmap Snapshot (2026-07-20)
 
+> ⚠️ **STALE — superseded by [ROADMAP_30-07.md](ROADMAP_30-07.md) (2026-07-30).** Kept for history only. Much of the "to do" below has since landed (all of Feature A's §2.1/§2.2, D's gapless Ogg/Opus export, X1's `profile`/`arousal` consumption, the A→B→D integration test), and a new show-stopper (**X4** — the extension isn't wired to the pipeline) has taken over as the gate.
+
 > Status split of [PAPER_ROADMAP.md](PAPER_ROADMAP.md) by person: **what's done (merged into `main`)** vs. **what's still to do**.
 > Verified against the code + merge history on branch `roadmap`, not against PR conversations.
 >
