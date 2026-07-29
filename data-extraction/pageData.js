@@ -131,13 +131,16 @@ function normalizeColors(colors) {
   };
 }
 
-/* ── Embedding cache keyed by URL + text-hash ─────────────────────────────── */
+/* ── Embedding cache keyed by URL + text-hash + backend/model ─────────────── */
 /*
  * Embedding is the expensive step. Revisits and near-identical pages should not
- * pay for it twice. Cache keyed by `${url}::${djb2(text)}` — same URL with the
- * same cleaned text (a revisit) is an exact hit; a real content change produces
- * a new hash and re-embeds. cosineSimilarity (already in Embeddingmodel) remains
- * available for callers that want fuzzy cache-hit comparisons across keys.
+ * pay for it twice. Cache keyed by `${url}::${djb2(text)}::${backend}:${model}` —
+ * same URL with the same cleaned text (a revisit) AND the same backend/model is
+ * an exact hit; a real content change, or switching backend (e.g. local's 384-dim
+ * vector vs openai's 1536-dim), produces a new key and re-embeds rather than
+ * returning a stale wrong-dimension vector. cosineSimilarity (already in
+ * Embeddingmodel) remains available for callers that want fuzzy cache-hit
+ * comparisons across keys.
  */
 const MAX_CACHE_ENTRIES = 50;
 const _embeddingCache = new Map();
@@ -150,8 +153,12 @@ function djb2(str) {
   return (hash >>> 0).toString(36);
 }
 
-function cacheKey(url, text) {
-  return `${url || ''}::${djb2(text || '')}`;
+function cacheKey(url, text, embeddingConfig = {}) {
+  const backend = embeddingConfig.backend || 'local';
+  const model = (backend === 'openai' || backend === 'service')
+    ? (embeddingConfig.openaiModel || 'text-embedding-3-small')
+    : (embeddingConfig.localModel || 'Xenova/all-MiniLM-L6-v2');
+  return `${url || ''}::${djb2(text || '')}::${backend}:${model}`;
 }
 
 function cacheGet(key) {
@@ -249,14 +256,14 @@ async function buildPageData(options = {}) {
   // 4) Readability
   let readability = { flesch: 50, readingComplexity: 0.5 };
   try {
-    if (deps.scoreReadability) readability = deps.scoreReadability(page.mainText || '');
+    if (deps.scoreReadability) readability = deps.scoreReadability(page.mainText || '', page.lang || 'en');
   } catch (err) {
     warnings.push(`readability: ${err.message}`);
   }
 
   // 5) Embedding (expensive — cache by url + text-hash)
   let embedding = [];
-  const key = cacheKey(page.url, rawText);
+  const key = cacheKey(page.url, rawText, embeddingConfig);
   if (useCache) {
     const hit = cacheGet(key);
     if (hit) embedding = hit;

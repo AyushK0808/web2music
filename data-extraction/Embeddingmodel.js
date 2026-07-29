@@ -8,7 +8,27 @@ const DEFAULT_CONFIG = {
   // (docker/embedService.js) so the OpenAI key lives in the container's env,
   // never in the extension bundle or page context.
   serviceUrl: 'http://localhost:8077/embed',
+  // Feature B's LLM calls use 8s AbortControllers; A's network backends had none
+  // and could hang forever on a stalled connection. Match that budget here.
+  fetchTimeoutMs: 8000,
+  // Must match the embed service's SERVICE_SECRET env var, if it has one set.
+  serviceSecret: null,
 };
+
+async function fetchWithTimeout(url, options, timeoutMs) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      throw new Error(`Request to ${url} timed out after ${timeoutMs}ms`);
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
 let localPipelinePromise = null;
 
@@ -24,7 +44,7 @@ async function embedWithOpenAI(text, config) {
     throw new Error('OpenAI backend selected but no API key configured.');
   }
 
-  const response = await fetch('https://api.openai.com/v1/embeddings', {
+  const response = await fetchWithTimeout('https://api.openai.com/v1/embeddings', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -34,7 +54,7 @@ async function embedWithOpenAI(text, config) {
       model: config.openaiModel,
       input: text,
     }),
-  });
+  }, config.fetchTimeoutMs);
 
   if (!response.ok) {
     const errBody = await response.text().catch(() => '');
@@ -51,11 +71,14 @@ async function embedWithOpenAI(text, config) {
 }
 
 async function embedWithService(text, config) {
-  const response = await fetch(config.serviceUrl, {
+  const headers = { 'Content-Type': 'application/json' };
+  if (config.serviceSecret) headers['X-Service-Secret'] = config.serviceSecret;
+
+  const response = await fetchWithTimeout(config.serviceUrl, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: JSON.stringify({ input: text, model: config.openaiModel }),
-  });
+  }, config.fetchTimeoutMs);
 
   if (!response.ok) {
     const errBody = await response.text().catch(() => '');
@@ -86,7 +109,12 @@ async function embedWithLocalModel(text, config) {
     localPipelinePromise = window.transformersPipeline(
       'feature-extraction',
       config.localModel
-    );
+    ).catch((err) => {
+      // A rejected pipeline load must not be cached forever — clear it so the
+      // next call gets a fresh attempt instead of failing every time after.
+      localPipelinePromise = null;
+      throw err;
+    });
   }
   const extractor = await localPipelinePromise;
 

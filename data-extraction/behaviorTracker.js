@@ -51,6 +51,7 @@ function createBehaviorTracker(userConfig = {}) {
     lastMouseEventTime: 0,
     cursorReadings: [],
     // scroll
+    lastScrollX: 0,
     lastScrollY: 0,
     lastScrollTime: 0,
     lastScrollEventTime: 0,
@@ -83,19 +84,54 @@ function createBehaviorTracker(userConfig = {}) {
     state.lastMouseTime = t;
   }
 
-  function onScroll() {
+  function scrollPositionOf(target) {
+    // Window scroll events target `document`; inner scrollable containers
+    // (overflow:auto divs, etc.) target the element itself. Track both axes
+    // so horizontal-scrolling layouts register too.
+    if (!target || target === document || target === window) {
+      return {
+        x: (typeof window !== 'undefined' && window.scrollX) || 0,
+        y: (typeof window !== 'undefined' && window.scrollY) || 0,
+      };
+    }
+    return { x: target.scrollLeft || 0, y: target.scrollTop || 0 };
+  }
+
+  function onScroll(e) {
     const t = now();
     if (t - state.lastScrollEventTime < config.scrollThrottleMs) return; // throttle
     state.lastScrollEventTime = t;
 
-    const currentY = (typeof window !== 'undefined' && window.scrollY) || 0;
-    const dy = Math.abs(currentY - state.lastScrollY);
+    const pos = scrollPositionOf(e && e.target);
+    const dx = pos.x - state.lastScrollX;
+    const dy = pos.y - state.lastScrollY;
     const dt = (t - state.lastScrollTime) / 1000;
     if (dt > 0) {
-      pushReading(state.scrollReadings, dy / dt);
+      pushReading(state.scrollReadings, Math.sqrt(dx * dx + dy * dy) / dt);
     }
-    state.lastScrollY = currentY;
+    state.lastScrollX = pos.x;
+    state.lastScrollY = pos.y;
     state.lastScrollTime = t;
+  }
+
+  function onTouchMove(e) {
+    const t = now();
+    if (t - state.lastMouseEventTime < config.mouseThrottleMs) return; // throttle
+    state.lastMouseEventTime = t;
+
+    const touch = e.touches && e.touches[0];
+    if (!touch) return;
+    if (state.lastMouseX !== null) {
+      const dx = touch.clientX - state.lastMouseX;
+      const dy = touch.clientY - state.lastMouseY;
+      const dt = (t - state.lastMouseTime) / 1000;
+      if (dt > 0) {
+        pushReading(state.cursorReadings, Math.sqrt(dx * dx + dy * dy) / dt);
+      }
+    }
+    state.lastMouseX = touch.clientX;
+    state.lastMouseY = touch.clientY;
+    state.lastMouseTime = t;
   }
 
   function decayTick() {
@@ -117,10 +153,15 @@ function createBehaviorTracker(userConfig = {}) {
       state.running = true;
       return api;
     }
+    state.lastScrollX = window.scrollX || 0;
     state.lastScrollY = window.scrollY || 0;
     state.lastScrollTime = now();
     window.addEventListener('mousemove', onMouseMove, { passive: true });
-    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('touchmove', onTouchMove, { passive: true });
+    // capture:true so scroll events on inner scrollable containers (which don't
+    // bubble) are still observed via the capture phase, not just window/document
+    // scroll.
+    window.addEventListener('scroll', onScroll, { passive: true, capture: true });
     decayTimer = setInterval(decayTick, config.idleResetMs);
     state.running = true;
     return api;
@@ -130,7 +171,8 @@ function createBehaviorTracker(userConfig = {}) {
     if (!state.running) return api;
     if (typeof window !== 'undefined') {
       window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('scroll', onScroll, { capture: true });
     }
     if (decayTimer) clearInterval(decayTimer);
     decayTimer = null;
@@ -153,7 +195,11 @@ function createBehaviorTracker(userConfig = {}) {
   return api;
 }
 
-// Lazily-started default singleton for the common single-page case.
+// Default singleton for the common single-page case. Started eagerly at
+// module load (content-script init) rather than lazily on first
+// getDefaultTracker() call — otherwise any scroll/mouse activity between page
+// load and the first buildPageData() snapshot is missed, so that first
+// Handoff-1 always reports zero behaviour.
 let _defaultTracker = null;
 function getDefaultTracker() {
   if (!_defaultTracker) {
@@ -161,6 +207,10 @@ function getDefaultTracker() {
     if (typeof window !== 'undefined') _defaultTracker.start();
   }
   return _defaultTracker;
+}
+
+if (typeof window !== 'undefined') {
+  getDefaultTracker();
 }
 
 if (typeof module !== 'undefined' && module.exports) {

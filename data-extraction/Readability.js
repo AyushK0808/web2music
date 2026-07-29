@@ -20,7 +20,11 @@
  */
 function countSyllables(word) {
   word = word.toLowerCase().replace(/[^a-z]/g, '');
-  if (word.length <= 3) return word.length ? 1 : 0;
+  // Matches Feature B1's computeReadingComplexity() countSyllables exactly
+  // (mood-classification/feature_b/b1_contentUnderstanding.js), including
+  // returning 1 rather than 0 for an empty/degenerate word — the two sides
+  // previously drifted here despite both claiming an "identical mapping".
+  if (word.length <= 3) return 1;
   word = word.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, '');
   const match = word.match(/[aeiouy]{1,2}/g);
   return match ? match.length : 1;
@@ -61,10 +65,18 @@ function readingComplexity(text) {
 
 /**
  * scoreReadability — convenience returning both representations at once.
+ * Flesch Reading Ease is an English-specific formula (syllable/sentence
+ * heuristics tuned to English prose); scoring non-English text with it
+ * produces a meaningless number, not just a noisy one. Return the neutral
+ * midpoint for any non-English `lang` instead.
  * @param {string} text
+ * @param {string} [lang='en'] BCP-47-ish language code, e.g. from <html lang>.
  * @returns {{ flesch: number, readingComplexity: number }}
  */
-function scoreReadability(text) {
+function scoreReadability(text, lang = 'en') {
+  if (String(lang).toLowerCase().split(/[-_]/)[0] !== 'en') {
+    return { flesch: 50, readingComplexity: 0.5 };
+  }
   const flesch = fleschReadingEase(text);
   return {
     flesch,
