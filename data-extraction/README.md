@@ -12,7 +12,7 @@ from the WEB2MUSIC research guide.
 | `Colorextractor.js` | Extracts dominant page hues via area-weighted HSL histogram bucketing over computed CSS background colors, plus an overall `colorEnergy` score **and** a representative `{ hue, saturation, lightness }` triple for Feature B's colour-bias step. |
 | `behaviorTracker.js` | Stateful capture of browsing behaviour: throttled scroll/mousemove listeners (≤10/sec scroll, ≤20/sec mouse) exposing rolling `scrollSpeed` / `cursorSpeed` (px/s) via `.snapshot()`. |
 | `Readability.js` | Flesch Reading Ease scoring (`flesch` 0–100 and `readingComplexity` 0–1), numerically compatible with Feature B1's own `computeReadingComplexity`. |
-| `pageData.js` | **The Handoff-1 assembler.** `buildPageData()` runs the extractors + behaviour + metadata + readability + embedding and returns the single, validated object Feature B's `runB1()` consumes. Also: `validatePageData()` (safe defaults + `handoffVersion`/`extractedAt`, mirroring Feature D's `d1_validate.py`), an embedding cache keyed by URL + text-hash, and `runWhenIdle()` (debounce + `requestIdleCallback`). |
+| `pageData.js` | **The Handoff-1 assembler.** `buildPageData()` runs the extractors + behaviour + metadata + readability + embedding and returns the single, validated object Feature B's `runB1()` consumes. Also: `validatePageData()` (safe defaults + `handoffVersion`/`extractedAt`, mirroring Feature D's `d1_validate.py`), an embedding cache keyed by URL + text-hash + backend/model, `runWhenIdle()` (debounce + `requestIdleCallback`), a `fullyLocal` no-network mode, and `getExtractionTelemetry()` per-stage latency/failure-rate. |
 | `docker/` | Containerised OpenAI embedding microservice — keeps the API key server-side (see `docker/README.md`). |
 
 ## Usage
@@ -61,6 +61,38 @@ const colors = extractDominantColors();               // { dominantHues, colorEn
 }
 ```
 
+## Fully-local mode (privacy/utility tradeoff)
+
+Pass `fullyLocal: true` to guarantee the build makes **no network calls** — the
+embedding backend is forced to `local` regardless of what `embeddingConfig.backend`
+requests, so page text never leaves the machine:
+
+```js
+const pageData = await buildPageData({ fullyLocal: true });
+```
+
+The cost is embedding quality (384-dim MiniLM vs. OpenAI's 1536-dim), which is the
+privacy-utility ablation to quantify for §7: run the same corpus with
+`fullyLocal: true` vs. a network backend and compare downstream mood-classification
+accuracy. **The mode is implemented; the accuracy measurement is still to be done.**
+
+## Extraction telemetry
+
+Each of the five stages (`text`, `colors`, `behavior`, `readability`, `embedding`)
+is timed and its failures counted, feeding the systems eval in §6:
+
+```js
+const { getExtractionTelemetry, resetExtractionTelemetry } = window.Web2MusicPageData;
+
+getExtractionTelemetry();
+// → { text: { count, failures, failureRate, avgMs, totalMs }, colors: {...}, ... }
+```
+
+Stage failures are non-fatal — they surface both here and in `pageData.warnings`,
+while the field falls back to its safe default. Note that measuring real extraction
+cost (e.g. across the top-100 sites) requires a **real browser**; jsdom does no
+layout, so colour-extraction timings under `npm run play` are not representative.
+
 ## Config
 
 `embeddingModel.js` reads a config object per call (no hardcoded defaults
@@ -95,7 +127,14 @@ Implemented for Feature A:
 - ✅ Feature Vector Assembly — `buildPageData()` (`pageData.js`)
 - ✅ Non-Text Page fallback — `isImageOnly` flag (`pageData.js`)
 - ✅ Performance Budget — `runWhenIdle()` debounce + `requestIdleCallback` (`pageData.js`)
-- ✅ Embedding cache keyed by URL + text-hash (`pageData.js`)
+- ✅ Embedding cache keyed by URL + text-hash + backend/model (`pageData.js`)
+- ✅ Element cap / even sampling in colour extraction (`Colorextractor.js`)
+- ✅ Per-stage latency + failure-rate telemetry (`pageData.js#getExtractionTelemetry`)
+- ✅ Fully-local no-network mode (`buildPageData({ fullyLocal: true })`)
+
+Measurement still outstanding (code is in place, numbers are not):
+- ⬜ Extraction cost measured on the top-100 sites in a real browser (§6)
+- ⬜ Accuracy cost of `fullyLocal` mode quantified vs. a network backend (§7)
 
 Still owned elsewhere / out of scope here: Vector Database integration and
 Similarity Threshold config (belong with the storage layer). The `flesch` field

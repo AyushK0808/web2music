@@ -182,6 +182,76 @@ function clearPageDataCache() {
   _embeddingCache.clear();
 }
 
+/* ── Per-stage telemetry (§6 systems eval: latency + failure rate) ────────── */
+/*
+ * buildPageData runs 5 independently-failable stages (text, colors, behavior,
+ * readability, embedding). Aggregating their latency and failure rate across
+ * calls is what the paper's systems-eval section needs to characterize
+ * extraction cost/reliability on real pages — nothing previously recorded it.
+ */
+const STAGE_NAMES = ['text', 'colors', 'behavior', 'readability', 'embedding'];
+
+function freshTelemetry() {
+  const stages = {};
+  for (const name of STAGE_NAMES) {
+    stages[name] = { count: 0, failures: 0, totalMs: 0 };
+  }
+  return stages;
+}
+
+let _telemetry = freshTelemetry();
+
+function nowMs() {
+  return (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+}
+
+function recordStage(name, durationMs, ok) {
+  const stage = _telemetry[name];
+  stage.count += 1;
+  stage.totalMs += durationMs;
+  if (!ok) stage.failures += 1;
+}
+
+/**
+ * getExtractionTelemetry — aggregated per-stage latency + failure rate across
+ * all buildPageData() calls since the last reset.
+ * @returns {Object<string, { count, failures, failureRate, avgMs, totalMs }>}
+ */
+function getExtractionTelemetry() {
+  const out = {};
+  for (const [name, stage] of Object.entries(_telemetry)) {
+    out[name] = {
+      count: stage.count,
+      failures: stage.failures,
+      failureRate: stage.count ? stage.failures / stage.count : 0,
+      avgMs: stage.count ? stage.totalMs / stage.count : 0,
+      totalMs: stage.totalMs,
+    };
+  }
+  return out;
+}
+
+function resetExtractionTelemetry() {
+  _telemetry = freshTelemetry();
+}
+
+/**
+ * timeStage — run `fn`, recording its wall-clock duration and success/failure
+ * into the module telemetry under `name`, then return its result (rethrowing
+ * on failure so existing per-stage try/catch warning collection is untouched).
+ */
+async function timeStage(name, fn) {
+  const start = nowMs();
+  try {
+    const result = await fn();
+    recordStage(name, nowMs() - start, true);
+    return result;
+  } catch (err) {
+    recordStage(name, nowMs() - start, false);
+    throw err;
+  }
+}
+
 /* ── isImageOnly heuristic (edge case #15) ────────────────────────────────── */
 
 function estimateImageOnly(doc, wordCount) {
@@ -207,24 +277,36 @@ function estimateImageOnly(doc, wordCount) {
  *                                               module singleton. Pass a stub in tests.
  * @param {boolean}  [options.useCache=true]     Reuse a cached embedding for the same url+text.
  * @param {number}   [options.rawTextWordLimit]  Words kept in `rawText` (default 500).
+ * @param {boolean}  [options.fullyLocal=false]  Force the embedding backend to 'local',
+ *                                               guaranteeing this build makes no network calls.
  * @returns {Promise<Object>} Validated Handoff-1 PageData.
  */
 async function buildPageData(options = {}) {
   const deps = getDeps();
   const {
     doc = (typeof document !== 'undefined' ? document : undefined),
-    embeddingConfig = {},
     behaviorTracker,
     useCache = true,
     rawTextWordLimit = DEFAULT_RAW_TEXT_WORD_LIMIT,
+    // fullyLocal: guarantee zero network calls for this build — forces the
+    // embedding backend to 'local' regardless of what embeddingConfig.backend
+    // says, so a page can opt into a fully-private (if lower-quality) pipeline.
+    // This is the privacy/utility ablation Feature A needs to quantify (§7):
+    // compare mood-classification accuracy with fullyLocal:true vs a
+    // network-backed embedding backend on the same corpus.
+    fullyLocal = false,
   } = options;
+
+  const embeddingConfig = fullyLocal
+    ? { ...options.embeddingConfig, backend: 'local' }
+    : (options.embeddingConfig || {});
 
   const warnings = [];
 
   // 1) Text + metadata
   let page = { title: '', mainText: '', description: '', lang: 'en', wordCount: 0, url: '' };
   try {
-    page = deps.extractPageText(doc) || page;
+    page = await timeStage('text', () => deps.extractPageText(doc)) || page;
   } catch (err) {
     warnings.push(`text: ${err.message}`);
   }
@@ -235,7 +317,7 @@ async function buildPageData(options = {}) {
   let colorResult = { representativeColor: PAGE_DATA_DEFAULTS.colors, colorEnergy: 0 };
   try {
     if (deps.extractDominantColors && doc && doc.body) {
-      colorResult = deps.extractDominantColors(doc.body) || colorResult;
+      colorResult = await timeStage('colors', () => deps.extractDominantColors(doc.body)) || colorResult;
     }
   } catch (err) {
     warnings.push(`colors: ${err.message}`);
@@ -247,7 +329,7 @@ async function buildPageData(options = {}) {
     const tracker = behaviorTracker
       || (deps.behavior && deps.behavior.getDefaultTracker && deps.behavior.getDefaultTracker());
     if (tracker && typeof tracker.snapshot === 'function') {
-      behavior = tracker.snapshot();
+      behavior = await timeStage('behavior', () => tracker.snapshot());
     }
   } catch (err) {
     warnings.push(`behavior: ${err.message}`);
@@ -256,7 +338,9 @@ async function buildPageData(options = {}) {
   // 4) Readability
   let readability = { flesch: 50, readingComplexity: 0.5 };
   try {
-    if (deps.scoreReadability) readability = deps.scoreReadability(page.mainText || '', page.lang || 'en');
+    if (deps.scoreReadability) {
+      readability = await timeStage('readability', () => deps.scoreReadability(page.mainText || '', page.lang || 'en'));
+    }
   } catch (err) {
     warnings.push(`readability: ${err.message}`);
   }
@@ -270,7 +354,7 @@ async function buildPageData(options = {}) {
   }
   if (embedding.length === 0 && rawText.trim() && deps.embedding && deps.embedding.getEmbedding) {
     try {
-      const result = await deps.embedding.getEmbedding(page.mainText || rawText, embeddingConfig);
+      const result = await timeStage('embedding', () => deps.embedding.getEmbedding(page.mainText || rawText, embeddingConfig));
       embedding = result.vector || [];
       if (useCache && embedding.length) cacheSet(key, embedding);
     } catch (err) {
@@ -364,6 +448,8 @@ if (typeof module !== 'undefined' && module.exports) {
     runWhenIdle,
     createPageDataScheduler,
     clearPageDataCache,
+    getExtractionTelemetry,
+    resetExtractionTelemetry,
     HANDOFF_VERSION,
   };
 } else if (typeof window !== 'undefined') {
@@ -373,6 +459,8 @@ if (typeof module !== 'undefined' && module.exports) {
     runWhenIdle,
     createPageDataScheduler,
     clearPageDataCache,
+    getExtractionTelemetry,
+    resetExtractionTelemetry,
     HANDOFF_VERSION,
   };
 }

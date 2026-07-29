@@ -163,6 +163,11 @@ function createBehaviorTracker(userConfig = {}) {
     // scroll.
     window.addEventListener('scroll', onScroll, { passive: true, capture: true });
     decayTimer = setInterval(decayTick, config.idleResetMs);
+    // Under Node/jsdom this interval would otherwise hold the event loop open
+    // forever, so any Node harness that merely requires this module (directly or
+    // via pageData.js) never exits. unref() lets the process end naturally while
+    // leaving browser behaviour untouched (DOM timers have no unref).
+    if (decayTimer && typeof decayTimer.unref === 'function') decayTimer.unref();
     state.running = true;
     return api;
   }
