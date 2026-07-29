@@ -11,9 +11,6 @@ from fallback import get_fallback_clip
 from models import HandoffPayload
 from prewarm import prewarm_cache
 
-# Prod (Supabase-backed) cache vs. local dev cache (Docker Postgres + files on
-# disk). Defaults to dev so the server runs out of the box against `docker
-# compose up` in audio-generation/docker/ without needing a Supabase account.
 IS_PROD = os.getenv("IS_PROD", "false").lower() in ("1", "true", "yes")
 if IS_PROD:
     from d5_cache import make_cache_key, check_cache, save_to_cache
@@ -158,21 +155,21 @@ async def generate(payload: HandoffPayload):
     return {
         "audio_url": audio_url,
         "metadata": {
-            "cache_key":       cache_key,
-            "mood":            profile["mood"],
-            "bpm":             profile["bpm"],
-            "key":             profile["key"],
-            "energy":          profile["energy"],
-            "valence":         profile["valence"],
-            "intensity":       profile["intensity"],
+            "cache_key":        cache_key,
+            "mood":             profile["mood"],
+            "bpm":              profile["bpm"],
+            "key":              profile["key"],
+            "energy":           profile["energy"],
+            "valence":          profile["valence"],
+            "intensity":        profile["intensity"],
             "duration_seconds": profile["duration_seconds"],
-            "loop_point_ms":   loop_point_ms,
+            "loop_point_ms":      loop_point_ms,
             "seam_discontinuity": seam_discontinuity,
-            "prompt_used":     prompt,
-            "prompt_source":   "feature_b" if prompt_from_b else "d2_fallback",
-            "generation_seed": generation_seed,
-            "is_fallback":     False,
-            "loopable":        True
+            "prompt_used":        prompt,
+            "prompt_source":      "feature_b" if prompt_from_b else "d2_fallback",
+            "generation_seed":    generation_seed,
+            "is_fallback":        False,
+            "loopable":           True
         },
         "cache":   "miss",
         "timings": timings

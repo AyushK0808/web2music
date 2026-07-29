@@ -8,8 +8,10 @@ def validate_profile(payload: HandoffPayload) -> tuple:
     prompt_from_b = payload.prompt
 
     if payload.musicProfile is not None:
+        # Sneha's nested shape — already validated by Pydantic
         profile = payload.musicProfile.model_dump()
     else:
+        # Flat dict shape — build MusicProfile from top-level fields
         profile = MusicProfile(
             mood=              payload.mood              or "calm",
             bpm=               int(float(payload.bpm))  if payload.bpm is not None else 80,
@@ -18,6 +20,7 @@ def validate_profile(payload: HandoffPayload) -> tuple:
             style=             payload.style            or "ambient",
             content_category=  payload.content_category or "general",
             valence=           payload.valence          if payload.valence   is not None else 0.0,
+            arousal=           payload.arousal          if payload.arousal   is not None else 0.5,
             intensity=         payload.intensity        if payload.intensity is not None else 0.5,
             reverb=            payload.reverb           if payload.reverb    is not None else 0.5,
             ambience=          payload.ambience         if payload.ambience  is not None else 0.5,
