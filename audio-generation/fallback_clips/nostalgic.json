@@ -1,0 +1,9 @@
+{
+  "loop_point_ms": 11792,
+  "seam_discontinuity": {
+    "energy_delta_db": 2.56,
+    "spectral_centroid_delta_hz": 168.9
+  },
+  "prompt_used": "nostalgic vintage music, 80 bpm, F major, moderate energy, flowing, vintage piano and light strings, no vocals, loopable, suitable for background listening, high quality, atmospheric",
+  "generation_seed": 43
+}

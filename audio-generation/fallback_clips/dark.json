@@ -1,0 +1,9 @@
+{
+  "loop_point_ms": 5344,
+  "seam_discontinuity": {
+    "energy_delta_db": 0.58,
+    "spectral_centroid_delta_hz": 27.4
+  },
+  "prompt_used": "dark cinematic dark music, 75 bpm, C minor, moderate energy, flowing, orchestral strings and bass drones, no vocals, loopable, suitable for background listening, high quality, atmospheric",
+  "generation_seed": 43
+}

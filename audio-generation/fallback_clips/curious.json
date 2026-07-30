@@ -1,0 +1,9 @@
+{
+  "loop_point_ms": 8816,
+  "seam_discontinuity": {
+    "energy_delta_db": 10.8,
+    "spectral_centroid_delta_hz": 382.5
+  },
+  "prompt_used": "curious documentary music, 95 bpm, E minor, moderate energy, flowing, marimba and electronic bells, no vocals, loopable, suitable for background listening, high quality, atmospheric",
+  "generation_seed": 43
+}

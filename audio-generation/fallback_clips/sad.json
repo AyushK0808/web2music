@@ -1,0 +1,9 @@
+{
+  "loop_point_ms": 5280,
+  "seam_discontinuity": {
+    "energy_delta_db": 18.42,
+    "spectral_centroid_delta_hz": 566.6
+  },
+  "prompt_used": "sad cinematic music, 55 bpm, D minor, very low energy, minimal, solo piano and cello, no vocals, loopable, suitable for background listening, high quality, atmospheric",
+  "generation_seed": 43
+}
