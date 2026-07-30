@@ -1,0 +1,9 @@
+{
+  "loop_point_ms": 6320,
+  "seam_discontinuity": {
+    "energy_delta_db": -11.76,
+    "spectral_centroid_delta_hz": 798.1
+  },
+  "prompt_used": "tense thriller music, 110 bpm, B minor, high energy, dynamic, strings tremolo and pulse synth, no vocals, loopable, suitable for background listening, high quality, atmospheric",
+  "generation_seed": 43
+}

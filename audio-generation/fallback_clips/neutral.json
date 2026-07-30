@@ -1,0 +1,9 @@
+{
+  "loop_point_ms": 10592,
+  "seam_discontinuity": {
+    "energy_delta_db": 4.93,
+    "spectral_centroid_delta_hz": 270.0
+  },
+  "prompt_used": "neutral ambient music, 80 bpm, C major, moderate energy, flowing, ambient synth pads, no vocals, loopable, suitable for background listening, high quality, atmospheric",
+  "generation_seed": 43
+}

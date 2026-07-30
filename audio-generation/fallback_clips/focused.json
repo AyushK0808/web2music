@@ -1,0 +1,9 @@
+{
+  "loop_point_ms": 10400,
+  "seam_discontinuity": {
+    "energy_delta_db": 5.34,
+    "spectral_centroid_delta_hz": 1433.5
+  },
+  "prompt_used": "focused lo-fi study music, 88 bpm, D minor, moderate energy, flowing, piano and minimalist synth, no vocals, loopable, suitable for background listening, high quality, atmospheric",
+  "generation_seed": 43
+}

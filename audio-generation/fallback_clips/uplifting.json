@@ -1,0 +1,9 @@
+{
+  "loop_point_ms": 8784,
+  "seam_discontinuity": {
+    "energy_delta_db": 11.55,
+    "spectral_centroid_delta_hz": 337.4
+  },
+  "prompt_used": "uplifting inspirational music, 95 bpm, C major, high energy, dynamic, piano and gentle synth pads, no vocals, loopable, suitable for background listening, high quality, atmospheric",
+  "generation_seed": 43
+}

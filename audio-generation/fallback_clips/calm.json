@@ -1,0 +1,9 @@
+{
+  "loop_point_ms": 10720,
+  "seam_discontinuity": {
+    "energy_delta_db": 2.46,
+    "spectral_centroid_delta_hz": 756.1
+  },
+  "prompt_used": "calm ambient music, 65 bpm, C major, very low energy, minimal, soft piano and ambient pads, no vocals, loopable, suitable for background listening, high quality, atmospheric",
+  "generation_seed": 43
+}

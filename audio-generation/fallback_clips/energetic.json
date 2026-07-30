@@ -1,0 +1,9 @@
+{
+  "loop_point_ms": 8704,
+  "seam_discontinuity": {
+    "energy_delta_db": 18.32,
+    "spectral_centroid_delta_hz": 1644.3
+  },
+  "prompt_used": "energetic electronic music, 140 bpm, E minor, high energy, dynamic, synth and driving percussion, no vocals, loopable, suitable for background listening, high quality, atmospheric",
+  "generation_seed": 43
+}

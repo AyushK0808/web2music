@@ -1,0 +1,9 @@
+{
+  "loop_point_ms": 3248,
+  "seam_discontinuity": {
+    "energy_delta_db": 9.99,
+    "spectral_centroid_delta_hz": 1005.1
+  },
+  "prompt_used": "joyful indie pop music, 118 bpm, G major, high energy, dynamic, acoustic guitar and bright keys, no vocals, loopable, suitable for background listening, high quality, atmospheric",
+  "generation_seed": 43
+}
