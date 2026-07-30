@@ -56,6 +56,8 @@ function createBehaviorTracker(userConfig = {}) {
     lastScrollTime: 0,
     lastScrollEventTime: 0,
     scrollReadings: [],
+    // interaction
+    clickCount: 0,
   };
 
   const avg = (arr) =>
@@ -134,6 +136,13 @@ function createBehaviorTracker(userConfig = {}) {
     state.lastMouseTime = t;
   }
 
+  function onClick() {
+    // Raw count, not a rate: unlike scroll/cursor speed this is a cumulative
+    // engagement signal, so it is deliberately excluded from decayTick()'s
+    // idle reset.
+    state.clickCount += 1;
+  }
+
   function decayTick() {
     const t = now();
     if (t - state.lastMouseEventTime > config.idleResetMs) {
@@ -158,6 +167,7 @@ function createBehaviorTracker(userConfig = {}) {
     state.lastScrollTime = now();
     window.addEventListener('mousemove', onMouseMove, { passive: true });
     window.addEventListener('touchmove', onTouchMove, { passive: true });
+    window.addEventListener('click', onClick, { passive: true, capture: true });
     // capture:true so scroll events on inner scrollable containers (which don't
     // bubble) are still observed via the capture phase, not just window/document
     // scroll.
@@ -177,6 +187,7 @@ function createBehaviorTracker(userConfig = {}) {
     if (typeof window !== 'undefined') {
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('click', onClick, { capture: true });
       window.removeEventListener('scroll', onScroll, { capture: true });
     }
     if (decayTimer) clearInterval(decayTimer);
@@ -193,6 +204,7 @@ function createBehaviorTracker(userConfig = {}) {
     return {
       scrollSpeed: Math.round(avg(state.scrollReadings)),
       cursorSpeed: Math.round(avg(state.cursorReadings)),
+      clickCount: state.clickCount,
     };
   }
 
