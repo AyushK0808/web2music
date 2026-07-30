@@ -1,6 +1,7 @@
 import hashlib, json, os
 from supabase import create_client
 from dotenv import load_dotenv
+from d4_process import EXPORT_CODEC
 load_dotenv()
 
 supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
@@ -16,6 +17,13 @@ def make_cache_key(profile: dict) -> str:
         "key":             profile["key"],
         "valence_tier":    round(float(profile.get("valence", 0.0)), 1),
         "duration_bucket": (duration // 2) * 2,  # 2s tolerance: 28,29→28  30,31→30
+        # Versions the key by export codec so a switch (e.g. the MP3 -> Ogg/
+        # Opus gapless-export change) naturally invalidates old entries
+        # instead of silently serving the stale-format audio forever under
+        # an identical key -- there's no TTL/eviction in the schema, so
+        # without this, already-cached combos (prewarm.py's common grid
+        # especially) would never regenerate on their own.
+        "codec":           EXPORT_CODEC,
         # Note: seed is intentionally excluded from the cache key.
         # Including it would mean each retry attempt (seed 43, 44, 45)
         # generates a separate cache entry, defeating the purpose of caching.

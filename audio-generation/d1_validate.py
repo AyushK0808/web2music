@@ -20,7 +20,7 @@ def validate_profile(payload: HandoffPayload) -> tuple:
             key=               p.get("key")               or "C major",
             energy=            p.get("energy")            if p.get("energy") is not None else 0.5,
             style=             p.get("style")              or "ambient",
-            content_category=  p.get("content_category")  or "general",
+            content_category=  p.get("content_category")  if p.get("content_category") is not None else "general",
             valence=           p.get("valence")           if p.get("valence") is not None else 0.0,
             # B's profile sends "arousal" on the continuous V-A axis; X1 gave
             # MusicProfile a first-class arousal field, so it maps straight
@@ -50,7 +50,7 @@ def validate_profile(payload: HandoffPayload) -> tuple:
             key=               payload.key              or "C major",
             energy=            payload.energy           if payload.energy    is not None else 0.5,
             style=             payload.style            or "ambient",
-            content_category=  payload.content_category or "general",
+            content_category=  payload.content_category if payload.content_category is not None else "general",
             valence=           payload.valence          if payload.valence   is not None else 0.0,
             arousal=           payload.arousal          if payload.arousal   is not None else 0.5,
             intensity=         payload.intensity        if payload.intensity is not None else 0.5,

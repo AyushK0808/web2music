@@ -83,7 +83,20 @@ async def generate(payload: HandoffPayload):
 
     # D1 — Validate & unwrap Sneha's Handoff 2 payload
     t0 = time.time()
-    profile, prompt_from_b = validate_profile(payload)
+    try:
+        profile, prompt_from_b = validate_profile(payload)
+    except Exception as e:
+        # MusicProfile's range validators (bpm 20-200, energy/valence/etc.
+        # 0-1 or -1-1, duration_seconds 5-30) and the int(float(bpm)) cast
+        # can both raise on malformed input. Not reachable through the real
+        # pipeline today -- Feature B already clamps everything before
+        # sending -- but it's a real gap on the documented flat-dict Swagger
+        # path, and this is the one call site the D3/D4/cache fallback audit
+        # didn't reach. Degrade to a fallback clip with safe defaults rather
+        # than hard-500ing, same as every other failure mode in this file.
+        print(f"[MAIN] validate_profile failed on malformed input: {e}")
+        safe_defaults = {"mood": "neutral", "bpm": 80, "key": "C major", "energy": 0.5}
+        return await _fallback_response(safe_defaults, {"d1_validate_ms": int((time.time() - t0) * 1000)})
     timings["d1_validate_ms"] = int((time.time() - t0) * 1000)
 
     # Cache check

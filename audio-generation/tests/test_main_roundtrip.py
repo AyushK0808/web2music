@@ -294,3 +294,40 @@ def test_save_to_cache_failure_falls_back_instead_of_hard_500(main_client, monke
     body = response.json()
     assert body["fallback"] is True
     assert body["metadata"]["is_fallback"] is True
+
+
+def test_malformed_profile_bpm_falls_back_instead_of_hard_500(main_client, monkeypatch):
+    """
+    Regression test: validate_profile() was the one call site the D3/D4/
+    cache-check/cache-save fallback audit didn't reach. Since `profile` is
+    typed as a raw `Optional[dict]` on HandoffPayload (so its own field
+    contract with Feature D can differ from MusicProfile's), FastAPI's own
+    Pydantic validation doesn't catch malformed values inside it --
+    d1_validate.py's int(float(p["bpm"])) raises ValueError on a
+    non-numeric bpm, and MusicProfile's range validators (bpm 20-200,
+    energy/valence 0-1/-1-1, etc.) can also raise. Not reachable through
+    the real pipeline today (Feature B already clamps), but a real gap on
+    the documented flat-dict/profile Swagger path -- and inconsistent with
+    this PR's own point of eliminating hard-500s everywhere else.
+    """
+    import main as main_module
+
+    def fake_get_fallback_clip(mood):
+        return b"fake fallback mp3 bytes"
+
+    monkeypatch.setattr(main_module, "get_fallback_clip", fake_get_fallback_clip)
+
+    response = main_client.post("/generate", json={
+        "profile": {
+            "mood": "calm", "bpm": "not-a-number", "key": "C major",
+            "energy": 0.5, "style": "ambient",
+        }
+    })
+
+    assert response.status_code == 200, (
+        f"malformed profile input should degrade to a fallback clip, not a "
+        f"hard 500 (got {response.status_code}: {response.text})"
+    )
+    body = response.json()
+    assert body["fallback"] is True
+    assert body["metadata"]["is_fallback"] is True

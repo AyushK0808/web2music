@@ -51,3 +51,41 @@ def test_save_to_cache_writes_ogg_extension_not_mp3(cache_local_module):
 
     with open(os.path.join(tmp_path, "testkey123.ogg"), "rb") as f:
         assert f.read() == fake_clip_bytes
+
+
+def test_cache_key_changes_when_export_codec_changes(cache_local_module, monkeypatch):
+    """
+    Regression test: make_cache_key() previously had no codec/version
+    component, so already-cached entries from the old MP3 pipeline would
+    keep matching (and serving stale MP3 audio with the audible click)
+    forever after the Ogg/Opus switch, since there's no TTL/eviction
+    anywhere in the schema. The key must change when EXPORT_CODEC changes,
+    so old entries naturally miss and regenerate instead of silently
+    persisting under an identical key.
+    """
+    mod, _ = cache_local_module
+    profile = {
+        "mood": "calm", "bpm": 90, "key": "C major", "energy": 0.5,
+        "style": "ambient", "valence": 0.0, "duration_seconds": 28,
+    }
+
+    key_with_opus = mod.make_cache_key(profile)
+
+    monkeypatch.setattr(mod, "EXPORT_CODEC", "libmp3lame")
+    key_with_mp3 = mod.make_cache_key(profile)
+
+    assert key_with_opus != key_with_mp3, (
+        "cache key didn't change when the export codec changed -- old "
+        "MP3-era cache entries would keep matching indefinitely"
+    )
+
+
+def test_cache_key_stable_for_identical_profile_and_codec(cache_local_module):
+    """Sanity check alongside the above: the key must still be stable/
+    deterministic for the same profile+codec, or caching breaks entirely."""
+    mod, _ = cache_local_module
+    profile = {
+        "mood": "calm", "bpm": 90, "key": "C major", "energy": 0.5,
+        "style": "ambient", "valence": 0.0, "duration_seconds": 28,
+    }
+    assert mod.make_cache_key(profile) == mod.make_cache_key(profile)

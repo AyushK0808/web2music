@@ -1,6 +1,7 @@
 import hashlib, json, os
 import psycopg2
 from dotenv import load_dotenv
+from d4_process import EXPORT_CODEC
 load_dotenv()
 
 AUDIO_CACHE_DIR = os.path.join(os.path.dirname(__file__), "audio-cache")
@@ -23,6 +24,7 @@ def make_cache_key(profile: dict) -> str:
         "key":             profile["key"],
         "valence_tier":    round(float(profile.get("valence", 0.0)), 1),
         "duration_bucket": (duration // 2) * 2,  # 2s tolerance: 28,29→28  30,31→30
+        "codec":           EXPORT_CODEC,
         # Note: seed is intentionally excluded from the cache key.
         # Including it would mean each retry attempt (seed 43, 44, 45)
         # generates a separate cache entry, defeating the purpose of caching.
