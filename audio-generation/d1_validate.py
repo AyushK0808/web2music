@@ -20,14 +20,14 @@ def validate_profile(payload: HandoffPayload) -> tuple:
             key=               p.get("key")               or "C major",
             energy=            p.get("energy")            if p.get("energy") is not None else 0.5,
             style=             p.get("style")              or "ambient",
-            content_category=  p.get("content_category")  or "general",
+            content_category=  p.get("content_category")  if p.get("content_category") is not None else "general",
             valence=           p.get("valence")           if p.get("valence") is not None else 0.0,
-            # B's profile sends "arousal", not "intensity" -- same axis per
-            # b4_promptEngineer.js's own comment (intensity is D's closest
-            # existing proxy for behavioural activation). Mapped explicitly
-            # since MusicProfile has no arousal field of its own, and a raw
-            # MusicProfile(**p) parse would otherwise silently drop it.
-            intensity=         p.get("arousal")            if p.get("arousal") is not None else 0.5,
+            # B's profile sends "arousal" on the continuous V-A axis; X1 gave
+            # MusicProfile a first-class arousal field, so it maps straight
+            # across rather than being folded into intensity. intensity stays
+            # its own axis and defaults independently when B omits it.
+            arousal=           p.get("arousal")            if p.get("arousal") is not None else 0.5,
+            intensity=         p.get("intensity")          if p.get("intensity") is not None else 0.5,
             reverb=            p.get("reverb")             if p.get("reverb") is not None else 0.5,
             ambience=          p.get("ambience")           if p.get("ambience") is not None else 0.5,
             timbre=            p.get("timbre")             or "warm",
@@ -40,16 +40,19 @@ def validate_profile(payload: HandoffPayload) -> tuple:
             duration_seconds=  p.get("duration_seconds")   if p.get("duration_seconds") is not None else 28,
         ).model_dump()
     elif payload.musicProfile is not None:
+        # Sneha's nested shape — already validated by Pydantic
         profile = payload.musicProfile.model_dump()
     else:
+        # Flat dict shape — build MusicProfile from top-level fields
         profile = MusicProfile(
             mood=              payload.mood              or "calm",
             bpm=               int(float(payload.bpm))  if payload.bpm is not None else 80,
             key=               payload.key              or "C major",
             energy=            payload.energy           if payload.energy    is not None else 0.5,
             style=             payload.style            or "ambient",
-            content_category=  payload.content_category or "general",
+            content_category=  payload.content_category if payload.content_category is not None else "general",
             valence=           payload.valence          if payload.valence   is not None else 0.0,
+            arousal=           payload.arousal          if payload.arousal   is not None else 0.5,
             intensity=         payload.intensity        if payload.intensity is not None else 0.5,
             reverb=            payload.reverb           if payload.reverb    is not None else 0.5,
             ambience=          payload.ambience         if payload.ambience  is not None else 0.5,
