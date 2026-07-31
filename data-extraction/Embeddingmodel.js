@@ -147,6 +147,17 @@ async function getEmbedding(text, userConfig = {}) {
   return embedWithLocalModel(truncated, config);
 }
 
+/**
+ * buildCacheKey — namespace a cached vector by the model that produced it.
+ * A 384-dim local vector and a 1536-dim OpenAI vector are not interchangeable,
+ * so a key built from url + text alone can hand back a vector from the wrong
+ * embedding space. pageData.js derives the same identity via
+ * resolveEmbeddingIdentity(); this helper is exposed for callers outside it.
+ */
+function buildCacheKey(url, textHash, backend, model) {
+  return `${url}::${textHash}::${backend}::${model}`;
+}
+
 function cosineSimilarity(a, b) {
   if (a.length !== b.length) {
     throw new Error(`Vector length mismatch: ${a.length} vs ${b.length}`);
@@ -162,7 +173,7 @@ function cosineSimilarity(a, b) {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { getEmbedding, cosineSimilarity, DEFAULT_CONFIG };
+  module.exports = { getEmbedding, cosineSimilarity, buildCacheKey, DEFAULT_CONFIG };
 } else if (typeof window !== 'undefined') {
-  window.Web2MusicEmbedding = { getEmbedding, cosineSimilarity };
+  window.Web2MusicEmbedding = { getEmbedding, cosineSimilarity, buildCacheKey };
 }

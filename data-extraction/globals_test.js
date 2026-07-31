@@ -26,10 +26,14 @@ const path = require('path');
 const vm = require('vm');
 
 // Load order must match the extension's content-script order (deps first).
+// Order matters: this list doubles as the content-script load order, and
+// syllableCounter.js must be evaluated before Readability.js, which reads
+// window.Web2MusicSyllableCounter at module scope.
 const MODULES = [
   'Textextractor.js',
   'Colorextractor.js',
   'Embeddingmodel.js',
+  'syllableCounter.js',
   'Readability.js',
   'behaviorTracker.js',
   'VectorStore.js',
@@ -138,6 +142,7 @@ const EXPECTED_GLOBALS = [
   'Web2MusicTextExtractor',
   'Web2MusicColorExtractor',
   'Web2MusicEmbedding',
+  'Web2MusicSyllableCounter',
   'Web2MusicReadability',
   'Web2MusicBehaviorTracker',
   'Web2MusicVectorStore',
