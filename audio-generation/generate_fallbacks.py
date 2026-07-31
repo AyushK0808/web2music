@@ -6,8 +6,11 @@ Usage:
     python generate_fallbacks.py
 
 In prod (IS_PROD=true), also uploads each clip to the Supabase "fallback-clips"
-storage bucket so main.py's public-URL lookup resolves to something real.
-The bucket must already exist (create it in the Supabase dashboard, public read).
+storage bucket and upserts its metadata into the "fallback_clips" table, so
+both main.py's public-URL lookup and fallback_prod.py's table read resolve
+to something real.
+The bucket and table must already exist (create the bucket in the Supabase
+dashboard with public read; create the table via the SQL editor).
 
 Now unblocked — X2 (loop detection) is merged so clips will loop properly.
 """
@@ -60,12 +63,14 @@ async def _generate_one(profile: dict):
     return prompt, seed, clip_bytes, loop_point_ms, seam_discontinuity
 
 
-def _upload_to_supabase(filename: str, clip_bytes: bytes):
+def _upload_to_supabase(mood: str, filename: str, clip_bytes: bytes,
+                         prompt, seed, loop_point_ms, seam_discontinuity):
     """
-    Prod-only. Fallback clips live at a fixed path in a dedicated
-    "fallback-clips" bucket -- never written through save_to_cache, since
-    that keys uploads by a specific request's cache_key and would
-    permanently poison that combo's cache with the generic clip.
+    Prod-only. Uploads the audio object to the fallback-clips bucket AND
+    upserts the matching metadata row into the fallback_clips table --
+    fallback_prod.py's get_fallback_clip() reads audio_url + metadata from
+    that table, not from the bucket or a local sidecar, so both writes are
+    required for prod fallback to actually work.
     Imported lazily so dev runs never need Supabase env vars configured.
     """
     from d5_cache import supabase
@@ -74,7 +79,16 @@ def _upload_to_supabase(filename: str, clip_bytes: bytes):
             filename, clip_bytes,
             {"content-type": "audio/ogg", "x-upsert": "true"},
         )
-        print(f"[UPLOAD] {filename} -> supabase fallback-clips bucket")
+        audio_url = supabase.storage.from_("fallback-clips").get_public_url(filename)
+        supabase.table("fallback_clips").upsert({
+            "mood":               mood,
+            "audio_url":          audio_url,
+            "loop_point_ms":      loop_point_ms,
+            "seam_discontinuity": seam_discontinuity,
+            "prompt_used":        prompt,
+            "generation_seed":    seed,
+        }).execute()
+        print(f"[UPLOAD] {filename} -> bucket + fallback_clips row")
     except Exception as e:
         print(f"[ERROR] Supabase upload failed for {filename}: {e}")
 
@@ -94,6 +108,8 @@ async def generate_all_fallbacks():
             print(f"[SKIP] {filename} already exists locally")
 
         clip_bytes = None
+        prompt = seed = loop_point_ms = seam_discontinuity = None
+
         try:
             if not already_local:
                 print(f"\n[GENERATING] {mood} fallback clip...")
@@ -109,7 +125,8 @@ async def generate_all_fallbacks():
                 # computed once, here, and don't need to be recomputed per
                 # request. Read back from local disk regardless of
                 # IS_PROD, since only the .ogg (not the sidecar) needs to
-                # live in Supabase.
+                # live in Supabase storage -- the table gets its own copy
+                # of this same metadata below.
                 with open(sidecar_path, "w") as f:
                     json.dump({
                         "loop_point_ms":      loop_point_ms,
@@ -119,6 +136,22 @@ async def generate_all_fallbacks():
                     }, f, indent=2)
 
                 print(f"[DONE] Saved {filename} (loop point: {loop_point_ms}ms, seed: {seed})")
+
+            elif os.path.exists(sidecar_path):
+                # Clip already exists locally from a prior run, so
+                # _generate_one() never ran this time -- reuse its sidecar
+                # so a re-run (e.g. IS_PROD=true after clips were already
+                # generated in dev) can still upsert accurate metadata to
+                # the table instead of uploading with everything null.
+                with open(sidecar_path) as f:
+                    sidecar = json.load(f)
+                prompt             = sidecar.get("prompt_used")
+                seed               = sidecar.get("generation_seed")
+                loop_point_ms      = sidecar.get("loop_point_ms")
+                seam_discontinuity = sidecar.get("seam_discontinuity")
+            else:
+                print(f"[WARN] {filename} exists but has no sidecar -- "
+                      f"table row will have null metadata for {mood}")
 
         except GenerationError as e:
             print(f"[ERROR] Generation failed for {mood}: {e}")
@@ -131,7 +164,7 @@ async def generate_all_fallbacks():
             if clip_bytes is None:
                 with open(output_path, "rb") as f:
                     clip_bytes = f.read()
-            _upload_to_supabase(filename, clip_bytes)
+            _upload_to_supabase(mood, filename, clip_bytes, prompt, seed, loop_point_ms, seam_discontinuity)
 
     print(f"\nDone! Fallback clips saved to {FALLBACK_DIR}")
     print(f"Available: {os.listdir(FALLBACK_DIR)}")

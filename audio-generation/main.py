@@ -7,15 +7,21 @@ from d1_validate import validate_profile
 from d2_prompt import build_prompt
 from d3_generate import generate_audio, GenerationError
 from d4_process import process_audio
-from fallback import get_fallback_clip
 from models import HandoffPayload
 from prewarm import prewarm_cache
 
 IS_PROD = os.getenv("IS_PROD", "false").lower() in ("1", "true", "yes")
+LOCAL_SERVER_URL = os.getenv("LOCAL_SERVER_URL", "http://127.0.0.1:8000")
+
 if IS_PROD:
     from d5_cache import make_cache_key, check_cache, save_to_cache
+    # Prod fallback reads from the fallback_clips Supabase table instead of
+    # local disk -- see fallback_prod.py. Keeps a fresh/scaled-to-zero pod
+    # from depending on anything baked into its own filesystem.
+    from fallback_prod import get_fallback_clip
 else:
     from d5_cache_local import make_cache_key, check_cache, save_to_cache, AUDIO_CACHE_DIR
+    from fallback import get_fallback_clip, FALLBACK_DIR
 
 from contextlib import asynccontextmanager
 
@@ -38,6 +44,11 @@ app = FastAPI(lifespan=lifespan)
 if not IS_PROD:
     from fastapi.staticfiles import StaticFiles
     app.mount("/audio-cache", StaticFiles(directory=AUDIO_CACHE_DIR), name="audio-cache")
+    # Fallback clips are static, mood-keyed assets generated once by
+    # generate_fallbacks.py -- served the same way as the cache dir above,
+    # not through make_cache_key/save_to_cache (see fallback.py's docstring
+    # for why that distinction matters).
+    app.mount("/fallback-clips", StaticFiles(directory=FALLBACK_DIR), name="fallback-clips")
 
 
 async def _fallback_response(profile: dict, timings: dict) -> JSONResponse:
@@ -48,27 +59,44 @@ async def _fallback_response(profile: dict, timings: dict) -> JSONResponse:
     particular can now fail on a codec-availability issue (see the Ogg/Opus
     switch) that libmp3lame never could, so it needs the same safety net
     D3 already had rather than propagating into an unhandled 500.
-    """
-    fallback_bytes = await asyncio.to_thread(get_fallback_clip, profile["mood"])
 
-    if fallback_bytes is None:
+    Dev reads the fallback clip from local disk (fallback.py), prod reads
+    it from the fallback_clips Supabase table (fallback_prod.py) -- both
+    return (audio_source, metadata, filename), where audio_source is raw
+    bytes in dev and a ready-to-use public URL in prod.
+    """
+    result = await asyncio.to_thread(get_fallback_clip, profile["mood"])
+
+    if result is None:
         raise HTTPException(
             status_code=503,
             detail="Audio generation failed and no fallback clips are available. Please try again later."
         )
 
-    print("[MAIN] Returning fallback clip")
+    audio_source, metadata, filename = result
+
+    if IS_PROD:
+        audio_url = audio_source  # fallback_prod.py already returns a public URL
+    else:
+        audio_url = f"{LOCAL_SERVER_URL}/fallback-clips/{filename}"
+
+    print(f"[MAIN] Returning fallback clip: {filename}")
     return JSONResponse(
         status_code=200,
         content={
-            "audio_url": None,
+            "audio_url": audio_url,
             "metadata": {
-                "mood":        profile["mood"],
-                "bpm":         profile["bpm"],
-                "key":         profile["key"],
-                "energy":      profile["energy"],
-                "is_fallback": True,
-                "loopable":    True
+                "mood":               profile["mood"],
+                "bpm":                profile["bpm"],
+                "key":                profile["key"],
+                "energy":             profile["energy"],
+                "loop_point_ms":      metadata.get("loop_point_ms"),
+                "seam_discontinuity": metadata.get("seam_discontinuity"),
+                "prompt_used":        metadata.get("prompt_used"),
+                "generation_seed":    metadata.get("generation_seed"),
+                "prompt_source":      "fallback_clip",
+                "is_fallback":        True,
+                "loopable":           True
             },
             "cache":    "miss",
             "fallback": True,
@@ -122,10 +150,7 @@ async def generate(payload: HandoffPayload):
         # review), every key the miss-path can return is explicitly
         # declared here too, so hit and miss responses always have the
         # same shape -- unpersisted fields come back as null instead of
-        # missing outright. Full persistence (DB columns for valence,
-        # intensity, duration_seconds, prompt_source, generation_seed) is
-        # a bigger schema-migration change; flagged as a follow-up rather
-        # than done here.
+        # missing outright.
         return {
             "audio_url": cached["audio_url"],
             "metadata": {
@@ -186,7 +211,8 @@ async def generate(payload: HandoffPayload):
     try:
         audio_url = await asyncio.to_thread(
             save_to_cache, cache_key, clip_bytes, profile,
-            loop_point_ms, total_gen_ms, prompt
+            loop_point_ms, total_gen_ms, prompt,
+            seam_discontinuity, "feature_b" if prompt_from_b else "d2_fallback", generation_seed
         )
     except Exception as e:
         # We already have a good, correctly-generated clip at this point --
