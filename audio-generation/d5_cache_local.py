@@ -1,5 +1,6 @@
 import hashlib, json, os
 import psycopg2
+import psycopg2.extras
 from dotenv import load_dotenv
 from d4_process import EXPORT_CODEC
 load_dotenv()
@@ -23,11 +24,9 @@ def make_cache_key(profile: dict) -> str:
         "style":           profile["style"],
         "key":             profile["key"],
         "valence_tier":    round(float(profile.get("valence", 0.0)), 1),
-        "duration_bucket": (duration // 2) * 2,  # 2s tolerance: 28,29→28  30,31→30
+        "arousal_tier":    round(float(profile.get("arousal", 0.5)), 1),
+        "duration_bucket": (duration // 2) * 2,
         "codec":           EXPORT_CODEC,
-        # Note: seed is intentionally excluded from the cache key.
-        # Including it would mean each retry attempt (seed 43, 44, 45)
-        # generates a separate cache entry, defeating the purpose of caching.
     }
     return hashlib.sha256(
         json.dumps(canonical, sort_keys=True).encode()
@@ -46,7 +45,8 @@ def check_cache(cache_key: str):
     finally:
         conn.close()
 
-def save_to_cache(cache_key, clip_bytes, profile, loop_point_ms, generation_time_ms, prompt_used):
+def save_to_cache(cache_key, clip_bytes, profile, loop_point_ms, generation_time_ms,
+                   prompt_used, seam_discontinuity, prompt_source, generation_seed):
     filename = f"{cache_key}.ogg"
     with open(os.path.join(AUDIO_CACHE_DIR, filename), "wb") as f:
         f.write(clip_bytes)
@@ -59,13 +59,18 @@ def save_to_cache(cache_key, clip_bytes, profile, loop_point_ms, generation_time
             cur.execute(
                 """
                 INSERT INTO audio_cache
-                    (cache_key, audio_url, mood, bpm, key, energy, style, loop_point_ms, generation_time_ms, prompt_used)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    (cache_key, audio_url, mood, bpm, key, energy, style, valence, arousal,
+                     intensity, duration_seconds, loop_point_ms, seam_discontinuity,
+                     generation_time_ms, prompt_used, prompt_source, generation_seed)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 ON CONFLICT (cache_key) DO NOTHING
                 """,
                 (
                     cache_key, audio_url, profile["mood"], profile["bpm"], profile["key"],
-                    profile["energy"], profile["style"], loop_point_ms, generation_time_ms, prompt_used,
+                    profile["energy"], profile["style"], profile.get("valence"), profile.get("arousal"),
+                    profile.get("intensity"), profile.get("duration_seconds"), loop_point_ms,
+                    psycopg2.extras.Json(seam_discontinuity) if seam_discontinuity is not None else None,
+                    generation_time_ms, prompt_used, prompt_source, generation_seed,
                 ),
             )
         conn.commit()
