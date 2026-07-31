@@ -16,17 +16,16 @@ def make_cache_key(profile: dict) -> str:
         "style":           profile["style"],
         "key":             profile["key"],
         "valence_tier":    round(float(profile.get("valence", 0.0)), 1),
-        "duration_bucket": (duration // 2) * 2,  # 2s tolerance: 28,29→28  30,31→30
-        # Versions the key by export codec so a switch (e.g. the MP3 -> Ogg/
-        # Opus gapless-export change) naturally invalidates old entries
-        # instead of silently serving the stale-format audio forever under
-        # an identical key -- there's no TTL/eviction in the schema, so
-        # without this, already-cached combos (prewarm.py's common grid
-        # especially) would never regenerate on their own.
+        "arousal_tier":    round(float(profile.get("arousal", 0.5)), 1),
+        # Pairs consecutive durations into fixed {even, even+1} buckets --
+        # 28 & 29 -> 28, 30 & 31 -> 30. Deterministic, but NOT a sliding
+        # 2s-tolerance window (e.g. 27 & 28 land in different buckets even
+        # though they're 1s apart). Flagging here rather than "fixing"
+        # silently since changing this reshuffles which existing cache
+        # entries collide -- confirm the desired bucketing before changing.
+        "duration_bucket": (duration // 2) * 2,
         "codec":           EXPORT_CODEC,
-        # Note: seed is intentionally excluded from the cache key.
-        # Including it would mean each retry attempt (seed 43, 44, 45)
-        # generates a separate cache entry, defeating the purpose of caching.
+        # seed intentionally excluded -- see save_to_cache note below.
     }
     return hashlib.sha256(
         json.dumps(canonical, sort_keys=True).encode()
@@ -38,7 +37,8 @@ def check_cache(cache_key: str):
         return result.data[0]
     return None
 
-def save_to_cache(cache_key, clip_bytes, profile, loop_point_ms, generation_time_ms, prompt_used):
+def save_to_cache(cache_key, clip_bytes, profile, loop_point_ms, generation_time_ms,
+                   prompt_used, seam_discontinuity, prompt_source, generation_seed):
     filename = f"{cache_key}.ogg"
     supabase.storage.from_("audio-cache").upload(
         filename, clip_bytes, {"content-type": "audio/ogg"}
@@ -53,9 +53,16 @@ def save_to_cache(cache_key, clip_bytes, profile, loop_point_ms, generation_time
         "key":                profile["key"],
         "energy":             profile["energy"],
         "style":              profile["style"],
+        "valence":            profile.get("valence"),
+        "arousal":            profile.get("arousal"),
+        "intensity":          profile.get("intensity"),
+        "duration_seconds":   profile.get("duration_seconds"),
         "loop_point_ms":      loop_point_ms,
+        "seam_discontinuity": seam_discontinuity,
         "generation_time_ms": generation_time_ms,
         "prompt_used":        prompt_used,
+        "prompt_source":      prompt_source,
+        "generation_seed":    generation_seed,
     }).execute()
 
     return audio_url
