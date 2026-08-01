@@ -3,3 +3,6 @@ venv/
 __pycache__/
 *.pyc
 audio-cache/
+data_raw/
+data_processed/
+

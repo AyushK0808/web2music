@@ -1,0 +1,13 @@
+# Fine-tuning track deps (FEATURE_DESCRIPTION.md) — separate from requirements.txt,
+# which is the API server's pinned set. Install into its own env on the
+# training box (needs a CUDA GPU, 8-24 GB VRAM per FEATURE_DESCRIPTION.md).
+
+peft==0.14.0            # LoRA / DoRA adapters
+pyyaml==6.0.3
+webrtcvad==2.0.10        # instrumental-filter voice-activity check
+madmom==0.16.1           # primary beat tracker — Cython build, needs numpy<2 and a C compiler;
+                         # if it fails to build on your platform, tempo_labels.py falls back to
+                         # beat_this, then librosa (dev-only, prone to octave errors)
+# beat_this               # alternative beat tracker (https://github.com/CPJKU/beat_this) — install
+                         # from its repo if madmom doesn't build in your environment
+mir_eval==0.8            # standard MAE/Accuracy@x scoring for tempo control-fidelity eval
