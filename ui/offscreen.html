@@ -6,6 +6,10 @@
 <body>
   <!-- Tone.js bundled locally (MV3 blocks external CDN scripts) -->
   <script src="assets/Tone.js"></script>
+  <!-- Feature A's VectorStore — plain classic script so its UMD tail's
+       `typeof module` check takes the window branch, same reasoning as
+       content_scripts.js's vendor/ list (see build.mjs). -->
+  <script src="vendor/VectorStore.js"></script>
   <script src="offscreen.js"></script>
 </body>
 </html>
