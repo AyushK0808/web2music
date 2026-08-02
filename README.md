@@ -36,7 +36,7 @@ Two supporting microservices, and the shared infra that runs everything:
 
 ## Current integration status
 
-`ui/` still runs its own self-contained extraction and playback pipeline and does not yet call Feature A, B, or D — it plays a hardcoded demo MP3, and the backend calls in `background.js` are commented out. Wiring the extension to the real A→B→D pipeline (tracked as X4) is in progress; this README documents the target commands (`npm run build` → `ui/dist/`) once that lands. Until then, `data-extraction/`, `mood-classification/`, and `audio-generation/` can each be run and tested standalone as described below.
+`ui/` is wired to the real A→B→D pipeline (X4): `npm run build` bundles Feature A's extractors + a locally-vendored MiniLM embedder into the content script and offscreen document, Feature B's classifier into the service worker, and a Feature D client with abort-on-stale-mood + instant-fallback-then-swap into the offscreen playback engine. Load `ui/dist/` (not `ui/`) as an unpacked extension after building. `audio-generation/` needs `fallback_clips/*.ogg` generated once (`python generate_fallbacks.py`) before the fallback path has anything to serve, and `services/classify/` running locally for Feature B's LLM calls. Each module can still be run and tested standalone as described below.
 
 ## Setup
 
