@@ -19,13 +19,31 @@ def make_cache_key(profile: dict) -> str:
     duration = profile.get("duration_seconds", 28)
     canonical = {
         "mood":            profile["mood"],
+        # Coarse 3-way bucket is intentional, not an oversight: bpm is
+        # already baked into the generated prompt text (see d2_prompt.py),
+        # so two requests in the same bucket still produce different audio
+        # the first time each is generated -- this bucket only controls
+        # whether a LATER request with a nearby bpm reuses that cached clip
+        # instead of regenerating. MusicGen doesn't hit an exact target bpm
+        # deterministically anyway, so collapsing e.g. 77 vs 99 into one
+        # bucket trades a small amount of perceptual precision for a real
+        # reduction in generation cost. Revisit with real hit-rate data
+        # before narrowing this.
         "bpm_bucket":      "low" if bpm < 76 else "mid" if bpm < 101 else "high",
         "energy_tier":     round(float(profile["energy"]), 1),
         "style":           profile["style"],
         "key":             profile["key"],
         "valence_tier":    round(float(profile.get("valence", 0.0)), 1),
         "arousal_tier":    round(float(profile.get("arousal", 0.5)), 1),
-        "duration_bucket": (duration // 2) * 2,
+        # Symmetric 2s-tolerance bucket: 27 & 28 -> 28, 29 & 30 -> 30, etc.
+        # Replaces the previous floor-based (duration // 2) * 2 bucketing,
+        # which was asymmetric (28 & 29 grouped together, but 27 & 28 --
+        # only 1s apart -- were not) despite the old comment claiming a "2s
+        # tolerance." This reshuffles which existing cache entries collide
+        # with each other going forward -- old cached rows aren't
+        # invalidated, they just may stop matching new requests that used
+        # to land in their bucket.
+        "duration_bucket": round(duration / 2) * 2,
         "codec":           EXPORT_CODEC,
     }
     return hashlib.sha256(

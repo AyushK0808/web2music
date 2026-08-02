@@ -53,13 +53,15 @@ def main_client(call_log, monkeypatch):
     def fake_check_cache(cache_key):
         return fake_db.get(cache_key)
 
-    def fake_save_to_cache(cache_key, mp3_bytes, profile, loop_point_ms, gen_time_ms, prompt):
-        # Mirrors the REAL DB schema (docker/init.sql) exactly -- only these
-        # columns exist, matching what d5_cache.py/d5_cache_local.py
-        # actually persist. Anything else main.py's miss-path metadata
-        # returns (valence, intensity, duration_seconds, seam_discontinuity,
-        # prompt_source, generation_seed) is intentionally absent here too,
-        # so this test reflects production, not a more generous mock.
+    def fake_save_to_cache(cache_key, clip_bytes, profile, loop_point_ms, gen_time_ms, prompt,
+                            seam_discontinuity, prompt_source, generation_seed):
+        # Mirrors the REAL DB schema (docker/init.sql) exactly, now that
+        # this PR added valence/arousal/intensity/duration_seconds/
+        # seam_discontinuity/prompt_source/generation_seed as real columns.
+        # Fields the schema genuinely persists come back with real values
+        # on a cache hit now, not null -- see
+        # test_cache_hit_response_has_same_metadata_shape_as_miss below,
+        # which was updated to match.
         url = f"fake://{cache_key}"
         fake_db[cache_key] = {
             "cache_key": cache_key,
@@ -68,10 +70,17 @@ def main_client(call_log, monkeypatch):
             "bpm": profile["bpm"],
             "key": profile["key"],
             "energy": profile["energy"],
+            "valence": profile.get("valence"),
+            "arousal": profile.get("arousal"),
+            "intensity": profile.get("intensity"),
+            "duration_seconds": profile.get("duration_seconds"),
             "style": profile.get("style"),
             "loop_point_ms": loop_point_ms,
+            "seam_discontinuity": seam_discontinuity,
             "generation_time_ms": gen_time_ms,
             "prompt_used": prompt,
+            "prompt_source": prompt_source,
+            "generation_seed": generation_seed,
         }
         return url
 
@@ -124,21 +133,22 @@ def test_cache_hit_still_returns_the_same_loop_point_ms(main_client):
 def test_cache_hit_response_has_same_metadata_shape_as_miss(main_client):
     """
     Regression test for the full bug class, not just seam_discontinuity:
-    several fields (valence, intensity, duration_seconds,
-    seam_discontinuity, prompt_source, generation_seed) exist in the
-    miss-path metadata but aren't columns in the cache DB (see
-    docker/init.sql) -- a naive `"metadata": cached` on cache hits let ALL
-    of these silently vanish, not just one. Any consumer doing
-    metadata["valence"] or metadata["generation_seed"] would KeyError on
-    every cache hit -- the MORE common path once the cache warms up.
+    valence/intensity/duration_seconds/seam_discontinuity/prompt_source/
+    generation_seed all exist in the miss-path metadata -- this PR's schema
+    fix (docker/init.sql + d5_cache.py/d5_cache_local.py's save_to_cache)
+    means these now genuinely persist to the cache DB, so they must come
+    back with real values on a cache hit, not null. A prior version of this
+    test asserted these came back null (matching the pre-fix schema) --
+    updated here to assert the fix, not the bug.
 
     This asserts: (1) hit and miss responses have identical metadata key
-    sets, and (2) fields that genuinely persist to the DB (mood, bpm, key,
-    energy, loop_point_ms, prompt_used) carry the same value on both.
+    sets, and (2) every field that's actually saved carries the same value
+    on both hit and miss.
     """
     payload = {
         "mood": "sad", "bpm": 70, "key": "A minor",
-        "energy": 0.3, "style": "acoustic", "duration_seconds": 6,
+        "energy": 0.3, "style": "acoustic", "valence": -0.4, "arousal": 0.3,
+        "intensity": 0.4, "duration_seconds": 6,
     }
 
     first = main_client.post("/generate", json=payload).json()
@@ -154,18 +164,13 @@ def test_cache_hit_response_has_same_metadata_shape_as_miss(main_client):
         f"{miss_keys - hit_keys}"
     )
 
-    # Genuinely persisted fields (see docker/init.sql) must match exactly
-    for field in ("mood", "bpm", "key", "energy", "loop_point_ms", "prompt_used"):
+    # All fields that are actually persisted (see docker/init.sql +
+    # d5_cache.py's save_to_cache) must match exactly between hit and miss
+    for field in ("mood", "bpm", "key", "energy", "valence", "arousal",
+                  "intensity", "duration_seconds", "loop_point_ms",
+                  "seam_discontinuity", "prompt_used", "prompt_source",
+                  "generation_seed"):
         assert second["metadata"][field] == first["metadata"][field], field
-
-    # Fields NOT persisted to the DB come back null on cache-hit, not
-    # missing -- present-but-null is the whole point of the fix
-    for field in ("valence", "intensity", "duration_seconds",
-                  "seam_discontinuity", "prompt_source", "generation_seed"):
-        assert field in second["metadata"], f"{field} went missing on cache hit"
-        assert second["metadata"][field] is None, (
-            f"{field} isn't persisted to the DB, expected null on cache hit"
-        )
 
 
 def test_d4_encode_failure_falls_back_instead_of_hard_500(main_client, monkeypatch):
@@ -186,7 +191,11 @@ def test_d4_encode_failure_falls_back_instead_of_hard_500(main_client, monkeypat
     monkeypatch.setattr(main_module, "process_audio", broken_process_audio)
 
     def fake_get_fallback_clip(mood):
-        return b"fake fallback mp3 bytes"
+        # get_fallback_clip now returns (audio_source, metadata, filename)
+        # -- main.py's _fallback_response unpacks all three and builds a
+        # real audio_url from the filename, it no longer returns None here.
+        return (b"fake fallback ogg bytes", {"loop_point_ms": 12000, "seam_discontinuity": None,
+                                              "prompt_used": "fake prompt", "generation_seed": 7}, "calm.ogg")
 
     monkeypatch.setattr(main_module, "get_fallback_clip", fake_get_fallback_clip)
 
@@ -202,7 +211,11 @@ def test_d4_encode_failure_falls_back_instead_of_hard_500(main_client, monkeypat
     body = response.json()
     assert body["fallback"] is True
     assert body["metadata"]["is_fallback"] is True
-    assert body["audio_url"] is None
+    # audio_url is now a real URL, not null -- this was the second bug this
+    # PR fixed (_fallback_response used to discard the resolved clip and
+    # always return None here)
+    assert body["audio_url"] is not None
+    assert "calm.ogg" in body["audio_url"]
 
 
 def test_d4_encode_failure_with_no_fallback_clips_returns_503_not_500(main_client, monkeypatch):
@@ -272,13 +285,15 @@ def test_save_to_cache_failure_falls_back_instead_of_hard_500(main_client, monke
     """
     import main as main_module
 
-    def broken_save_to_cache(cache_key, clip_bytes, profile, loop_point_ms, gen_time_ms, prompt):
+    def broken_save_to_cache(cache_key, clip_bytes, profile, loop_point_ms, gen_time_ms, prompt,
+                              seam_discontinuity, prompt_source, generation_seed):
         raise ConnectionError("could not reach storage backend")
 
     monkeypatch.setattr(main_module, "save_to_cache", broken_save_to_cache)
 
     def fake_get_fallback_clip(mood):
-        return b"fake fallback mp3 bytes"
+        return (b"fake fallback ogg bytes", {"loop_point_ms": 9000, "seam_discontinuity": None,
+                                              "prompt_used": "fake prompt", "generation_seed": 3}, "joyful.ogg")
 
     monkeypatch.setattr(main_module, "get_fallback_clip", fake_get_fallback_clip)
 
@@ -294,6 +309,7 @@ def test_save_to_cache_failure_falls_back_instead_of_hard_500(main_client, monke
     body = response.json()
     assert body["fallback"] is True
     assert body["metadata"]["is_fallback"] is True
+    assert body["audio_url"] is not None
 
 
 def test_malformed_profile_bpm_falls_back_instead_of_hard_500(main_client, monkeypatch):
@@ -313,7 +329,8 @@ def test_malformed_profile_bpm_falls_back_instead_of_hard_500(main_client, monke
     import main as main_module
 
     def fake_get_fallback_clip(mood):
-        return b"fake fallback mp3 bytes"
+        return (b"fake fallback ogg bytes", {"loop_point_ms": 5000, "seam_discontinuity": None,
+                                              "prompt_used": "fake prompt", "generation_seed": 1}, "neutral.ogg")
 
     monkeypatch.setattr(main_module, "get_fallback_clip", fake_get_fallback_clip)
 

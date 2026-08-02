@@ -26,7 +26,6 @@ PREWARM_DURATION_SECONDS = 28
 # /generate at the same time as startup pre-warming.
 PREWARM_CONCURRENCY = 4
 
-
 async def prewarm_cache(make_cache_key, check_cache, save_to_cache):
     """
     Fires off missing (mood, style, bpm-bucket) combinations from the
@@ -91,12 +90,13 @@ async def prewarm_cache(make_cache_key, check_cache, save_to_cache):
                 # looking exactly like a hang ("prompt logged, then nothing").
                 # Tagging it low-priority means any real request jumps ahead
                 # of whatever's left in this grid.
-                audio_bytes, _seed = await generate_audio(
+                audio_bytes, seed = await generate_audio(
                     prompt, profile["duration_seconds"], priority=PRIORITY_PREWARM
                 )
-                clip_bytes, loop_point_ms, _seam_discontinuity = await asyncio.to_thread(process_audio, audio_bytes)
+                clip_bytes, loop_point_ms, seam_discontinuity = await asyncio.to_thread(process_audio, audio_bytes)
                 await asyncio.to_thread(
-                    save_to_cache, cache_key, clip_bytes, profile, loop_point_ms, 0, prompt
+                    save_to_cache, cache_key, clip_bytes, profile, loop_point_ms, 0, prompt,
+                    seam_discontinuity, "prewarm", seed
                 )
                 print(f"[PREWARM] Cached {label}")
                 return True
