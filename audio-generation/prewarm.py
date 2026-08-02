@@ -5,11 +5,13 @@ from d2_prompt import build_prompt
 from d3_generate import generate_audio, GenerationError, PRIORITY_PREWARM
 from d4_process import process_audio
 
-# Kept intentionally small -- this is meant to warm the most commonly hit
-# combinations, not exhaustively cover every mood/style/bpm permutation
-# (11 moods x N styles x 3 bpm buckets grows fast, and each miss costs a
-# full MusicGen generation). Trim/expand these lists to match whatever your
-# actual traffic looks like.
+# All 11 moods are covered (X4 integration plan) so no mood is a guaranteed
+# cold miss on CPU -- but this makes the grid 11 x 3 x 3 = 99 combos, each a
+# full MusicGen generation (~15-95s on CPU). That's real startup latency in
+# production and real runtime in tests/test_prewarm.py (~3min for that file
+# alone, since it calls prewarm_cache with mocked generation but the same
+# combo count). Trim PREWARM_STYLES/PREWARM_BPMS first if this needs to
+# shrink -- moods should stay complete.
 PREWARM_MOODS = [
     "calm", "energetic", "focused", "joyful", "sad",
     "dark", "nostalgic", "curious", "tense", "uplifting", "neutral",
