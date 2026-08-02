@@ -39,7 +39,8 @@ def test_save_to_cache_writes_ogg_extension_not_mp3(cache_local_module):
 
     audio_url = mod.save_to_cache(
         "testkey123", fake_clip_bytes, profile, loop_point_ms=5000,
-        generation_time_ms=1000, prompt_used="test prompt"
+        generation_time_ms=1000, prompt_used="test prompt",
+        seam_discontinuity=None, prompt_source="test", generation_seed=42
     )
 
     assert audio_url.endswith("testkey123.ogg"), f"expected .ogg URL, got {audio_url}"

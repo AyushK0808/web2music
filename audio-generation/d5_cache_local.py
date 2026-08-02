@@ -35,15 +35,11 @@ def make_cache_key(profile: dict) -> str:
         "key":             profile["key"],
         "valence_tier":    round(float(profile.get("valence", 0.0)), 1),
         "arousal_tier":    round(float(profile.get("arousal", 0.5)), 1),
-        # Symmetric 2s-tolerance bucket: 27 & 28 -> 28, 29 & 30 -> 30, etc.
-        # Replaces the previous floor-based (duration // 2) * 2 bucketing,
-        # which was asymmetric (28 & 29 grouped together, but 27 & 28 --
-        # only 1s apart -- were not) despite the old comment claiming a "2s
-        # tolerance." This reshuffles which existing cache entries collide
-        # with each other going forward -- old cached rows aren't
-        # invalidated, they just may stop matching new requests that used
-        # to land in their bucket.
-        "duration_bucket": round(duration / 2) * 2,
+        # round() uses banker's rounding (rounds .5 to nearest even), which
+        # broke the symmetric-pairing intent -- 27/28/29 all landed in one
+        # bucket while 30 sat alone. (duration + 1) // 2 * 2 is round-half-up,
+        # giving the actual symmetric pairing: 27&28 -> 28, 29&30 -> 30.
+        "duration_bucket": (duration + 1) // 2 * 2,
         "codec":           EXPORT_CODEC,
     }
     return hashlib.sha256(

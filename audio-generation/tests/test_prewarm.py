@@ -18,7 +18,7 @@ def fake_cache():
         call_threads["check_cache"].add(threading.current_thread())
         return db.get(cache_key)
 
-    def save_to_cache(cache_key, mp3_bytes, profile, loop_point_ms, gen_time_ms, prompt):
+    def save_to_cache(cache_key, clip_bytes, profile, loop_point_ms, gen_time_ms, prompt, seam_discontinuity, prompt_source, generation_seed):
         call_threads["save_to_cache"].add(threading.current_thread())
         db[cache_key] = {"audio_url": f"fake://{cache_key}"}
         return db[cache_key]["audio_url"]
