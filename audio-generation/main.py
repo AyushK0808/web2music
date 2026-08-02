@@ -172,6 +172,29 @@ async def generate(payload: HandoffPayload):
         return await _fallback_response(safe_defaults, {"d1_validate_ms": int((time.time() - t0) * 1000)})
     timings["d1_validate_ms"] = int((time.time() - t0) * 1000)
 
+    # Sensitive-content silence (fix 16): B signals "go quiet" via isSilent
+    # on the Handoff-2 envelope and/or sensitive_override on the profile.
+    # The ui/ extension already short-circuits before ever calling
+    # /generate for this case (background.entry.js's handleHandoff2), but
+    # that check living only in the caller meant a direct/Swagger/future
+    # caller that forwards B's payload unfiltered got ordinary music for a
+    # crisis page -- D had no defense of its own. Generating audio nobody
+    # will hear is also pure waste, so this skips D2/D3/D4/D5 entirely.
+    if payload.isSilent or profile.get("sensitive_override"):
+        print("[D1] Silence signal detected (isSilent/sensitive_override) -- skipping generation")
+        return {
+            "audio_url": None,
+            "metadata": {
+                "mood":            "silence",
+                "is_silent":       True,
+                "sensitive_override": True,
+                "is_fallback":     False,
+                "loopable":        False,
+            },
+            "cache":   "skip",
+            "timings": timings,
+        }
+
     # Cache check
     t1 = time.time()
     cache_key = make_cache_key(profile)

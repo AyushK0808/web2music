@@ -74,6 +74,14 @@ class HandoffPayload(BaseModel):
     musicProfile: Optional[MusicProfile] = None
     prompt:       Optional[str]          = None
 
+    # B's sensitive-content silence signal (fix 16) -- top-level on the
+    # Handoff-2 envelope, sibling to profile/musicProfile rather than a
+    # field on either. Without declaring these, pydantic silently drops
+    # them and D has no way to tell "go quiet" from an ordinary request
+    # (see test_full_pipeline_e2e.py's sensitive-page test).
+    isSilent: Optional[bool]  = None
+    volume:   Optional[float] = None
+
     # Flat dict fields — used when musicProfile is not present
     # Also accepts top-level arousal from B's real traffic
     mood:              Optional[str]   = None
