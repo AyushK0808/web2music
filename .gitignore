@@ -33,6 +33,7 @@ __pycache__/
 .eggs/
 .Python
 venv/
+venv312/
 .venv/
 env/
 ENV/
