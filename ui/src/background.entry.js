@@ -2,10 +2,9 @@
 // B wiring (with the same-context onHandoff2 fix), Feature D client, tab
 // ducking/idle, telemetry, and the popup message surface.
 
-import { configureFeatureB, registerFeatureBHeartbeat, onHandoff2, runFeatureB } from "../../mood-classification/feature_b/index.js";
+import { configureFeatureB, registerFeatureBHeartbeat, onHandoff2, runFeatureB, MOODS } from "../../mood-classification/feature_b/index.js";
 import { requestTrack, requestGeneration } from "./featureDClient.js";
 import { recordTelemetry, urlHash, exportTelemetry } from "./telemetry.js";
-import { MOODS } from "../../mood-classification/feature_b/index.js";
 
 const OFFSCREEN_TARGETS = new Set(["A_EMBED", "A_VS_SEARCH", "A_VS_UPSERT", "A_VS_CLEAR"]);
 
