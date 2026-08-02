@@ -26,7 +26,6 @@ PREWARM_DURATION_SECONDS = 28
 # /generate at the same time as startup pre-warming.
 PREWARM_CONCURRENCY = 4
 
-
 async def prewarm_cache(make_cache_key, check_cache, save_to_cache):
     """
     Fires off missing (mood, style, bpm-bucket) combinations from the
@@ -82,10 +81,11 @@ async def prewarm_cache(make_cache_key, check_cache, save_to_cache):
             try:
                 cache_key = make_cache_key(profile)
                 prompt = build_prompt(profile)
-                audio_bytes, _seed = await generate_audio(prompt, profile["duration_seconds"])
-                clip_bytes, loop_point_ms, _seam_discontinuity = await asyncio.to_thread(process_audio, audio_bytes)
+                audio_bytes, seed = await generate_audio(prompt, profile["duration_seconds"])
+                clip_bytes, loop_point_ms, seam_discontinuity = await asyncio.to_thread(process_audio, audio_bytes)
                 await asyncio.to_thread(
-                    save_to_cache, cache_key, clip_bytes, profile, loop_point_ms, 0, prompt
+                    save_to_cache, cache_key, clip_bytes, profile, loop_point_ms, 0, prompt,
+                    seam_discontinuity, "prewarm", seed
                 )
                 print(f"[PREWARM] Cached {label}")
                 return True

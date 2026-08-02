@@ -11,18 +11,28 @@ def make_cache_key(profile: dict) -> str:
     duration = profile.get("duration_seconds", 28)
     canonical = {
         "mood":            profile["mood"],
+        # Coarse 3-way bucket is intentional, not an oversight: bpm is
+        # already baked into the generated prompt text (see d2_prompt.py),
+        # so two requests in the same bucket still produce different audio
+        # the first time each is generated -- this bucket only controls
+        # whether a LATER request with a nearby bpm reuses that cached clip
+        # instead of regenerating. MusicGen doesn't hit an exact target bpm
+        # deterministically anyway, so collapsing e.g. 77 vs 99 into one
+        # bucket trades a small amount of perceptual precision for a real
+        # reduction in generation cost. Revisit with real hit-rate data
+        # before narrowing this.
         "bpm_bucket":      "low" if bpm < 76 else "mid" if bpm < 101 else "high",
         "energy_tier":     round(float(profile["energy"]), 1),
         "style":           profile["style"],
         "key":             profile["key"],
         "valence_tier":    round(float(profile.get("valence", 0.0)), 1),
-        "duration_bucket": (duration // 2) * 2,  # 2s tolerance: 28,29→28  30,31→30
-        # Versions the key by export codec so a switch (e.g. the MP3 -> Ogg/
-        # Opus gapless-export change) naturally invalidates old entries
-        # instead of silently serving the stale-format audio forever under
-        # an identical key -- there's no TTL/eviction in the schema, so
-        # without this, already-cached combos (prewarm.py's common grid
-        # especially) would never regenerate on their own.
+        "arousal_tier":    round(float(profile.get("arousal", 0.5)), 1),
+        # Symmetric 2s-tolerance bucket via round-half-up: 27&28 -> 28,
+        # 29&30 -> 30, etc. Python's built-in round() uses banker's
+        # rounding (rounds .5 to nearest even), which silently broke this
+        # symmetry -- 27/28/29 all landed in bucket 28 while 30 sat alone.
+        # (duration + 1) // 2 * 2 avoids that by always rounding .5 up.
+        "duration_bucket": (duration + 1) // 2 * 2,
         "codec":           EXPORT_CODEC,
         # Note: seed is intentionally excluded from the cache key.
         # Including it would mean each retry attempt (seed 43, 44, 45)
@@ -38,14 +48,26 @@ def check_cache(cache_key: str):
         return result.data[0]
     return None
 
-def save_to_cache(cache_key, clip_bytes, profile, loop_point_ms, generation_time_ms, prompt_used):
+def save_to_cache(cache_key, clip_bytes, profile, loop_point_ms, generation_time_ms,
+                   prompt_used, seam_discontinuity, prompt_source, generation_seed):
     filename = f"{cache_key}.ogg"
+    # x-upsert lets a retry overwrite a prior partial/orphaned upload
+    # instead of 409ing -- without this, any combo whose earlier attempt
+    # uploaded the audio file but failed before the DB insert completed
+    # (e.g. a transient network error mid-save) gets permanently stuck:
+    # every retry re-uploads the same filename and 409s forever, even
+    # though the actual audio + metadata were never fully saved.
     supabase.storage.from_("audio-cache").upload(
-        filename, clip_bytes, {"content-type": "audio/ogg"}
+        filename, clip_bytes, {"content-type": "audio/ogg", "x-upsert": "true"}
     )
     audio_url = supabase.storage.from_("audio-cache").get_public_url(filename)
-
-    supabase.table("audio_cache").insert({
+    supabase.table("audio_cache").upsert({
+        # on_conflict targets cache_key explicitly -- audio_cache's actual
+        # primary key is the auto-increment `id` column, which is never in
+        # this payload. Without on_conflict, PostgREST defaults the upsert
+        # conflict target to the primary key, so this silently behaved as
+        # a plain insert and still hit the cache_key UNIQUE constraint on
+        # retry -- the exact bug this upsert was meant to fix.
         "cache_key":          cache_key,
         "audio_url":          audio_url,
         "mood":               profile["mood"],
@@ -53,9 +75,16 @@ def save_to_cache(cache_key, clip_bytes, profile, loop_point_ms, generation_time
         "key":                profile["key"],
         "energy":             profile["energy"],
         "style":              profile["style"],
+        "valence":            profile.get("valence"),
+        "arousal":            profile.get("arousal"),
+        "intensity":          profile.get("intensity"),
+        "duration_seconds":   profile.get("duration_seconds"),
         "loop_point_ms":      loop_point_ms,
+        "seam_discontinuity": seam_discontinuity,
         "generation_time_ms": generation_time_ms,
         "prompt_used":        prompt_used,
-    }).execute()
+        "prompt_source":      prompt_source,
+        "generation_seed":    generation_seed,
+    }, on_conflict="cache_key").execute()
 
     return audio_url

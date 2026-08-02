@@ -10,8 +10,15 @@ CREATE TABLE IF NOT EXISTS audio_cache (
     key TEXT,
     energy REAL,
     style TEXT,
+    valence REAL,
+    arousal REAL,
+    intensity REAL,
+    duration_seconds INTEGER,
     loop_point_ms INTEGER,
+    seam_discontinuity JSONB,
     generation_time_ms INTEGER,
     prompt_used TEXT,
+    prompt_source TEXT,
+    generation_seed INTEGER,
     created_at TIMESTAMPTZ DEFAULT now()
 );

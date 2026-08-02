@@ -93,6 +93,26 @@ async def _batch_worker():
         await asyncio.to_thread(_run_batch, batch)
 
 
+def _combine_seeds(seeds: list) -> int:
+    """
+    Deterministically folds every item's requested seed into a single batch
+    seed. Single-item batches (the common case -- batching only kicks in
+    under real concurrent load) return that item's seed unchanged, so
+    today's normal single-request behavior is untouched. Multi-item batches
+    get a seed that depends on the full set of seeds in the batch, so the
+    same batch composition always reproduces the same output -- and, unlike
+    before, the seed reported back to each caller now matches what was
+    actually used, instead of every non-first item getting back a seed
+    number that had no effect on its own generation.
+    """
+    if len(seeds) == 1:
+        return seeds[0]
+    combined = 0
+    for s in seeds:
+        combined = (combined * 1_000_003 + s) % (2**31 - 1)
+    return combined
+
+
 def _run_batch(batch):
     """Runs synchronously in a worker thread (via asyncio.to_thread) since
     the actual model call is blocking. Resolves each item's future with its
@@ -107,14 +127,19 @@ def _run_batch(batch):
 
     try:
         # Batched sampling shares one RNG stream across the whole batch --
-        # there's no way to give each item in a single forward pass its own
-        # independent seed. Seeded with the first item's seed for
-        # reproducibility of the *batch*, not of each individual clip.
-        torch.manual_seed(batch[0].seed)
+        # HF's generate() only accepts one global seed/generator per call,
+        # not one per batch row, so genuinely independent per-clip seeds
+        # within a single forward pass aren't achievable here. What we CAN
+        # fix: fold every item's seed into the batch seed (not just
+        # batch[0]'s), and report that same real seed back to every item,
+        # so the returned generation_seed is always accurate instead of
+        # silently wrong for every item after the first.
+        batch_seed = _combine_seeds([b.seed for b in batch])
+        torch.manual_seed(batch_seed)
         if torch.cuda.is_available():
-            torch.cuda.manual_seed(batch[0].seed)
+            torch.cuda.manual_seed(batch_seed)
 
-        print(f"[D3] Running batch of {len(batch)} prompt(s), max_tokens={max_tokens}")
+        print(f"[D3] Running batch of {len(batch)} prompt(s), max_tokens={max_tokens}, batch_seed={batch_seed}")
         outputs = synthesiser(
             prompts,
             forward_params={
@@ -156,7 +181,7 @@ def _run_batch(batch):
                 out_buffer.seek(0)
 
                 if not item.future.done():
-                    item.future.set_result((out_buffer.read(), item.seed))
+                    item.future.set_result((out_buffer.read(), batch_seed))
             except Exception as e:
                 if not item.future.done():
                     item.future.set_exception(e)
