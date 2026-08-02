@@ -10,7 +10,10 @@ from d4_process import process_audio
 # (11 moods x N styles x 3 bpm buckets grows fast, and each miss costs a
 # full MusicGen generation). Trim/expand these lists to match whatever your
 # actual traffic looks like.
-PREWARM_MOODS = ["calm", "energetic", "focused", "joyful", "sad"]
+PREWARM_MOODS = [
+    "calm", "energetic", "focused", "joyful", "sad",
+    "dark", "nostalgic", "curious", "tense", "uplifting", "neutral",
+]
 PREWARM_STYLES = ["ambient", "electronic", "acoustic"]
 # One representative bpm per bucket, matching the bucket boundaries in
 # d5_cache.py's make_cache_key() (low < 76, mid < 101, high >= 101) -- the

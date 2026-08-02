@@ -38,6 +38,10 @@ def make_cache_key(profile: dict) -> str:
         # Including it would mean each retry attempt (seed 43, 44, 45)
         # generates a separate cache entry, defeating the purpose of caching.
     }
+    # nonce: client-supplied cache-buster for the popup's "regenerate" control
+    # (X4 integration plan, 6.1) -- see d5_cache_local.py's identical addition.
+    if profile.get("nonce"):
+        canonical["nonce"] = profile["nonce"]
     return hashlib.sha256(
         json.dumps(canonical, sort_keys=True).encode()
     ).hexdigest()

@@ -2,6 +2,7 @@ import os
 import time
 import asyncio
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from d1_validate import validate_profile
 from d2_prompt import build_prompt
@@ -40,6 +41,12 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+# Extension pages with <all_urls> host permission bypass CORS entirely, so
+# this isn't load-bearing for the extension itself -- but it's needed for the
+# hosted-prod path (a page origin without host_permissions) and makes
+# Swagger/curl testing from a browser possible without a proxy.
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 if not IS_PROD:
     from fastapi.staticfiles import StaticFiles
@@ -103,6 +110,44 @@ async def _fallback_response(profile: dict, timings: dict) -> JSONResponse:
             "timings":  timings
         }
     )
+
+
+@app.get("/fallback/{mood}")
+async def fallback(mood: str):
+    """
+    Instant, no-generation fallback clip for a mood -- reuses the exact same
+    get_fallback_clip lookup and response shape as the /generate error paths
+    (_fallback_response), just without a preceding /generate attempt. This is
+    what the extension calls immediately on a mood transition so something
+    audible starts sub-second, while /generate runs in parallel and the
+    playback layer crossfades in once it resolves (see ui/ Phase 5).
+    """
+    result = await asyncio.to_thread(get_fallback_clip, mood)
+    if result is None:
+        raise HTTPException(
+            status_code=503,
+            detail="No fallback clips available. Run generate_fallbacks.py first."
+        )
+
+    audio_source, metadata, filename = result
+
+    if IS_PROD:
+        audio_url = audio_source
+    else:
+        audio_url = f"{LOCAL_SERVER_URL}/fallback-clips/{filename}"
+
+    return {
+        "audio_url": audio_url,
+        "metadata": {
+            "mood":               mood,
+            "loop_point_ms":      metadata.get("loop_point_ms"),
+            "seam_discontinuity": metadata.get("seam_discontinuity"),
+            "generation_seed":    metadata.get("generation_seed"),
+            "prompt_source":      "fallback_clip",
+            "is_fallback":        True,
+            "loopable":           True,
+        },
+    }
 
 
 @app.post("/generate")

@@ -26,6 +26,11 @@ class MusicProfile(BaseModel):
     time_of_day:       str   = Field(default="day",    description="Time of day")
     sensitive_override: bool = Field(default=False,    description="True if sensitive content detected")
 
+    # Client-supplied cache-buster for the popup's "regenerate" control (X4
+    # integration plan, 6.1) -- unset means "normal caching applies"; any
+    # value forces a cache-key miss so a fresh seed gets drawn.
+    nonce:             Optional[str] = Field(default=None, description="Cache-buster for an explicit regenerate request")
+
     # Duration parameter
     duration_seconds:  int   = Field(
         default=28,

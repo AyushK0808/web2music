@@ -42,6 +42,12 @@ def make_cache_key(profile: dict) -> str:
         "duration_bucket": (duration + 1) // 2 * 2,
         "codec":           EXPORT_CODEC,
     }
+    # nonce: client-supplied cache-buster for the popup's "regenerate" control
+    # (X4 integration plan, 6.1) -- present only on an explicit user request
+    # for a different take on the same mood, so it deliberately misses the
+    # cache and draws a new seed instead of replaying whatever's already cached.
+    if profile.get("nonce"):
+        canonical["nonce"] = profile["nonce"]
     return hashlib.sha256(
         json.dumps(canonical, sort_keys=True).encode()
     ).hexdigest()
