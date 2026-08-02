@@ -300,6 +300,61 @@ btnPlayPause.addEventListener("click", () => {
 
 
 
+// ── Feedback / telemetry controls ───────────────────────────────────────────
+
+const btnMute         = document.getElementById("btnMute");
+const btnRegenerate   = document.getElementById("btnRegenerate");
+const wrongMoodSelect = document.getElementById("wrongMoodSelect");
+const btnExport       = document.getElementById("btnExport");
+
+let isMuted = false;
+let preMuteVolume = parseInt(volumeSlider.value) / 100;
+
+btnMute.addEventListener("click", () => {
+  isMuted = !isMuted;
+  if (isMuted) preMuteVolume = parseInt(volumeSlider.value) / 100;
+  btnMute.classList.toggle("active", isMuted);
+  btnMute.textContent = isMuted ? "🔈" : "🔇";
+  chrome.runtime.sendMessage({ type: "POPUP_MUTE", muted: isMuted, previousValue: preMuteVolume });
+});
+
+btnRegenerate.addEventListener("click", () => {
+  chrome.runtime.sendMessage({ type: "POPUP_REGENERATE" });
+});
+
+// Populate the 11-mood picker from Feature B's own MOODS list — kept as the
+// single source of truth rather than duplicating the list here.
+chrome.runtime.sendMessage({ type: "GET_MOODS" }, (response) => {
+  if (!response || !response.moods) return;
+  for (const mood of response.moods) {
+    const opt = document.createElement("option");
+    opt.value = mood;
+    opt.textContent = mood;
+    wrongMoodSelect.appendChild(opt);
+  }
+});
+
+wrongMoodSelect.addEventListener("change", () => {
+  const corrected = wrongMoodSelect.value;
+  if (!corrected) return;
+  const predicted = pageStatusTag.dataset.mood || null;
+  chrome.runtime.sendMessage({ type: "POPUP_MOOD_CORRECTION", predicted, corrected });
+  wrongMoodSelect.value = "";
+});
+
+btnExport.addEventListener("click", () => {
+  chrome.runtime.sendMessage({ type: "EXPORT_TELEMETRY" }, (payload) => {
+    if (!payload) return;
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    chrome.downloads.download({
+      url,
+      filename: `w2m-telemetry-${payload.sessionId}.json`,
+      saveAs: true,
+    });
+  });
+});
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 
 // First: get the actual active tab for title + favIconUrl
