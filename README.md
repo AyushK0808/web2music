@@ -2,95 +2,122 @@
 
 Web2Music is a Chrome extension that generates mood-adaptive ambient/background music in real time, based on the content and "feel" of the webpage you're currently browsing. It reads page text, colours, and browsing behaviour, classifies a mood, generates (or synthesises) matching audio, and plays it back — ducking automatically around existing media like YouTube or Spotify.
 
-This repository unifies the project's four features, each originally developed on its own branch:
+This repository is a monorepo unifying the project's four features, each originally developed on its own branch, plus shared infrastructure at the root:
 
 ```
-Feature A (Site Data Extraction)          → feature-a-data-extraction/
+Feature A (Site Data Extraction)          → data-extraction/
     │  Handoff 1: PageData (text, embedding, colours, behaviour)
     ▼
-Feature B (Mood & Context Classification) → feature-b-mood-classification/
+Feature B (Mood & Context Classification) → mood-classification/
     │  Handoff 2: MusicProfile + audio prompt
     ▼
-Feature D (AI Audio Generation)           → feature-d-audio-generation/
+Feature D (AI Audio Generation)           → audio-generation/
     │  Handoff 3: audio URL + metadata
     ▼
-Feature C (Extension Shell & Playback)    → feature-c-extension/
+Feature C (Extension Shell & Playback)    → ui/
 ```
 
 ## Modules
 
 | Module | Feature | Stack | Role |
 |---|---|---|---|
-| [`feature-a-data-extraction/`](feature-a-data-extraction/README.md) | A | JavaScript | Extracts page text, a semantic embedding, and dominant colours from the DOM for use as classification input. |
-| [`feature-b-mood-classification/`](feature-b-mood-classification/README.md) | B | JavaScript | Classifies mood from page content, colour, and scroll/cursor behaviour, then builds a music profile and text-to-audio prompt. |
-| [`feature-d-audio-generation/`](feature-d-audio-generation/README.md) | D | Python (FastAPI) | Generates loopable ambient audio from the music profile using MusicGen, post-processes it, and caches results in Supabase. |
-| [`feature-c-extension/`](feature-c-extension/README.md) | C | JavaScript (Chrome MV3) | The Chrome extension itself: content script, service worker, offscreen audio player (Tone.js), and popup UI. |
+| [`data-extraction/`](data-extraction/README.md) | A | JavaScript | Extracts page text, a semantic embedding, and dominant colours from the DOM for use as classification input. |
+| [`mood-classification/`](mood-classification/README.md) | B | JavaScript | Classifies mood from page content, colour, and scroll/cursor behaviour, then builds a music profile and text-to-audio prompt. |
+| [`audio-generation/`](audio-generation/README.md) | D | Python (FastAPI) | Generates loopable ambient audio from the music profile using MusicGen, post-processes it, and caches results (local Postgres in dev, Supabase in prod). |
+| [`ui/`](ui/README.md) | C | JavaScript (Chrome MV3) | The Chrome extension itself: content script, service worker, offscreen audio player (Tone.js), and popup UI. |
 
-Each module has its own README with setup, API, and implementation details — start there for module-specific work. This document covers how the pieces fit together.
+Two supporting microservices, and the shared infra that runs everything:
+
+| Path | Role |
+|---|---|
+| [`services/embed/`](services/embed/README.md) | Containerised OpenAI embedding proxy for Feature A — keeps the key out of the browser. `research` profile only; the extension itself vendors a local embedding model. |
+| [`services/classify/`](services/classify/README.md) | Containerised GroqCloud chat-completions proxy for Feature B — keeps the key out of the browser. |
+| [`docker/`](docker/docker-compose.yml) | The single Docker Compose file (with `cpu`/`gpu`/`research` profiles) and Dockerfiles for the whole stack, plus `init.sql` for the dev cache DB schema. |
 
 ## Current integration status
 
-`feature-c-extension/` is the extension that actually loads in Chrome. It runs a self-contained page-data extraction and playback pipeline today; the call out to a Feature D-style backend (`POST /profile`, `POST /generate` against `http://localhost:8000`) is wired but currently commented out in `background.js` pending integration with Feature B and D. `feature-a-data-extraction/` and `feature-b-mood-classification/` are the more fully-featured, independently-tested implementations of Features A and B and are the intended replacements for the extension's current inline logic.
+`ui/` still runs its own self-contained extraction and playback pipeline and does not yet call Feature A, B, or D — it plays a hardcoded demo MP3, and the backend calls in `background.js` are commented out. Wiring the extension to the real A→B→D pipeline (tracked as X4) is in progress; this README documents the target commands (`npm run build` → `ui/dist/`) once that lands. Until then, `data-extraction/`, `mood-classification/`, and `audio-generation/` can each be run and tested standalone as described below.
 
-## How to run each module
+## Setup
 
-### Feature A — `feature-a-data-extraction/`
-Not a standalone app — a set of content-script modules meant to be loaded into a browser context (bundled into `feature-c-extension/` or loaded ad hoc).
+One-time, from the repo root:
 
 ```bash
-cd feature-a-data-extraction
-# no install step for the core scripts; the local embedding backend needs:
-npm install @xenova/transformers
+cp .env.example .env      # fill in at least GROQ_API_KEY (get one free at console.groq.com/keys)
+npm install                # installs all workspaces: ui/, data-extraction/, mood-classification/, services/*
+npm run up                  # docker compose up -d — starts Postgres + the classify-service proxy
+                            # (add --profile cpu, or set COMPOSE_PROFILES=cpu in .env, to also start Feature D)
 ```
-Then load `Textextractor.js`, `Embeddingmodel.js`, and `Colorextractor.js` as content scripts (or bundle them) and call them as shown in the module's README.
 
-### Feature B — `feature-b-mood-classification/`
+Then, per module:
+
+### Feature A — `data-extraction/`
+Not a standalone app — a set of content-script modules meant to be loaded into a browser context (bundled into `ui/` or loaded ad hoc).
+
+```bash
+npm run test:a     # or: cd data-extraction && npm test
+```
+
+### Feature B — `mood-classification/`
 A Node.js library with a test suite; also meant to be wired into the extension's background script.
 
 ```bash
-cd feature-b-mood-classification
-npm test                                  # runs the full B1–B4 + integration test suite
+npm run test:b     # or: cd mood-classification && npm test
 
 # optional: manual exploration scripts (Tier-2 LLM tests need an API key)
 $env:ANTHROPIC_API_KEY="sk-ant-your-key"  # PowerShell
-node manual_tests/try_tier_check.js
-node manual_tests/try_real_site.js https://en.wikipedia.org/wiki/Indus_Valley_Civilisation
+node mood-classification/manual_tests/try_tier_check.js
+node mood-classification/manual_tests/try_real_site.js https://en.wikipedia.org/wiki/Indus_Valley_Civilisation
 ```
 
-### Feature D — `feature-d-audio-generation/`
-A standalone FastAPI server.
+### Feature D — `audio-generation/`
+A standalone FastAPI server. Either natively:
 
 ```bash
-cd feature-d-audio-generation
+cd audio-generation
 python -m venv venv
 venv\Scripts\activate          # Windows
 # source venv/bin/activate     # Mac/Linux
 
 pip install -r requirements.txt   # requires ffmpeg on PATH (needed by pydub)
-
-# create a .env with SUPABASE_URL, SUPABASE_KEY, HF_TOKEN
 uvicorn main:app --reload
 ```
+
+or via Docker (no local Python/ffmpeg needed):
+
+```bash
+docker compose -f docker/docker-compose.yml --profile cpu up feature-d
+# --profile gpu instead, for the CUDA image
+```
+
 Server runs at `http://127.0.0.1:8000`; Swagger UI at `http://127.0.0.1:8000/docs`. First request is slow (~1-2 min) while MusicGen loads.
 
-### Feature C — `feature-c-extension/`
-The Chrome extension. No build step.
+### Feature C — `ui/`
+The Chrome extension.
 
+```bash
+npm run build       # bundles A + B + the extension shell into ui/dist/
+```
 ```
 1. Open chrome://extensions
 2. Enable Developer mode
-3. Load unpacked → select feature-c-extension/
+3. Load unpacked → select ui/dist/
 4. Browse normally; open the extension popup to toggle playback and volume
 ```
-To exercise the full pipeline, start Feature D's server first (`uvicorn main:app --reload` on port 8000) and uncomment the `fetchMusicProfile()` / `fetchAudioUrl()` calls in `feature-c-extension/background.js`.
 
 ## Repository layout
 
 ```
 web2music/
-├── feature-a-data-extraction/    # Feature A — text/embedding/colour extraction
-├── feature-b-mood-classification/# Feature B — mood classification & prompt engineering
-├── feature-d-audio-generation/   # Feature D — MusicGen audio generation backend
-├── feature-c-extension/          # Feature C — the Chrome extension (MV3)
-└── README.md                     # This file
+├── package.json           # npm workspaces root
+├── .env.example            # every env var the repo reads, in one place
+├── docker/                 # shared Docker Compose + Dockerfiles + init.sql
+├── services/
+│   ├── embed/               # Feature A's OpenAI embedding proxy
+│   └── classify/             # Feature B's GroqCloud proxy
+├── data-extraction/         # Feature A — text/embedding/colour extraction
+├── mood-classification/     # Feature B — mood classification & prompt engineering
+├── audio-generation/        # Feature D — MusicGen audio generation backend
+├── ui/                       # Feature C — the Chrome extension (MV3)
+└── README.md                 # This file
 ```

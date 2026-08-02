@@ -5,7 +5,7 @@ const DEFAULT_CONFIG = {
   localModel: 'Xenova/all-MiniLM-L6-v2',
   maxInputChars: 8000,
   // 'service' backend: offload the API call to a local Docker microservice
-  // (docker/embedService.js) so the OpenAI key lives in the container's env,
+  // (services/embed/embedService.js) so the OpenAI key lives in the container's env,
   // never in the extension bundle or page context.
   serviceUrl: 'http://localhost:8077/embed',
   // Feature B's LLM calls use 8s AbortControllers; A's network backends had none

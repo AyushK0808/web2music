@@ -129,9 +129,9 @@ Tier 1 (always runs, ~0ms)
 // In background.js
 import { configureFeatureB, registerFeatureBListener } from "./feature_b/index.js";
 
-// Two LLM backends (see docker/README.md):
+// Two LLM backends (see ../services/classify/README.md):
 //   "direct" (default) — apiKey ships in this bundle, calls api.groq.com
-//   "proxy"             — no key here; calls docker/classifyService.js, which
+//   "proxy"             — no key here; calls services/classify/classifyService.js, which
 //                          holds GROQ_API_KEY server-side instead
 // llmApiKey should be a GroqCloud key (starts with "gsk_") — get a free one
 // at https://console.groq.com/keys.
@@ -147,7 +147,7 @@ chrome.storage.sync.get(["llmApiKey", "llmBackend", "llmServiceUrl", "targetMode
 registerFeatureBListener();
 ```
 
-See [`background_integration.js`](./background_integration.js) for the canonical, always-up-to-date version of this wiring, and [`docker/README.md`](./docker/README.md) for the proxy backend setup.
+See [`background_integration.js`](./background_integration.js) for the canonical, always-up-to-date version of this wiring, and [`../services/classify/README.md`](../services/classify/README.md) for the proxy backend setup.
 
 ---
 ## Testing & Validation

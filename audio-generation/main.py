@@ -142,7 +142,7 @@ async def generate(payload: HandoffPayload):
 
     if cached:
         # Not every field in the miss-path metadata below is persisted to
-        # the cache DB (see the column list in docker/init.sql) -- only
+        # the cache DB (see the column list in ../docker/init.sql) -- only
         # cache_key/mood/bpm/key/energy/style/loop_point_ms/prompt_used
         # actually round-trip. Rather than spreading `cached` directly and
         # letting whichever fields didn't make the DB schema silently

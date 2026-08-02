@@ -37,7 +37,7 @@ The extraction and playback shell is functional and loadable as-is. The backend 
 
 1. Open `chrome://extensions`.
 2. Enable **Developer mode**.
-3. **Load unpacked** → select the `feature-c-extension/` directory.
+3. **Load unpacked** → select the `ui/` directory (or `ui/dist/` once the build step lands).
 4. Browse normally; open the extension popup to toggle playback and volume.
 
-No build step — the extension runs directly from source.
+Currently no build step — the extension runs directly from source. A bundling step (`npm run build` → `ui/dist/`) is planned as part of wiring in Feature A's/B's source modules; see the root README's integration status.

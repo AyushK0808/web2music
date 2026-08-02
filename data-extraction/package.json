@@ -6,8 +6,8 @@
   "scripts": {
     "test": "node globals_test.js && node vectorStore_test.js && node pageData_test.js && node qdrant_test.js",
     "test:qdrant": "node qdrant_test.js",
-    "qdrant:up": "docker compose -f docker/docker-compose.yml up -d qdrant",
-    "qdrant:down": "docker compose -f docker/docker-compose.yml stop qdrant",
+    "qdrant:up": "docker compose -f ../docker/docker-compose.yml --profile research up -d qdrant",
+    "qdrant:down": "docker compose -f ../docker/docker-compose.yml stop qdrant",
     "play": "node playground.js",
     "bench": "node benchmark/extractionCost.js"
   },

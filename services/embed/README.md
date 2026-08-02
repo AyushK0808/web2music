@@ -14,10 +14,16 @@ single local endpoint the page calls instead.
 
 ## Run
 
+Part of the repo-wide Docker stack (see [`docker/docker-compose.yml`](../../docker/docker-compose.yml)) —
+this service builds from `docker/node-service.Dockerfile` and lives behind
+the `research` profile (it's only needed for corpus-scale VectorStore work
+or the §7 privacy/utility ablation; the extension itself vendors a local
+embedding model and doesn't need this container to run).
+
 ```bash
-cd data-extraction/docker
-cp .env.example .env          # paste your OpenAI key into .env
-docker compose up --build
+# from the repo root
+cp .env.example .env          # paste your OpenAI key into OPENAI_API_KEY
+docker compose -f docker/docker-compose.yml --profile research up --build embed-service
 ```
 
 The service listens on `http://localhost:8077`. Verify:

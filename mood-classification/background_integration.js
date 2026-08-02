@@ -15,9 +15,9 @@ import {
 } from "./feature_b/index.js";
 
 // ── 1. Load API key / backend choice from chrome.storage on startup ─────────
-// Two LLM backends (see docker/README.md):
+// Two LLM backends (see services/classify/README.md):
 //   "direct" (default) — apiKey ships in this bundle, calls api.groq.com
-//   "proxy"             — no key here; calls docker/classifyService.js, which
+//   "proxy"             — no key here; calls services/classify/classifyService.js, which
 //                          holds GROQ_API_KEY server-side instead
 // llmApiKey should be a GroqCloud key (starts with "gsk_") — get a free one
 // at https://console.groq.com/keys.

@@ -58,18 +58,30 @@ docker-compose.override.yml
 *.env.local
 
 # ── Model / media / generated artifacts ──
-*.onnx
 *.bin
 *.pt
 *.ckpt
 *.safetensors
-models/
 *.wav
 *.mp3
 *.flac
-*.ogg
 generated_audio/
-audio_cache/
+
+# Feature D's generated cache -- real dir is hyphenated, not underscored;
+# "audio_cache/" here never matched it and let generated clips get committed.
+audio-generation/audio-cache/
+
+# fallback_clips/*.ogg (Feature D's fallback clips) are intentionally
+# tracked, not generated output -- deterministic reproducibility artifacts
+# every error path in main.py depends on. Nothing above ignores *.ogg/*.mp3
+# generically; don't reintroduce a blanket audio-extension rule here.
+
+# Vendored embedding model + ONNX runtime for the extension (Phase 1) --
+# committed on purpose so `git clone && npm run build` works without a
+# separate download step. Scoped to ui/models/ so a stray *.onnx elsewhere
+# (e.g. an experiment script's scratch output) is still ignored.
+*.onnx
+!ui/models/**/*.onnx
 
 # ── Editors / IDEs ──
 .vscode/*

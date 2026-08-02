@@ -14,7 +14,7 @@ from the WEB2MUSIC research guide.
 | `Readability.js` | Flesch Reading Ease scoring (`flesch` 0–100 and `readingComplexity` 0–1), numerically compatible with Feature B1's own `computeReadingComplexity`. |
 | `pageData.js` | **The Handoff-1 assembler.** `buildPageData()` runs the extractors + behaviour + metadata + readability + embedding and returns the single, validated object Feature B's `runB1()` consumes. Also: `validatePageData()` (safe defaults + `handoffVersion`/`extractedAt`, mirroring Feature D's `d1_validate.py`), an embedding cache keyed by URL + text-hash + backend/model, `runWhenIdle()` (debounce + `requestIdleCallback`), a `fullyLocal` no-network mode, and `getExtractionTelemetry()` per-stage latency/failure-rate. |
 | `VectorStore.js` | **The similarity engine.** Persistent vector database (IndexedDB in the extension, in-memory in Node/tests) with cosine search, configurable similarity thresholds, and per-model namespacing. Answers "have we seen a page like this before?" so a revisit can reuse a previous mood/track instead of re-running the pipeline. |
-| `docker/` | Containerised OpenAI embedding microservice — keeps the API key server-side (see `docker/README.md`). |
+| [`../services/embed/`](../services/embed/README.md) | Containerised OpenAI embedding microservice — keeps the API key server-side. Built from the repo root's `docker/docker-compose.yml` (`research` profile). |
 | `benchmark/` | Real-browser extraction-cost harness for the §6 systems eval. |
 
 ## Usage
@@ -157,7 +157,7 @@ enforcing a client-sized cap on a real database would defeat the purpose.
 **Intended for Node or a trusted service context, not the content script.** Pointing
 a page directly at Qdrant needs permissive CORS and exposes the whole database to
 anything that can reach the port. Keep IndexedDB in the extension, or front Qdrant
-with a hardened proxy the way `docker/embedService.js` fronts the OpenAI key.
+with a hardened proxy the way `../services/embed/embedService.js` fronts the OpenAI key.
 
 Qdrant ships with **no authentication**. Loopback-only port publishing is the real
 control; to add defence in depth, export `QDRANT__SERVICE__API_KEY` before
@@ -248,7 +248,7 @@ baked into behavior beyond `DEFAULT_CONFIG`):
 
 The `local` backend expects `@xenova/transformers` to be bundled and exposed
 as `window.transformersPipeline`. The `service` backend calls the Docker
-microservice in [`docker/`](docker/README.md), which holds the OpenAI key in
+microservice in [`../services/embed/`](../services/embed/README.md), which holds the OpenAI key in
 its container environment — use it when you want OpenAI-quality vectors without
 shipping a key into the page.
 
@@ -271,7 +271,7 @@ Implemented for Feature A:
 - ✅ Real-browser extraction-cost harness (`benchmark/extractionCost.js`)
 - ✅ **Vector Database integration** (`VectorStore.js`) — IndexedDB, in-memory, or Qdrant; per-model namespaced
 - ✅ **Similarity Threshold config** (`SIMILARITY_PRESETS` + per-call overrides)
-- ✅ Qdrant vector DB in Docker with server-side search (`docker/docker-compose.yml`)
+- ✅ Qdrant vector DB in Docker with server-side search (`../docker/docker-compose.yml`, `research` profile)
 - ✅ Asserted test suite (`npm test` — 110 assertions across four files)
 
 ### ⚠️ If you add a module here, mind the shared global scope

@@ -1,0 +1,174 @@
+# Web2Music — unified dev infrastructure for Features A, B, and D.
+#
+#   cd web2music (repo root)
+#   cp .env.example .env      # fill in GROQ_API_KEY at minimum
+#   npm run up                 # = docker compose -f docker/docker-compose.yml up -d
+#
+# Profiles (set COMPOSE_PROFILES in .env, comma-separated, or pass --profile):
+#   (none)    — db + classify-service always start; these are Feature B's
+#               minimum viable stack and have no meaningful "off" state.
+#   cpu       — Feature D (audio-generation) on CPU.
+#   gpu       — Feature D on CUDA instead of cpu. Pick one, not both.
+#   research  — Feature A's OpenAI embed proxy + Qdrant. Only needed for
+#               corpus-scale vector-store work or the §7 privacy ablation;
+#               the extension itself vendors a local embedding model and
+#               doesn't need either of these to run.
+#
+# All ports are published on 127.0.0.1 only — a bare "PORT:PORT" binds every
+# interface and would expose these (including the Groq/OpenAI key proxies)
+# to anyone else on the same network.
+
+services:
+  # ── Feature D's cache DB (dev stand-in for Supabase's Postgres) ──────────
+  db:
+    image: postgres:16-alpine
+    container_name: web2music-db
+    ports:
+      - "127.0.0.1:5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: audio_cache
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  # ── Feature B's Groq key proxy ────────────────────────────────────────────
+  # Holds GROQ_API_KEY server-side; the extension talks to this over
+  # localhost instead of shipping the key into the bundle.
+  classify-service:
+    build:
+      context: ..
+      dockerfile: docker/node-service.Dockerfile
+      args:
+        SERVICE: classify
+        PORT: "8078"
+    container_name: web2music-classify-service
+    ports:
+      - "127.0.0.1:8078:8078"
+    env_file: ../.env
+    restart: unless-stopped
+
+  # ── Feature D — audio generation (CPU) ────────────────────────────────────
+  feature-d:
+    profiles: ["cpu"]
+    build:
+      context: ..
+      dockerfile: docker/feature-d.Dockerfile
+    container_name: web2music-feature-d
+    ports:
+      - "127.0.0.1:8000:8000"
+    env_file: ../.env
+    environment:
+      # Overrides .env's LOCAL_DB_URL default (which points at localhost) —
+      # inside this network Postgres is reachable by service name, not
+      # localhost. IS_PROD/HF cache/etc. still come from env_file above.
+      LOCAL_DB_URL: postgresql://postgres:postgres@db:5432/audio_cache
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ../audio-generation/audio-cache:/app/audio-cache
+      - ../audio-generation/fallback_clips:/app/fallback_clips
+      - hf-cache:/root/.cache/huggingface
+    restart: unless-stopped
+
+  # ── Feature D — audio generation (GPU) ────────────────────────────────────
+  # Mutually exclusive with `feature-d` — enable one profile, not both.
+  feature-d-gpu:
+    profiles: ["gpu"]
+    build:
+      context: ..
+      dockerfile: docker/feature-d.gpu.Dockerfile
+    container_name: web2music-feature-d-gpu
+    ports:
+      - "127.0.0.1:8000:8000"
+    env_file: ../.env
+    environment:
+      LOCAL_DB_URL: postgresql://postgres:postgres@db:5432/audio_cache
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ../audio-generation/audio-cache:/app/audio-cache
+      - ../audio-generation/fallback_clips:/app/fallback_clips
+      - hf-cache:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
+
+  # ── Feature A — OpenAI embed proxy (`research` profile) ───────────────────
+  embed-service:
+    profiles: ["research"]
+    build:
+      context: ..
+      dockerfile: docker/node-service.Dockerfile
+      args:
+        SERVICE: embed
+        PORT: "8077"
+    container_name: web2music-embed-service
+    ports:
+      - "127.0.0.1:8077:8077"
+    environment:
+      - OPENAI_API_KEY
+      - SERVICE_SECRET
+      - ALLOWED_ORIGIN
+      - EMBED_MODEL=${EMBED_MODEL:-text-embedding-3-small}
+      - PORT=8077
+      # Inside the container, listen on all interfaces — the port mapping
+      # above is what restricts exposure to the host; a loopback-only bind
+      # in here would make it unreachable through that mapping.
+      - BIND_HOST=0.0.0.0
+    env_file: ../.env
+    restart: unless-stopped
+
+  # ── Feature A — Qdrant vector DB (`research` profile) ─────────────────────
+  # The scale-up path for VectorStore.js past IndexedDB's client-side cap
+  # and client-side scan. See data-extraction/README.md.
+  qdrant:
+    profiles: ["research"]
+    # Pinned deliberately — `latest` would let the engine change underneath
+    # a half-finished evaluation.
+    image: qdrant/qdrant:v1.18.3
+    container_name: web2music-qdrant
+    ports:
+      - "127.0.0.1:6333:6333"   # REST — what VectorStore.js talks to
+      - "127.0.0.1:6334:6334"   # gRPC — unused, handy for qdrant tooling
+    environment:
+      # Name-only pass-through: Qdrant reads an EMPTY api-key as "auth is
+      # enabled" and then rejects every request with 401 while /readyz keeps
+      # returning 200 — so `QDRANT__SERVICE__API_KEY: ${VAR:-}` bricks the
+      # database whenever it's unset. With the name-only form, unset in the
+      # environment means unset in the container: no auth, works out of the
+      # box, loopback-only publishing remains the real control.
+      - QDRANT__SERVICE__API_KEY
+      - QDRANT__LOG_LEVEL
+    volumes:
+      - qdrant-storage:/qdrant/storage
+    healthcheck:
+      # The image ships no curl/wget/nc; bash's /dev/tcp speaks HTTP
+      # directly. Invoked via CMD (not CMD-SHELL) because /bin/sh here is
+      # dash, which has no /dev/tcp support. Checks /readyz (shards actually
+      # ready), not just that the port accepts a connection.
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/6333 && printf 'GET /readyz HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 && head -1 <&3 | grep -q '200 OK'"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+volumes:
+  db-data:
+  hf-cache:
+  qdrant-storage:

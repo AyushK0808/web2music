@@ -17,7 +17,7 @@
  *     → whatever Groq returns, forwarded verbatim (status + JSON)
  *   GET  /health  → 200 { "ok": true, "keyConfigured": boolean }
  *
- * Same pattern as Feature A's data-extraction/docker/embedService.js, which
+ * Same pattern as Feature A's services/embed/embedService.js, which
  * does the equivalent for the OpenAI embedding key.
  *
  * Env:

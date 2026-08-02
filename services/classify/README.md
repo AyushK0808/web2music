@@ -33,10 +33,14 @@ container instead of at Groq directly.
 
 ## Run
 
+Part of the repo-wide Docker stack (see [`docker/docker-compose.yml`](../../docker/docker-compose.yml)) —
+this service builds from `docker/node-service.Dockerfile` and starts by
+default (no profile needed), since it's Feature B's minimum viable stack.
+
 ```bash
-cd mood-classification/docker
-cp .env.example .env          # paste your Groq key into .env (get one free at console.groq.com/keys)
-docker compose up --build
+# from the repo root
+cp .env.example .env          # paste your Groq key into GROQ_API_KEY (get one free at console.groq.com/keys)
+docker compose -f docker/docker-compose.yml up --build classify-service
 ```
 
 The service listens on `http://localhost:8078`. Verify:
