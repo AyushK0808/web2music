@@ -34,6 +34,16 @@ def _install_stubs():
             pass
 
     torch_stub.cuda = _CudaStub()
+
+    class _MpsStub:
+        @staticmethod
+        def is_available():
+            return False
+
+    class _BackendsStub:
+        mps = _MpsStub()
+
+    torch_stub.backends = _BackendsStub()
     torch_stub.manual_seed = lambda s: None
     sys.modules["torch"] = torch_stub
 

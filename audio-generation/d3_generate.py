@@ -1,4 +1,5 @@
 import asyncio
+import itertools
 import time
 import numpy as np
 import io
@@ -6,8 +7,15 @@ import torch
 import soundfile as sf
 from transformers import pipeline
 
-device = 0 if torch.cuda.is_available() else -1
-device_name = torch.cuda.get_device_name(0) if torch.cuda.is_available() else "CPU"
+if torch.cuda.is_available():
+    device = 0
+    device_name = torch.cuda.get_device_name(0)
+elif torch.backends.mps.is_available():
+    device = "mps"
+    device_name = "MPS (Apple Silicon)"
+else:
+    device = -1
+    device_name = "CPU"
 print(f"Using device: {device_name}")
 
 print("Loading MusicGen model... (first time takes 1-2 mins)")
@@ -15,6 +23,8 @@ synthesiser = pipeline(
     "text-to-audio",
     "facebook/musicgen-small",
     device=device,
+    # float16 only on CUDA -- MPS has known float16 correctness gaps in some
+    # torch/transformers version combos, float32 is the safe default there
     torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32
 )
 
@@ -22,7 +32,7 @@ if torch.cuda.is_available():
     synthesiser.model = torch.compile(synthesiser.model)
     print("Model compiled with torch.compile ✅")
 else:
-    print("Skipping torch.compile (CPU — no benefit)")
+    print("Skipping torch.compile (CUDA-only benefit)")
 
 print("Model loaded!")
 
@@ -46,17 +56,35 @@ class GenerationError(Exception):
 
 
 class _BatchItem:
-    __slots__ = ("prompt", "max_tokens", "seed", "future")
+    __slots__ = ("prompt", "max_tokens", "seed", "future", "priority")
 
-    def __init__(self, prompt, max_tokens, seed, future):
+    def __init__(self, prompt, max_tokens, seed, future, priority):
         self.prompt = prompt
         self.max_tokens = max_tokens
         self.seed = seed
         self.future = future
+        self.priority = priority
 
+
+# PRIORITY LEVELS -- lower number = served first.
+# Real /generate requests (a page a user is actually looking at) must never
+# sit behind the startup pre-warm grid, which can be dozens of full MusicGen
+# generations deep. asyncio.PriorityQueue pops the lowest-priority-number
+# item available *at the moment .get() is called* -- so even if 40 low-
+# priority pre-warm items were enqueued first, a high-priority item queued
+# afterwards jumps in front of all of them for the next batch. This was the
+# root cause behind "I see the [D2] Prompt log but then nothing happens" --
+# the request wasn't hung, it was stuck behind the pre-warm backlog on a
+# plain FIFO queue.
+PRIORITY_REALTIME = 0   # main.py's /generate -- an actual user is waiting
+PRIORITY_PREWARM  = 10  # prewarm.py's startup cache-warming grid
 
 _queue = None
 _worker_task = None
+_seq_counter = itertools.count()  # tie-breaker so same-priority items stay FIFO
+                                   # and PriorityQueue never has to compare
+                                   # _BatchItem objects directly (they aren't
+                                   # orderable).
 
 
 def _ensure_worker():
@@ -65,19 +93,21 @@ def _ensure_worker():
     loop yet when this module is first imported by main.py."""
     global _queue, _worker_task
     if _queue is None:
-        _queue = asyncio.Queue()
+        _queue = asyncio.PriorityQueue()
     if _worker_task is None or _worker_task.done():
         _worker_task = asyncio.create_task(_batch_worker())
+        print("[D3] Batch worker started")
 
 
 async def _batch_worker():
     """
-    Continuously pulls queued generate_audio() calls and groups whatever
-    arrives within BATCH_WINDOW_MS (up to MAX_BATCH_SIZE) into a single
-    MusicGen forward pass, instead of one model call per request.
+    Continuously pulls queued generate_audio() calls (highest priority --
+    i.e. lowest priority number -- first) and groups whatever arrives within
+    BATCH_WINDOW_MS (up to MAX_BATCH_SIZE) into a single MusicGen forward
+    pass, instead of one model call per request.
     """
     while True:
-        item = await _queue.get()
+        _, _, item = await _queue.get()
         batch = [item]
         deadline = time.monotonic() + BATCH_WINDOW_MS / 1000
         while len(batch) < MAX_BATCH_SIZE:
@@ -85,11 +115,14 @@ async def _batch_worker():
             if timeout <= 0:
                 break
             try:
-                nxt = await asyncio.wait_for(_queue.get(), timeout=timeout)
+                _, _, nxt = await asyncio.wait_for(_queue.get(), timeout=timeout)
                 batch.append(nxt)
             except asyncio.TimeoutError:
                 break
 
+        remaining = _queue.qsize()
+        print(f"[D3] Dispatching batch of {len(batch)} "
+              f"(priorities={[b.priority for b in batch]}, {remaining} still queued)")
         await asyncio.to_thread(_run_batch, batch)
 
 
@@ -170,7 +203,11 @@ def _run_batch(batch):
                 item.future.set_exception(e)
 
 
-async def generate_audio(prompt: str, duration_seconds: int = 28) -> tuple:
+async def generate_audio(
+    prompt: str,
+    duration_seconds: int = 28,
+    priority: int = PRIORITY_REALTIME,
+) -> tuple:
     """
     Generate audio from prompt using MusicGen. Concurrent calls to this
     function are automatically coalesced into shared batches by the
@@ -183,6 +220,10 @@ async def generate_audio(prompt: str, duration_seconds: int = 28) -> tuple:
     duration_seconds: target clip length (5-30s).
     Token count = duration_seconds * TOKENS_PER_SEC (~50 tokens/sec).
 
+    priority: PRIORITY_REALTIME (default) for an actual user request,
+    PRIORITY_PREWARM for prewarm.py's startup grid. Lower number = served
+    first regardless of queue order -- see the PRIORITY_* comment above.
+
     Note on guidance_scale (CFG):
     Lowering guidance_scale from default (3.0) to 1.0 would halve
     forward passes per step and reduce latency. However,
@@ -193,27 +234,30 @@ async def generate_audio(prompt: str, duration_seconds: int = 28) -> tuple:
     _ensure_worker()
     max_tokens = duration_seconds * TOKENS_PER_SEC
     last_error = None
+    label = "realtime" if priority <= PRIORITY_REALTIME else "prewarm"
 
     for attempt in range(1, MAX_RETRIES + 1):
         seed = 42 + attempt
         loop = asyncio.get_running_loop()
         future = loop.create_future()
-        await _queue.put(_BatchItem(prompt, max_tokens, seed, future))
+        ahead = _queue.qsize()
+        await _queue.put((priority, next(_seq_counter), _BatchItem(prompt, max_tokens, seed, future, priority)))
 
         try:
-            print(f"[D3] Generation attempt {attempt}/{MAX_RETRIES} with seed {seed} -- queued for batch")
-            print(f"[D3] Target duration: {duration_seconds}s ({max_tokens} tokens)")
-            print(f"[D3] Prompt: {prompt}")
+            print(f"[D3] [{label}] Generation attempt {attempt}/{MAX_RETRIES} with seed {seed} "
+                  f"-- queued for batch (priority={priority}, {ahead} item(s) already queued)")
+            print(f"[D3] [{label}] Target duration: {duration_seconds}s ({max_tokens} tokens)")
+            print(f"[D3] [{label}] Prompt: {prompt}")
             result = await future
-            print(f"[D3] Audio generated successfully on attempt {attempt}!")
+            print(f"[D3] [{label}] Audio generated successfully on attempt {attempt}!")
             return result
         except Exception as e:
             last_error = e
-            print(f"[D3] Attempt {attempt} failed: {e}")
+            print(f"[D3] [{label}] Attempt {attempt} failed: {e}")
 
             if attempt < MAX_RETRIES:
                 wait = RETRY_DELAY * (2 ** (attempt - 1))
-                print(f"[D3] Retrying in {wait}s...")
+                print(f"[D3] [{label}] Retrying in {wait}s...")
                 await asyncio.sleep(wait)
 
     raise GenerationError(
