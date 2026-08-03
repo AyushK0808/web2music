@@ -277,7 +277,7 @@ function createIndexedDBAdapter({ dbName, storeName } = {}) {
  * where the IndexedDB path's `maxEntries` cap and client-side scan stop making
  * sense. Search runs server-side here — that is the entire point.
  *
- * Start it with:  cd data-extraction/docker && docker compose up -d qdrant
+ * Start it with:  docker compose -f docker/docker-compose.yml --profile research up -d qdrant
  *
  * Two structural details worth knowing:
  *
@@ -295,7 +295,7 @@ function createIndexedDBAdapter({ dbName, storeName } = {}) {
  * Intended for Node / a trusted service context. Pointing a content script
  * straight at Qdrant is a bad idea: it needs permissive CORS and would expose the
  * whole database to any page that can reach the port. Keep IndexedDB in the
- * extension, or front Qdrant with a hardened proxy the way docker/embedService.js
+ * extension, or front Qdrant with a hardened proxy the way services/embed/embedService.js
  * fronts the OpenAI key.
  */
 

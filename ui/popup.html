@@ -169,6 +169,22 @@
     .btn-play:hover { background: #1d4fd8; }
     .btn-stop { width: 30px; height: 30px; background: #e8e8e8; color: #555; font-size: 12px; }
     .btn-stop:hover { background: #ddd; }
+    .btn-small { width: 28px; height: 28px; background: #f0f0f0; color: #666; font-size: 12px; }
+    .btn-small:hover { background: #e2e2e2; }
+    .btn-small.active { background: #2563eb; color: white; }
+
+    /* ── Feedback row (mute / regenerate / wrong-mood / export) ──────── */
+    .feedback-row {
+      display: flex; align-items: center; gap: 8px;
+      padding: 0 22px 12px;
+    }
+    .feedback-row select {
+      font-family: inherit; font-size: 11px; border: 1.5px solid #e0e0e0;
+      border-radius: 8px; padding: 4px 6px; color: #333; background: white;
+    }
+    .feedback-row .export-link {
+      margin-left: auto; font-size: 10px; color: #888; cursor: pointer; text-decoration: underline;
+    }
 
     .volume-label {
       font-size: 12px; font-weight: 700; color: #222;
@@ -299,6 +315,16 @@
   <!-- Visualizer -->
   <div class="visualizer-wrap">
     <canvas id="visualizer" width="1016" height="180"></canvas>
+  </div>
+
+  <!-- Feedback / telemetry controls -->
+  <div class="feedback-row">
+    <button class="btn btn-small" id="btnMute" title="Mute">🔇</button>
+    <button class="btn btn-small" id="btnRegenerate" title="Regenerate">🔁</button>
+    <select id="wrongMoodSelect" title="Correct the detected mood">
+      <option value="">Wrong mood?</option>
+    </select>
+    <span class="export-link" id="btnExport">Export telemetry ↓</span>
   </div>
 
   <!-- Bottom -->

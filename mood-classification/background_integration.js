@@ -1,10 +1,17 @@
 /**
- * background.js — Integration snippet
+ * background.js — Integration snippet (DOCUMENTATION ONLY, not imported)
  *
- * Shows how Feature B plugs into the service worker.
- * This is NOT the full background.js — only the Feature B wiring.
- * Your full background.js will also contain Feature A cache logic,
- * offscreen audio control, and popup message handlers.
+ * Historical reference for how Feature B plugs into a service worker via
+ * the chrome.runtime.sendMessage broadcast path. The real
+ * ui/src/background.entry.js no longer imports this file — it calls
+ * feature_b/index.js's onHandoff2(cb) instead, which delivers handoff2
+ * payloads directly, in-process. The broadcast path used below never
+ * actually worked for a same-context listener: registerFeatureBListener's
+ * emissions run inside the service worker, and chrome.runtime.sendMessage
+ * never delivers a message back to its own sender's context (see the X4
+ * integration plan's finding (a), and onHandoff2 in feature_b/index.js).
+ * Kept here as a worked example of the FEATURE_B_HANDOFF payload shape for
+ * anyone testing Feature B from a *different* context (e.g. a popup).
  */
 
 "use strict";
@@ -15,9 +22,9 @@ import {
 } from "./feature_b/index.js";
 
 // ── 1. Load API key / backend choice from chrome.storage on startup ─────────
-// Two LLM backends (see docker/README.md):
+// Two LLM backends (see services/classify/README.md):
 //   "direct" (default) — apiKey ships in this bundle, calls api.groq.com
-//   "proxy"             — no key here; calls docker/classifyService.js, which
+//   "proxy"             — no key here; calls services/classify/classifyService.js, which
 //                          holds GROQ_API_KEY server-side instead
 // llmApiKey should be a GroqCloud key (starts with "gsk_") — get a free one
 // at https://console.groq.com/keys.

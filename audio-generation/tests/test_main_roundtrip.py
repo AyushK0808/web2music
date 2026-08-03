@@ -55,7 +55,7 @@ def main_client(call_log, monkeypatch):
 
     def fake_save_to_cache(cache_key, clip_bytes, profile, loop_point_ms, gen_time_ms, prompt,
                             seam_discontinuity, prompt_source, generation_seed):
-        # Mirrors the REAL DB schema (docker/init.sql) exactly, now that
+        # Mirrors the REAL DB schema (../docker/init.sql) exactly, now that
         # this PR added valence/arousal/intensity/duration_seconds/
         # seam_discontinuity/prompt_source/generation_seed as real columns.
         # Fields the schema genuinely persists come back with real values
@@ -135,7 +135,7 @@ def test_cache_hit_response_has_same_metadata_shape_as_miss(main_client):
     Regression test for the full bug class, not just seam_discontinuity:
     valence/intensity/duration_seconds/seam_discontinuity/prompt_source/
     generation_seed all exist in the miss-path metadata -- this PR's schema
-    fix (docker/init.sql + d5_cache.py/d5_cache_local.py's save_to_cache)
+    fix (../docker/init.sql + d5_cache.py/d5_cache_local.py's save_to_cache)
     means these now genuinely persist to the cache DB, so they must come
     back with real values on a cache hit, not null. A prior version of this
     test asserted these came back null (matching the pre-fix schema) --
@@ -164,7 +164,7 @@ def test_cache_hit_response_has_same_metadata_shape_as_miss(main_client):
         f"{miss_keys - hit_keys}"
     )
 
-    # All fields that are actually persisted (see docker/init.sql +
+    # All fields that are actually persisted (see ../docker/init.sql +
     # d5_cache.py's save_to_cache) must match exactly between hit and miss
     for field in ("mood", "bpm", "key", "energy", "valence", "arousal",
                   "intensity", "duration_seconds", "loop_point_ms",

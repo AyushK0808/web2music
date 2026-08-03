@@ -1,0 +1,63 @@
+{
+  "profile": {
+    "mood": "sad",
+    "energy": 0,
+    "bpm": 32,
+    "key": "E minor",
+    "style": "cinematic sad, neo-classical, lo-fi melancholy",
+    "content_category": "Emotional",
+    "arousal": 0.015,
+    "valence": -0.7,
+    "instruments": [
+      "solo piano",
+      "cello",
+      "violin",
+      "ambient pad",
+      "soft acoustic"
+    ],
+    "timbre": "breathy, melancholic, thin",
+    "reverb": 0.772,
+    "ambience": 0.811,
+    "tempo": "largo",
+    "dynamics": "sparse, fragile, gentle crescendos",
+    "listening_context": "late-night article session",
+    "time_of_day": "late-night",
+    "atmosphere_tags": "introspective, tender",
+    "sensitive_override": false,
+    "prompt": "cinematic sad, neo-classical, lo-fi melancholy. Instruments: solo piano, cello, violin, ambient pad. breathy, melancholic, thin timbre, sparse, fragile, gentle crescendos. Key: E minor, 32 BPM. low energy, gentle, lush reverb, spacious hall, atmospheric, layered textures. Mood: sad. Context: late-night article session. No vocals. Seamlessly loopable. Instrumental only."
+  },
+  "musicProfile": {
+    "mood": "sad",
+    "musicCategory": "Melancholic / Sad",
+    "bpm": 32,
+    "key": "E minor",
+    "energy": 0,
+    "intensity": 0.015,
+    "valence": -0.7,
+    "reverb": 0.772,
+    "ambience": 0.811,
+    "timbre": "breathy, melancholic, thin",
+    "instruments": [
+      "solo piano",
+      "cello",
+      "violin",
+      "ambient pad",
+      "soft acoustic"
+    ],
+    "style": "cinematic sad, neo-classical, lo-fi melancholy",
+    "dynamics": "sparse, fragile, gentle crescendos",
+    "tempo": "largo",
+    "atmosphereTags": "introspective, tender",
+    "listeningContext": "late-night article session",
+    "timeOfDay": "late-night",
+    "sensitiveOverride": false
+  },
+  "prompt": "cinematic sad, neo-classical, lo-fi melancholy. Instruments: solo piano, cello, violin, ambient pad. breathy, melancholic, thin timbre, sparse, fragile, gentle crescendos. Key: E minor, 32 BPM. low energy, gentle, lush reverb, spacious hall, atmospheric, layered textures. Mood: sad. Context: late-night article session. No vocals. Seamlessly loopable. Instrumental only.",
+  "targetModel": "musicgen",
+  "handoffVersion": "2.0",
+  "generatedAt": 1785709528894,
+  "contentCategory": "Emotional",
+  "pageType": "article",
+  "volume": 1,
+  "isFadeUpdate": false
+}

@@ -85,6 +85,28 @@ export function configureFeatureB(config = {}) {
   _config = { ..._config, ...config };
 }
 
+// ─── Same-context handoff-2 delivery ─────────────────────────────────────────
+// chrome.runtime.sendMessage never delivers a message back to the sender's
+// own context. Every FEATURE_B_HANDOFF emission below runs inside the
+// service worker, so a SW-side chrome.runtime.onMessage listener for
+// FEATURE_B_HANDOFF would never fire — the message-broadcast path only works
+// for a listener registered in a *different* context (e.g. a popup, or a
+// standalone test harness that fakes chrome.runtime). background.js must
+// call onHandoff2(cb) to receive handoff2 payloads directly, in-process.
+let _handoff2Handler = null;
+
+export function onHandoff2(cb) {
+  _handoff2Handler = cb;
+}
+
+function emitHandoff2(handoff2, tabId) {
+  if (_handoff2Handler) {
+    _handoff2Handler(handoff2, tabId);
+  } else if (typeof chrome !== "undefined" && chrome.runtime && chrome.runtime.sendMessage) {
+    chrome.runtime.sendMessage({ type: "FEATURE_B_HANDOFF", payload: handoff2 });
+  }
+}
+
 // Merges the configured apiKey (a bare string, or a { backend: 'proxy', ... }
 // object) with the configured llmModel into the single config object B1/B2's
 // callCategoryLLMClassifier/callLLMClassifier expect — so both calls always
@@ -260,7 +282,7 @@ async function reEvaluateActiveTab() {
     // idle-fade clock, or the heartbeat would keep it alive forever.
     const handoff2 = await decideTransition(activeTabId, candidateMood, state.lastRecord, { isFreshActivity: false });
     if (handoff2) {
-      chrome.runtime.sendMessage({ type: "FEATURE_B_HANDOFF", payload: handoff2 });
+      emitHandoff2(handoff2, activeTabId);
     }
   });
 }
@@ -288,6 +310,29 @@ async function reEvaluateActiveTab() {
  *   payload: { ...handoff2 }
  * }
  */
+// registerFeatureBHeartbeat — the alarm + tab-cleanup half of the above,
+// split out (X4 integration plan, 3.1) so a caller that drives runFeatureB
+// directly in-process (e.g. background.entry.js, which already has pageData
+// and a real tabId from A_PAGE_DATA and doesn't need the message-listener
+// indirection or its active-tab guard) can still get the heartbeat's
+// stuck-pending / idle-fade re-checks without also registering a redundant
+// FEATURE_A_HANDOFF listener. Safe to call multiple times — chrome.alarms
+// .create with the same name just replaces the existing alarm.
+export function registerFeatureBHeartbeat() {
+  if (typeof chrome !== "undefined" && chrome.alarms) {
+    chrome.alarms.create(HEARTBEAT_ALARM_NAME, { periodInMinutes: HEARTBEAT_PERIOD_MINUTES });
+    chrome.alarms.onAlarm.addListener((alarm) => {
+      if (alarm.name === HEARTBEAT_ALARM_NAME) reEvaluateActiveTab();
+    });
+  }
+
+  // Drop a tab's tracked state when it closes, so chrome.storage.session
+  // doesn't accumulate stale per-tab records for the rest of the browser session.
+  if (typeof chrome !== "undefined" && chrome.tabs && chrome.tabs.onRemoved) {
+    chrome.tabs.onRemoved.addListener((tabId) => { clearTabState(tabId); });
+  }
+}
+
 export function registerFeatureBListener() {
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type !== "FEATURE_A_HANDOFF") return false;
@@ -301,11 +346,7 @@ export function registerFeatureBListener() {
 
       runFeatureB(message.payload, activeTabId).then((handoff2) => {
         if (!handoff2) return; // Confidence interval not yet met
-
-        chrome.runtime.sendMessage({
-          type:    "FEATURE_B_HANDOFF",
-          payload: handoff2,
-        });
+        emitHandoff2(handoff2, activeTabId);
       });
     });
 
@@ -320,21 +361,7 @@ export function registerFeatureBListener() {
     return false;
   });
 
-  // Re-evaluate the active tab's deadlines even when no new handoff arrives
-  // (fix 13) — without this, a static page's pending mood could sit stuck
-  // forever and the idle fade would never fire.
-  if (typeof chrome !== "undefined" && chrome.alarms) {
-    chrome.alarms.create(HEARTBEAT_ALARM_NAME, { periodInMinutes: HEARTBEAT_PERIOD_MINUTES });
-    chrome.alarms.onAlarm.addListener((alarm) => {
-      if (alarm.name === HEARTBEAT_ALARM_NAME) reEvaluateActiveTab();
-    });
-  }
-
-  // Drop a tab's tracked state when it closes, so chrome.storage.session
-  // doesn't accumulate stale per-tab records for the rest of the browser session.
-  if (typeof chrome !== "undefined" && chrome.tabs && chrome.tabs.onRemoved) {
-    chrome.tabs.onRemoved.addListener((tabId) => { clearTabState(tabId); });
-  }
+  registerFeatureBHeartbeat();
 }
 
 // ─── Reset (useful for testing or tab changes) ────────────────────────────────

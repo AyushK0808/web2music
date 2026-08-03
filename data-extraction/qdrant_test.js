@@ -4,7 +4,8 @@
  * Skips cleanly with exit 0 when Qdrant isn't running, so `npm test` stays
  * useful without Docker. To run it for real:
  *
- *   cd data-extraction/docker && docker compose up -d qdrant
+ *   npm run qdrant:up   (from data-extraction/, or: docker compose -f
+ *                        docker/docker-compose.yml --profile research up -d qdrant)
  *   npm run test:qdrant
  *
  * Worth testing against the live server rather than a mock: the things most

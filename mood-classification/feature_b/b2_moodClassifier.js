@@ -270,8 +270,8 @@ Return this exact JSON shape:
  * "direct" backend, calling api.groq.com straight from the browser with the
  * key attached) or a config object selecting the "proxy" backend, which
  * calls a local container that holds the key server-side instead
- * (docker/classifyService.js — same pattern as Feature A's
- * data-extraction/docker/embedService.js, which does the equivalent for the
+ * (services/classify/classifyService.js — same pattern as Feature A's
+ * services/embed/embedService.js, which does the equivalent for the
  * OpenAI embedding key). Mirrors B1's helper of the same name
  * (b1_contentUnderstanding.js).
  */

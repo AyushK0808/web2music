@@ -2,15 +2,20 @@ import asyncio
 
 from models import MusicProfile
 from d2_prompt import build_prompt
-from d3_generate import generate_audio, GenerationError
+from d3_generate import generate_audio, GenerationError, PRIORITY_PREWARM
 from d4_process import process_audio
 
-# Kept intentionally small -- this is meant to warm the most commonly hit
-# combinations, not exhaustively cover every mood/style/bpm permutation
-# (11 moods x N styles x 3 bpm buckets grows fast, and each miss costs a
-# full MusicGen generation). Trim/expand these lists to match whatever your
-# actual traffic looks like.
-PREWARM_MOODS = ["calm", "energetic", "focused", "joyful", "sad"]
+# All 11 moods are covered (X4 integration plan) so no mood is a guaranteed
+# cold miss on CPU -- but this makes the grid 11 x 3 x 3 = 99 combos, each a
+# full MusicGen generation (~15-95s on CPU). That's real startup latency in
+# production and real runtime in tests/test_prewarm.py (~3min for that file
+# alone, since it calls prewarm_cache with mocked generation but the same
+# combo count). Trim PREWARM_STYLES/PREWARM_BPMS first if this needs to
+# shrink -- moods should stay complete.
+PREWARM_MOODS = [
+    "calm", "energetic", "focused", "joyful", "sad",
+    "dark", "nostalgic", "curious", "tense", "uplifting", "neutral",
+]
 PREWARM_STYLES = ["ambient", "electronic", "acoustic"]
 # One representative bpm per bucket, matching the bucket boundaries in
 # d5_cache.py's make_cache_key() (low < 76, mid < 101, high >= 101) -- the
@@ -37,6 +42,8 @@ async def prewarm_cache(make_cache_key, check_cache, save_to_cache):
     Runs as a background task; failures are logged, not raised, so a single
     bad combo can't block startup or take down the rest of the grid.
     """
+    print(f"[PREWARM] Starting -- scanning cache for {len(PREWARM_MOODS) * len(PREWARM_STYLES) * len(PREWARM_BPMS)} combo(s) "
+          f"(runs in the background at low priority; real /generate requests always jump the queue)...")
     combos = []
     for mood in PREWARM_MOODS:
         for style in PREWARM_STYLES:
@@ -81,7 +88,16 @@ async def prewarm_cache(make_cache_key, check_cache, save_to_cache):
             try:
                 cache_key = make_cache_key(profile)
                 prompt = build_prompt(profile)
-                audio_bytes, seed = await generate_audio(prompt, profile["duration_seconds"])
+                # PRIORITY_PREWARM: this used to share the same FIFO queue as
+                # real /generate requests, so a request that landed while the
+                # 45-combo prewarm grid was still running could sit behind
+                # dozens of full MusicGen generations before ever starting --
+                # looking exactly like a hang ("prompt logged, then nothing").
+                # Tagging it low-priority means any real request jumps ahead
+                # of whatever's left in this grid.
+                audio_bytes, seed = await generate_audio(
+                    prompt, profile["duration_seconds"], priority=PRIORITY_PREWARM
+                )
                 clip_bytes, loop_point_ms, seam_discontinuity = await asyncio.to_thread(process_audio, audio_bytes)
                 await asyncio.to_thread(
                     save_to_cache, cache_key, clip_bytes, profile, loop_point_ms, 0, prompt,

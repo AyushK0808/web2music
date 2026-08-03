@@ -1,3 +1,4 @@
+import os
 import librosa
 import numpy as np
 import soundfile as sf
@@ -7,9 +8,13 @@ from pydub import AudioSegment
 from pydub.silence import detect_leading_silence
 import io
 
-# pydub shells out to ffmpeg to encode MP3. Point it at the binary bundled with
-# imageio-ffmpeg so we don't depend on ffmpeg being installed / on PATH.
-AudioSegment.converter = imageio_ffmpeg.get_ffmpeg_exe()
+# pydub shells out to ffmpeg to encode Ogg/Opus. Point it at the binary
+# bundled with imageio-ffmpeg by default so we don't depend on ffmpeg being
+# installed / on PATH -- but allow FFMPEG_BINARY to override, since
+# imageio-ffmpeg's bundled static binary is not guaranteed to carry libopus
+# on every platform, and a Docker image installing its own ffmpeg (with
+# libopus confirmed) needs a way to actually use it instead.
+AudioSegment.converter = os.getenv("FFMPEG_BINARY") or imageio_ffmpeg.get_ffmpeg_exe()
 
 HOP_LENGTH = 512
 CHROMA_WINDOW = 10          # chroma frames compared against the track start (~same as before)

@@ -1,0 +1,63 @@
+{
+  "profile": {
+    "mood": "calm",
+    "energy": 0,
+    "bpm": 43,
+    "key": "C major",
+    "style": "lo-fi ambient, acoustic chill",
+    "content_category": "Health",
+    "arousal": 0.018,
+    "valence": 0.5,
+    "instruments": [
+      "acoustic guitar",
+      "piano",
+      "strings",
+      "ambient pad",
+      "light flute"
+    ],
+    "timbre": "warm, soft, rounded",
+    "reverb": 0.6,
+    "ambience": 0.7,
+    "tempo": "adagio",
+    "dynamics": "very soft, gentle swells",
+    "listening_context": "late-night article session",
+    "time_of_day": "late-night",
+    "atmosphere_tags": "meditative, zen",
+    "sensitive_override": false,
+    "prompt": "lo-fi ambient, acoustic chill. Instruments: acoustic guitar, piano, strings, ambient pad. warm, soft, rounded timbre, very soft, gentle swells. Key: C major, 43 BPM. low energy, gentle, moderate room reverb, atmospheric, layered textures. Mood: calm. Context: late-night article session. No vocals. Seamlessly loopable. Instrumental only."
+  },
+  "musicProfile": {
+    "mood": "calm",
+    "musicCategory": "Chill Out / Lounge / Calm / Relaxing",
+    "bpm": 43,
+    "key": "C major",
+    "energy": 0,
+    "intensity": 0.018,
+    "valence": 0.5,
+    "reverb": 0.6,
+    "ambience": 0.7,
+    "timbre": "warm, soft, rounded",
+    "instruments": [
+      "acoustic guitar",
+      "piano",
+      "strings",
+      "ambient pad",
+      "light flute"
+    ],
+    "style": "lo-fi ambient, acoustic chill",
+    "dynamics": "very soft, gentle swells",
+    "tempo": "adagio",
+    "atmosphereTags": "meditative, zen",
+    "listeningContext": "late-night article session",
+    "timeOfDay": "late-night",
+    "sensitiveOverride": false
+  },
+  "prompt": "lo-fi ambient, acoustic chill. Instruments: acoustic guitar, piano, strings, ambient pad. warm, soft, rounded timbre, very soft, gentle swells. Key: C major, 43 BPM. low energy, gentle, moderate room reverb, atmospheric, layered textures. Mood: calm. Context: late-night article session. No vocals. Seamlessly loopable. Instrumental only.",
+  "targetModel": "musicgen",
+  "handoffVersion": "2.0",
+  "generatedAt": 1785709528882,
+  "contentCategory": "Health",
+  "pageType": "article",
+  "volume": 1,
+  "isFadeUpdate": false
+}

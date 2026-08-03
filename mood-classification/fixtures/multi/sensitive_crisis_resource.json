@@ -1,0 +1,60 @@
+{
+  "profile": {
+    "mood": "silence",
+    "energy": 0,
+    "bpm": 55,
+    "key": "C major",
+    "style": "neutral ambient, background music",
+    "content_category": "Entertainment",
+    "arousal": 0.024,
+    "valence": 0,
+    "instruments": [
+      "ambient pad",
+      "light piano",
+      "soft bass"
+    ],
+    "timbre": "balanced, unobtrusive",
+    "reverb": 0.5,
+    "ambience": 0.5,
+    "tempo": "andante",
+    "dynamics": "flat, unobtrusive",
+    "listening_context": "late-night article session",
+    "time_of_day": "late-night",
+    "atmosphere_tags": "unobtrusive, background",
+    "sensitive_override": true,
+    "prompt": "neutral ambient, background music. Instruments: ambient pad, light piano, soft bass. balanced, unobtrusive timbre, flat, unobtrusive. Key: C major, 55 BPM. low energy, gentle, moderate room reverb, subtle background warmth. Mood: silence. Context: late-night article session. No vocals. Seamlessly loopable. Instrumental only."
+  },
+  "musicProfile": {
+    "mood": "silence",
+    "musicCategory": "Chill Out / Lounge / Calm / Relaxing",
+    "bpm": 55,
+    "key": "C major",
+    "energy": 0,
+    "intensity": 0.024,
+    "valence": 0,
+    "reverb": 0.5,
+    "ambience": 0.5,
+    "timbre": "balanced, unobtrusive",
+    "instruments": [
+      "ambient pad",
+      "light piano",
+      "soft bass"
+    ],
+    "style": "neutral ambient, background music",
+    "dynamics": "flat, unobtrusive",
+    "tempo": "andante",
+    "atmosphereTags": "unobtrusive, background",
+    "listeningContext": "late-night article session",
+    "timeOfDay": "late-night",
+    "sensitiveOverride": true
+  },
+  "prompt": "neutral ambient, background music. Instruments: ambient pad, light piano, soft bass. balanced, unobtrusive timbre, flat, unobtrusive. Key: C major, 55 BPM. low energy, gentle, moderate room reverb, subtle background warmth. Mood: silence. Context: late-night article session. No vocals. Seamlessly loopable. Instrumental only.",
+  "targetModel": "musicgen",
+  "handoffVersion": "2.0",
+  "generatedAt": 1785709528909,
+  "contentCategory": "Entertainment",
+  "pageType": "article",
+  "volume": 0,
+  "isFadeUpdate": false,
+  "isSilent": true
+}

@@ -1,0 +1,27 @@
+# Build context is the repo root (see docker/docker-compose.yml) -- keep
+# images from shipping dev dependencies, caches, and generated artifacts.
+node_modules/
+**/node_modules/
+venv/
+**/venv/
+__pycache__/
+**/__pycache__/
+*.pyc
+.pytest_cache/
+.git/
+.gitignore
+.dockerignore
+.env
+.env.*
+!.env.example
+*.md
+*.crx
+*.pem
+
+# Extension build output / vendored model (not needed by any Docker image)
+ui/dist/
+ui/models/
+ui/onnx/
+
+# Generated audio -- regenerated at runtime, not baked into an image
+audio-generation/audio-cache/

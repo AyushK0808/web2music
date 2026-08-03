@@ -116,19 +116,26 @@ If D3 (generation), D4 (post-processing), or D5 (cache save) fails — or if the
 
 ### Prerequisites
 - Python 3.10+
-- ffmpeg installed ([download here](https://ffmpeg.org/download.html)) — required by pydub
+- ffmpeg installed ([download here](https://ffmpeg.org/download.html)) — required by pydub, unless you run Feature D via the repo-root Docker image, which installs it for you
 - **Dev** (default): [Docker](https://docs.docker.com/get-docker/) — runs a local Postgres cache, no external account needed
 - **Prod** (`IS_PROD=true`): [Supabase](https://supabase.com) account with:
-  - A table called `audio_cache` (see `docker/init.sql` for schema; RLS must allow inserts from your app's key, or be disabled for this table)
+  - A table called `audio_cache` (see `../docker/init.sql` for schema; RLS must allow inserts from your app's key, or be disabled for this table)
   - A storage bucket called `audio-cache` (set to public)
   - A table called `fallback_clips` (`mood` PK, `audio_url`, `loop_point_ms`, `seam_discontinuity`, `prompt_used`, `generation_seed`)
   - A storage bucket called `fallback-clips` (set to public)
 
 ### Installation
 
+Env vars, Docker, and dependency setup are shared across the whole repo now
+— see the [root README](../README.md#setup) for the one-time `cp
+.env.example .env && npm install` step. From there, either run Feature D
+natively (below) or via `docker compose -f ../docker/docker-compose.yml
+--profile cpu up feature-d` (or `--profile gpu` for the CUDA image).
+
+Native setup:
 ```bash
 git clone https://github.com/AyushK0808/web2music.git
-cd web2music/feature-d-audio-generation
+cd web2music/audio-generation
 python -m venv venv
 
 # Windows
@@ -142,7 +149,8 @@ pip install -r requirements.txt
 
 ### Dev vs. Prod
 
-`main.py` reads an `IS_PROD` flag to pick the cache and fallback backends:
+`main.py` reads an `IS_PROD` flag (set in the repo-root `.env`) to pick the
+cache and fallback backends:
 
 | `IS_PROD` | Cache backend | Audio storage | Fallback source |
 |---|---|---|---|
@@ -151,24 +159,23 @@ pip install -r requirements.txt
 
 **Dev (default):**
 ```bash
-cd docker
-docker compose up -d      # starts local Postgres on :5432, creates the audio_cache table
-cd ..
+# from the repo root
+docker compose -f docker/docker-compose.yml up -d db   # local Postgres on :5432, creates audio_cache
+cd audio-generation
 uvicorn main:app --reload
 ```
 
 **Prod:**
-Create a `.env` file in the project root (never commit this) with:
+Set in the repo-root `.env` (never commit this):
 ```
 SUPABASE_URL=your_supabase_project_url
 SUPABASE_KEY=your_supabase_anon_key
-HF_TOKEN=your_huggingface_token
 IS_PROD=true
 ```
 ```bash
 uvicorn main:app --reload
 ```
-(With `IS_PROD=true` in `.env`, plain `uvicorn main:app --reload` is enough — no need to set it inline on the command line. On Windows cmd, `IS_PROD=true uvicorn ...` doesn't work; use `set IS_PROD=true && uvicorn main:app --reload` or set it in `.env` instead.)
+(`load_dotenv()` walks up from `audio-generation/` and picks up the repo-root `.env` automatically — no per-module `.env` file needed. On Windows cmd, `IS_PROD=true uvicorn ...` doesn't work as an inline prefix; use `set IS_PROD=true && uvicorn main:app --reload` or set it in `.env` instead.)
 
 **Generating fallback clips** (one-time, or whenever fallback profiles change):
 ```bash
@@ -200,7 +207,7 @@ Swagger UI available at `http://127.0.0.1:8000/docs`
 
 ## 📁 Project Structure
 '''
-feature-d-audio-generation/
+audio-generation/
 
 ├── d1_validate.py # Profile validation & defaults
 
@@ -226,12 +233,6 @@ feature-d-audio-generation/
 
 ├── prewarm.py # Pre-warms the cache with a grid of common profiles at startup
 
-├── docker/
-
-│ ├── docker-compose.yml # Local Postgres for the dev cache
-
-│ └── init.sql # Creates the audio_cache table
-
 ├── experiments/
 
 │ ├── d1_prompt_ablation.py
@@ -242,15 +243,16 @@ feature-d-audio-generation/
 
 │ └── d4_latency.py
 
-├── fallback_clips/ # Pre-generated fallback audio + metadata sidecars (dev)
+├── fallback_clips/ # Pre-generated fallback audio + metadata sidecars (dev, checked in)
 
 ├── audio-cache/ # Dev-only: generated .ogg files (gitignored)
 
-├── .env # Local secrets (never committed)
-
-├── .gitignore
-
 └── requirements.txt
+
+# Shared across the repo (see ../README.md):
+#   ../.env               Root secrets (never committed)
+#   ../docker/             Shared Docker infra: docker-compose.yml,
+#                          init.sql (creates audio_cache), feature-d.Dockerfile(s)
 '''
 
 ## Dependencies

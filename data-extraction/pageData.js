@@ -313,7 +313,13 @@ function estimateImageOnly(doc, wordCount) {
  * @returns {Promise<Object>} Validated Handoff-1 PageData.
  */
 async function buildPageData(options = {}) {
-  const deps = getDeps();
+  // Extension content scripts can't run Feature A's embedding/vector-store
+  // pieces locally (ONNX under page CSP, IndexedDB scoped to the page's own
+  // origin — see the X4 integration plan's finding (b)). options.deps lets a
+  // caller override individual entries from getDeps() with remote proxies
+  // that round-trip to the offscreen document instead, while everything
+  // else (text/colors/behavior/readability) still resolves locally.
+  const deps = { ...getDeps(), ...(options.deps || {}) };
   const {
     doc = (typeof document !== 'undefined' ? document : undefined),
     behaviorTracker,

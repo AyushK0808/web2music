@@ -1,0 +1,63 @@
+{
+  "profile": {
+    "mood": "energetic",
+    "energy": 0.158,
+    "bpm": 129,
+    "key": "E minor",
+    "style": "electronic, hip-hop beat, rock, EDM",
+    "content_category": "Health",
+    "arousal": 0.201,
+    "valence": 0.8,
+    "instruments": [
+      "electric guitar",
+      "bass",
+      "drums",
+      "synth lead",
+      "brass stabs"
+    ],
+    "timbre": "distorted, driven, punchy",
+    "reverb": 0.2,
+    "ambience": 0.2,
+    "tempo": "presto",
+    "dynamics": "high energy, driving",
+    "listening_context": "late-night article session",
+    "time_of_day": "late-night",
+    "atmosphere_tags": "driving, powerful",
+    "sensitive_override": false,
+    "prompt": "electronic, hip-hop beat, rock, EDM. Instruments: electric guitar, bass, drums, synth lead. distorted, driven, punchy timbre, high energy, driving. Key: E minor, 129 BPM. low energy, gentle, dry, close-mic sound, clean, minimal. Mood: energetic. Context: late-night article session. No vocals. Seamlessly loopable. Instrumental only."
+  },
+  "musicProfile": {
+    "mood": "energetic",
+    "musicCategory": "Upbeat / Party / Energetic",
+    "bpm": 129,
+    "key": "E minor",
+    "energy": 0.158,
+    "intensity": 0.201,
+    "valence": 0.8,
+    "reverb": 0.2,
+    "ambience": 0.2,
+    "timbre": "distorted, driven, punchy",
+    "instruments": [
+      "electric guitar",
+      "bass",
+      "drums",
+      "synth lead",
+      "brass stabs"
+    ],
+    "style": "electronic, hip-hop beat, rock, EDM",
+    "dynamics": "high energy, driving",
+    "tempo": "presto",
+    "atmosphereTags": "driving, powerful",
+    "listeningContext": "late-night article session",
+    "timeOfDay": "late-night",
+    "sensitiveOverride": false
+  },
+  "prompt": "electronic, hip-hop beat, rock, EDM. Instruments: electric guitar, bass, drums, synth lead. distorted, driven, punchy timbre, high energy, driving. Key: E minor, 129 BPM. low energy, gentle, dry, close-mic sound, clean, minimal. Mood: energetic. Context: late-night article session. No vocals. Seamlessly loopable. Instrumental only.",
+  "targetModel": "musicgen",
+  "handoffVersion": "2.0",
+  "generatedAt": 1785709528851,
+  "contentCategory": "Health",
+  "pageType": "article",
+  "volume": 1,
+  "isFadeUpdate": false
+}
