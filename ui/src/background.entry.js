@@ -6,6 +6,9 @@ import { configureFeatureB, registerFeatureBHeartbeat, onHandoff2, runFeatureB, 
 import { requestTrack, requestGeneration } from "./featureDClient.js";
 import { recordTelemetry, urlHash, exportTelemetry } from "./telemetry.js";
 import { OFFSCREEN_EXTRACT_TYPES } from "./offscreenTypes.js";
+import { createLogger } from "./log.js";
+
+const log = createLogger("background");
 
 // ── Offscreen document lifecycle ─────────────────────────────────────────────
 // Both AUDIO_PLAYBACK (Feature C) and WORKERS (the embed worker spawned for
@@ -14,11 +17,16 @@ import { OFFSCREEN_EXTRACT_TYPES } from "./offscreenTypes.js";
 async function ensureOffscreen() {
   const hasDoc = await chrome.offscreen.hasDocument();
   if (!hasDoc) {
+    // Worth an info line, not a debug one: the offscreen document is torn down
+    // with the worker, so a re-create here marks the boundary where all
+    // playback state (decks, gain stages) was just reset to defaults.
+    log.info("Creating offscreen document (none existed)");
     await chrome.offscreen.createDocument({
       url: "offscreen.html",
       reasons: ["AUDIO_PLAYBACK", "WORKERS"],
       justification: "Play generated ambient music and run local embedding inference for the current webpage",
     });
+    log.info("Offscreen document created");
   }
 }
 
@@ -28,11 +36,52 @@ async function ensureOffscreen() {
 // failed, which is exactly how the target/type routing bug stayed invisible.
 async function forwardToOffscreen(msg) {
   await ensureOffscreen();
+  log.debug(`-> offscreen ${msg.type}`, msg);
   try {
     return await chrome.runtime.sendMessage({ target: "offscreen", ...msg });
   } catch (err) {
-    console.warn(`[background] offscreen '${msg.type}' failed:`, err.message);
+    log.warn(`offscreen '${msg.type}' failed:`, err.message);
   }
+}
+
+// ── Content-script injection ──────────────────────────────────────────────
+// Chrome injects content_scripts at navigation time only: an install, update
+// or "Reload" in chrome://extensions leaves every already-open tab without
+// one until it is manually refreshed. Nothing downstream can tell that apart
+// from a crash — A_PAGE_DATA simply never arrives, so B never transitions,
+// currentProfile/currentUrl stay null, and POPUP_PLAY/POPUP_REGENERATE can
+// only report that they have nothing to act on. Injecting on startup is what
+// makes a reload behave the way the extensions page implies it does.
+//
+// Read from the manifest rather than repeating the file list: the order here
+// is load-bearing (content.js destructures window.Web2MusicPageData, which
+// vendor/pageData.js attaches), and a hand-maintained second copy is exactly
+// the kind of thing that drifts and fails with a null-destructure.
+const CONTENT_SCRIPT_FILES = chrome.runtime.getManifest().content_scripts?.[0]?.js ?? [];
+if (!CONTENT_SCRIPT_FILES.length) {
+  log.error("manifest has no content_scripts[0].js — Feature A cannot be injected into any tab");
+}
+
+async function injectContentScript(tabId, url) {
+  // chrome://, chrome-extension://, and the Web Store reject scripting even
+  // under <all_urls>; skipping them keeps one warning per restricted tab out
+  // of the log on every reload.
+  if (!/^https?:/.test(url ?? "")) return false;
+  try {
+    await chrome.scripting.executeScript({ target: { tabId }, files: CONTENT_SCRIPT_FILES });
+    return true;
+  } catch (err) {
+    log.warn(`inject into tab ${tabId} (${url}) failed:`, err.message);
+    return false;
+  }
+}
+
+// Safe to run against a tab that already has the script: content.entry.js
+// guards on window.__w2mContentLastRan and no-ops if it ran under 2s ago.
+async function injectIntoAllTabs(reason) {
+  const tabs = await chrome.tabs.query({ url: ["http://*/*", "https://*/*"] });
+  const results = await Promise.all(tabs.map((t) => injectContentScript(t.id, t.url)));
+  log.info(`${reason}: injected content scripts into ${results.filter(Boolean).length}/${tabs.length} open tab(s)`);
 }
 
 // ── Audio / UI state ──────────────────────────────────────────────────────
@@ -49,18 +98,35 @@ const audioState = {
 
 chrome.storage.local.get({ masterEnabled: true }, ({ masterEnabled }) => {
   audioState.isEnabled = masterEnabled;
+  log.info("Restored masterEnabled =", masterEnabled);
 });
 
+// Log only when `status` actually changes, not on every broadcast — the popup
+// re-broadcasts on volume drags and analyser ticks, and logging all of those
+// buries the transitions that matter (loading -> playing -> error).
+let lastLoggedStatus = null;
 function broadcastStatus() {
+  if (audioState.status !== lastLoggedStatus) {
+    log.info(`status: ${lastLoggedStatus ?? "(init)"} -> ${audioState.status}`,
+      { url: audioState.currentUrl, tabId: audioState.currentTabId, ducked: audioState.isDucked, paused: audioState.isPaused });
+    lastLoggedStatus = audioState.status;
+  }
   chrome.runtime.sendMessage({ type: "STATUS_UPDATE", ...audioState }).catch(() => {});
 }
 
 // ── Feature B wiring ──────────────────────────────────────────────────────
 chrome.storage.sync.get(["llmApiKey", "llmBackend", "llmServiceUrl", "targetModel"], (settings) => {
+  const usingProxy = settings.llmBackend === "proxy" || !settings.llmApiKey;
   configureFeatureB({
-    apiKey: settings.llmBackend === "proxy" || !settings.llmApiKey
+    apiKey: usingProxy
       ? { backend: "proxy", serviceUrl: settings.llmServiceUrl || "http://localhost:8078/v1/chat/completions" }
       : settings.llmApiKey,
+    targetModel: settings.targetModel ?? "musicgen",
+  });
+  // Never log the key itself — only which path was taken.
+  log.info("Feature B configured:", {
+    backend: usingProxy ? "proxy" : "direct-key",
+    serviceUrl: usingProxy ? (settings.llmServiceUrl || "http://localhost:8078/v1/chat/completions") : undefined,
     targetModel: settings.targetModel ?? "musicgen",
   });
 });
@@ -73,8 +139,11 @@ async function checkClassifyProxy() {
   try {
     const res = await fetch(`${base}/health`, { signal: AbortSignal.timeout(3000) });
     audioState.classifyProxyReachable = res.ok;
-  } catch {
+    log.info(`classify proxy ${base}/health -> ${res.status} (reachable=${res.ok})`);
+  } catch (err) {
     audioState.classifyProxyReachable = false;
+    log.warn(`classify proxy ${base}/health unreachable (${err.name}: ${err.message}) — `
+      + "Feature B will fall back to its local classifier. Is web2music-classify-service up?");
   }
   broadcastStatus();
 }
@@ -86,7 +155,15 @@ checkClassifyProxy();
 async function handleHandoff2(handoff2, tabId) {
   recordTelemetry("B_decision", { tabId, event: "handoff2", meta: { isSilent: !!handoff2.isSilent, isFadeUpdate: !!handoff2.isFadeUpdate } });
 
+  log.info("handoff2 received", {
+    tabId,
+    kind: handoff2.isSilent ? "silence" : handoff2.isFadeUpdate ? "fade-update" : "transition",
+    mood: handoff2.profile?.mood,
+    volume: handoff2.volume,
+  });
+
   if (handoff2.isSilent) {
+    log.info("B signalled sensitive-content silence — fading out, skipping /generate entirely");
     forwardToOffscreen({ type: "FADE_TO_SILENCE" });
     return;
   }
@@ -110,12 +187,32 @@ async function handleHandoff2(handoff2, tabId) {
   forwardToOffscreen({ type: "SET_MOOD_VOLUME", value: handoff2.volume ?? 1 });
 
   const t0 = performance.now();
+  const doneD = log.time(`D request (${handoff2.profile?.mood})`);
   try {
     await requestTrack(handoff2.profile, {
       onFallback: (clip) => {
+        log.info("instant fallback playing while /generate runs:", clip.audio_url);
         forwardToOffscreen({ type: "LOAD_TRACK", url: clip.audio_url, loopPointMs: clip.metadata?.loop_point_ms });
       },
       onGenerated: (clip) => {
+        // cache/is_fallback is the single most useful line in this file: a
+        // steady stream of cache=miss + isFallback=true means D is generating
+        // real audio and then failing to persist it, so nothing ever warms and
+        // every page gets a canned clip. That is exactly what a broken
+        // save_to_cache looks like from up here.
+        doneD(`cache=${clip.cache} isFallback=${!!clip.metadata?.is_fallback}`);
+        log.info("generated clip:", {
+          url: clip.audio_url,
+          cache: clip.cache,
+          isFallback: !!clip.metadata?.is_fallback,
+          mood: clip.metadata?.mood,
+          loopPointMs: clip.metadata?.loop_point_ms,
+          timings: clip.timings,
+        });
+        if (clip.cache === "miss" && clip.metadata?.is_fallback) {
+          log.warn("D returned a FALLBACK clip, not generated audio — check the Feature D "
+            + "container logs for '[MAIN] save_to_cache failed' or '[MAIN] Generation failed'.");
+        }
         forwardToOffscreen({ type: "LOAD_TRACK", url: clip.audio_url, loopPointMs: clip.metadata?.loop_point_ms });
         audioState.currentUrl = clip.audio_url;
         audioState.status = "playing";
@@ -130,8 +227,11 @@ async function handleHandoff2(handoff2, tabId) {
       },
     });
   } catch (err) {
-    if (err.name === "AbortError") return; // superseded by a newer mood — not an error
-    console.error("[background] Feature D request failed:", err);
+    if (err.name === "AbortError") {
+      log.debug("D request aborted — superseded by a newer mood, not an error");
+      return;
+    }
+    log.error("Feature D request failed:", err);
     audioState.status = "error";
     broadcastStatus();
   }
@@ -148,8 +248,10 @@ chrome.tabs.onActivated.addListener(async ({ tabId }) => {
   const tab = await chrome.tabs.get(tabId);
   audioState.currentTabId = tabId;
   const shouldDuck = isMediaTab(tab.url);
+  log.debug("tab activated", { tabId, shouldDuck, wasDucked: audioState.isDucked });
   if (shouldDuck !== audioState.isDucked) {
     audioState.isDucked = shouldDuck;
+    log.info(shouldDuck ? "ducking for media tab" : "unducking", tab.url);
     forwardToOffscreen({ type: shouldDuck ? "DUCK" : "UNDUCK" });
   }
 });
@@ -157,6 +259,7 @@ chrome.tabs.onActivated.addListener(async ({ tabId }) => {
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.status !== "complete" || tabId !== audioState.currentTabId) return;
   const shouldDuck = isMediaTab(tab.url);
+  log.debug("active tab finished loading", { tabId, shouldDuck });
   audioState.isDucked = shouldDuck;
   forwardToOffscreen({ type: shouldDuck ? "DUCK" : "UNDUCK" });
 });
@@ -164,22 +267,45 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 // ── Idle detection ────────────────────────────────────────────────────────
 chrome.idle.setDetectionInterval(60);
 chrome.idle.onStateChanged.addListener((state) => {
+  log.info("idle state ->", state);
   if (state === "idle" || state === "locked") {
+    log.info("fading out for idle (4s), then stopping");
     forwardToOffscreen({ type: "FADE_OUT", seconds: 4 });
     audioState.status = "stopped";
     audioState.isPaused = false;
+    // NOTE: no broadcastStatus() here, unlike every other status write in this
+    // file — the popup keeps showing "playing" until something else broadcasts.
+    // Left as-is deliberately (this pass is logging only); debug-logged so the
+    // divergence is at least visible rather than inferred.
+    log.debug("status set to 'stopped' for idle without broadcasting — popup may show stale state");
   }
 });
 
 // ── Message router ────────────────────────────────────────────────────────
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  // Messages the worker sends to ITSELF (STATUS_UPDATE/ANALYSER_DATA
+  // broadcasts) also arrive here. Skipping them keeps the log a record of
+  // inbound traffic rather than an echo of our own chatter — ANALYSER_DATA
+  // alone fires 10x/sec.
+  if (msg.type !== "ANALYSER_DATA" && msg.type !== "STATUS_UPDATE") {
+    log.debug(`<- ${msg.type}`, { fromTab: sender.tab?.id, fromUrl: sender.tab?.url ?? "(extension page)" });
+  }
+
   // Relay for Feature A's offscreen RPCs (embed / vector store) — see the
   // comment in remoteDeps.js on why `target` is added here, not by the
   // content script itself.
   if (OFFSCREEN_EXTRACT_TYPES.has(msg.type)) {
     (async () => {
       await ensureOffscreen();
-      chrome.runtime.sendMessage({ target: "offscreen", ...msg }, (response) => sendResponse(response));
+      chrome.runtime.sendMessage({ target: "offscreen", ...msg }, (response) => {
+        if (chrome.runtime.lastError) {
+          // Without this the relay fails completely silently: sendResponse
+          // still fires (with undefined), the content script sees a
+          // null embedding, and Feature A looks like it returned no result.
+          log.warn(`offscreen relay '${msg.type}' errored:`, chrome.runtime.lastError.message);
+        }
+        sendResponse(response);
+      });
     })();
     return true;
   }
@@ -189,19 +315,33 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       (async () => {
         const { masterEnabled } = await chrome.storage.local.get({ masterEnabled: true });
         audioState.isEnabled = masterEnabled;
-        if (!audioState.isEnabled) return;
+        if (!audioState.isEnabled) {
+          log.debug("A_PAGE_DATA dropped — extension disabled (masterEnabled=false)");
+          return;
+        }
 
         const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        if (!activeTab || activeTab.id !== sender.tab?.id) return;
+        if (!activeTab || activeTab.id !== sender.tab?.id) {
+          // Background tabs extract too; only the focused one drives audio.
+          log.debug(`A_PAGE_DATA dropped — tab ${sender.tab?.id} is not the active tab (${activeTab?.id})`);
+          return;
+        }
 
         audioState.currentTabId = sender.tab.id;
         const hash = await urlHash(msg.pageData?.url);
         recordTelemetry("A_extract", { tabId: sender.tab.id, event: "extract", urlHash: hash, meta: msg.telemetry });
 
-        console.log("[background] A→B handoff received for tab", sender.tab.id);
+        log.info("A→B handoff received", {
+          tabId: sender.tab.id,
+          url: msg.pageData?.url,
+          textChars: msg.pageData?.text?.length ?? msg.pageData?.content?.length,
+          hasColors: !!msg.pageData?.colors,
+        });
 
         const t0 = performance.now();
+        const doneB = log.time("runFeatureB");
         const handoff2 = await runFeatureB(msg.pageData, sender.tab.id);
+        doneB(handoff2 ? `-> ${handoff2.profile?.mood ?? "silence/fade"}` : "-> no transition");
         recordTelemetry("B_decision", { tabId: sender.tab.id, event: "runFeatureB", ms: performance.now() - t0, meta: { transitioned: !!handoff2 } });
 
         // B returns null until a mood has held steady for confidenceWindowMs
@@ -210,10 +350,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         // what made "D never runs" look like a bug rather than the gate
         // working as designed. See decideTransition in feature_b/index.js.
         if (!handoff2) {
-          console.log("[background] B: no transition yet (confidence window not met) — D not called");
+          log.info("B: no transition yet (confidence window not met) — D not called");
           return;
         }
-        console.log("[background] B→D handoff:", handoff2.profile?.mood ?? "(silence/fade)");
+        log.info("B→D handoff:", handoff2.profile?.mood ?? "(silence/fade)", handoff2.profile);
         handleHandoff2(handoff2, sender.tab.id);
       })();
       break;
@@ -221,12 +361,17 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
     case "POPUP_PLAY":
       if (audioState.isPaused) {
+        log.info("POPUP_PLAY -> resuming paused track");
         forwardToOffscreen({ type: "RESUME" });
         audioState.isPaused = false;
         audioState.status = "playing";
       } else if (audioState.currentUrl) {
+        log.info("POPUP_PLAY -> reloading", audioState.currentUrl);
         forwardToOffscreen({ type: "LOAD_TRACK", url: audioState.currentUrl });
         audioState.status = "playing";
+      } else {
+        log.warn("POPUP_PLAY ignored — nothing paused and no currentUrl yet "
+          + "(no mood transition has completed since the worker last started)");
       }
       broadcastStatus();
       break;
@@ -246,6 +391,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       break;
 
     case "POPUP_SET_ENABLED":
+      log.info("POPUP_SET_ENABLED ->", msg.enabled);
       audioState.isEnabled = msg.enabled;
       chrome.storage.local.set({ masterEnabled: msg.enabled });
       if (!msg.enabled) {
@@ -260,13 +406,11 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       } else {
         chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
           if (tab?.id) {
-            chrome.scripting.executeScript({
-              target: { tabId: tab.id },
-              files: [
-                "vendor/Textextractor.js", "vendor/Colorextractor.js", "vendor/Readability.js",
-                "vendor/behaviorTracker.js", "vendor/pageData.js", "content.js",
-              ],
-            }).catch((e) => console.warn("[background] Re-inject failed:", e));
+            log.info("re-injecting content scripts into tab", tab.id, tab.url);
+            injectContentScript(tab.id, tab.url)
+              .then((ok) => log.debug(`re-inject ${ok ? "complete" : "skipped (not an http(s) tab)"} for tab`, tab.id));
+          } else {
+            log.warn("re-inject skipped — no active tab");
           }
         });
         broadcastStatus();
@@ -294,20 +438,30 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       // Skip/regenerate: re-POST the current profile with a fresh nonce so
       // D5's cache key misses and a new seed is drawn (X4 plan 6.1) — see
       // models.py's `nonce` field and d5_cache[_local].py's make_cache_key.
-      if (!audioState.currentProfile) break;
+      if (!audioState.currentProfile) {
+        log.warn("POPUP_REGENERATE ignored — no currentProfile (nothing has played yet this worker lifetime)");
+        break;
+      }
       recordTelemetry("user_control", { event: "user_regenerate" });
       audioState.status = "loading";
       broadcastStatus();
-      requestGeneration({ ...audioState.currentProfile, nonce: crypto.randomUUID() })
+      const nonce = crypto.randomUUID();
+      log.info("POPUP_REGENERATE for mood", audioState.currentProfile.mood, "nonce", nonce);
+      const doneRegen = log.time("regenerate");
+      requestGeneration({ ...audioState.currentProfile, nonce })
         .then((clip) => {
+          doneRegen(`cache=${clip.cache} isFallback=${!!clip.metadata?.is_fallback} url=${clip.audio_url}`);
           forwardToOffscreen({ type: "LOAD_TRACK", url: clip.audio_url, loopPointMs: clip.metadata?.loop_point_ms });
           audioState.currentUrl = clip.audio_url;
           audioState.status = "playing";
           broadcastStatus();
         })
         .catch((err) => {
-          if (err.name === "AbortError") return;
-          console.error("[background] Regenerate failed:", err);
+          if (err.name === "AbortError") {
+            log.debug("regenerate aborted — superseded by a newer request");
+            return;
+          }
+          log.error("Regenerate failed:", err);
           audioState.status = "error";
           broadcastStatus();
         });
@@ -332,8 +486,11 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
     case "PLAYER_STATUS":
       if (msg.state === "error") {
+        log.error("offscreen reported a playback error for", msg.url);
         audioState.status = "error";
         broadcastStatus();
+      } else {
+        log.debug("offscreen player status:", msg.state, msg.url ?? "");
       }
       recordTelemetry("playback", { event: "player_status", meta: { state: msg.state } });
       break;
@@ -341,7 +498,26 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 });
 
 // ── Init ──────────────────────────────────────────────────────────────────
-chrome.runtime.onInstalled.addListener(() => ensureOffscreen());
-chrome.runtime.onStartup.addListener(() => ensureOffscreen());
+chrome.runtime.onInstalled.addListener((details) => {
+  log.info("onInstalled:", details.reason, details.previousVersion ?? "");
+  ensureOffscreen();
+  injectIntoAllTabs("onInstalled");
+});
+chrome.runtime.onStartup.addListener(() => {
+  log.info("onStartup: browser launched");
+  ensureOffscreen();
+  injectIntoAllTabs("onStartup");
+});
 
-console.log("[background] Service worker started");
+// Uncaught failures inside the worker otherwise land as a bare
+// "Uncaught (in promise)" at background.js:1 with the bundled line number,
+// which points at nothing useful.
+self.addEventListener("unhandledrejection", (e) => log.error("unhandled promise rejection:", e.reason));
+self.addEventListener("error", (e) => log.error("uncaught error:", e.message, e.filename, e.lineno));
+
+// A service worker restart resets every module-level variable in this file
+// (audioState included). Printing the backend URL here means the first line
+// after a restart already answers "which Feature D is it talking to?".
+chrome.storage.local.get({ backendUrl: "http://localhost:8000" }, ({ backendUrl }) => {
+  log.info("Service worker started — Feature D backend:", backendUrl);
+});

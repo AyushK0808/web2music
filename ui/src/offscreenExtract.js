@@ -7,6 +7,10 @@
 // (→ window.Web2MusicVectorStore, loaded as a classic script by
 // offscreen.html before this bundle runs).
 
+import { createLogger } from "./log.js";
+
+const log = createLogger("offscreen-extract");
+
 let _worker = null;
 let _nextId = 1;
 const _pending = new Map();
@@ -21,6 +25,24 @@ function getWorker() {
     _pending.delete(id);
     if (ok) waiter.resolve(rest);
     else waiter.reject(new Error(rest.error || "embed worker error"));
+  };
+  // An uncaught error in the worker (ONNX failing to initialise, say) never
+  // produces an EMBED reply, so without this every in-flight request sits in
+  // _pending forever and the only symptom is a bare "worker sent an error!"
+  // line in the offscreen console. Fail the callers instead.
+  //
+  // The worker is deliberately kept rather than terminated and respawned: an
+  // uncaught error does not necessarily kill it, and if the cause is
+  // structural (as the blob:/CSP thread failure was — see embed.worker.js)
+  // respawning just reloads a 10MB wasm on every request to fail the same way.
+  // Later requests are bounded by remoteDeps.js's RPC timeout instead.
+  _worker.onerror = (event) => {
+    const detail = event.message || "embed worker crashed";
+    log.error(`embed worker error (${_pending.size} request(s) in flight):`, detail);
+    for (const [id, waiter] of _pending) {
+      _pending.delete(id);
+      waiter.reject(new Error(detail));
+    }
   };
   return _worker;
 }

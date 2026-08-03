@@ -67,6 +67,30 @@ Two backends sit behind this, and they fail very differently:
 - **Feature D on `:8000`** is what actually produces audio — without it there is nothing to play. It sits behind a compose profile, so `npm run up` alone does *not* start it: use `docker compose -f docker/docker-compose.yml --profile cpu up feature-d` (or `--profile gpu`), set `COMPOSE_PROFILES=cpu` in `.env`, or run `audio-generation/` directly.
 - **The classify proxy on `:8078`** backs Feature B's LLM tier, and `npm run up` does start it. Without it — or without a Groq key — B1/B2 log `Failed to fetch` and fall back to tier-1 keyword heuristics. That is a working degraded path, not a failure: the extension keeps classifying and playing.
 
+## Console logging
+
+The pipeline spans three contexts that each log into a **different** DevTools console:
+
+| Context | Where to open it | Tags you'll see |
+|---|---|---|
+| Service worker | `chrome://extensions` → **service worker** link under the extension | `[background]`, `[featureD]` |
+| Offscreen document | `chrome://extensions` → **offscreen.html** under *Inspect views* | `[offscreen]` |
+| Content script | DevTools on the page itself | `[content]` |
+
+Every line carries `+Nms` since **that context** started, from [`src/log.js`](src/log.js). This matters most in the service worker: MV3 kills it after ~30s idle and restarts it silently on the next event, wiping every module-level variable (`audioState` included). A counter that jumps back to `+12ms` is a restart, not a bug in the state handling.
+
+The per-message firehose is `log.debug`, gated on a storage flag (on by default). To quieten it without a rebuild, from any extension console:
+
+```js
+chrome.storage.local.set({ debugLogging: false })   // true to re-enable
+```
+
+`info`/`warn`/`error` are never gated — those are the lines you need for a failure you can't reproduce on demand.
+
+**Reading a mood transition**, when it's working: `[content] extraction #N` → `[background] A→B handoff` → `runFeatureB took …` → `B→D handoff: <mood>` → `[featureD] POST /generate` → `[background] generated clip: {cache, isFallback}` → `[offscreen] loadTrack` → `deck N playing`.
+
+If `generated clip:` reports `cache=miss` with `isFallback=true` on every page, D is generating real audio and then failing to persist it — check the Feature D logs for `[MAIN] save_to_cache failed` and see the [cache DB schema notes](../README.md#cache-db-schema).
+
 ## Tests
 
 `node ui/offscreen_routing_test.js` covers the message routing described above and runs as part of the root `npm test`.

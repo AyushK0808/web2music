@@ -92,6 +92,28 @@ docker compose -f docker/docker-compose.yml --profile cpu up feature-d
 
 Server runs at `http://127.0.0.1:8000`; Swagger UI at `http://127.0.0.1:8000/docs`. First request is slow (~1-2 min) while MusicGen loads.
 
+#### Cache DB schema
+
+Feature D writes every generated clip to the `audio_cache` table defined in [`docker/init.sql`](docker/init.sql). On startup (dev only) it calls `d5_cache_local.ensure_schema()`, which creates the table and adds any missing columns, so you normally don't have to do anything.
+
+That step exists because **Postgres runs `docker/init.sql` only when the data volume is empty**. Editing `init.sql` does nothing to a database that already exists — a `db-data` volume created before a column was added never gains it. Symptom, if `ensure_schema()` is ever bypassed:
+
+```
+[MAIN] save_to_cache failed: column "valence" of relation "audio_cache" does not exist
+[MAIN] Attempting fallback clip for mood: energetic
+```
+
+D still returns audio, but it's a canned fallback clip on **every** request — the cache can never be written, so it can never be hit. To repair a database by hand (`init.sql` is idempotent, so it doubles as the migration):
+
+```bash
+docker exec -i web2music-db psql -U postgres -d audio_cache < docker/init.sql
+
+# or, to check what's actually there:
+docker exec web2music-db psql -U postgres -d audio_cache -c "\d audio_cache"
+```
+
+`audio-generation/tests/test_schema_sync.py` fails the build if `init.sql`, `ensure_schema()`, and `save_to_cache()`'s INSERT ever disagree again.
+
 ### Feature C — `ui/`
 The Chrome extension.
 

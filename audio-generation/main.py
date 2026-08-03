@@ -1,6 +1,21 @@
 import os
+import sys
 import time
 import asyncio
+import traceback
+
+# Every diagnostic in Feature D is a print(), and Python BLOCK-buffers stdout
+# whenever it isn't a tty -- so `uvicorn main:app > featured.log` (the README's
+# native path) holds ~8KB of [MAIN]/[D5]/[PREWARM] lines in memory and flushes
+# them only at exit. uvicorn's own INFO lines go through logging to stderr and
+# appear immediately, which makes the log look complete while every line that
+# would explain a cache failure is invisible until the server is killed.
+#
+# The Dockerfile already sets PYTHONUNBUFFERED=1, so containers never showed
+# this; only the native path did. Line-buffering here fixes both entry points
+# at once, for every module's prints, without touching each call site.
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(line_buffering=True)
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -21,7 +36,7 @@ if IS_PROD:
     # from depending on anything baked into its own filesystem.
     from fallback_prod import get_fallback_clip
 else:
-    from d5_cache_local import make_cache_key, check_cache, save_to_cache, AUDIO_CACHE_DIR
+    from d5_cache_local import make_cache_key, check_cache, save_to_cache, AUDIO_CACHE_DIR, ensure_schema
     from fallback import get_fallback_clip, FALLBACK_DIR
 
 from contextlib import asynccontextmanager
@@ -29,6 +44,25 @@ from contextlib import asynccontextmanager
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    print(f"[MAIN] Starting Feature D -- IS_PROD={IS_PROD}, "
+          f"cache backend={'supabase (d5_cache)' if IS_PROD else 'local postgres (d5_cache_local)'}")
+
+    if not IS_PROD:
+        # Awaited, not fire-and-forget: prewarm and every /generate below
+        # write through save_to_cache, and a dev DB whose volume predates a
+        # column silently fails all of them (see ensure_schema's docstring).
+        # Cheap -- CREATE/ALTER ... IF NOT EXISTS on an up-to-date DB is a
+        # handful of no-ops. A failure here is logged and tolerated: the
+        # cache is an optimisation, and D still generates and serves audio
+        # with a dead DB, exactly as the check_cache/save_to_cache handlers
+        # below already assume.
+        try:
+            await asyncio.to_thread(ensure_schema)
+        except Exception as e:
+            print(f"[MAIN] ensure_schema failed ({type(e).__name__}: {e}) -- "
+                  f"continuing, but expect every cache write to fail and every "
+                  f"response to degrade to a fallback clip. Is the db container up?")
+
     # Fire-and-forget: don't await this, or the server won't start accepting
     # real requests until the entire pre-warm grid finishes generating.
     # The task is held on app.state so it isn't garbage-collected mid-run --
@@ -156,6 +190,7 @@ async def generate(payload: HandoffPayload):
 
     # D1 — Validate & unwrap Sneha's Handoff 2 payload
     t0 = time.time()
+    print(f"[MAIN] POST /generate received (isSilent={payload.isSilent})")
     try:
         profile, prompt_from_b = validate_profile(payload)
     except Exception as e:
@@ -195,6 +230,10 @@ async def generate(payload: HandoffPayload):
             "timings": timings,
         }
 
+    print(f"[MAIN] Profile: mood={profile['mood']} style={profile.get('style')} bpm={profile['bpm']} "
+          f"key={profile['key']} energy={profile['energy']} duration={profile.get('duration_seconds')}s"
+          + (" nonce=<set>" if profile.get("nonce") else ""))
+
     # Cache check
     t1 = time.time()
     cache_key = make_cache_key(profile)
@@ -204,11 +243,12 @@ async def generate(payload: HandoffPayload):
         # A broken cache lookup (Supabase/DB down, network blip) shouldn't
         # block generation entirely -- degrade to a cache miss and generate
         # fresh instead of failing the request over an unrelated subsystem.
-        print(f"[MAIN] check_cache failed, treating as cache miss: {e}")
+        print(f"[MAIN] check_cache failed, treating as cache miss ({type(e).__name__}): {e}")
         cached = None
     timings["d5_cache_check_ms"] = int((time.time() - t1) * 1000)
 
     if cached:
+        print(f"[MAIN] /generate complete (cache=hit) mood={cached.get('mood')} url={cached['audio_url']} timings={timings}")
         # Not every field in the miss-path metadata below is persisted to
         # the cache DB (see the column list in ../docker/init.sql) -- only
         # cache_key/mood/bpm/key/energy/style/loop_point_ms/prompt_used
@@ -263,6 +303,7 @@ async def generate(payload: HandoffPayload):
         return await _fallback_response(profile, timings)
 
     timings["d3_generate_ms"] = int((time.time() - t3) * 1000)
+    print(f"[D3] Generated {len(audio_bytes)} bytes in {timings['d3_generate_ms']}ms (seed={generation_seed})")
 
     # D4 — Post-process
     t4 = time.time()
@@ -273,6 +314,8 @@ async def generate(payload: HandoffPayload):
         print(f"[MAIN] Attempting fallback clip for mood: {profile['mood']}")
         return await _fallback_response(profile, timings)
     timings["d4_process_ms"] = int((time.time() - t4) * 1000)
+    print(f"[D4] Post-processed to {len(clip_bytes)} bytes in {timings['d4_process_ms']}ms "
+          f"(loop_point={loop_point_ms}ms, seam={seam_discontinuity})")
 
     # D5 — Cache & return
     t5 = time.time()
@@ -289,10 +332,18 @@ async def generate(payload: HandoffPayload):
         # URL (never raw bytes), so there's no way to hand the client a
         # working result without a successful save; treat this the same
         # as a generation/encode failure rather than a bare 500.
-        print(f"[MAIN] save_to_cache failed: {e}")
-        print(f"[MAIN] Attempting fallback clip for mood: {profile['mood']}")
+        #
+        # Full traceback, not just str(e): this handler throws away a clip
+        # that cost 15-95s of CPU to make, and the one-line form hid a plain
+        # schema mismatch behind an endless stream of "returning fallback"
+        # for weeks. If this fires, the next thing anyone needs is the frame
+        # it came from.
+        print(f"[MAIN] save_to_cache failed ({type(e).__name__}): {e}")
+        traceback.print_exc()
+        print(f"[MAIN] Discarding a good {len(clip_bytes)}-byte clip and attempting fallback for mood: {profile['mood']}")
         return await _fallback_response(profile, timings)
     timings["d5_save_ms"] = int((time.time() - t5) * 1000)
+    print(f"[MAIN] /generate complete (cache=miss) mood={profile['mood']} url={audio_url} timings={timings}")
 
     return {
         "audio_url": audio_url,
