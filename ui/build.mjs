@@ -10,7 +10,7 @@
 // load unpacked from ui/dist/, not ui/.
 
 import * as esbuild from "esbuild";
-import { cpSync, mkdirSync, existsSync, rmSync } from "node:fs";
+import { cpSync, mkdirSync, existsSync, rmSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -34,6 +34,15 @@ function copyStaticAssets() {
   for (const html of ["popup.html", "offscreen.html"]) {
     cpSync(path.join(__dirname, html), path.join(DIST, html));
   }
+
+  // popup.js is a classic script (popup.html loads it with a plain
+  // <script src>, no type="module") with no imports, so it is copied
+  // verbatim rather than bundled. Missing it doesn't fail the build or log
+  // anything — it 404s at runtime and the popup silently keeps its static
+  // HTML placeholders ("—", "Extracting Styles") with every control inert,
+  // which reads exactly like a broken audio pipeline. Hence the assertion
+  // in verifyReferencedAssets below.
+  cpSync(path.join(__dirname, "popup.js"), path.join(DIST, "popup.js"));
 
   mkdirSync(path.join(DIST, "assets"), { recursive: true });
   cpSync(path.join(__dirname, "assets", "Tone.js"), path.join(DIST, "assets", "Tone.js"));
@@ -59,6 +68,25 @@ function copyStaticAssets() {
     } else {
       console.warn(`[build] ui/${dir}/ not found — skipping copy (see ui/models/README.md)`);
     }
+  }
+}
+
+// Every local src= / href= in the emitted HTML must exist in dist. A missing
+// one is invisible at build time and only shows up as a dead UI at runtime.
+function verifyReferencedAssets() {
+  const missing = [];
+  for (const html of ["popup.html", "offscreen.html"]) {
+    const file = path.join(DIST, html);
+    if (!existsSync(file)) { missing.push(html); continue; }
+    const source = readFileSync(file, "utf8");
+    for (const m of source.matchAll(/(?:src|href)\s*=\s*["']([^"']+)["']/g)) {
+      const ref = m[1];
+      if (/^(https?:|data:|#|\/\/)/.test(ref)) continue;
+      if (!existsSync(path.join(DIST, ref.split(/[?#]/)[0]))) missing.push(`${html} -> ${ref}`);
+    }
+  }
+  if (missing.length) {
+    throw new Error(`[build] dist is missing assets referenced by HTML:\n  ${missing.join("\n  ")}`);
   }
 }
 
@@ -88,6 +116,7 @@ async function build() {
   } else {
     await Promise.all(contexts.map((ctx) => ctx.rebuild()));
     await Promise.all(contexts.map((ctx) => ctx.dispose()));
+    verifyReferencedAssets();
     console.log("[build] done -> ui/dist/");
   }
 }

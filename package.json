@@ -13,15 +13,17 @@
   "scripts": {
     "build": "node ui/build.mjs",
     "build:watch": "node ui/build.mjs --watch",
-    "test": "npm run test -w data-extraction && npm run test -w mood-classification && node mood-classification/fixture_staleness_test.js",
+    "test": "npm run test -w data-extraction && npm run test -w mood-classification && node mood-classification/fixture_staleness_test.js && node ui/offscreen_routing_test.js",
     "test:a": "npm run test -w data-extraction",
     "test:b": "npm run test -w mood-classification",
     "test:d": "pytest",
+    "test:e2e": "node ui/build.mjs && node ui/e2e/chromiumExtension.e2e.mjs",
     "bench": "npm run bench -w data-extraction",
     "up": "docker compose -f docker/docker-compose.yml up -d",
     "down": "docker compose -f docker/docker-compose.yml down"
   },
   "devDependencies": {
-    "esbuild": "^0.25.0"
+    "esbuild": "^0.25.0",
+    "playwright": "^1.62.1"
   }
 }

@@ -21,6 +21,7 @@
 // X2 produced.
 
 import { handleExtractMessage, warmEmbedWorker } from "./offscreenExtract.js";
+import { isExtractMessage } from "./offscreenTypes.js";
 
 const CROSSFADE_SECONDS = 3.0;
 const CROSSFADE_STEPS = 128;
@@ -216,7 +217,11 @@ function sendStatus(state) {
 
 // ── Message listener ──────────────────────────────────────────────────────
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
-  if (msg.target === "offscreen") {
+  // Gate on the message type, not on `target` alone — forwardToOffscreen()
+  // stamps target:"offscreen" onto audio commands too, and routing those
+  // into handleExtractMessage() left them unanswered on a held-open channel
+  // while the switch below never ran. See offscreenTypes.js.
+  if (isExtractMessage(msg)) {
     // handleExtractMessage is async and calls sendResponse itself once it
     // resolves — returning true here (not the promise) keeps the message
     // channel open until that happens, per the chrome.runtime.onMessage contract.

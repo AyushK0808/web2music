@@ -5,8 +5,7 @@
 import { configureFeatureB, registerFeatureBHeartbeat, onHandoff2, runFeatureB, MOODS } from "../../mood-classification/feature_b/index.js";
 import { requestTrack, requestGeneration } from "./featureDClient.js";
 import { recordTelemetry, urlHash, exportTelemetry } from "./telemetry.js";
-
-const OFFSCREEN_TARGETS = new Set(["A_EMBED", "A_VS_SEARCH", "A_VS_UPSERT", "A_VS_CLEAR"]);
+import { OFFSCREEN_EXTRACT_TYPES } from "./offscreenTypes.js";
 
 // ── Offscreen document lifecycle ─────────────────────────────────────────────
 // Both AUDIO_PLAYBACK (Feature C) and WORKERS (the embed worker spawned for
@@ -23,9 +22,17 @@ async function ensureOffscreen() {
   }
 }
 
+// Callers are fire-and-forget, so swallow-and-log rather than returning a
+// promise nobody awaits — an unhandled rejection here surfaces as a bare
+// "Uncaught (in promise)" at background.js:1 with no clue which command
+// failed, which is exactly how the target/type routing bug stayed invisible.
 async function forwardToOffscreen(msg) {
   await ensureOffscreen();
-  return chrome.runtime.sendMessage({ target: "offscreen", ...msg });
+  try {
+    return await chrome.runtime.sendMessage({ target: "offscreen", ...msg });
+  } catch (err) {
+    console.warn(`[background] offscreen '${msg.type}' failed:`, err.message);
+  }
 }
 
 // ── Audio / UI state ──────────────────────────────────────────────────────
@@ -159,7 +166,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   // Relay for Feature A's offscreen RPCs (embed / vector store) — see the
   // comment in remoteDeps.js on why `target` is added here, not by the
   // content script itself.
-  if (OFFSCREEN_TARGETS.has(msg.type)) {
+  if (OFFSCREEN_EXTRACT_TYPES.has(msg.type)) {
     (async () => {
       await ensureOffscreen();
       chrome.runtime.sendMessage({ target: "offscreen", ...msg }, (response) => sendResponse(response));
@@ -181,10 +188,23 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         const hash = await urlHash(msg.pageData?.url);
         recordTelemetry("A_extract", { tabId: sender.tab.id, event: "extract", urlHash: hash, meta: msg.telemetry });
 
+        console.log("[background] A→B handoff received for tab", sender.tab.id);
+
         const t0 = performance.now();
         const handoff2 = await runFeatureB(msg.pageData, sender.tab.id);
         recordTelemetry("B_decision", { tabId: sender.tab.id, event: "runFeatureB", ms: performance.now() - t0, meta: { transitioned: !!handoff2 } });
-        if (handoff2) handleHandoff2(handoff2, sender.tab.id);
+
+        // B returns null until a mood has held steady for confidenceWindowMs
+        // (5s), so the *first* extraction on any tab never reaches D. Say so
+        // out loud — silence here is indistinguishable from a crash, which is
+        // what made "D never runs" look like a bug rather than the gate
+        // working as designed. See decideTransition in feature_b/index.js.
+        if (!handoff2) {
+          console.log("[background] B: no transition yet (confidence window not met) — D not called");
+          return;
+        }
+        console.log("[background] B→D handoff:", handoff2.profile?.mood ?? "(silence/fade)");
+        handleHandoff2(handoff2, sender.tab.id);
       })();
       break;
     }
