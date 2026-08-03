@@ -94,3 +94,29 @@ Three things worth knowing:
 - If the real classify proxy is already on `:8078`, the harness says so and downgrades the exact-mood expectations to advisory — an LLM is entitled to disagree with the keyword tier. Stop it for an assertable run.
 
 It is deliberately not part of `npm test`: it takes ~2 minutes and needs a browser download.
+
+## Live playback tests
+
+`npm run test:e2e:live` browses **real websites** — Wikipedia articles, the Hacker News front page, youtube.com — and asserts the half the corpus above cannot reach: that music actually comes out.
+
+```
+npm run test:e2e:live                        # all four phases, headless
+npm run test:e2e:live -- --headed --unmuted  # watch it, and hear it
+npm run test:e2e:live -- --only=silence      # one phase
+```
+
+| Phase | What it browses | What it asserts |
+|---|---|---|
+| `playback` | Wikipedia — Ambient music | A→B→D on a page nobody wrote for us, the instant-fallback-then-swap, the offscreen deck starting, real signal at the analyser, the popup's mute button silencing it and giving it back, and playback surviving an idle fade-out. |
+| `ducking` | Hacker News + youtube.com | Opening a real media tab drops the music ~20 dB through `isMediaTab()`, and closing it restores the level. |
+| `mood-change` | Ambient music → HIIT | Navigating between real pages commits a different mood, requests a second generation, and keeps playing across the 3s crossfade. |
+| `silence` | Ambient music → Suicide prevention → HIIT | Music already playing is faded out on a real sensitive page, Feature D is never called for it, and browsing on afterwards gets the music back **audibly**. |
+
+How "music is playing" is measured: `offscreen.entry.js` ends its chain with a `Tone.Analyser` downstream of all four gain stages and broadcasts an FFT frame every 100ms, but only while a deck is running. The peak bin is therefore a direct readout of what reaches the speakers — ~-55 dBFS playing, ~-75 ducked, past -100 muted. A `PLAYER_STATUS` of `"playing"` only proves a decode succeeded; the analyser is what proves the sound is still there. Chromium runs with `--mute-audio` unless you pass `--unmuted`, which silences the output device without pausing the graph, so the measurements are the same either way.
+
+Four things worth knowing:
+
+- It needs **outbound network access**. If a page can't be reached the phase is skipped rather than failed, and a run where nothing was reachable says so instead of reporting a hollow pass.
+- The pages are real; the two network edges are still stubbed, exactly as above — `harnessServer.mjs` records what B handed D and serves a decodable WAV, and `:8078` is held down so moods come from tier-1. Which mood a real page produces is **reported, not asserted** (Wikipedia may edit its prose); the one exception is the sensitive page, where `silence` is the whole point.
+- Each phase gets its own short-lived browser, and the harness parks `chrome.idle`'s detection interval for the run. Idle is measured from OS-level input, which a driven browser never produces, so background.js's 60s idle fade would otherwise stop playback mid-measurement. The fade-out path itself is still covered — the `playback` phase sends that `FADE_OUT` deliberately and asserts what happens next.
+- Every phase nudges the page it is on (a hidden empty node, plus scrolling) to stand in for the DOM churn any live site has. Feature B needs two extractions 5s apart, and `content.entry.js` only re-extracts on DOM churn or SPA navigation, so a genuinely static article otherwise waits for the 60s heartbeat alarm — measured at 61s to first note on a Wikipedia article left completely alone, versus ~8s with the nudge.

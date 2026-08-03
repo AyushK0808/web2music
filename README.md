@@ -105,6 +105,15 @@ npm run build       # bundles A + B + the extension shell into ui/dist/
 4. Browse normally; open the extension popup to toggle playback and volume
 ```
 
+Two browser-driven suites, both opt-in (neither is part of `npm test` — each takes a couple of minutes and needs Playwright's Chromium):
+
+```bash
+npm run test:e2e         # 12 synthetic pages: asserts which mood B picks and hands to D
+npm run test:e2e:live    # real websites: asserts that music actually plays, ducks, and goes quiet
+```
+
+`test:e2e:live` browses Wikipedia, Hacker News and youtube.com with the extension loaded and measures the offscreen document's analyser to prove sound is really reaching the output — playback, the popup's mute button, ducking behind a real media tab, a mood change across pages, and the sensitive-page silence path. It needs network access; see [`ui/README.md`](ui/README.md#live-playback-tests).
+
 ## Repository layout
 
 ```

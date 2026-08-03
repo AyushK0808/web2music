@@ -166,6 +166,15 @@ function stop() {
   stopAllDecks();
   isPaused = false;
   currentUrl = null;
+  // Whatever faded this session out belongs to this session. idleFadeOut()
+  // arrives here with moodFadeGain already ramped to 0, and the next
+  // LOAD_TRACK — the popup's Play button reloads audioState.currentUrl
+  // directly, without a Feature B transition to restore the gain — would
+  // otherwise start a fresh track into a muted stage.
+  if (moodFadeGain) {
+    moodFadeGain.gain.cancelScheduledValues(ctx.currentTime);
+    moodFadeGain.gain.value = 1;
+  }
   sendStatus("stopped");
 }
 

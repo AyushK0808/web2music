@@ -99,6 +99,16 @@ async function handleHandoff2(handoff2, tabId) {
   audioState.status = "loading";
   broadcastStatus();
 
+  // B stamps every real transition with the volume it wants — 1, unless it is
+  // fading — and only isFadeUpdate handoffs used to reach SET_MOOD_VOLUME, so
+  // that 1 was dropped on the floor. moodFadeGain then stayed wherever the last
+  // fade left it: after a sensitive page's FADE_TO_SILENCE (or the idle
+  // FADE_OUT below), every later track decoded, started and reported "playing"
+  // into a stage still pinned at zero, and the session was silent from then on.
+  // Restoring it here is what makes the silence apply to that page rather than
+  // to the rest of the browsing session.
+  forwardToOffscreen({ type: "SET_MOOD_VOLUME", value: handoff2.volume ?? 1 });
+
   const t0 = performance.now();
   try {
     await requestTrack(handoff2.profile, {

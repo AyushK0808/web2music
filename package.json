@@ -18,6 +18,7 @@
     "test:b": "npm run test -w mood-classification",
     "test:d": "pytest",
     "test:e2e": "node ui/build.mjs && node ui/e2e/chromiumExtension.e2e.mjs",
+    "test:e2e:live": "node ui/build.mjs && node ui/e2e/livePlayback.e2e.mjs",
     "bench": "npm run bench -w data-extraction",
     "up": "docker compose -f docker/docker-compose.yml up -d",
     "down": "docker compose -f docker/docker-compose.yml down"
