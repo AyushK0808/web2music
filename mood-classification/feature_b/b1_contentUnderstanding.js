@@ -15,6 +15,7 @@
 "use strict";
 
 import { DEFAULT_MODEL } from "./llmConfig.js";
+import { classifyCategoryZeroShot } from "./b1_zeroShotCategory.js";
 
 // ─── Handoff-1 version compatibility ─────────────────────────────────────────
 // Feature A (data-extraction/pageData.js) stamps every pageData object with
@@ -372,24 +373,50 @@ Return ONLY a valid JSON object, no explanation: { "category": "<one of the cate
 }
 
 /**
- * resolveContentCategory — orchestrates category classification with tier-2
- * LLM escalation (spec-requested): the keyword heuristic runs first (instant,
- * no API call); only when it can't clear MIN_CATEGORY_HITS — or the page
- * isn't English, where the heuristic can't meaningfully run at all — does
- * this escalate to the LLM. The "Entertainment" default fallback fires only
- * if the LLM is unavailable, unconfigured, or fails.
+ * resolveContentCategory — orchestrates category classification as a
+ * three-tier cascade, cheapest and most private first:
+ *
+ *   tier 1    keyword heuristic          free, instant, English-only
+ *   tier 1.5  zero-shot NLI              bart-large-mnli, off unless configured
+ *   tier 2    generative LLM (Groq)      last resort before the default
+ *
+ * Each tier only runs if the one above it declined: the heuristic declines by
+ * not clearing MIN_CATEGORY_HITS, the zero-shot tier declines by returning
+ * null (disabled, unreachable, or below its confidence/margin gates — see
+ * b1_zeroShotCategory.js), and only then is anything sent to the LLM. The
+ * "Entertainment" default fires only if every tier declined.
+ *
+ * `source` in the return value names the tier that decided, so the caller —
+ * and the §Results tier-usage breakdown — can tell a free keyword hit from a
+ * 400M-parameter forward pass from a network round trip.
+ *
  * @param {string} [lang="en"]  BCP-47-ish language code from Feature A/pageData.lang
- * @returns {Promise<{ primary: string, secondary: string|null, scores: Object, source: string }>}
+ * @param {Object} [opts]
+ * @param {Object} [opts.zeroShot]  tier-1.5 config, see normaliseZeroShotConfig
+ * @returns {Promise<{ primary: string, secondary: string|null, scores: Object, source: string, zeroShot?: Object }>}
  */
-export async function resolveContentCategory(keywords, title, summary, apiKey, lang = "en") {
+export async function resolveContentCategory(keywords, title, summary, apiKey, lang = "en", opts = {}) {
   const heuristic = classifyContentCategory(keywords, title);
   // CATEGORY_KEYWORDS is English-only vocabulary — on a non-English page the
   // keyword heuristic would either find nothing or false-positive match short
   // substrings, either way not a real classification. Skip straight to the
-  // LLM, which can actually read the page's language, still computing the
-  // heuristic above only for its secondary/scores metadata.
+  // model tiers, which can actually read the page's language, still computing
+  // the heuristic above only for its secondary/scores metadata.
   if (heuristic.primary && lang === "en") {
     return { ...heuristic, source: "keyword" };
+  }
+
+  // Tier 1.5 — bart-large-mnli entailment over the 13 categories. Returns
+  // null (never throws) when disabled, unavailable, or unconfident.
+  const zs = await classifyCategoryZeroShot({ keywords, title, summary }, opts.zeroShot);
+  if (zs) {
+    return {
+      primary: zs.category,
+      secondary: heuristic.secondary,
+      scores: heuristic.scores,
+      source: "zero-shot",
+      zeroShot: { score: zs.score, margin: zs.margin, runnerUp: zs.runnerUp, ms: zs.ms, model: zs.model, backend: zs.backend },
+    };
   }
 
   const llmCategory = await callCategoryLLMClassifier({ keywords, title, summary }, apiKey);
@@ -486,10 +513,14 @@ export function summariseContent(cleanedText) {
  *   }
  * @param {string} apiKey   LLM API key, used only to escalate category
  *   classification when the keyword heuristic can't clear MIN_CATEGORY_HITS.
+ * @param {Object} [opts]
+ * @param {Object} [opts.zeroShot]  tier-1.5 zero-shot config (see
+ *   b1_zeroShotCategory.js). Omitted/disabled keeps the original two-tier
+ *   behaviour exactly.
  *
  * @returns {Promise<Object>} CleanedContent — input to B2
  */
-export async function runB1(pageData, apiKey = "") {
+export async function runB1(pageData, apiKey = "", opts = {}) {
   if (!isCompatibleHandoffVersion(pageData.handoffVersion)) {
     console.warn(
       `[B1] Handoff version mismatch: received "${pageData.handoffVersion}", expected ${EXPECTED_HANDOFF_MAJOR}.x.x — ` +
@@ -540,7 +571,7 @@ export async function runB1(pageData, apiKey = "") {
     const heuristicOnly = classifyContentCategory(keywords, meta.title);
     category = { ...heuristicOnly, primary: heuristicOnly.primary ?? "Entertainment", source: "skipped-sensitive" };
   } else {
-    category = await resolveContentCategory(keywords, meta.title, summary, apiKey, meta.language);
+    category = await resolveContentCategory(keywords, meta.title, summary, apiKey, meta.language, opts);
   }
 
   // Prefer Feature A's own readingComplexity when it ran and supplied one —

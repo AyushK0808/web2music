@@ -11,54 +11,79 @@ import { createLogger } from "./log.js";
 
 const log = createLogger("offscreen-extract");
 
-let _worker = null;
-let _nextId = 1;
-const _pending = new Map();
+/**
+ * createWorkerBridge — lazily spawns `scriptUrl` and turns its
+ * postMessage/onmessage traffic into promises, correlated by an id.
+ *
+ * Shared by the embedding worker and the zero-shot worker: they are separate
+ * Workers (a 400M-parameter MNLI pass must not queue behind, or in front of,
+ * Feature A's embedding — see zeroshot.worker.js) but the plumbing around
+ * them is identical, including the error handling that used to be the only
+ * thing standing between an ONNX init failure and a permanently hung caller.
+ */
+function createWorkerBridge(scriptUrl, label) {
+  let worker = null;
+  let nextId = 1;
+  const pending = new Map();
 
-function getWorker() {
-  if (_worker) return _worker;
-  _worker = new Worker("embed.worker.js");
-  _worker.onmessage = (event) => {
-    const { id, ok, ...rest } = event.data || {};
-    const waiter = _pending.get(id);
-    if (!waiter) return;
-    _pending.delete(id);
-    if (ok) waiter.resolve(rest);
-    else waiter.reject(new Error(rest.error || "embed worker error"));
+  function get() {
+    if (worker) return worker;
+    worker = new Worker(scriptUrl);
+    worker.onmessage = (event) => {
+      const { id, ok, ...rest } = event.data || {};
+      const waiter = pending.get(id);
+      if (!waiter) return;
+      pending.delete(id);
+      if (ok) waiter.resolve(rest);
+      else waiter.reject(new Error(rest.error || `${label} worker error`));
+    };
+    // An uncaught error in the worker (ONNX failing to initialise, say) never
+    // produces a reply, so without this every in-flight request sits in
+    // `pending` forever and the only symptom is a bare "worker sent an error!"
+    // line in the offscreen console. Fail the callers instead.
+    //
+    // The worker is deliberately kept rather than terminated and respawned: an
+    // uncaught error does not necessarily kill it, and if the cause is
+    // structural (as the blob:/CSP thread failure was — see embed.worker.js)
+    // respawning just reloads a 10MB wasm on every request to fail the same way.
+    // Later requests are bounded by the caller's own RPC timeout instead.
+    worker.onerror = (event) => {
+      const detail = event.message || `${label} worker crashed`;
+      log.error(`${label} worker error (${pending.size} request(s) in flight):`, detail);
+      for (const [id, waiter] of pending) {
+        pending.delete(id);
+        waiter.reject(new Error(detail));
+      }
+    };
+    return worker;
+  }
+
+  return {
+    warm: () => { get(); },
+    send: (message) => new Promise((resolve, reject) => {
+      const id = nextId++;
+      pending.set(id, { resolve, reject });
+      get().postMessage({ id, ...message });
+    }),
   };
-  // An uncaught error in the worker (ONNX failing to initialise, say) never
-  // produces an EMBED reply, so without this every in-flight request sits in
-  // _pending forever and the only symptom is a bare "worker sent an error!"
-  // line in the offscreen console. Fail the callers instead.
-  //
-  // The worker is deliberately kept rather than terminated and respawned: an
-  // uncaught error does not necessarily kill it, and if the cause is
-  // structural (as the blob:/CSP thread failure was — see embed.worker.js)
-  // respawning just reloads a 10MB wasm on every request to fail the same way.
-  // Later requests are bounded by remoteDeps.js's RPC timeout instead.
-  _worker.onerror = (event) => {
-    const detail = event.message || "embed worker crashed";
-    log.error(`embed worker error (${_pending.size} request(s) in flight):`, detail);
-    for (const [id, waiter] of _pending) {
-      _pending.delete(id);
-      waiter.reject(new Error(detail));
-    }
-  };
-  return _worker;
 }
+
+const embedBridge = createWorkerBridge("embed.worker.js", "embed");
+const zeroShotBridge = createWorkerBridge("zeroshot.worker.js", "zero-shot");
 
 // Warm the model as soon as the offscreen document exists, so the first real
 // page's A_EMBED call isn't paying the ~2-5s ONNX load cost.
+//
+// The zero-shot worker is NOT warmed here: its model is far larger, is not
+// vendored (first use downloads it), and the tier is opt-in — spawning it
+// eagerly would impose that cost on every install whether or not the tier is
+// ever switched on. It spawns on the first B_ZEROSHOT instead.
 export function warmEmbedWorker() {
-  getWorker();
+  embedBridge.warm();
 }
 
 function embed(text) {
-  return new Promise((resolve, reject) => {
-    const id = _nextId++;
-    _pending.set(id, { resolve, reject });
-    getWorker().postMessage({ id, type: "EMBED", text });
-  });
+  return embedBridge.send({ type: "EMBED", text });
 }
 
 let _vectorStore = null;
@@ -74,6 +99,25 @@ export async function handleExtractMessage(msg, sendResponse) {
     case "A_EMBED": {
       try {
         const result = await embed(msg.text);
+        sendResponse({ ok: true, ...result });
+      } catch (err) {
+        sendResponse({ ok: false, error: String(err.message || err) });
+      }
+      return true;
+    }
+    case "B_ZEROSHOT": {
+      // Feature B's tier-1.5 page-type classifier, local backend. The
+      // response is passed straight back in HuggingFace's { labels, scores }
+      // shape — b1_zeroShotCategory.js parses and gates it, and does so
+      // identically for this backend and the server-side one.
+      try {
+        const result = await zeroShotBridge.send({
+          type: "ZERO_SHOT",
+          text: msg.text,
+          labels: msg.labels,
+          hypothesisTemplate: msg.hypothesisTemplate,
+          model: msg.model,
+        });
         sendResponse({ ok: true, ...result });
       } catch (err) {
         sendResponse({ ok: false, error: String(err.message || err) });

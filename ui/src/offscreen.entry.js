@@ -219,14 +219,30 @@ function setUserVolume(fraction) {
   if (!isPaused && userGain) userGain.gain.rampTo(v, 0.3);
 }
 
-// ── Tab ducking — writes duckGain only, never touches userGain/moodFadeGain.
+// ── Tab attenuation — writes duckGain only, never touches userGain/moodFadeGain.
+//
+// The level is decided upstream in audioTabs.js (clear 1.0 / duck 0.1 / mute
+// 0.0) and arrives as a number, so the mute case doesn't need its own command
+// and can't drift out of sync with the duck case. Ramp time is asymmetric on
+// purpose: getting out of the way of a video that just started has to be
+// fast, coming back has to be slow enough not to sound like a pumping
+// compressor.
+function setAttenuation(gain, reason = "") {
+  const clamped = Math.max(0, Math.min(1, Number.isFinite(gain) ? gain : 1));
+  const current = duckGain ? duckGain.gain.value : 1;
+  const seconds = clamped < current ? 0.25 : 0.8;
+  log.info(`setAttenuation ${current.toFixed(2)} -> ${clamped.toFixed(2)} over ${seconds}s${reason ? ` (${reason})` : ""}`);
+  if (duckGain) duckGain.gain.rampTo(clamped, seconds);
+}
+
+// DUCK/UNDUCK are kept as the two named presets — external callers (the e2e
+// harness, manual console pokes) still use them, and they are exactly
+// SET_ATTENUATION at the duck/clear levels.
 function duck() {
-  log.info("duck -> duckGain 0.1");
-  if (duckGain) duckGain.gain.rampTo(0.1, 0.5);
+  setAttenuation(0.1, "DUCK");
 }
 function unduck() {
-  log.info("unduck -> duckGain 1.0");
-  if (duckGain) duckGain.gain.rampTo(1.0, 0.5);
+  setAttenuation(1.0, "UNDUCK");
 }
 
 // ── Feature B's mood-volume signal — writes moodFadeGain only.
@@ -300,6 +316,7 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     case "STOP": stop(); stopAnalyserBroadcast(); break;
     case "DUCK": duck(); break;
     case "UNDUCK": unduck(); break;
+    case "SET_ATTENUATION": setAttenuation(msg.gain, msg.reason); break;
     case "SET_VOLUME": setUserVolume(msg.value); break;
     case "SET_MOOD_VOLUME": setMoodVolume(msg.value); break;
     case "FADE_TO_SILENCE": fadeToSilence(msg.seconds ?? 3); break;

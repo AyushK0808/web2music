@@ -203,6 +203,17 @@ function renderPageStatus(status) {
   }
 }
 
+/**
+ * renderAttenuation — overlay the status tag when the ambient bed has been
+ * pulled down for someone else's audio. Only meaningful while a track is
+ * actually running; "Muted for page audio" over a stopped player would be
+ * misleading.
+ */
+function renderAttenuation(attenuation, status) {
+  if (status !== "playing" || !attenuation || attenuation === "clear") return;
+  pageStatusTag.textContent = attenuation === "mute" ? "Muted · page audio" : "Quiet · page audio";
+}
+
 // ── Page info renderer ────────────────────────────────────────────────────────
 // Accepts a tab object (with .title, .url, .favIconUrl) for best accuracy,
 // or falls back to just a URL string.
@@ -276,6 +287,10 @@ chrome.runtime.onMessage.addListener((msg) => {
         toggleEnabled.checked = msg.isEnabled;
       }
       renderPageStatus(msg.status);
+      // Auto-mute is not a status of its own (the track is still loaded and
+      // running), but showing "Playing" while the user hears nothing reads as
+      // a bug — so the tag says why it's inaudible. See ui/src/audioTabs.js.
+      renderAttenuation(msg.attenuation, msg.status);
       // Keep isPlaying in sync with actual background state — this is what
       // makes the play/pause button send the right message on next click
       isPlaying = msg.status === "playing";
@@ -371,6 +386,7 @@ chrome.runtime.sendMessage({ type: "GET_STATUS" }, (response) => {
   toggleEnabled.checked = response.isEnabled !== false; // default true if missing
 
   renderPageStatus(response.status);
+  renderAttenuation(response.attenuation, response.status);
   isPlaying = response.status === "playing";
 });
 

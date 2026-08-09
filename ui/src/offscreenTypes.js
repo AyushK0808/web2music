@@ -16,11 +16,17 @@
 //
 // Routing is keyed on the message *type*, not on `target`, so adding an
 // audio command can't silently re-open that hole.
+// B_ZEROSHOT is not a Feature A extract RPC, but it belongs to the same
+// class of message: a request/response call answered by a model running in
+// the offscreen document, not an audio command. It routes through the same
+// handler for that reason — the distinction the audio switch cares about is
+// "does this reply on the message channel", and this one does.
 export const OFFSCREEN_EXTRACT_TYPES = new Set([
   "A_EMBED",
   "A_VS_SEARCH",
   "A_VS_UPSERT",
   "A_VS_CLEAR",
+  "B_ZEROSHOT",
 ]);
 
 /**

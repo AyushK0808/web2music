@@ -4,6 +4,7 @@
 
 import { configureFeatureB, registerFeatureBHeartbeat, onHandoff2, runFeatureB, MOODS } from "../../mood-classification/feature_b/index.js";
 import { requestTrack, requestGeneration } from "./featureDClient.js";
+import { createAudioTabWatcher, ATTENUATION } from "./audioTabs.js";
 import { recordTelemetry, urlHash, exportTelemetry } from "./telemetry.js";
 import { OFFSCREEN_EXTRACT_TYPES } from "./offscreenTypes.js";
 import { createLogger } from "./log.js";
@@ -91,6 +92,8 @@ const audioState = {
   currentTabId: null,
   currentProfile: null,
   isDucked: false,
+  attenuation: "clear",        // "clear" | "duck" | "mute" — see audioTabs.js
+  attenuationReason: null,
   isEnabled: true,
   isPaused: false,
   classifyProxyReachable: null, // null = not yet checked
@@ -108,28 +111,62 @@ let lastLoggedStatus = null;
 function broadcastStatus() {
   if (audioState.status !== lastLoggedStatus) {
     log.info(`status: ${lastLoggedStatus ?? "(init)"} -> ${audioState.status}`,
-      { url: audioState.currentUrl, tabId: audioState.currentTabId, ducked: audioState.isDucked, paused: audioState.isPaused });
+      { url: audioState.currentUrl, tabId: audioState.currentTabId, attenuation: audioState.attenuation, paused: audioState.isPaused });
     lastLoggedStatus = audioState.status;
   }
   chrome.runtime.sendMessage({ type: "STATUS_UPDATE", ...audioState }).catch(() => {});
 }
 
 // ── Feature B wiring ──────────────────────────────────────────────────────
-chrome.storage.sync.get(["llmApiKey", "llmBackend", "llmServiceUrl", "targetModel"], (settings) => {
-  const usingProxy = settings.llmBackend === "proxy" || !settings.llmApiKey;
-  configureFeatureB({
-    apiKey: usingProxy
-      ? { backend: "proxy", serviceUrl: settings.llmServiceUrl || "http://localhost:8078/v1/chat/completions" }
-      : settings.llmApiKey,
-    targetModel: settings.targetModel ?? "musicgen",
-  });
-  // Never log the key itself — only which path was taken.
-  log.info("Feature B configured:", {
-    backend: usingProxy ? "proxy" : "direct-key",
-    serviceUrl: usingProxy ? (settings.llmServiceUrl || "http://localhost:8078/v1/chat/completions") : undefined,
-    targetModel: settings.targetModel ?? "musicgen",
-  });
-});
+
+/**
+ * Tier-1.5 local backend: run the zero-shot classifier in the offscreen
+ * document's worker. B1.5 calls this with { text, labels, hypothesisTemplate,
+ * model } and expects HuggingFace's { labels, scores } back — see
+ * feature_b/b1_zeroShotCategory.js.
+ */
+async function classifyZeroShotViaOffscreen(request) {
+  await ensureOffscreen();
+  const res = await chrome.runtime.sendMessage({ target: "offscreen", type: "B_ZEROSHOT", ...request });
+  if (!res?.ok) throw new Error(res?.error || "offscreen zero-shot failed");
+  return res;
+}
+
+chrome.storage.sync.get(
+  ["llmApiKey", "llmBackend", "llmServiceUrl", "targetModel", "zeroShotEnabled", "zeroShotBackend", "zeroShotModel"],
+  (settings) => {
+    const usingProxy = settings.llmBackend === "proxy" || !settings.llmApiKey;
+    const classifyBase = (settings.llmServiceUrl || "http://localhost:8078/v1/chat/completions").replace(/\/v1\/.*/, "");
+    // "proxy" runs the full facebook/bart-large-mnli server-side (the
+    // classify container holds the HF token); "local" runs a distilled MNLI
+    // checkpoint in the offscreen worker and sends nothing off the machine.
+    // Off unless explicitly enabled — the local model is a first-use
+    // download and the proxy needs a token that may not be set.
+    const zeroShotBackend = settings.zeroShotBackend === "local" ? "local" : "proxy";
+    const zeroShot = {
+      enabled: settings.zeroShotEnabled === true,
+      backend: zeroShotBackend,
+      serviceUrl: `${classifyBase}/v1/zero-shot`,
+      classify: zeroShotBackend === "local" ? classifyZeroShotViaOffscreen : null,
+      ...(settings.zeroShotModel ? { model: settings.zeroShotModel } : {}),
+    };
+
+    configureFeatureB({
+      apiKey: usingProxy
+        ? { backend: "proxy", serviceUrl: settings.llmServiceUrl || "http://localhost:8078/v1/chat/completions" }
+        : settings.llmApiKey,
+      targetModel: settings.targetModel ?? "musicgen",
+      zeroShot,
+    });
+    // Never log the key itself — only which path was taken.
+    log.info("Feature B configured:", {
+      backend: usingProxy ? "proxy" : "direct-key",
+      serviceUrl: usingProxy ? (settings.llmServiceUrl || "http://localhost:8078/v1/chat/completions") : undefined,
+      targetModel: settings.targetModel ?? "musicgen",
+      zeroShot: zeroShot.enabled ? { backend: zeroShot.backend, model: zeroShot.model ?? "(default)" } : "disabled",
+    });
+  }
+);
 
 registerFeatureBHeartbeat();
 
@@ -238,30 +275,30 @@ async function handleHandoff2(handoff2, tabId) {
 }
 onHandoff2(handleHandoff2);
 
-// ── Tab monitoring / ducking ──────────────────────────────────────────────
-const MEDIA_DOMAINS = ["youtube.com", "spotify.com", "netflix.com", "twitch.tv", "soundcloud.com"];
-function isMediaTab(url) {
-  return !!url && MEDIA_DOMAINS.some((d) => url.includes(d));
-}
-
-chrome.tabs.onActivated.addListener(async ({ tabId }) => {
-  const tab = await chrome.tabs.get(tabId);
-  audioState.currentTabId = tabId;
-  const shouldDuck = isMediaTab(tab.url);
-  log.debug("tab activated", { tabId, shouldDuck, wasDucked: audioState.isDucked });
-  if (shouldDuck !== audioState.isDucked) {
-    audioState.isDucked = shouldDuck;
-    log.info(shouldDuck ? "ducking for media tab" : "unducking", tab.url);
-    forwardToOffscreen({ type: shouldDuck ? "DUCK" : "UNDUCK" });
-  }
+// ── Tab monitoring: auto-mute on pages that are playing their own audio ────
+// The decision lives in audioTabs.js (pure policy + a Chrome-event watcher);
+// this is only the wiring that turns a decision into a gain command and
+// records it. Ducking used to be a hardcoded domain list checked on two
+// events, which both over- and under-fired — see that file's header.
+const audioTabs = createAudioTabWatcher(chrome, {
+  log,
+  onChange: ({ level, gain, reason }) => {
+    audioState.attenuation = level;
+    audioState.attenuationReason = reason;
+    // isDucked is kept for the popup and GET_STATUS consumers that predate
+    // the three-level model: anything short of full volume reads as ducked.
+    audioState.isDucked = level !== ATTENUATION.CLEAR;
+    forwardToOffscreen({ type: "SET_ATTENUATION", gain, reason });
+    recordTelemetry("playback", { event: "attenuation", meta: { level, gain, reason } });
+    broadcastStatus();
+  },
 });
+audioTabs.start();
 
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (changeInfo.status !== "complete" || tabId !== audioState.currentTabId) return;
-  const shouldDuck = isMediaTab(tab.url);
-  log.debug("active tab finished loading", { tabId, shouldDuck });
-  audioState.isDucked = shouldDuck;
-  forwardToOffscreen({ type: shouldDuck ? "DUCK" : "UNDUCK" });
+// The watcher owns attenuation; currentTabId is still tracked here because
+// A_PAGE_DATA's active-tab guard and the popup both read it.
+chrome.tabs.onActivated.addListener(({ tabId }) => {
+  audioState.currentTabId = tabId;
 });
 
 // ── Idle detection ────────────────────────────────────────────────────────

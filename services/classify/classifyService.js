@@ -15,13 +15,38 @@
  *
  *   POST /v1/chat/completions   <same body shape as Groq's OpenAI-compatible API>
  *     → whatever Groq returns, forwarded verbatim (status + JSON)
- *   GET  /health  → 200 { "ok": true, "keyConfigured": boolean }
+ *   POST /v1/zero-shot          B1.5's page-type tier — see below
+ *   GET  /health  → 200 { "ok": true, "keyConfigured": boolean, "zeroShotConfigured": boolean }
  *
  * Same pattern as Feature A's services/embed/embedService.js, which
  * does the equivalent for the OpenAI embedding key.
  *
+ * ── /v1/zero-shot ─────────────────────────────────────────────────────────
+ * Runs facebook/bart-large-mnli zero-shot classification for Feature B's
+ * tier-1.5 page-type classifier (feature_b/b1_zeroShotCategory.js) via the
+ * HuggingFace Inference API, with HF_API_TOKEN held server-side for the same
+ * reason GROQ_API_KEY is.
+ *
+ * It lives in this container rather than in a new one because it is the same
+ * shape of problem — a third-party model endpoint that needs a secret the
+ * extension must not carry — and because B1 already talks to this host, so
+ * the extension gains no new origin, no new host permission, and no second
+ * health check.
+ *
+ * The route normalises HF's response to { labels, scores } (descending) so
+ * the browser-local transformers.js backend and this one are interchangeable
+ * from B1.5's point of view.
+ *
+ *   POST /v1/zero-shot
+ *     { "text": "...", "labels": ["...", ...],
+ *       "hypothesis_template": "This web page is about {}.",
+ *       "multi_label": false, "model": "facebook/bart-large-mnli" }
+ *     → 200 { "labels": [...], "scores": [...], "model": "..." }
+ *
  * Env:
- *   GROQ_API_KEY   (required) — the key, injected by docker compose from .env
+ *   GROQ_API_KEY   (required for /v1/chat/completions) — injected by docker compose from .env
+ *   HF_API_TOKEN   (required for /v1/zero-shot)        — HuggingFace read token
+ *   ZERO_SHOT_MODEL (optional) — defaults to facebook/bart-large-mnli
  *   PORT           (optional) — listen port, defaults to 8078
  *
  * No npm dependencies: uses Node 18+ built-in global fetch and the http module.
@@ -33,6 +58,18 @@ const http = require('http');
 
 const PORT = parseInt(process.env.PORT, 10) || 8078;
 const API_KEY = process.env.GROQ_API_KEY || '';
+const HF_TOKEN = process.env.HF_API_TOKEN || '';
+const ZERO_SHOT_MODEL = process.env.ZERO_SHOT_MODEL || 'facebook/bart-large-mnli';
+
+/**
+ * A cold HF Inference endpoint returns 503 while the model loads, which for
+ * bart-large-mnli is tens of seconds on the free tier. B1.5's own client
+ * gives up after 8s and falls through to the LLM tier, so this waits for at
+ * most one short retry rather than holding a request open past that — the
+ * point is that the *second* page classified is fast, not that the first one
+ * blocks until the model is warm.
+ */
+const HF_TIMEOUT_MS = 6000;
 
 function sendJson(res, status, body) {
   const payload = JSON.stringify(body);
@@ -83,11 +120,93 @@ async function forwardToGroq(rawBody) {
   return { status: resp.status, text };
 }
 
+/**
+ * Runs one zero-shot classification against the HF Inference API and
+ * normalises the result to { labels, scores }.
+ *
+ * HF returns exactly that shape for the zero-shot-classification task
+ * already, sorted descending — this re-sorts anyway (one pass over 13
+ * elements) so the contract holds even if that ever changes, and so a
+ * `multi_label: true` response, whose scores are independent sigmoids rather
+ * than a softmax, still arrives ranked.
+ */
+async function classifyZeroShot(body) {
+  if (!HF_TOKEN) {
+    const err = new Error('HF_API_TOKEN not configured in the container environment.');
+    err.status = 500;
+    throw err;
+  }
+  const text = typeof body.text === 'string' ? body.text : '';
+  const labels = Array.isArray(body.labels) ? body.labels.filter((l) => typeof l === 'string') : [];
+  if (!text.trim() || labels.length === 0) {
+    const err = new Error('Body must include a non-empty `text` and a non-empty `labels` array.');
+    err.status = 400;
+    throw err;
+  }
+
+  const model = typeof body.model === 'string' && body.model ? body.model : ZERO_SHOT_MODEL;
+  const parameters = { candidate_labels: labels, multi_label: Boolean(body.multi_label) };
+  if (typeof body.hypothesis_template === 'string' && body.hypothesis_template.includes('{}')) {
+    parameters.hypothesis_template = body.hypothesis_template;
+  }
+
+  const resp = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
+    method: 'POST',
+    signal: AbortSignal.timeout(HF_TIMEOUT_MS),
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${HF_TOKEN}`,
+    },
+    // wait_for_model:false — see HF_TIMEOUT_MS. A cold model 503s and B1.5
+    // degrades to its next tier for that page; the load continues server-side
+    // and the next page gets a warm model.
+    body: JSON.stringify({ inputs: text, parameters, options: { wait_for_model: false } }),
+  });
+
+  const payload = await resp.json().catch(() => null);
+  if (!resp.ok) {
+    const err = new Error(payload?.error || `HuggingFace Inference API ${resp.status}`);
+    err.status = resp.status === 503 ? 503 : 502;
+    throw err;
+  }
+  if (!Array.isArray(payload?.labels) || !Array.isArray(payload?.scores)) {
+    const err = new Error('Unexpected HuggingFace response shape (no labels/scores).');
+    err.status = 502;
+    throw err;
+  }
+
+  const ranked = payload.labels
+    .map((label, i) => ({ label, score: Number(payload.scores[i]) }))
+    .sort((a, b) => b.score - a.score);
+
+  return {
+    labels: ranked.map((r) => r.label),
+    scores: ranked.map((r) => r.score),
+    model,
+  };
+}
+
 const server = http.createServer(async (req, res) => {
   if (req.method === 'OPTIONS') return sendJson(res, 204, {});
 
   if (req.method === 'GET' && req.url === '/health') {
-    return sendJson(res, 200, { ok: true, keyConfigured: Boolean(API_KEY) });
+    return sendJson(res, 200, {
+      ok: true,
+      keyConfigured: Boolean(API_KEY),
+      zeroShotConfigured: Boolean(HF_TOKEN),
+      zeroShotModel: ZERO_SHOT_MODEL,
+    });
+  }
+
+  if (req.method === 'POST' && req.url === '/v1/zero-shot') {
+    try {
+      const raw = await readBody(req);
+      if (!raw || !raw.trim()) return sendJson(res, 400, { error: 'Missing request body.' });
+      return sendJson(res, 200, await classifyZeroShot(JSON.parse(raw)));
+    } catch (err) {
+      const status = err.status || (err.name === 'TimeoutError' ? 504 : 502);
+      return sendJson(res, status, { error: err.message });
+    }
   }
 
   if (req.method === 'POST' && req.url === '/v1/chat/completions') {
@@ -107,9 +226,10 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
-  return sendJson(res, 404, { error: 'Not found. Use POST /v1/chat/completions or GET /health.' });
+  return sendJson(res, 404, { error: 'Not found. Use POST /v1/chat/completions, POST /v1/zero-shot, or GET /health.' });
 });
 
 server.listen(PORT, () => {
-  console.log(`[classifyService] listening on :${PORT} (key=${API_KEY ? 'set' : 'MISSING'})`);
+  console.log(`[classifyService] listening on :${PORT} `
+    + `(groq=${API_KEY ? 'set' : 'MISSING'}, hf=${HF_TOKEN ? 'set' : 'MISSING'}, zeroShotModel=${ZERO_SHOT_MODEL})`);
 });

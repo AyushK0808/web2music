@@ -139,8 +139,14 @@ async function startClassifyStub(requests) {
  * @param {boolean} [opts.stubLlm=true]  Hold localhost:8078 down at 503 for
  *   deterministic tier-1 classification. False leaves the real classify proxy
  *   (if any) in charge.
+ * @param {number}  [opts.generateDelayMs=0]  Artificial POST /d/generate
+ *   latency. Zero is right for the correctness harness — it wants B's decision
+ *   as fast as possible — but latency.e2e.mjs sets it to a realistic MusicGen
+ *   figure so the fallback-then-swap path is actually exercised (with an
+ *   instant /generate, the real clip can land before the fallback has even
+ *   finished decoding, and the crossfade under test never happens).
  */
-export async function startHarnessServer({ stubLlm = true } = {}) {
+export async function startHarnessServer({ stubLlm = true, generateDelayMs = 0 } = {}) {
   const pages = new Map();
   for (const site of SITES) {
     pages.set(`/sites/${site.name}.html`, renderSite(site));
@@ -201,6 +207,9 @@ export async function startHarnessServer({ stubLlm = true } = {}) {
         /* recorded below as an empty profile — the assertion will say so */
       }
       dRequests.push({ kind: "generate", mood: profile.mood, profile, at: Date.now() });
+      if (generateDelayMs > 0) {
+        await new Promise((r) => setTimeout(r, generateDelayMs));
+      }
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify({
         audio_url: `${baseUrl}/d/clip/generated-${encodeURIComponent(profile.mood ?? "unknown")}.wav`,

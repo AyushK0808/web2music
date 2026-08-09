@@ -79,10 +79,20 @@ let _config = {
   includeAll:         false,         // Include all prompt variants in output
   confidenceWindowMs: 5000,          // Spec-mandated 5s stability window — override only in tests, never in production
   sensitiveContentMode: "silence",   // "silence" (default) | "uplifting" (opt-in) — see the ethics note in b2_moodClassifier.js's runB2
+  // Tier-1.5 zero-shot page-type classification (bart-large-mnli). Disabled
+  // by default so nothing about the shipped two-tier behaviour changes until
+  // a backend is actually configured — see b1_zeroShotCategory.js for the
+  // full option list and the proxy/local backend split.
+  zeroShot: { enabled: false },
 };
 
 export function configureFeatureB(config = {}) {
-  _config = { ..._config, ...config };
+  // zeroShot is merged one level deep: callers routinely flip only `enabled`
+  // or only `classify` (background.entry.js sets the backend at startup, the
+  // e2e harness overrides the thresholds), and a shallow spread would drop
+  // every other field on the floor.
+  const zeroShot = config.zeroShot ? { ..._config.zeroShot, ...config.zeroShot } : _config.zeroShot;
+  _config = { ..._config, ...config, zeroShot };
 }
 
 // ─── Same-context handoff-2 delivery ─────────────────────────────────────────
@@ -220,7 +230,7 @@ async function decideTransition(tabId, candidateMood, record, { isFreshActivity 
 export async function runFeatureB(pageData, tabId = DEFAULT_TAB_ID) {
   try {
     // ── B1: Content Understanding ──────────────────────────────────────────
-    const cleanedContent = await runB1(pageData, buildLLMConfig());
+    const cleanedContent = await runB1(pageData, buildLLMConfig(), { zeroShot: _config.zeroShot });
 
     // ── B2: Mood & Context Classification ─────────────────────────────────
     const moodContext = await runB2(cleanedContent, buildLLMConfig(), {
@@ -381,6 +391,13 @@ export async function resetConfidenceWindow(tabId) {
 
 // ─── Re-exports for consumers who need individual stages ─────────────────────
 export { runB1 } from "./b1_contentUnderstanding.js";
+export {
+  classifyCategoryZeroShot,
+  CATEGORY_HYPOTHESES,
+  HYPOTHESIS_TEMPLATE,
+  DEFAULT_ZERO_SHOT_MODEL,
+  zeroShotLabels,
+} from "./b1_zeroShotCategory.js";
 export { runB2, MOODS, MUSIC_CATEGORY_MAP } from "./b2_moodClassifier.js";
 export { runB3 } from "./b3_musicProfileGenerator.js";
 export { runB4, buildFallbackPrompt } from "./b4_promptEngineer.js";

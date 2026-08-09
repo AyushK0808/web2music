@@ -25,6 +25,7 @@ const AUDIO_COMMANDS = [
   "STOP",
   "DUCK",
   "UNDUCK",
+  "SET_ATTENUATION",
   "SET_VOLUME",
   "SET_MOOD_VOLUME",
   "FADE_TO_SILENCE",
@@ -62,7 +63,7 @@ for (const msg of [undefined, null, {}, { target: "offscreen" }, { target: "offs
 console.log("routing: the extract set matches handleExtractMessage's switch");
 assert.deepEqual(
   [...OFFSCREEN_EXTRACT_TYPES].sort(),
-  ["A_EMBED", "A_VS_CLEAR", "A_VS_SEARCH", "A_VS_UPSERT"],
+  ["A_EMBED", "A_VS_CLEAR", "A_VS_SEARCH", "A_VS_UPSERT", "B_ZEROSHOT"],
   "extract types drifted from offscreenExtract.js's switch — update both"
 );
 

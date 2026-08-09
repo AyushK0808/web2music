@@ -5,6 +5,8 @@
 //   background.entry.js -> dist/background.js    (esm, MV3 service worker)
 //   offscreen.entry.js  -> dist/offscreen.js      (iife, extension-origin offscreen doc)
 //   embed.worker.js     -> dist/embed.worker.js   (iife, spawned by the offscreen doc)
+//   zeroshot.worker.js  -> dist/zeroshot.worker.js (iife, spawned on the first
+//                                                   tier-1.5 classification)
 //
 // Static assets (manifest, html, Tone.js, models/onnx) are copied verbatim —
 // load unpacked from ui/dist/, not ui/.
@@ -25,6 +27,7 @@ const entries = [
   { in: path.join(SRC, "background.entry.js"), out: "background", format: "esm" },
   { in: path.join(SRC, "offscreen.entry.js"), out: "offscreen", format: "iife" },
   { in: path.join(SRC, "embed.worker.js"), out: "embed.worker", format: "iife" },
+  { in: path.join(SRC, "zeroshot.worker.js"), out: "zeroshot.worker", format: "iife" },
 ];
 
 function copyStaticAssets() {
