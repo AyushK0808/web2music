@@ -220,6 +220,14 @@ async function decideTransition(tabId, candidateMood, record, { isFreshActivity 
  *   Omit only for direct/manual calls that don't care about multi-tab
  *   isolation (tests, scripts) — they all share one default bucket, the same
  *   sharing behaviour this had before tab isolation existed.
+ * @param {Object} [opts]
+ * @param {(d: {categorySource: string, moodTier: string, mood: string}) => void} [opts.onDiagnostics]
+ *   Called once per pipeline run with which tier actually decided, *before*
+ *   the confidence gate below. Deliberately not folded into the handoff 2
+ *   payload: a handoff only exists on a transition, but a tier fires on every
+ *   single page, so a caller measuring tier-escalation rate off the handoff
+ *   would only ever see the transition subset and report a biased number.
+ *   Callers that don't care can omit it — it costs nothing when absent.
  * @returns {Promise<Object|null>}
  *   Handoff 2 payload, or null if no transition is needed yet.
  *
@@ -227,7 +235,18 @@ async function decideTransition(tabId, candidateMood, record, { isFreshActivity 
  *   - The mood hasn't been stable for confidenceWindowMs yet (confidence interval)
  *   - The mood is unchanged from what's already playing
  */
-export async function runFeatureB(pageData, tabId = DEFAULT_TAB_ID) {
+export async function runFeatureB(pageData, tabId = DEFAULT_TAB_ID, opts = {}) {
+  // A diagnostics observer is a passive measurement hook. It must never be
+  // able to take the audio pipeline down with it, so every call is isolated.
+  const emitDiagnostics = (d) => {
+    if (typeof opts.onDiagnostics !== "function") return;
+    try {
+      opts.onDiagnostics(d);
+    } catch (err) {
+      console.warn("[FeatureB] onDiagnostics observer threw (ignored):", err.message);
+    }
+  };
+
   try {
     // ── B1: Content Understanding ──────────────────────────────────────────
     const cleanedContent = await runB1(pageData, buildLLMConfig(), { zeroShot: _config.zeroShot });
@@ -237,11 +256,25 @@ export async function runFeatureB(pageData, tabId = DEFAULT_TAB_ID) {
       sensitiveContentMode: _config.sensitiveContentMode,
     });
 
+    // B1 records which of its tiers decided on `category.source`
+    // (keyword | zero-shot | llm | default | skipped-sensitive | bypass) and
+    // B2 records its own on `tier`. Both are reported here, on every page.
+    emitDiagnostics({
+      categorySource: moodContext.category?.source ?? "unknown",
+      moodTier:       moodContext.tier ?? "unknown",
+      mood:           moodContext.mood,
+    });
+
     // ── Confidence interval check (spec edge case #1) ─────────────────────
     return await decideTransition(tabId, moodContext.mood, { kind: "mood", moodContext });
 
   } catch (err) {
     console.error("[FeatureB] Pipeline error:", err.message);
+
+    // Reported like any other outcome — a run that died before reaching a
+    // tier is not the same as one that never ran, and an escalation rate
+    // computed without these in the denominator would overstate coverage.
+    emitDiagnostics({ categorySource: "error", moodTier: "error", mood: "calm" });
 
     // Edge case #13: LLM API offline or pipeline crash → fall back to calm —
     // but routed through the same confidence-interval gate as a real mood

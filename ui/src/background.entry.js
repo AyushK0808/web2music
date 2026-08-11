@@ -377,9 +377,25 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
         const t0 = performance.now();
         const doneB = log.time("runFeatureB");
-        const handoff2 = await runFeatureB(msg.pageData, sender.tab.id);
+        // Which of B1's tiers actually decided is only observable from inside
+        // the pipeline: it fires on every page, but a handoff 2 only exists on
+        // a transition, so reading the tier off `handoff2` would silently
+        // measure the transition subset alone. Captured here per page instead.
+        let tiers = null;
+        const handoff2 = await runFeatureB(msg.pageData, sender.tab.id, {
+          onDiagnostics: (d) => { tiers = d; },
+        });
         doneB(handoff2 ? `-> ${handoff2.profile?.mood ?? "silence/fade"}` : "-> no transition");
-        recordTelemetry("B_decision", { tabId: sender.tab.id, event: "runFeatureB", ms: performance.now() - t0, meta: { transitioned: !!handoff2 } });
+        recordTelemetry("B_decision", {
+          tabId: sender.tab.id,
+          event: "runFeatureB",
+          ms: performance.now() - t0,
+          meta: {
+            transitioned:   !!handoff2,
+            categorySource: tiers?.categorySource ?? null,
+            moodTier:       tiers?.moodTier ?? null,
+          },
+        });
 
         // B returns null until a mood has held steady for confidenceWindowMs
         // (5s), so the *first* extraction on any tab never reaches D. Say so
@@ -429,6 +445,13 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
     case "POPUP_SET_ENABLED":
       log.info("POPUP_SET_ENABLED ->", msg.enabled);
+      // The closest thing to a "voluntary disable" signal this build can
+      // honestly produce. A true uninstall rate is not measurable locally:
+      // Chrome deletes chrome.storage.local (the ring buffer with it) when the
+      // extension is removed, and the only surviving hook, setUninstallURL,
+      // fires a network request — which this build's local-only guarantee
+      // forbids. S5 therefore reports toggle-off rate, not uninstall rate.
+      recordTelemetry("user_control", { event: "user_enabled_toggle", meta: { enabled: !!msg.enabled } });
       audioState.isEnabled = msg.enabled;
       chrome.storage.local.set({ masterEnabled: msg.enabled });
       if (!msg.enabled) {
