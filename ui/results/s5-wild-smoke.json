@@ -1,0 +1,117 @@
+{
+  "sessions": [
+    {
+      "file": "experiments/sample_exports/synthetic_session_1.json",
+      "sessionId": "synthetic-0001",
+      "n_events": 27,
+      "span_hours": 1,
+      "transitions": 4,
+      "transitions_per_hour": 4,
+      "attenuation_rate": 0.1,
+      "attenuation_reasons": {
+        "tab_audible": 2,
+        "tab_silent": 2
+      },
+      "generations": 5,
+      "cache_hit_rate": 0.6,
+      "fallback_rate": 0.2,
+      "tier_decisions": 5,
+      "tier_counts": {
+        "keyword": 3,
+        "llm": 1,
+        "zero-shot": 1
+      },
+      "tier_escalation_rate": 0.4,
+      "llm_exposure_rate": 0.2,
+      "disables": 1,
+      "disables_per_hour": 1,
+      "disabled_rate": 0.1,
+      "regenerates": 1,
+      "skip_rate_per_hour": 1,
+      "mood_corrections": 1,
+      "mood_correction_rate": 0.25,
+      "mutes": 1,
+      "volume_changes": 1
+    }
+  ],
+  "summary": {
+    "n_sessions": 1,
+    "total_events": 27,
+    "total_span_hours": 1,
+    "transitions_per_hour": {
+      "n": 1,
+      "min": 4,
+      "median": 4,
+      "max": 4,
+      "mean": 4
+    },
+    "attenuation_rate": {
+      "n": 1,
+      "min": 0.1,
+      "median": 0.1,
+      "max": 0.1,
+      "mean": 0.1
+    },
+    "cache_hit_rate": {
+      "n": 1,
+      "min": 0.6,
+      "median": 0.6,
+      "max": 0.6,
+      "mean": 0.6
+    },
+    "fallback_rate": {
+      "n": 1,
+      "min": 0.2,
+      "median": 0.2,
+      "max": 0.2,
+      "mean": 0.2
+    },
+    "tier_escalation_rate": {
+      "n": 1,
+      "min": 0.4,
+      "median": 0.4,
+      "max": 0.4,
+      "mean": 0.4
+    },
+    "llm_exposure_rate": {
+      "n": 1,
+      "min": 0.2,
+      "median": 0.2,
+      "max": 0.2,
+      "mean": 0.2
+    },
+    "skip_rate_per_hour": {
+      "n": 1,
+      "min": 1,
+      "median": 1,
+      "max": 1,
+      "mean": 1
+    },
+    "mood_correction_rate": {
+      "n": 1,
+      "min": 0.25,
+      "median": 0.25,
+      "max": 0.25,
+      "mean": 0.25
+    },
+    "disables_per_hour": {
+      "n": 1,
+      "min": 1,
+      "median": 1,
+      "max": 1,
+      "mean": 1
+    },
+    "disabled_rate": {
+      "n": 1,
+      "min": 0.1,
+      "median": 0.1,
+      "max": 0.1,
+      "mean": 0.1
+    },
+    "tier_counts": {
+      "keyword": 3,
+      "llm": 1,
+      "zero-shot": 1
+    }
+  }
+}
