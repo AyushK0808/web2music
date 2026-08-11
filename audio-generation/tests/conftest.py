@@ -81,6 +81,43 @@ def call_log():
     yield log
 
 
+def _live_d3_namespaces():
+    """
+    Every live copy of d3_generate's module globals -- there can be more
+    than one.
+
+    test_main_roundtrip.py's main_client fixture does
+    `sys.modules.pop("d3_generate")` and re-imports, which creates a SECOND
+    d3_generate module object. Modules imported earlier that did
+    `from d3_generate import generate_audio` (prewarm.py, generate_fallbacks.py)
+    still hold that name bound to the ORIGINAL module, and their calls keep
+    using the original's `_queue`/`_worker_task` globals.
+
+    Resetting only sys.modules["d3_generate"] therefore misses the copy
+    prewarm actually calls: its `_worker_task` stays pointing at a worker
+    created on a long-closed event loop, `_worker_task.done()` is False (it
+    is pending, on a dead loop, forever), so `_ensure_worker()` decides a
+    worker already exists and never starts one on the current loop. The
+    item gets queued, nothing consumes it, and the test waits on a future
+    that cannot be resolved -- a hang at 0% CPU, only when test_prewarm.py
+    runs after test_main_roundtrip.py in the same session.
+
+    A function's __globals__ IS its defining module's namespace, so the
+    rebound import is itself the handle to the otherwise-unreachable copy.
+    """
+    namespaces = []
+    mod = sys.modules.get("d3_generate")
+    if mod is not None:
+        namespaces.append(mod.__dict__)
+    for importer in ("prewarm", "generate_fallbacks", "main"):
+        holder = sys.modules.get(importer)
+        fn = getattr(holder, "generate_audio", None)
+        ns = getattr(fn, "__globals__", None)
+        if ns is not None and not any(ns is seen for seen in namespaces):
+            namespaces.append(ns)
+    return namespaces
+
+
 @pytest.fixture(autouse=True)
 def _reset_d3_worker_state():
     """
@@ -91,7 +128,16 @@ def _reset_d3_worker_state():
     before every test so _ensure_worker() creates fresh ones on the
     current test's loop.
     """
-    if "d3_generate" in sys.modules:
-        sys.modules["d3_generate"]._queue = None
-        sys.modules["d3_generate"]._worker_task = None
+    for ns in _live_d3_namespaces():
+        stale = ns.get("_worker_task")
+        # Cancel rather than just drop it. An abandoned worker still holds
+        # its queue and, if its loop is somehow still alive, would keep
+        # competing for items with the worker the next test starts.
+        if stale is not None and not stale.done():
+            try:
+                stale.cancel()
+            except RuntimeError:
+                pass  # its loop is already closed; nothing left to cancel
+        ns["_queue"] = None
+        ns["_worker_task"] = None
     yield
