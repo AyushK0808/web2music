@@ -56,14 +56,57 @@ class GenerationError(Exception):
 
 
 class _BatchItem:
-    __slots__ = ("prompt", "max_tokens", "seed", "future", "priority")
+    # `loop` is the event loop the future belongs to. _run_batch resolves
+    # these futures from a worker thread (asyncio.to_thread), and an
+    # asyncio.Future is NOT thread-safe -- it must be completed on its own
+    # loop. Carrying the loop per item is what makes that possible; see
+    # _resolve_threadsafe below for why touching the future directly hangs.
+    __slots__ = ("prompt", "max_tokens", "seed", "future", "priority", "loop")
 
-    def __init__(self, prompt, max_tokens, seed, future, priority):
+    def __init__(self, prompt, max_tokens, seed, future, priority, loop):
         self.prompt = prompt
         self.max_tokens = max_tokens
         self.seed = seed
         self.future = future
         self.priority = priority
+        self.loop = loop
+
+
+def _resolve_threadsafe(item, *, result=None, exception=None):
+    """
+    Completes one batch item's future from _run_batch's worker thread.
+
+    Calling future.set_result() directly across threads looks like it works
+    and mostly does, which is what made this so hard to see: set_result
+    schedules the awaiting task's callback with loop.call_soon(), and
+    call_soon does not wake a loop that is already blocked in select().
+    Whenever some *other* pending event happened to wake the loop shortly
+    after, the callback got picked up and everything looked fine -- so the
+    bug only bit when a batch was the last outstanding work on the loop,
+    which is precisely the tail of a prewarm grid. The loop then slept
+    forever with the result sitting in _ready: a hang at 0% CPU, not a
+    crash. call_soon_threadsafe writes to the loop's self-pipe and actually
+    wakes it.
+
+    The done() check has to happen on the loop thread too -- checking it
+    here and setting it there would just be a smaller version of the same
+    race.
+    """
+    def _apply():
+        if item.future.done():
+            return
+        if exception is not None:
+            item.future.set_exception(exception)
+        else:
+            item.future.set_result(result)
+
+    try:
+        item.loop.call_soon_threadsafe(_apply)
+    except RuntimeError:
+        # Loop already closed (test teardown, or shutdown mid-batch). The
+        # awaiting caller is gone with it, so there is nothing to resolve
+        # and nothing to report -- dropping this is the correct outcome.
+        pass
 
 
 # PRIORITY LEVELS -- lower number = served first.
@@ -213,19 +256,16 @@ def _run_batch(batch):
                 sf.write(out_buffer, audio_data, sample_rate, format='WAV')
                 out_buffer.seek(0)
 
-                if not item.future.done():
-                    item.future.set_result((out_buffer.read(), batch_seed))
+                _resolve_threadsafe(item, result=(out_buffer.read(), batch_seed))
             except Exception as e:
-                if not item.future.done():
-                    item.future.set_exception(e)
+                _resolve_threadsafe(item, exception=e)
 
     except Exception as e:
         # Whole batch failed (e.g. OOM, model error) -- every item in it
         # fails the same way; generate_audio()'s retry loop will re-queue
         # each one individually on the next attempt.
         for item in batch:
-            if not item.future.done():
-                item.future.set_exception(e)
+            _resolve_threadsafe(item, exception=e)
 
 
 async def generate_audio(
@@ -266,7 +306,7 @@ async def generate_audio(
         loop = asyncio.get_running_loop()
         future = loop.create_future()
         ahead = _queue.qsize()
-        await _queue.put((priority, next(_seq_counter), _BatchItem(prompt, max_tokens, seed, future, priority)))
+        await _queue.put((priority, next(_seq_counter), _BatchItem(prompt, max_tokens, seed, future, priority, loop)))
 
         try:
             print(f"[D3] [{label}] Generation attempt {attempt}/{MAX_RETRIES} with seed {seed} "
