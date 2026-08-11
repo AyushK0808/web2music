@@ -46,12 +46,23 @@ first classification failed the model download and fell through to the LLM
 tier without anyone noticing. `nli-deberta-v3-xsmall` is confirmed live,
 loads in ~9.5 s, and classifies in ~420 ms for a full 13-label pass.
 
-### Vendored: `valhalla/distilbart-mnli-12-1` (opt-in, not the default)
+### Opt-in alternative: `valhalla/distilbart-mnli-12-1` (not vendored, not the default)
 
 The **original** (non-mirror) checkpoint the dead `Xenova/distilbart-mnli-12-1`
-was converted from. Vendored here as a converted, quantized, verified-offline
-ONNX model under `ui/models/valhalla/distilbart-mnli-12-1/` — not wired in as
-the default, for reasons below, but selectable via `W2M_ZEROSHOT_MODEL`.
+was converted from, re-exported to quantized ONNX and published as
+**[`AyushK0808/distilbart-mnli-12-1-onnx`](https://huggingface.co/AyushK0808/distilbart-mnli-12-1-onnx)**.
+Not wired in as the default, for reasons below, but selectable via
+`W2M_ZEROSHOT_MODEL`.
+
+It is **not** vendored in this repo the way `all-MiniLM-L6-v2` is: at 215 MB the
+ONNX file is past GitHub's hard 100 MB per-file push limit, so it lives on the
+Hub and `ui/models/valhalla/` is gitignored. Fetch it into the tree — where
+`allowLocalModels` will prefer it over the hub — with:
+
+```bash
+hf download AyushK0808/distilbart-mnli-12-1-onnx \
+  --local-dir ui/models/valhalla/distilbart-mnli-12-1
+```
 
 **Converting it required working around three real bugs**, all unrelated to
 this specific checkpoint and worth knowing about if converting anything else
@@ -95,12 +106,12 @@ ranking check against eager PyTorch fp32 ground truth:
 | int8, per-tensor | 224 MB | 0/7 — near-uniform scores, unusable |
 | int8, per-channel | 224 MB | 5/7 — weaker margins, real degradation |
 
-fp32 is too large to ship; per-channel int8 (what's vendored) is usable but
+fp32 is too large to ship; per-channel int8 (what's published) is usable but
 degraded, and on the same spot check scored roughly comparable to the
 much-smaller shipped default (`nli-deberta-v3-xsmall`, 3/7 on the same
 sentences — small-sample, not a rigorous benchmark either way). Given that,
 swapping the shipped default for a ~10x larger download without a clear
-accuracy win isn't justified; it's vendored as a documented, opt-in
+accuracy win isn't justified; it's published as a documented, opt-in
 alternative instead.
 
 Switch the local backend's checkpoint at runtime without rebuilding by setting
