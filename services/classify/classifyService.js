@@ -150,7 +150,14 @@ async function classifyZeroShot(body) {
     parameters.hypothesis_template = body.hypothesis_template;
   }
 
-  const resp = await fetch(`https://api-inference.huggingface.co/models/${model}`, {
+  // api-inference.huggingface.co (the old free serverless Inference API) is
+  // decommissioned -- it no longer resolves in DNS at all, which surfaced
+  // here as every /v1/zero-shot call failing with a bare "fetch failed" and
+  // the tier silently falling through to the LLM on every single page since
+  // the day this stopped resolving. HF's replacement is the "Inference
+  // Providers" router; hf-inference is the provider name for HF's own
+  // hosted models (as opposed to routing to a third-party provider).
+  const resp = await fetch(`https://router.huggingface.co/hf-inference/models/${model}`, {
     method: 'POST',
     signal: AbortSignal.timeout(HF_TIMEOUT_MS),
     headers: {
@@ -169,15 +176,19 @@ async function classifyZeroShot(body) {
     err.status = resp.status === 503 ? 503 : 502;
     throw err;
   }
-  if (!Array.isArray(payload?.labels) || !Array.isArray(payload?.scores)) {
-    const err = new Error('Unexpected HuggingFace response shape (no labels/scores).');
+  // The router's zero-shot-classification response is a flat array of
+  // { label, score } objects, ranked descending — not the { labels: [],
+  // scores: [] } parallel-arrays shape the old api-inference.huggingface.co
+  // endpoint returned. Normalised back to that shape here so B1.5
+  // (parseZeroShotResult) and the local transformers.js backend, which does
+  // still return parallel arrays, stay interchangeable from the caller's side.
+  if (!Array.isArray(payload) || payload.some((r) => typeof r?.label !== 'string' || typeof r?.score !== 'number')) {
+    const err = new Error('Unexpected HuggingFace response shape (expected an array of {label, score}).');
     err.status = 502;
     throw err;
   }
 
-  const ranked = payload.labels
-    .map((label, i) => ({ label, score: Number(payload.scores[i]) }))
-    .sort((a, b) => b.score - a.score);
+  const ranked = [...payload].sort((a, b) => b.score - a.score);
 
   return {
     labels: ranked.map((r) => r.label),

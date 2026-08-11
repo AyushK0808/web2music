@@ -19,11 +19,10 @@ done
 curl -sL -o "onnx/model_quantized.onnx" "$BASE/onnx/model_quantized.onnx"
 ```
 
-## Zero-shot page-type model (optional, NOT vendored)
+## Zero-shot page-type model
 
 `ui/src/zeroshot.worker.js` backs Feature B's tier-1.5 page-type classifier
-(`mood-classification/feature_b/b1_zeroShotCategory.js`). Nothing is committed
-for it, and that is deliberate:
+(`mood-classification/feature_b/b1_zeroShotCategory.js`).
 
 * The tier is **off by default** — with `zeroShotEnabled` unset, this worker is
   never even spawned, and B1 runs the same keyword → LLM cascade it always has.
@@ -32,29 +31,80 @@ for it, and that is deliberate:
   on install, is not a reasonable default for an extension — so the full model
   is served by the **proxy backend** instead (`services/classify`'s
   `POST /v1/zero-shot`, HF token held server-side).
-* The **local backend** downloads a distilled MNLI checkpoint
-  (`Xenova/distilbart-mnli-12-1`) from the hub on first use. This is the only
-  place in the extension that fetches a model at runtime; `allowRemoteModels`
-  stays `false` in `embed.worker.js`.
+* The **local backend** downloads a checkpoint from the hub on first use
+  (`allowRemoteModels: true`, the one place in the extension that fetches a
+  model at runtime — `embed.worker.js`'s `allowRemoteModels` stays `false`).
 
-To make the local backend fully offline, vendor a checkpoint here and it will
-be preferred over the hub (`allowLocalModels` is already on):
+**Default local checkpoint: `Xenova/nli-deberta-v3-xsmall`.** The shipped
+default used to be `Xenova/distilbart-mnli-12-1`; that repo (and its `-12-3`
+sibling) now return **401 Unauthorized** to anonymous downloads — gated or
+removed upstream, not a network issue on any particular machine
+(`curl -o /dev/null -w '%{http_code}' https://huggingface.co/api/models/Xenova/distilbart-mnli-12-1`
+returns 401 while the same check against `Xenova/all-MiniLM-L6-v2` returns
+200). The local backend was therefore **silently dead in production**: every
+first classification failed the model download and fell through to the LLM
+tier without anyone noticing. `nli-deberta-v3-xsmall` is confirmed live,
+loads in ~9.5 s, and classifies in ~420 ms for a full 13-label pass.
+
+### Vendored: `valhalla/distilbart-mnli-12-1` (opt-in, not the default)
+
+The **original** (non-mirror) checkpoint the dead `Xenova/distilbart-mnli-12-1`
+was converted from. Vendored here as a converted, quantized, verified-offline
+ONNX model under `ui/models/valhalla/distilbart-mnli-12-1/` — not wired in as
+the default, for reasons below, but selectable via `W2M_ZEROSHOT_MODEL`.
+
+**Converting it required working around three real bugs**, all unrelated to
+this specific checkpoint and worth knowing about if converting anything else
+in this environment (Python 3.14 / torch 2.12 / Windows):
+
+1. The PyPI `optimum`/`optimum-onnx` wheels are missing core exporter files
+   regardless of version pairing (confirmed empty `exporters/onnx/` tree).
+   Fix: install `optimum` from GitHub source at a matching tag, not from PyPI.
+2. Python 3.14 made `functools.partial` a descriptor, which breaks `optimum`'s
+   `NORMALIZED_CONFIG_CLASS = SomeConfig.with_args(...)` pattern — accessing it
+   via an instance now silently binds `self` as an extra positional argument.
+   Fix: `mood-classification/experiments/_optimum_py314_shim.py`.
+3. torch 2.12's `torch.onnx.export` defaults to the newer, symbolic-shape-
+   proving `torch.export` tracer, which correctly *refuses* to trace
+   `BartForSequenceClassification` as shipped — its EOS-token pooling
+   (`hidden_states[input_ids.eq(eos_token_id), :]`) is genuinely
+   value-dependent. Forcing the legacy tracer instead "succeeds" by silently
+   baking in wrong trace-time assumptions (verified: confidently backwards
+   entailment/contradiction logits on real inputs, present even in fp32,
+   before any quantization). The real fix is
+   `mood-classification/experiments/_bart_seqcls_onnx_patch.py`, which
+   replaces the pooling with a static equivalent
+   (`attention_mask.sum(dim=1) - 1`, numerically verified identical to the
+   original, max diff 0.0) — that's what lets the *proving* tracer succeed
+   instead of the *silently-wrong* one.
+
+Re-run or convert a different checkpoint with:
 
 ```bash
-MODEL="Xenova/distilbart-mnli-12-1"   # or Xenova/bart-large-mnli for the eval
-mkdir -p "ui/models/$MODEL/onnx"
-BASE="https://huggingface.co/$MODEL/resolve/main"
-cd "ui/models/$MODEL"
-for f in config.json tokenizer.json tokenizer_config.json special_tokens_map.json vocab.json merges.txt; do
-  curl -sL -o "$f" "$BASE/$f"
-done
-for f in encoder_model_quantized.onnx decoder_model_merged_quantized.onnx model_quantized.onnx; do
-  curl -sfL -o "onnx/$f" "$BASE/onnx/$f" || true   # which files exist varies by checkpoint
-done
+python mood-classification/experiments/convert_bart_mnli_to_onnx.py \
+  --model valhalla/distilbart-mnli-12-1
 ```
 
-Switch checkpoints without rebuilding by setting `zeroShotModel` in
-`chrome.storage.local`; see `ui/src/background.entry.js`.
+**Why this isn't the default: quantization tradeoff, measured.** INT8 dynamic
+quantization measurably hurts this checkpoint — a 7-sentence full 13-way
+ranking check against eager PyTorch fp32 ground truth:
+
+| Variant | Size | Correct |
+|---|---|---|
+| fp32 | 890 MB | 7/7 |
+| int8, per-tensor | 224 MB | 0/7 — near-uniform scores, unusable |
+| int8, per-channel | 224 MB | 5/7 — weaker margins, real degradation |
+
+fp32 is too large to ship; per-channel int8 (what's vendored) is usable but
+degraded, and on the same spot check scored roughly comparable to the
+much-smaller shipped default (`nli-deberta-v3-xsmall`, 3/7 on the same
+sentences — small-sample, not a rigorous benchmark either way). Given that,
+swapping the shipped default for a ~10x larger download without a clear
+accuracy win isn't justified; it's vendored as a documented, opt-in
+alternative instead.
+
+Switch the local backend's checkpoint at runtime without rebuilding by setting
+`zeroShotModel` in `chrome.storage.local`; see `ui/src/background.entry.js`.
 
 ## ONNX runtime
 

@@ -50,11 +50,34 @@ env.backends.onnx.wasm.numThreads = 1;
 env.useBrowserCache = false;
 
 /**
- * Distilled BART-MNLI: same zero-shot recipe and label semantics as
- * facebook/bart-large-mnli with far fewer layers, which is the only way 13
- * candidate labels is survivable in WASM. Overridable per request.
+ * The on-device MNLI checkpoint: same zero-shot recipe and label semantics as
+ * facebook/bart-large-mnli, small enough that 13 candidate labels is
+ * survivable in WASM. Overridable per request.
+ *
+ * ── Why this is not distilbart-mnli any more ──────────────────────────────
+ * This was `Xenova/distilbart-mnli-12-1`, and that repo now answers **401
+ * Unauthorized** to anonymous downloads — so did `-12-3`. Not a network blip:
+ * the HF model API returns `{"error":"Invalid username or password."}` for
+ * both, while `Xenova/all-MiniLM-L6-v2` (the embedding model this extension
+ * also fetches) returns 200 from the same machine at the same moment. The
+ * local zero-shot backend was therefore **dead in production** — every first
+ * classification would fail on the model download, `getClassifier` would drop
+ * the rejected promise, and the tier would silently fall through to the LLM.
+ * Identical in shape to the decommissioned `api-inference.huggingface.co`
+ * endpoint that had already killed the proxy backend once.
+ *
+ * `Xenova/nli-deberta-v3-xsmall` is available, purpose-built for zero-shot
+ * NLI in transformers.js, and measured on this repo's own 13 hypotheses at
+ * ~9.5 s to load and ~420 ms for a full 13-label classification — comfortably
+ * inside the tier's 8 s budget once loaded.
+ * `Xenova/mobilebert-uncased-mnli` is a smaller, faster alternative that also
+ * works; pass it via W2M_ZEROSHOT_MODEL to compare.
+ *
+ * If this constant moves, mood-classification/experiments/localZeroShot.js
+ * reads it from this file rather than duplicating it, so A6 keeps describing
+ * whatever the extension actually runs.
  */
-const DEFAULT_MODEL_ID = "Xenova/distilbart-mnli-12-1";
+const DEFAULT_MODEL_ID = "Xenova/nli-deberta-v3-xsmall";
 
 const _pipelines = new Map();
 function getClassifier(modelId) {
