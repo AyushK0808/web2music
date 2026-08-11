@@ -1,4 +1,10 @@
+import hashlib
+import io
+import json
 import os
+import time
+from pathlib import Path
+
 import librosa
 import numpy as np
 import soundfile as sf
@@ -6,7 +12,6 @@ import pyloudnorm as pyln
 import imageio_ffmpeg
 from pydub import AudioSegment
 from pydub.silence import detect_leading_silence
-import io
 
 # pydub shells out to ffmpeg to encode Ogg/Opus. Point it at the binary
 # bundled with imageio-ffmpeg by default so we don't depend on ffmpeg being
@@ -38,6 +43,79 @@ CROSSFADE_MS = 50           # length of the equal-power crossfade at the loop se
 EXPORT_FORMAT = "ogg"
 EXPORT_CODEC = "libopus"
 EXPORT_BITRATE = "128k"
+
+# ── C-09: retain the evidence the loop question needs ───────────────────────
+# audio-cache/ stores clips *after* the loop cut, so the audio the detector
+# actually looked at is gone by the time anyone asks a question about it. That
+# is why "is the median clip retaining 50.3% of its requested duration a
+# detector artefact or correct behaviour on non-self-similar audio?" was
+# undecidable from stored data: the obvious mechanism could be tested on only
+# the three longest surviving clips, and it failed to confirm.
+#
+# RETAIN_PRETRIM_EVERY=N persists, for one in every N generations, the audio as
+# the detector saw it plus the full similarity curve it took its argmax over.
+# Off by default (0). Turning it on costs disk, not latency — the write happens
+# after the clip has been produced and never blocks the response.
+RETAIN_PRETRIM_EVERY = int(os.getenv("RETAIN_PRETRIM_EVERY", "0") or 0)
+RETAIN_PRETRIM_DIR = Path(os.getenv("RETAIN_PRETRIM_DIR", "pretrim-samples"))
+_retain_counter = 0
+
+
+def _should_retain() -> bool:
+    """Deterministic 1-in-N sampling. A counter rather than a random draw so a
+    replication with the same request sequence retains the same requests."""
+    global _retain_counter
+    if RETAIN_PRETRIM_EVERY <= 0:
+        return False
+    _retain_counter += 1
+    return _retain_counter % RETAIN_PRETRIM_EVERY == 1 % RETAIN_PRETRIM_EVERY
+
+
+def _retain_pretrim(audio: AudioSegment, similarities: np.ndarray, sr: int,
+                    loop_point_ms: int, diagnostics: dict) -> str | None:
+    """Write the pre-cut audio and the detector's own working out.
+
+    The similarity curve is the point. Without it the only reconstructable
+    question is "where did it cut"; with it the question becomes "what did the
+    curve look like, and was the argmax defensible" — which is the one §6.6
+    currently has to hedge on.
+    """
+    try:
+        RETAIN_PRETRIM_DIR.mkdir(parents=True, exist_ok=True)
+        stamp = time.strftime("%Y%m%dT%H%M%S")
+        digest = hashlib.sha256(audio.raw_data[:65536]).hexdigest()[:12]
+        stem = RETAIN_PRETRIM_DIR / f"{stamp}-{digest}"
+
+        buf = io.BytesIO()
+        audio.export(buf, format=EXPORT_FORMAT, codec=EXPORT_CODEC, bitrate=EXPORT_BITRATE)
+        stem.with_suffix(".source.ogg").write_bytes(buf.getvalue())
+
+        finite = similarities[np.isfinite(similarities)]
+        meta = {
+            "captured_at": stamp,
+            "source_duration_ms": len(audio),
+            "loop_point_ms": loop_point_ms,
+            "retention_of_source": loop_point_ms / len(audio) if len(audio) else None,
+            "sample_rate": sr,
+            "hop_length": HOP_LENGTH,
+            "chroma_window": CHROMA_WINDOW,
+            "min_loop_seconds": MIN_LOOP_SECONDS,
+            # Full curve, so the decay hypothesis can be tested properly on a
+            # real sample instead of on three surviving clips.
+            "similarity_curve": [round(float(v), 5) for v in similarities],
+            "similarity_stats": {
+                "n": int(finite.size),
+                "max": float(finite.max()) if finite.size else None,
+                "argmax_frame": int(np.argmax(similarities)) if similarities.size else None,
+                "mean": float(finite.mean()) if finite.size else None,
+            },
+            **diagnostics,
+        }
+        stem.with_suffix(".json").write_text(json.dumps(meta), encoding="utf-8")
+        return str(stem)
+    except Exception as e:  # never let diagnostics break a generation
+        print(f"[D4] pre-trim retention failed (non-fatal): {e}")
+        return None
 
 
 def process_audio(audio_bytes: bytes):
@@ -78,8 +156,16 @@ def process_audio(audio_bytes: bytes):
     audio_array /= np.iinfo(audio.array_type).max
     sr = audio.frame_rate
 
-    loop_point_ms = _detect_loop_point_ms(audio_array, sr, len(audio))
+    retain = _should_retain()
+    diagnostics: dict | None = {} if retain else None
+    loop_point_ms = _detect_loop_point_ms(audio_array, sr, len(audio), diagnostics)
     print(f"Loop point detected at {loop_point_ms}ms")
+
+    if retain:
+        similarities = diagnostics.pop("similarities", np.array([]))
+        saved = _retain_pretrim(audio, similarities, sr, loop_point_ms, diagnostics)
+        if saved:
+            print(f"[D4] retained pre-trim sample at {saved}.* (C-09)")
 
     pre_crossfade_clip = audio[:loop_point_ms]
     seam_discontinuity = _seam_discontinuity(pre_crossfade_clip, crossfade_ms=CROSSFADE_MS)
@@ -149,20 +235,30 @@ def _seam_discontinuity(audio: AudioSegment, crossfade_ms: int = CROSSFADE_MS) -
     }
 
 
-def _detect_loop_point_ms(audio_array: np.ndarray, sr: int, audio_len_ms: int) -> int:
+def _detect_loop_point_ms(audio_array: np.ndarray, sr: int, audio_len_ms: int,
+                          diagnostics: dict | None = None) -> int:
     """
     Find the best point to cut a seamless loop: correlate a reference window
     at the start of the track against every later window (vectorized), then
     snap the best match onto the nearest bar boundary so the loop lands on a
     musical phrase instead of mid-beat.
+
+    `diagnostics`, when passed, is filled in place with the intermediate values
+    (C-09) — the similarity curve, the raw argmax before bar snapping, the beat
+    grid. Returning them instead would change a signature four tests depend on,
+    and the caller that wants them is a sampling path, not the hot path.
     """
     chroma = librosa.feature.chroma_cqt(y=audio_array, sr=sr, hop_length=HOP_LENGTH)
     n_frames = chroma.shape[1]
 
     if n_frames <= CHROMA_WINDOW:
+        if diagnostics is not None:
+            diagnostics.update(outcome="too-short-for-search", n_frames=int(n_frames))
         return audio_len_ms  # too short to search meaningfully, loop the whole clip
 
     similarities = _vectorized_chroma_similarity(chroma, CHROMA_WINDOW)
+    if diagnostics is not None:
+        diagnostics["similarities"] = similarities
 
     # Don't let the search consider anything before MIN_LOOP_SECONDS in —
     # otherwise a few hundred ms of near-identical attack/silence at the very
@@ -191,6 +287,20 @@ def _detect_loop_point_ms(audio_array: np.ndarray, sr: int, audio_len_ms: int) -
         loop_point_ms = candidates[int(np.argmin(np.abs(candidates - best_time_ms)))]
     else:
         loop_point_ms = best_time_ms
+
+    if diagnostics is not None:
+        diagnostics.update(
+            outcome="searched",
+            n_frames=int(n_frames),
+            best_frame=best_frame,
+            best_similarity=float(similarities[best_frame]),
+            argmax_time_ms=float(best_time_ms),
+            snapped_to_ms=float(loop_point_ms),
+            snap_shift_ms=float(loop_point_ms - best_time_ms),
+            tempo_bpm=float(np.atleast_1d(tempo)[0]) if tempo is not None else None,
+            n_beats=int(len(beat_times_ms)),
+            n_bar_candidates=int(len(candidates)),
+        )
 
     return int(loop_point_ms)
 

@@ -224,3 +224,86 @@ class TestGaplessExport:
         # internally regardless of source rate -- this is expected, not a bug
         assert decoded.frame_rate == 48000
         assert decoded.channels == 1
+
+class TestPreTrimRetention:
+    """C-09 — the sampling flag that keeps the audio the loop detector saw.
+
+    audio-cache/ stores clips post-trim, which is why the duration-retention
+    question ("detector artefact, or correct behaviour on non-self-similar
+    audio?") was undecidable from stored data. These tests cover the two ways
+    that instrument could quietly fail: sampling that never fires, and a
+    diagnostics write that takes the request down with it.
+    """
+
+    def test_diagnostics_dict_is_filled_without_changing_the_loop_point(self):
+        import d4_process
+
+        audio = _make_phrase_audio(duration_s=20)
+        arr = audio.astype(np.float32)
+        plain = d4_process._detect_loop_point_ms(arr, SR, 20_000)
+
+        diag = {}
+        with_diag = d4_process._detect_loop_point_ms(arr, SR, 20_000, diag)
+
+        assert with_diag == plain, "passing a diagnostics dict changed the decision"
+        assert diag["outcome"] == "searched"
+        assert len(diag["similarities"]) == diag["n_frames"]
+        assert diag["snapped_to_ms"] == pytest.approx(float(with_diag), abs=1.0)
+        # snap_shift is what tells a later analysis whether bar snapping is
+        # systematically shortening loops; it must be signed, not absolute.
+        assert diag["snap_shift_ms"] == pytest.approx(
+            diag["snapped_to_ms"] - diag["argmax_time_ms"], abs=1e-6
+        )
+
+    def test_sampling_is_off_by_default_and_deterministic_when_on(self, monkeypatch):
+        import d4_process
+
+        monkeypatch.setattr(d4_process, "RETAIN_PRETRIM_EVERY", 0)
+        monkeypatch.setattr(d4_process, "_retain_counter", 0)
+        assert not any(d4_process._should_retain() for _ in range(50))
+
+        monkeypatch.setattr(d4_process, "RETAIN_PRETRIM_EVERY", 5)
+        monkeypatch.setattr(d4_process, "_retain_counter", 0)
+        fired = [i for i in range(20) if d4_process._should_retain()]
+        assert fired == [0, 5, 10, 15], f"1-in-5 sampling fired at {fired}"
+
+    def test_retention_writes_source_audio_and_similarity_curve(self, tmp_path, monkeypatch):
+        import json
+        import d4_process
+        from pydub import AudioSegment
+
+        monkeypatch.setattr(d4_process, "RETAIN_PRETRIM_EVERY", 1)
+        monkeypatch.setattr(d4_process, "_retain_counter", 0)
+        monkeypatch.setattr(d4_process, "RETAIN_PRETRIM_DIR", tmp_path)
+
+        audio = _make_phrase_audio(duration_s=20)
+        clip_bytes, loop_point_ms, _seam = process_audio(_to_wav_bytes(audio))
+        assert clip_bytes[:4] == b"OggS"
+
+        metas = list(tmp_path.glob("*.json"))
+        sources = list(tmp_path.glob("*.source.ogg"))
+        assert len(metas) == 1 and len(sources) == 1
+
+        meta = json.loads(metas[0].read_text(encoding="utf-8"))
+        assert meta["loop_point_ms"] == loop_point_ms
+        assert meta["source_duration_ms"] > loop_point_ms
+        assert 0 < meta["retention_of_source"] <= 1
+        # the curve is the whole point of retaining anything
+        assert len(meta["similarity_curve"]) > 10
+        assert meta["similarity_stats"]["argmax_frame"] is not None
+
+        decoded = AudioSegment.from_file(io.BytesIO(sources[0].read_bytes()), format="ogg")
+        assert len(decoded) == pytest.approx(meta["source_duration_ms"], rel=0.02)
+
+    def test_a_failing_retention_write_does_not_fail_the_generation(self, tmp_path, monkeypatch):
+        import d4_process
+
+        monkeypatch.setattr(d4_process, "RETAIN_PRETRIM_EVERY", 1)
+        monkeypatch.setattr(d4_process, "_retain_counter", 0)
+        # a path that cannot be created: diagnostics must never cost a clip
+        monkeypatch.setattr(d4_process, "RETAIN_PRETRIM_DIR", tmp_path / "x\0y")
+
+        audio = _make_phrase_audio(duration_s=20)
+        clip_bytes, loop_point_ms, _seam = process_audio(_to_wav_bytes(audio))
+        assert clip_bytes[:4] == b"OggS"
+        assert loop_point_ms > 0
