@@ -46,6 +46,14 @@ const MODULES = [
   'Textextractor.js',
   'Colorextractor.js',
   'Embeddingmodel.js',
+  // syllableCounter.js must load before Readability.js: Readability.js reads
+  // window.Web2MusicSyllableCounter at top-level const-binding time (see its
+  // header), and an injection order that puts it after left that binding
+  // undefined in this benchmark's browser context, throwing "Cannot read
+  // properties of undefined (reading 'countSyllables')" on every single site
+  // (97/103 in the first real run) -- silently degrading every readability
+  // measurement to a caught, swallowed error instead of a real number.
+  'syllableCounter.js',
   'Readability.js',
   'behaviorTracker.js',
   'VectorStore.js',

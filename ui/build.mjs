@@ -58,7 +58,18 @@ function copyStaticAssets() {
   // branch and never setting window.Web2Music*. Copied verbatim instead.
   const dataExtractionDir = path.join(__dirname, "..", "data-extraction");
   mkdirSync(path.join(DIST, "vendor"), { recursive: true });
-  for (const f of ["Textextractor.js", "Colorextractor.js", "Readability.js", "behaviorTracker.js", "pageData.js", "VectorStore.js"]) {
+  // syllableCounter.js must precede Readability.js: Readability.js reads
+  // window.Web2MusicSyllableCounter at top-level const-binding time, and
+  // manifest.json's content_scripts array executes these in list order.
+  // Omitting it here (and there) meant the shipped extension threw "Cannot
+  // read properties of undefined (reading 'countSyllables')" inside
+  // Readability.js on every single real page load -- caught and swallowed by
+  // pageData.js's try/catch, so `flesch`/`readingComplexity` silently never
+  // made it into a single Handoff-1 payload since syllableCounter.js was
+  // split out into its own file. Found via data-extraction/benchmark's
+  // extractionCost.js, which has the same content-script list and hit the
+  // identical error on 97/103 real sites.
+  for (const f of ["Textextractor.js", "Colorextractor.js", "syllableCounter.js", "Readability.js", "behaviorTracker.js", "pageData.js", "VectorStore.js"]) {
     cpSync(path.join(dataExtractionDir, f), path.join(DIST, "vendor", f));
   }
 

@@ -38,6 +38,7 @@
       "js": [
         "vendor/Textextractor.js",
         "vendor/Colorextractor.js",
+        "vendor/syllableCounter.js",
         "vendor/Readability.js",
         "vendor/behaviorTracker.js",
         "vendor/pageData.js",
