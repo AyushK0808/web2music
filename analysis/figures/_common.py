@@ -29,25 +29,28 @@ FULL_W = 7.0
 plt.rcParams.update(
     {
         "figure.dpi": 150,
-        "savefig.dpi": 300,
+        "savefig.dpi": 400,
         "savefig.bbox": "tight",
         "savefig.pad_inches": 0.02,
         "pdf.fonttype": 42,  # TrueType, not Type 3 — ACM rejects Type 3
         "ps.fonttype": 42,
         "font.family": "sans-serif",
         "font.sans-serif": ["DejaVu Sans", "Arial", "Helvetica"],
-        "font.size": 8,
-        "axes.labelsize": 8,
-        "axes.titlesize": 8.5,
-        "xtick.labelsize": 7,
-        "ytick.labelsize": 7,
-        "legend.fontsize": 7,
+        # Sized so a FULL_W figure placed in a two-column `figure*` still reads
+        # at ~9pt, and a COL_W figure at ~8pt. Anything smaller disappears once
+        # the page is printed rather than viewed at 200% on a laptop.
+        "font.size": 9.5,
+        "axes.labelsize": 9.5,
+        "axes.titlesize": 10,
+        "xtick.labelsize": 8.5,
+        "ytick.labelsize": 8.5,
+        "legend.fontsize": 8.5,
         "axes.spines.top": False,
         "axes.spines.right": False,
         "axes.grid": True,
-        "grid.alpha": 0.25,
-        "grid.linewidth": 0.5,
-        "lines.linewidth": 1.2,
+        "grid.alpha": 0.3,
+        "grid.linewidth": 0.6,
+        "lines.linewidth": 1.6,
     }
 )
 
