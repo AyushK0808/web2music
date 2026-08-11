@@ -1,0 +1,6 @@
+{
+  "name": "@web2music/analysis",
+  "private": true,
+  "type": "module",
+  "description": "C-01/C-03/C-10/C-11 — the paper's analysis pipeline. Not a workspace member: nothing in the shipped extension imports it, and it is deliberately installable-free so the reproducibility bundle can carry it as plain files."
+}

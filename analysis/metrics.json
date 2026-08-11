@@ -1,0 +1,363 @@
+{
+  "$comment": "C-01. The machine-readable form of RESULTS_AND_DISCUSSION_PLAN.md §4. Every figure and table declares the metric ids it consumes; analysis/registry.py rejects any id that is not in this file. That is what turns the plan's §0 rule -- 'if a metric has no provenance row, it does not go in the paper' -- from a discipline into a check.",
+  "schema_version": 1,
+  "metrics": [
+    {
+      "id": "time_to_first_sound",
+      "definition": "Navigation commit to the first audible sample of the fallback clip.",
+      "units": "ms",
+      "producer": "ui/e2e/latency.e2e.mjs",
+      "field": "nav_to_fallback_request_ms + decode_ms",
+      "status": "instrumented"
+    },
+    {
+      "id": "time_to_generated_audio",
+      "definition": "Navigation commit to the first audible sample of the generated clip, wall clock, inclusive of the deliberate confidence window.",
+      "units": "ms",
+      "producer": "ui/e2e/latency.e2e.mjs",
+      "field": "nav_to_first_audio_ms",
+      "status": "instrumented"
+    },
+    {
+      "id": "compute_ms",
+      "definition": "Extract + classify + Feature D round trip + decode, excluding the confidence window. The part of the wall clock that is implementation rather than design.",
+      "units": "ms",
+      "producer": "ui/e2e/latency.e2e.mjs",
+      "field": "compute_ms",
+      "status": "instrumented"
+    },
+    {
+      "id": "extraction_cost",
+      "definition": "Feature A per-stage wall time and forced-layout count on a real site.",
+      "units": "ms",
+      "producer": "data-extraction/benchmark/extractionCost.js",
+      "field": "stages[*].ms",
+      "status": "ready"
+    },
+    {
+      "id": "d_stage_ms",
+      "definition": "Feature D per-stage server time: d1_validate, d5_cache_check, d2_prompt, d3_generate, d4_process, d5_save.",
+      "units": "ms",
+      "producer": "audio-generation/experiments/d4_latency.py",
+      "field": "sections[*][*].timings",
+      "status": "ready"
+    },
+    {
+      "id": "unaccounted_ms",
+      "definition": "Client wall clock minus the sum of reported server stages: queueing plus transport.",
+      "units": "ms",
+      "producer": "audio-generation/experiments/d4_latency.py",
+      "field": "derived: wall_ms - sum(timings)",
+      "status": "ready"
+    },
+    {
+      "id": "rtf",
+      "definition": "Real-time factor: d3_generate_ms / 1000 / duration_seconds. Below 1.0 means the model generates faster than playback.",
+      "units": "ratio",
+      "producer": "audio-generation/experiments/d4_latency.py",
+      "field": "derived, --sections duration",
+      "status": "ready"
+    },
+    {
+      "id": "batching_speedup",
+      "definition": "Sequential wall clock divided by concurrent wall clock at k simultaneous requests.",
+      "units": "ratio",
+      "producer": "audio-generation/experiments/d4_latency.py",
+      "field": "sections.concurrency[*].speedup",
+      "status": "ready",
+      "caveat": "In d1-latency-full.json every concurrency request was a cache hit, so this number describes the HTTP and cache path, not MusicGen batching. Re-run against a cold cache before reporting it as generation batching."
+    },
+    {
+      "id": "cache_hit_rate",
+      "definition": "Share of /generate calls answered from the audio cache.",
+      "units": "fraction",
+      "producer": "audio-generation/main.py response field; ui/experiments/s5_telemetry_analysis.js",
+      "field": "cache == 'hit'",
+      "status": "ready"
+    },
+    {
+      "id": "fallback_rate",
+      "definition": "Share of /generate calls answered with a canned fallback clip instead of generated audio.",
+      "units": "fraction",
+      "producer": "audio-generation/main.py response field",
+      "field": "metadata.is_fallback",
+      "status": "ready"
+    },
+    {
+      "id": "request_error_rate",
+      "definition": "Share of /generate calls that returned no response within the client timeout.",
+      "units": "fraction",
+      "producer": "audio-generation/experiments/d4_latency.py",
+      "field": "derived: error != null",
+      "status": "ready"
+    },
+    {
+      "id": "macro_f1_category",
+      "definition": "Unweighted mean per-category F1 over the 13 content categories.",
+      "units": "f1",
+      "producer": "mood-classification/experiments/s2_tier_ablation.js",
+      "field": "configs[*].category.macro_f1",
+      "status": "blocked",
+      "blocked_on": "D-01/D-02 (600-page annotated corpus)"
+    },
+    {
+      "id": "macro_f1_mood",
+      "definition": "Unweighted mean per-mood F1 over the 11 moods.",
+      "units": "f1",
+      "producer": "mood-classification/experiments/s2_tier_ablation.js",
+      "field": "configs[*].mood.macro_f1",
+      "status": "blocked",
+      "blocked_on": "D-01/D-02"
+    },
+    {
+      "id": "escalation_rate",
+      "definition": "Share of pages whose decision was taken at each tier: keyword, zero-shot, llm, default.",
+      "units": "fraction",
+      "producer": "mood-classification/experiments/s2_tier_ablation.js; ui/experiments/s5_telemetry_analysis.js",
+      "field": "category.source; tier_escalation_rate",
+      "status": "instrumented"
+    },
+    {
+      "id": "exposure_rate",
+      "definition": "Share of pages whose text left the device. Tier 2 (Groq) is exposure; tier 1.5 via the hosted HF proxy is proxy exposure and is counted separately.",
+      "units": "fraction",
+      "producer": "mood-classification/experiments/s2_tier_ablation.js; ui/experiments/s5_telemetry_analysis.js",
+      "field": "exposure_rate; llm_exposure_rate",
+      "status": "instrumented"
+    },
+    {
+      "id": "abstention_rate",
+      "definition": "Tier-1.5 declines divided by tier-1.5 invocations, where a decline is a top score below minScore or a margin below minMargin.",
+      "units": "fraction",
+      "producer": "mood-classification/feature_b/b1_zeroShotCategory.js",
+      "field": "abstain log",
+      "status": "instrumented"
+    },
+    {
+      "id": "zs_margin",
+      "definition": "Zero-shot top label score minus runner-up score.",
+      "units": "score",
+      "producer": "mood-classification/feature_b/b1_zeroShotCategory.js",
+      "field": "parseZeroShotResult",
+      "status": "instrumented"
+    },
+    {
+      "id": "krippendorff_alpha",
+      "definition": "Nominal Krippendorff's alpha over annotators for one label set, with bootstrap CI.",
+      "units": "alpha",
+      "producer": "analysis/krippendorff.py",
+      "field": "alpha",
+      "status": "ready",
+      "caveat": "Ready as code; has no annotation data until D-02."
+    },
+    {
+      "id": "human_ceiling",
+      "definition": "Inter-annotator agreement expressed as the accuracy of one annotator against the majority of the others. The upper bound any classifier can be expected to reach.",
+      "units": "accuracy",
+      "producer": "analysis/krippendorff.py",
+      "field": "leave_one_out_accuracy",
+      "status": "ready",
+      "caveat": "Ready as code; has no annotation data until D-02."
+    },
+    {
+      "id": "seam_energy_delta_db",
+      "definition": "RMS energy difference across the loop seam, measured both before and after the equal-power crossfade.",
+      "units": "dB",
+      "producer": "audio-generation/experiments/d2_loop_test.py",
+      "field": "pre_energy_delta_db / post_energy_delta_db",
+      "status": "ready"
+    },
+    {
+      "id": "seam_centroid_delta_hz",
+      "definition": "Spectral-centroid difference across the loop seam, before and after the crossfade.",
+      "units": "Hz",
+      "producer": "audio-generation/experiments/d2_loop_test.py",
+      "field": "pre_spectral_centroid_delta_hz / post_spectral_centroid_delta_hz",
+      "status": "ready"
+    },
+    {
+      "id": "duration_retention",
+      "definition": "Delivered clip duration divided by requested duration, after loop-point trimming and crossfade shrink.",
+      "units": "ratio",
+      "producer": "audio-generation/experiments/d2_loop_test.py",
+      "field": "duration_ratio",
+      "status": "ready"
+    },
+    {
+      "id": "lufs",
+      "definition": "Integrated loudness of the delivered clip.",
+      "units": "LUFS",
+      "producer": "audio-generation/experiments/d2_loop_test.py",
+      "field": "lufs",
+      "status": "ready"
+    },
+    {
+      "id": "loop_detection_rate",
+      "definition": "Share of forced-choice trials in which a listener correctly identified the looped stimulus. Chance is 0.5.",
+      "units": "fraction",
+      "producer": "analysis/loop_ab/score_loop_ab.py",
+      "field": "per_mood.detection_rate",
+      "status": "blocked",
+      "blocked_on": "H-03 (30 listeners)"
+    },
+    {
+      "id": "attenuation_rate",
+      "definition": "Share of session time attenuated because the page was itself playing audio, split by duck and mute.",
+      "units": "fraction",
+      "producer": "ui/experiments/s5_telemetry_analysis.js",
+      "field": "attenuation_rate",
+      "status": "instrumented"
+    },
+    {
+      "id": "skip_rate",
+      "definition": "POPUP_REGENERATE presses per hour of session.",
+      "units": "per hour",
+      "producer": "ui/experiments/s5_telemetry_analysis.js",
+      "field": "user_control telemetry",
+      "status": "instrumented"
+    },
+    {
+      "id": "mood_correction_rate",
+      "definition": "POPUP_MOOD_CORRECTION events per committed mood transition.",
+      "units": "ratio",
+      "producer": "ui/experiments/s5_telemetry_analysis.js",
+      "field": "user_control telemetry",
+      "status": "instrumented"
+    },
+    {
+      "id": "disabled_rate",
+      "definition": "Share of session time the extension was toggled off. A voluntary-disable measure, not an uninstall rate; uninstall is not measurable in this build.",
+      "units": "fraction",
+      "producer": "ui/experiments/s5_telemetry_analysis.js",
+      "field": "disabled_rate",
+      "status": "instrumented"
+    },
+    {
+      "id": "disables_per_hour",
+      "definition": "Voluntary disable presses per hour of session.",
+      "units": "per hour",
+      "producer": "ui/experiments/s5_telemetry_analysis.js",
+      "field": "disables_per_hour",
+      "status": "instrumented"
+    },
+    {
+      "id": "llm_tokens_per_page",
+      "definition": "Prompt plus completion tokens sent to the tier-2 LLM per classified page, counted only on pages that escalate.",
+      "units": "tokens",
+      "producer": "analysis/cost/cost_accounting.js",
+      "field": "per_page.llm_tokens",
+      "status": "ready"
+    },
+    {
+      "id": "zeroshot_passes_per_page",
+      "definition": "Zero-shot NLI forward passes per classified page. One premise-hypothesis pair per candidate label.",
+      "units": "passes",
+      "producer": "analysis/cost/cost_accounting.js",
+      "field": "per_page.zeroshot_passes",
+      "status": "ready"
+    },
+    {
+      "id": "bytes_per_page",
+      "definition": "Bytes transferred off the device per page: classification request plus response plus audio download when not cached.",
+      "units": "bytes",
+      "producer": "analysis/cost/cost_accounting.js",
+      "field": "per_page.bytes_total",
+      "status": "ready"
+    },
+    {
+      "id": "usd_per_1k_pages",
+      "definition": "Marginal monetary cost of classifying one thousand pages at the pinned tier-2 model's published token price.",
+      "units": "USD",
+      "producer": "analysis/cost/cost_accounting.js",
+      "field": "totals.usd_per_1k_pages",
+      "status": "ready"
+    },
+    {
+      "id": "policy_test_status",
+      "definition": "For each responsible-behaviour policy, whether the test that covers it currently passes.",
+      "units": "pass/fail",
+      "producer": "analysis/audit/t5_audit.mjs",
+      "field": "policies[*].status",
+      "status": "ready"
+    },
+    {
+      "id": "sensitive_false_negative_rate",
+      "definition": "Share of genuinely sensitive pages on which the detector fails to force silence.",
+      "units": "fraction",
+      "producer": "analysis/audit/t5_audit.mjs",
+      "field": "sensitive.false_negative_rate",
+      "status": "ready",
+      "caveat": "Runs against the adversarial slice; the shipped slice is the seed set until D-01 provides the full one."
+    },
+    {
+      "id": "sensitive_false_positive_rate",
+      "definition": "Share of near-miss pages ('The Great Depression', 'grief counselling degree programs') on which the detector wrongly forces silence.",
+      "units": "fraction",
+      "producer": "analysis/audit/t5_audit.mjs",
+      "field": "sensitive.false_positive_rate",
+      "status": "ready"
+    },
+    {
+      "id": "fit_rating",
+      "definition": "Seven-point Likert rating that the music suited the page, one per page per condition.",
+      "units": "likert7",
+      "producer": "analysis/s4/run_s4.mjs",
+      "field": "responses[*].fit",
+      "status": "blocked",
+      "blocked_on": "H-01 then H-05"
+    },
+    {
+      "id": "liking_rating",
+      "definition": "Seven-point Likert rating that the participant liked the music, collected so fit can be reported controlling for liking.",
+      "units": "likert7",
+      "producer": "analysis/s4/run_s4.mjs",
+      "field": "responses[*].liking",
+      "status": "blocked",
+      "blocked_on": "H-05"
+    },
+    {
+      "id": "comprehension",
+      "definition": "Correct answers out of four on the per-page comprehension set.",
+      "units": "count 0-4",
+      "producer": "analysis/s4/run_s4.mjs",
+      "field": "responses[*].comprehension",
+      "status": "blocked",
+      "blocked_on": "H-05"
+    },
+    {
+      "id": "tlx",
+      "definition": "Raw NASA-TLX, unweighted mean of six subscales, one per condition.",
+      "units": "0-100",
+      "producer": "analysis/s4/run_s4.mjs",
+      "field": "blocks[*].tlx",
+      "status": "blocked",
+      "blocked_on": "H-05"
+    },
+    {
+      "id": "distraction",
+      "definition": "Three-item custom distraction scale plus the count of 'I wanted to turn it off' keypresses.",
+      "units": "likert7 / count",
+      "producer": "analysis/s4/run_s4.mjs",
+      "field": "blocks[*].distraction, blocks[*].turnoff_presses",
+      "status": "blocked",
+      "blocked_on": "H-05"
+    },
+    {
+      "id": "shuffle_near_miss_rate",
+      "definition": "Share of SHUFFLED trials whose drawn mood landed within two steps of the true mood in valence-arousal space despite the exclusion rule.",
+      "units": "fraction",
+      "producer": "analysis/s4/run_s4.mjs",
+      "field": "assignment.near_miss_rate",
+      "status": "ready",
+      "caveat": "Computed by the assignment code itself, so it is reportable from a dry run before any participant is recruited."
+    },
+    {
+      "id": "retrieval_coverage_gap",
+      "definition": "Share of the mood x style x bpm x energy space a fixed curated library of size N can cover, and the expected distance from a requested cell to the nearest stocked one.",
+      "units": "fraction / cells",
+      "producer": "analysis/baselines/retrieval_baseline.mjs",
+      "field": "coverage",
+      "status": "ready"
+    }
+  ]
+}
