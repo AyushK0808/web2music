@@ -1,0 +1,46 @@
+# C-04 URL list — JSON Lines, one page per line. Blank lines and #-comments ignored.
+#
+# Fields:
+#   id             required, stable, used as the corpus key and in every figure
+#   url            required, fetched exactly once at capture time
+#   slice          "general" or one of the six adversarial slices below
+#   true_category  optional pre-label; annotation (D-02) is still the ground truth
+#   note           why this page is in the list — worth writing while you remember
+#
+# The six slices capture_corpus.mjs requires before it will call a list complete,
+# from plan §3 S2. The target is ~45 pages per content category across 13
+# categories plus these; what follows is a shape example, not the corpus.
+#
+# ── general ───────────────────────────────────────────────────────────────────
+{"id":"news-reuters-markets","url":"https://www.reuters.com/markets/","slice":"general","true_category":"News"}
+{"id":"edu-mdn-eventloop","url":"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Event_loop","slice":"general","true_category":"Technology"}
+{"id":"food-nyt-pasta","url":"https://cooking.nytimes.com/recipes/1017089-simple-tomato-sauce","slice":"general","true_category":"Food"}
+#
+# ── vocabulary-mismatch: the case tier 1.5 exists for ─────────────────────────
+# A page whose category is obvious to a reader and invisible to the keyword lists.
+{"id":"mismatch-gut-microbiome","url":"https://www.theatlantic.com/science/archive/2019/06/gut-microbiome/591399/","slice":"vocabulary-mismatch","true_category":"Health","note":"Health article that never uses a Health keyword — the plan's own example"}
+{"id":"mismatch-vc-essay","url":"https://www.paulgraham.com/greatwork.html","slice":"vocabulary-mismatch","true_category":"Business","note":"Business/career essay written entirely in plain narrative prose"}
+#
+# ── non-english: the keyword tier is skipped by construction (lang !== "en") ──
+{"id":"noneng-lemonde-une","url":"https://www.lemonde.fr/","slice":"non-english","true_category":"News"}
+{"id":"noneng-nhk-news","url":"https://www3.nhk.or.jp/news/","slice":"non-english","true_category":"News"}
+{"id":"noneng-elpais-ciencia","url":"https://elpais.com/ciencia/","slice":"non-english","true_category":"Educational"}
+#
+# ── mixed-genre: two categories with a fair claim to the same page ────────────
+{"id":"mixed-recipe-memoir","url":"https://smittenkitchen.com/2019/11/simplest-brisket-with-braised-onions/","slice":"mixed-genre","true_category":"Food","note":"Recipe that is mostly a personal essay"}
+{"id":"mixed-sport-politics","url":"https://www.theguardian.com/football/blog","slice":"mixed-genre","true_category":"Sports"}
+#
+# ── sensitive: must produce silence ──────────────────────────────────────────
+# Capture these; never put them in front of an S4 participant (plan §3 S4 ethics).
+{"id":"sens-samaritans","url":"https://www.samaritans.org/how-we-can-help/contact-samaritan/","slice":"sensitive","true_category":"Health"}
+{"id":"sens-nhs-selfharm","url":"https://www.nhs.uk/mental-health/feelings-symptoms-behaviours/behaviours/self-harm/","slice":"sensitive","true_category":"Health"}
+#
+# ── sensitive-near-miss: must NOT produce silence ────────────────────────────
+{"id":"near-great-depression","url":"https://en.wikipedia.org/wiki/Great_Depression","slice":"sensitive-near-miss","true_category":"Educational","note":"The plan's named near-miss"}
+{"id":"near-grief-degrees","url":"https://www.bestcolleges.com/counseling/grief-counseling-degree/","slice":"sensitive-near-miss","true_category":"Educational","note":"The plan's other named near-miss"}
+{"id":"near-eating-disorder-textbook","url":"https://www.ncbi.nlm.nih.gov/books/NBK499953/","slice":"sensitive-near-miss","true_category":"Health","note":"Clinical writing using a SEVERE single-hit term — the detector's known FP mode"}
+#
+# ── bypass: payment/checkout and browser-internal, must never be classified ──
+{"id":"bypass-checkout","url":"https://www.gnu.org/order/order.html","slice":"bypass","true_category":null,"note":"Stand-in for a checkout page; a real one needs a live cart"}
+{"id":"bypass-chrome-settings","url":"chrome://settings/","slice":"bypass","true_category":null}
+{"id":"bypass-chrome-extensions","url":"chrome://extensions/","slice":"bypass","true_category":null}

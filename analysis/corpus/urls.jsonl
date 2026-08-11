@@ -1,0 +1,260 @@
+{"id":"com-knowyourmeme","url":"https://knowyourmeme.com/","slice":"general","true_category":"Comedy"}
+{"id":"r-com-xkcd-archive","url":"https://xkcd.com/archive/","slice":"general","true_category":"Comedy"}
+{"id":"d-com-theonion-politics","url":"https://www.theonion.com/politics/","slice":"general","true_category":"Comedy"}
+{"id":"com-mcsweeneys","url":"https://www.mcsweeneys.net/","slice":"general","true_category":"Comedy"}
+{"id":"r-com-wiki-seinfeld","url":"https://en.wikipedia.org/wiki/Seinfeld","slice":"general","true_category":"Comedy"}
+{"id":"d-com-xkcd-1","url":"https://xkcd.com/1053/","slice":"general","true_category":"Comedy"}
+{"id":"com-onion-home","url":"https://www.theonion.com/","slice":"general","true_category":"Comedy"}
+{"id":"com-mcsweeneys-lists","url":"https://www.mcsweeneys.net/columns/lists","slice":"general","true_category":"Comedy"}
+{"id":"com-wiki-theoffice","url":"https://en.wikipedia.org/wiki/The_Office_(American_TV_series)","slice":"general","true_category":"Comedy"}
+{"id":"d-com-mcsweeneys-2","url":"https://www.mcsweeneys.net/columns","slice":"general","true_category":"Comedy"}
+{"id":"com-wiki-snl","url":"https://en.wikipedia.org/wiki/Saturday_Night_Live","slice":"general","true_category":"Comedy"}
+{"id":"com-wiki-standup","url":"https://en.wikipedia.org/wiki/Stand-up_comedy","slice":"general","true_category":"Comedy"}
+{"id":"com-wiki-improv","url":"https://en.wikipedia.org/wiki/Improvisational_theatre","slice":"general","true_category":"Comedy"}
+{"id":"com-wiki-meme","url":"https://en.wikipedia.org/wiki/Internet_meme","slice":"general","true_category":"Comedy"}
+{"id":"edu-arxiv-attention","url":"https://arxiv.org/abs/1706.03762","slice":"general","true_category":"Educational"}
+{"id":"edu-simple-computer","url":"https://simple.wikipedia.org/wiki/Computer","slice":"general","true_category":"Educational"}
+{"id":"edu-nasa-science-sun","url":"https://science.nasa.gov/sun/","slice":"general","true_category":"Educational"}
+{"id":"edu-hyperphysics-thermo","url":"http://hyperphysics.phy-astr.gsu.edu/hbase/thermo/seclaw.html","slice":"general","true_category":"Educational"}
+{"id":"edu-britannica-blackhole","url":"https://www.britannica.com/science/black-hole","slice":"general","true_category":"Educational"}
+{"id":"edu-sep-consciousness","url":"https://plato.stanford.edu/entries/consciousness/","slice":"general","true_category":"Educational"}
+{"id":"edu-mdn-eventloop","url":"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Event_loop","slice":"general","true_category":"Educational"}
+{"id":"edu-wiki-photosynthesis","url":"https://en.wikipedia.org/wiki/Photosynthesis","slice":"general","true_category":"Educational"}
+{"id":"edu-sep-epistemology","url":"https://plato.stanford.edu/entries/epistemology/","slice":"general","true_category":"Educational"}
+{"id":"edu-mdn-cascade","url":"https://developer.mozilla.org/en-US/docs/Web/CSS/Cascade","slice":"general","true_category":"Educational"}
+{"id":"r-edu-wiki-relativity","url":"https://en.wikipedia.org/wiki/Theory_of_relativity","slice":"general","true_category":"Educational"}
+{"id":"r-edu-sep-ethics","url":"https://plato.stanford.edu/entries/ethics-virtue/","slice":"general","true_category":"Educational"}
+{"id":"edu-mdn-http-caching","url":"https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching","slice":"general","true_category":"Educational"}
+{"id":"r-edu-wiki-evolution","url":"https://en.wikipedia.org/wiki/Evolution","slice":"general","true_category":"Educational"}
+{"id":"emo-slate-prudence","url":"https://slate.com/human-interest/dear-prudence","slice":"general","true_category":"Emotional"}
+{"id":"emo-captainawkward","url":"https://captainawkward.com/","slice":"general","true_category":"Emotional"}
+{"id":"emo-psychtoday-relationships","url":"https://www.psychologytoday.com/us/basics/relationships","slice":"general","true_category":"Emotional"}
+{"id":"emo-gutenberg-pride","url":"https://www.gutenberg.org/files/1342/1342-h/1342-h.htm","slice":"general","true_category":"Emotional"}
+{"id":"emo-wiki-longdistance","url":"https://en.wikipedia.org/wiki/Long-distance_relationship","slice":"general","true_category":"Emotional"}
+{"id":"d-emo-captainawkward-arch","url":"https://captainawkward.com/category/advice/","slice":"general","true_category":"Emotional"}
+{"id":"d-emo-psychtoday-forgive","url":"https://www.psychologytoday.com/us/basics/forgiveness","slice":"general","true_category":"Emotional"}
+{"id":"d-emo-gutenberg-wuthering","url":"https://www.gutenberg.org/files/768/768-h/768-h.htm","slice":"general","true_category":"Emotional"}
+{"id":"emo-wiki-attachment","url":"https://en.wikipedia.org/wiki/Attachment_theory","slice":"general","true_category":"Emotional"}
+{"id":"emo-psychtoday-loneliness","url":"https://www.psychologytoday.com/us/basics/loneliness","slice":"general","true_category":"Emotional"}
+{"id":"r-emo-gutenberg-janeeyre","url":"https://www.gutenberg.org/files/1260/1260-h/1260-h.htm","slice":"general","true_category":"Emotional"}
+{"id":"emo-wiki-emotion","url":"https://en.wikipedia.org/wiki/Emotion","slice":"general","true_category":"Emotional"}
+{"id":"emo-psychtoday-grief","url":"https://www.psychologytoday.com/us/basics/grief","slice":"general","true_category":"Emotional"}
+{"id":"emo-gutenberg-sonnets","url":"https://www.gutenberg.org/files/1041/1041-h/1041-h.htm","slice":"general","true_category":"Emotional"}
+{"id":"ent-metacritic-movies","url":"https://www.metacritic.com/movie/","slice":"general","true_category":"Entertainment"}
+{"id":"ent-pitchfork-reviews","url":"https://pitchfork.com/reviews/albums/","slice":"general","true_category":"Entertainment"}
+{"id":"ent-ign","url":"https://www.ign.com/","slice":"general","true_category":"Entertainment"}
+{"id":"ent-rollingstone-music","url":"https://www.rollingstone.com/music/","slice":"general","true_category":"Entertainment"}
+{"id":"ent-variety-film","url":"https://variety.com/v/film/","slice":"general","true_category":"Entertainment"}
+{"id":"ent-polygon","url":"https://www.polygon.com/","slice":"general","true_category":"Entertainment"}
+{"id":"r-ent-nme","url":"https://www.nme.com/reviews","slice":"general","true_category":"Entertainment"}
+{"id":"ent-avclub","url":"https://www.avclub.com/","slice":"general","true_category":"Entertainment"}
+{"id":"ent-wiki-hiphop","url":"https://en.wikipedia.org/wiki/Hip-hop_music","slice":"general","true_category":"Entertainment"}
+{"id":"ent-wiki-studioghibli","url":"https://en.wikipedia.org/wiki/Studio_Ghibli","slice":"general","true_category":"Entertainment"}
+{"id":"r-ent-wiki-netflix","url":"https://en.wikipedia.org/wiki/Netflix","slice":"general","true_category":"Entertainment"}
+{"id":"r-ent-wiki-minecraft","url":"https://en.wikipedia.org/wiki/Minecraft","slice":"general","true_category":"Entertainment"}
+{"id":"ent-wiki-inception","url":"https://en.wikipedia.org/wiki/Inception","slice":"general","true_category":"Entertainment"}
+{"id":"ent-wiki-breakingbad","url":"https://en.wikipedia.org/wiki/Breaking_Bad","slice":"general","true_category":"Entertainment"}
+{"id":"d-fin-worldbank-econ","url":"https://www.worldbank.org/en/topic/macroeconomics","slice":"general","true_category":"Finance"}
+{"id":"fin-irs-credits","url":"https://www.irs.gov/credits-and-deductions-for-individuals","slice":"general","true_category":"Finance"}
+{"id":"fin-federalreserve-monetary","url":"https://www.federalreserve.gov/monetarypolicy.htm","slice":"general","true_category":"Finance"}
+{"id":"fin-consumerfinance-mortgages","url":"https://www.consumerfinance.gov/consumer-tools/mortgages/","slice":"general","true_category":"Finance"}
+{"id":"r-fin-treasurydirect","url":"https://www.treasurydirect.gov/savings-bonds/","slice":"general","true_category":"Finance"}
+{"id":"fin-wiki-bitcoin","url":"https://en.wikipedia.org/wiki/Bitcoin","slice":"general","true_category":"Finance"}
+{"id":"r-fin-wiki-centralbank","url":"https://en.wikipedia.org/wiki/Central_bank","slice":"general","true_category":"Finance"}
+{"id":"r-fin-wiki-inflation","url":"https://en.wikipedia.org/wiki/Inflation","slice":"general","true_category":"Finance"}
+{"id":"r-fin-wiki-compound","url":"https://en.wikipedia.org/wiki/Compound_interest","slice":"general","true_category":"Finance"}
+{"id":"fin-wiki-2008crisis","url":"https://en.wikipedia.org/wiki/2008_financial_crisis","slice":"general","true_category":"Finance"}
+{"id":"r-fin-wiki-hedgefund","url":"https://en.wikipedia.org/wiki/Hedge_fund","slice":"general","true_category":"Finance"}
+{"id":"r-fin-wiki-etf","url":"https://en.wikipedia.org/wiki/Exchange-traded_fund","slice":"general","true_category":"Finance"}
+{"id":"fin-wiki-stockmarket","url":"https://en.wikipedia.org/wiki/Stock_market","slice":"general","true_category":"Finance"}
+{"id":"fin-wiki-mortgage","url":"https://en.wikipedia.org/wiki/Mortgage_loan","slice":"general","true_category":"Finance"}
+{"id":"r-food-budgetbytes-index","url":"https://www.budgetbytes.com/category/recipes/","slice":"general","true_category":"Food"}
+{"id":"food-kingarthur-sourdough","url":"https://www.kingarthurbaking.com/recipes/rustic-sourdough-bread-recipe","slice":"general","true_category":"Food"}
+{"id":"r-food-bbcgf-risotto","url":"https://www.bbcgoodfood.com/recipes/mushroom-risotto","slice":"general","true_category":"Food"}
+{"id":"r-food-wiki-kimchi","url":"https://en.wikipedia.org/wiki/Kimchi","slice":"general","true_category":"Food"}
+{"id":"food-budgetbytes-fried-rice","url":"https://www.budgetbytes.com/vegetable-fried-rice/","slice":"general","true_category":"Food"}
+{"id":"r-food-ka-banana","url":"https://www.kingarthurbaking.com/recipes/banana-bread-recipe","slice":"general","true_category":"Food"}
+{"id":"r-food-bbcgf-curry","url":"https://www.bbcgoodfood.com/recipes/chicken-tikka-masala","slice":"general","true_category":"Food"}
+{"id":"food-wiki-maillard","url":"https://en.wikipedia.org/wiki/Maillard_reaction","slice":"general","true_category":"Food"}
+{"id":"r-food-ka-pizza","url":"https://www.kingarthurbaking.com/recipes/no-knead-pizza-crust-recipe","slice":"general","true_category":"Food"}
+{"id":"food-bbcgoodfood-lasagne","url":"https://www.bbcgoodfood.com/recipes/classic-lasagne","slice":"general","true_category":"Food"}
+{"id":"food-wiki-fermentation","url":"https://en.wikipedia.org/wiki/Fermentation_in_food_processing","slice":"general","true_category":"Food"}
+{"id":"food-kingarthur-choc-chip","url":"https://www.kingarthurbaking.com/recipes/chocolate-chip-cookies-recipe","slice":"general","true_category":"Food"}
+{"id":"r-food-bbcgf-brownies","url":"https://www.bbcgoodfood.com/recipes/best-ever-chocolate-brownies-recipe","slice":"general","true_category":"Food"}
+{"id":"food-wiki-coffee-prep","url":"https://en.wikipedia.org/wiki/Coffee_preparation","slice":"general","true_category":"Food"}
+{"id":"hea-harvard-nutrition-plate","url":"https://www.hsph.harvard.edu/nutritionsource/healthy-eating-plate/","slice":"general","true_category":"Health"}
+{"id":"hea-wiki-immune-system","url":"https://en.wikipedia.org/wiki/Immune_system","slice":"general","true_category":"Health"}
+{"id":"r-hea-who-mentalhealth","url":"https://www.who.int/news-room/fact-sheets/detail/mental-health-strengthening-our-response","slice":"general","true_category":"Health"}
+{"id":"hea-medlineplus-cholesterol","url":"https://medlineplus.gov/cholesterol.html","slice":"general","true_category":"Health"}
+{"id":"hea-cdc-physical-activity","url":"https://www.cdc.gov/physical-activity-basics/guidelines/adults.html","slice":"general","true_category":"Health"}
+{"id":"hea-nhs-physio","url":"https://www.nhs.uk/conditions/physiotherapy/","slice":"general","true_category":"Health"}
+{"id":"hea-wiki-vaccination","url":"https://en.wikipedia.org/wiki/Vaccination","slice":"general","true_category":"Health"}
+{"id":"hea-who-physical-activity","url":"https://www.who.int/news-room/fact-sheets/detail/physical-activity","slice":"general","true_category":"Health"}
+{"id":"hea-medlineplus-hypertension","url":"https://medlineplus.gov/highbloodpressure.html","slice":"general","true_category":"Health"}
+{"id":"hea-cdc-flu","url":"https://www.cdc.gov/flu/about/index.html","slice":"general","true_category":"Health"}
+{"id":"r-hea-nhs-anaemia","url":"https://www.nhs.uk/conditions/iron-deficiency-anaemia/","slice":"general","true_category":"Health"}
+{"id":"hea-who-nutrition","url":"https://www.who.int/health-topics/nutrition","slice":"general","true_category":"Health"}
+{"id":"r-hea-medlineplus-diabetes","url":"https://medlineplus.gov/diabetes.html","slice":"general","true_category":"Health"}
+{"id":"r-hea-cdc-handwashing","url":"https://www.cdc.gov/clean-hands/about/index.html","slice":"general","true_category":"Health"}
+{"id":"d-hor-nightmare","url":"https://nightmare-magazine.com/","slice":"general","true_category":"Horror"}
+{"id":"d-hor-scp-049","url":"https://scp-wiki.wikidot.com/scp-049","slice":"general","true_category":"Horror"}
+{"id":"hor-gutenberg-dracula","url":"https://www.gutenberg.org/files/345/345-h/345-h.htm","slice":"general","true_category":"Horror"}
+{"id":"r-hor-wiki-psycho","url":"https://en.wikipedia.org/wiki/Psycho_(1960_film)","slice":"general","true_category":"Horror"}
+{"id":"hor-scp-173","url":"https://scp-wiki.wikidot.com/scp-173","slice":"general","true_category":"Horror"}
+{"id":"r-hor-gutenberg-frankenstein","url":"https://www.gutenberg.org/files/84/84-h/84-h.htm","slice":"general","true_category":"Horror"}
+{"id":"hor-wiki-frankenstein","url":"https://en.wikipedia.org/wiki/Frankenstein","slice":"general","true_category":"Horror"}
+{"id":"hor-scp-002","url":"https://scp-wiki.wikidot.com/scp-002","slice":"general","true_category":"Horror"}
+{"id":"hor-gutenberg-poe","url":"https://www.gutenberg.org/files/2148/2148-h/2148-h.htm","slice":"general","true_category":"Horror"}
+{"id":"hor-wiki-alien","url":"https://en.wikipedia.org/wiki/Alien_(film)","slice":"general","true_category":"Horror"}
+{"id":"d-hor-scp-096","url":"https://scp-wiki.wikidot.com/scp-096","slice":"general","true_category":"Horror"}
+{"id":"d-hor-gutenberg-jekyll","url":"https://www.gutenberg.org/files/43/43-h/43-h.htm","slice":"general","true_category":"Horror"}
+{"id":"hor-wiki-hereditary","url":"https://en.wikipedia.org/wiki/Hereditary_(film)","slice":"general","true_category":"Horror"}
+{"id":"hor-wiki-gothic","url":"https://en.wikipedia.org/wiki/Gothic_fiction","slice":"general","true_category":"Horror"}
+{"id":"leg-eff-privacy","url":"https://www.eff.org/issues/privacy","slice":"general","true_category":"Legal"}
+{"id":"leg-gdpr-info","url":"https://gdpr-info.eu/","slice":"general","true_category":"Legal"}
+{"id":"leg-wipo-patents","url":"https://www.wipo.int/patents/en/","slice":"general","true_category":"Legal"}
+{"id":"leg-uscourts-about","url":"https://www.uscourts.gov/about-federal-courts/court-role-and-structure","slice":"general","true_category":"Legal"}
+{"id":"r-leg-govuk-consumer","url":"https://www.gov.uk/consumer-protection-rights","slice":"general","true_category":"Legal"}
+{"id":"leg-cornell-wex-contract","url":"https://www.law.cornell.edu/wex/contract","slice":"general","true_category":"Legal"}
+{"id":"r-leg-wiki-roe","url":"https://en.wikipedia.org/wiki/Roe_v._Wade","slice":"general","true_category":"Legal"}
+{"id":"r-leg-cornell-wex-jurisdiction","url":"https://www.law.cornell.edu/wex/jurisdiction","slice":"general","true_category":"Legal"}
+{"id":"leg-wiki-gdpr","url":"https://en.wikipedia.org/wiki/General_Data_Protection_Regulation","slice":"general","true_category":"Legal"}
+{"id":"leg-cornell-wex-tort","url":"https://www.law.cornell.edu/wex/tort","slice":"general","true_category":"Legal"}
+{"id":"leg-wiki-mirandav","url":"https://en.wikipedia.org/wiki/Miranda_v._Arizona","slice":"general","true_category":"Legal"}
+{"id":"r-leg-cornell-wex-negligence","url":"https://www.law.cornell.edu/wex/negligence","slice":"general","true_category":"Legal"}
+{"id":"leg-wiki-common-law","url":"https://en.wikipedia.org/wiki/Common_law","slice":"general","true_category":"Legal"}
+{"id":"r-leg-cornell-wex-defamation","url":"https://www.law.cornell.edu/wex/defamation","slice":"general","true_category":"Legal"}
+{"id":"d-myth-mythopedia-greek","url":"https://mythopedia.com/topics/greek-mythology","slice":"general","true_category":"Mythological"}
+{"id":"r-myth-worldhistory-greek","url":"https://www.worldhistory.org/Greek_Mythology/","slice":"general","true_category":"Mythological"}
+{"id":"r-myth-theoi-apollo","url":"https://www.theoi.com/Olympios/Apollon.html","slice":"general","true_category":"Mythological"}
+{"id":"r-myth-wiki-norsegods","url":"https://en.wikipedia.org/wiki/List_of_Germanic_deities","slice":"general","true_category":"Mythological"}
+{"id":"myth-worldhistory-norse","url":"https://www.worldhistory.org/Norse_Mythology/","slice":"general","true_category":"Mythological"}
+{"id":"d-myth-theoi-artemis","url":"https://www.theoi.com/Olympios/Artemis.html","slice":"general","true_category":"Mythological"}
+{"id":"myth-wiki-hinduism","url":"https://en.wikipedia.org/wiki/Hinduism","slice":"general","true_category":"Mythological"}
+{"id":"myth-worldhistory-egypt","url":"https://www.worldhistory.org/Egyptian_Mythology/","slice":"general","true_category":"Mythological"}
+{"id":"myth-theoi-athena","url":"https://www.theoi.com/Olympios/Athena.html","slice":"general","true_category":"Mythological"}
+{"id":"myth-wiki-buddhism","url":"https://en.wikipedia.org/wiki/Buddhism","slice":"general","true_category":"Mythological"}
+{"id":"d-myth-wh-odin","url":"https://www.worldhistory.org/Odin/","slice":"general","true_category":"Mythological"}
+{"id":"myth-theoi-hades","url":"https://www.theoi.com/Khthonios/Haides.html","slice":"general","true_category":"Mythological"}
+{"id":"myth-wiki-druid","url":"https://en.wikipedia.org/wiki/Druid","slice":"general","true_category":"Mythological"}
+{"id":"myth-worldhistory-rome","url":"https://www.worldhistory.org/Roman_Empire/","slice":"general","true_category":"Mythological"}
+{"id":"news-dw-topstories","url":"https://www.dw.com/en/top-stories/s-9097","slice":"general","true_category":"News"}
+{"id":"news-guardian-world","url":"https://www.theguardian.com/world","slice":"general","true_category":"News"}
+{"id":"news-un","url":"https://news.un.org/en/","slice":"general","true_category":"News"}
+{"id":"news-wiki-current","url":"https://en.wikipedia.org/wiki/Portal:Current_events","slice":"general","true_category":"News"}
+{"id":"news-cnn-world","url":"https://www.cnn.com/world","slice":"general","true_category":"News"}
+{"id":"news-aljazeera","url":"https://www.aljazeera.com/news/","slice":"general","true_category":"News"}
+{"id":"news-propublica","url":"https://www.propublica.org/","slice":"general","true_category":"News"}
+{"id":"news-abc","url":"https://abcnews.go.com/International","slice":"general","true_category":"News"}
+{"id":"news-pbs-newshour","url":"https://www.pbs.org/newshour/world","slice":"general","true_category":"News"}
+{"id":"news-textnpr","url":"https://text.npr.org/","slice":"general","true_category":"News"}
+{"id":"news-euronews","url":"https://www.euronews.com/news","slice":"general","true_category":"News"}
+{"id":"news-france24","url":"https://www.france24.com/en/","slice":"general","true_category":"News"}
+{"id":"news-npr-politics","url":"https://www.npr.org/sections/politics/","slice":"general","true_category":"News"}
+{"id":"r-news-bbc-uk","url":"https://www.bbc.com/news/uk","slice":"general","true_category":"News"}
+{"id":"spo-guardian-sport","url":"https://www.theguardian.com/sport","slice":"general","true_category":"Sports"}
+{"id":"spo-espn","url":"https://www.espn.com/","slice":"general","true_category":"Sports"}
+{"id":"spo-skysports-football","url":"https://www.skysports.com/football","slice":"general","true_category":"Sports"}
+{"id":"spo-bbc-football","url":"https://www.bbc.com/sport/football","slice":"general","true_category":"Sports"}
+{"id":"spo-wiki-olympics-history","url":"https://en.wikipedia.org/wiki/Olympic_Games","slice":"general","true_category":"Sports"}
+{"id":"spo-bbc-sport","url":"https://www.bbc.com/sport","slice":"general","true_category":"Sports"}
+{"id":"spo-wiki-swimming","url":"https://en.wikipedia.org/wiki/Swimming_(sport)","slice":"general","true_category":"Sports"}
+{"id":"d-spo-bbc-athletics","url":"https://www.bbc.com/sport/athletics","slice":"general","true_category":"Sports"}
+{"id":"spo-wiki-formula1","url":"https://en.wikipedia.org/wiki/Formula_One","slice":"general","true_category":"Sports"}
+{"id":"d-spo-bbc-cricket","url":"https://www.bbc.com/sport/cricket","slice":"general","true_category":"Sports"}
+{"id":"r-spo-wiki-athletics","url":"https://en.wikipedia.org/wiki/Sport_of_athletics","slice":"general","true_category":"Sports"}
+{"id":"spo-wiki-basketball","url":"https://en.wikipedia.org/wiki/Basketball","slice":"general","true_category":"Sports"}
+{"id":"spo-wiki-worldcup","url":"https://en.wikipedia.org/wiki/FIFA_World_Cup","slice":"general","true_category":"Sports"}
+{"id":"r-spo-wiki-rugby","url":"https://en.wikipedia.org/wiki/Rugby_union","slice":"general","true_category":"Sports"}
+{"id":"tra-roughguides-portugal","url":"https://www.roughguides.com/portugal/","slice":"general","true_category":"Travel"}
+{"id":"tra-seat61-europe","url":"https://www.seat61.com/","slice":"general","true_category":"Travel"}
+{"id":"tra-lonelyplanet-italy","url":"https://www.lonelyplanet.com/italy","slice":"general","true_category":"Travel"}
+{"id":"tra-atlasobscura","url":"https://www.atlasobscura.com/","slice":"general","true_category":"Travel"}
+{"id":"r-tra-wiki-kyoto","url":"https://en.wikipedia.org/wiki/Kyoto","slice":"general","true_category":"Travel"}
+{"id":"tra-nps-grandcanyon","url":"https://www.nps.gov/grca/index.htm","slice":"general","true_category":"Travel"}
+{"id":"tra-wikivoyage-iceland","url":"https://en.wikivoyage.org/wiki/Iceland","slice":"general","true_category":"Travel"}
+{"id":"tra-lonelyplanet-japan","url":"https://www.lonelyplanet.com/japan","slice":"general","true_category":"Travel"}
+{"id":"tra-atlasobscura-places","url":"https://www.atlasobscura.com/places","slice":"general","true_category":"Travel"}
+{"id":"r-tra-wiki-angkorwat","url":"https://en.wikipedia.org/wiki/Angkor_Wat","slice":"general","true_category":"Travel"}
+{"id":"tra-nps-yosemite","url":"https://www.nps.gov/yose/index.htm","slice":"general","true_category":"Travel"}
+{"id":"tra-wikivoyage-kyoto","url":"https://en.wikivoyage.org/wiki/Kyoto","slice":"general","true_category":"Travel"}
+{"id":"tra-wiki-machu-picchu","url":"https://en.wikipedia.org/wiki/Machu_Picchu","slice":"general","true_category":"Travel"}
+{"id":"tra-nps-yellowstone","url":"https://www.nps.gov/yell/index.htm","slice":"general","true_category":"Travel"}
+{"id":"d-mis-nautilus","url":"https://nautil.us/","slice":"vocabulary-mismatch","true_category":"Educational","note":"Science writing that avoids science keywords"}
+{"id":"d-mis-quanta","url":"https://www.quantamagazine.org/","slice":"vocabulary-mismatch","true_category":"Educational","note":"Maths/physics in narrative register"}
+{"id":"d-mis-longreads","url":"https://longreads.com/","slice":"vocabulary-mismatch","true_category":"Emotional","note":"Personal essay aggregator, topic rarely keyworded"}
+{"id":"r-mis-pg-persistence","url":"https://www.paulgraham.com/persistence.html","slice":"vocabulary-mismatch","true_category":"Emotional","note":"Essay on perseverance with no emotional keyword"}
+{"id":"mis-wiki-uncanny","url":"https://en.wikipedia.org/wiki/Uncanny_valley","slice":"vocabulary-mismatch","true_category":"Horror","note":"Fear/unease topic with no Horror keyword at all"}
+{"id":"mis-pg-cities","url":"https://www.paulgraham.com/cities.html","slice":"vocabulary-mismatch","true_category":"Travel","note":"Essay about places with no travel vocabulary"}
+{"id":"mis-wiki-hedonic","url":"https://en.wikipedia.org/wiki/Hedonic_treadmill","slice":"vocabulary-mismatch","true_category":"Emotional","note":"Emotional topic in psychology-jargon register"}
+{"id":"mis-pg-good","url":"https://www.paulgraham.com/good.html","slice":"vocabulary-mismatch","true_category":"Finance","note":"Startup/business essay, narrative register"}
+{"id":"mis-wiki-schadenfreude","url":"https://en.wikipedia.org/wiki/Schadenfreude","slice":"vocabulary-mismatch","true_category":"Comedy","note":"Humour-adjacent topic in philosophy vocabulary"}
+{"id":"d-mis-pg-nerds","url":"https://www.paulgraham.com/nerds.html","slice":"vocabulary-mismatch","true_category":"Educational","note":"Education essay in narrative register"}
+{"id":"r-mis-wiki-umami","url":"https://en.wikipedia.org/wiki/Umami","slice":"vocabulary-mismatch","true_category":"Food","note":"Food topic in receptor-biology vocabulary"}
+{"id":"mis-pg-greatwork","url":"https://www.paulgraham.com/greatwork.html","slice":"vocabulary-mismatch","true_category":"Finance","note":"Career/business essay in plain narrative prose, no Finance keyword"}
+{"id":"mis-wiki-telomere","url":"https://en.wikipedia.org/wiki/Telomere","slice":"vocabulary-mismatch","true_category":"Health","note":"Ageing/health via molecular biology vocabulary"}
+{"id":"d-mis-pg-hs","url":"https://www.paulgraham.com/hs.html","slice":"vocabulary-mismatch","true_category":"Educational","note":"Careers/education, no keyword"}
+{"id":"r-mis-wiki-placebo","url":"https://en.wikipedia.org/wiki/Placebo","slice":"vocabulary-mismatch","true_category":"Health","note":"Health via research-methods vocabulary"}
+{"id":"r-nen-wiki-zh-lishi","url":"https://zh.wikipedia.org/wiki/%E5%8E%86%E5%8F%B2","slice":"non-english","true_category":"Educational","note":"Chinese, CJK script"}
+{"id":"nen-asahi","url":"https://www.asahi.com/","slice":"non-english","true_category":"News","note":"Japanese"}
+{"id":"r-nen-wiki-ru-istoriya","url":"https://ru.wikipedia.org/wiki/%D0%98%D1%81%D1%82%D0%BE%D1%80%D0%B8%D1%8F","slice":"non-english","true_category":"Educational","note":"Russian, Cyrillic script"}
+{"id":"nen-zeit","url":"https://www.zeit.de/index","slice":"non-english","true_category":"News","note":"German"}
+{"id":"r-nen-tagesschau","url":"https://www.tagesschau.de/","slice":"non-english","true_category":"News","note":"German"}
+{"id":"nen-wiki-es-medicina","url":"https://es.wikipedia.org/wiki/Medicina","slice":"non-english","true_category":"Health","note":"Spanish, Health"}
+{"id":"nen-wiki-hi-bharat","url":"https://hi.wikipedia.org/wiki/%E0%A4%AD%E0%A4%BE%E0%A4%B0%E0%A4%A4","slice":"non-english","true_category":"Educational","note":"Hindi, non-Latin script"}
+{"id":"nen-spiegel","url":"https://www.spiegel.de/","slice":"non-english","true_category":"News","note":"German"}
+{"id":"nen-lemonde","url":"https://www.lemonde.fr/","slice":"non-english","true_category":"News","note":"French"}
+{"id":"nen-elpais-ciencia","url":"https://elpais.com/ciencia/","slice":"non-english","true_category":"Educational","note":"Spanish"}
+{"id":"nen-lefigaro","url":"https://www.lefigaro.fr/","slice":"non-english","true_category":"News","note":"French"}
+{"id":"nen-corriere","url":"https://www.corriere.it/","slice":"non-english","true_category":"News","note":"Italian"}
+{"id":"nen-wiki-ar-tarikh","url":"https://ar.wikipedia.org/wiki/%D8%AA%D8%A7%D8%B1%D9%8A%D8%AE","slice":"non-english","true_category":"Educational","note":"Arabic, RTL script"}
+{"id":"nen-folha","url":"https://www.folha.uol.com.br/","slice":"non-english","true_category":"News","note":"Portuguese"}
+{"id":"nen-elmundo","url":"https://www.elmundo.es/","slice":"non-english","true_category":"News","note":"Spanish"}
+{"id":"d-mix-nps-gettysburg","url":"https://www.nps.gov/gett/index.htm","slice":"mixed-genre","true_category":"Travel","note":"Travel vs Educational/history vs News-adjacent"}
+{"id":"d-mix-harvard-whattoeat","url":"https://www.hsph.harvard.edu/nutritionsource/what-should-you-eat/","slice":"mixed-genre","true_category":"Health","note":"Health vs Food from a public-health source"}
+{"id":"d-mix-atlas-foods","url":"https://www.atlasobscura.com/foods","slice":"mixed-genre","true_category":"Food","note":"Food vs Travel"}
+{"id":"mix-wiki-crypto-regulation","url":"https://en.wikipedia.org/wiki/Cryptocurrency_and_crime","slice":"mixed-genre","true_category":"Legal","note":"Legal vs Finance"}
+{"id":"d-mix-atlas-articles","url":"https://www.atlasobscura.com/articles","slice":"mixed-genre","true_category":"Travel","note":"Travel vs Educational vs Food"}
+{"id":"r-mix-wiki-esports","url":"https://en.wikipedia.org/wiki/Esports","slice":"mixed-genre","true_category":"Sports","note":"Sports vs Entertainment — genuinely contested"}
+{"id":"r-mix-wiki-foodnetwork","url":"https://en.wikipedia.org/wiki/Food_Network","slice":"mixed-genre","true_category":"Entertainment","note":"Food vs Entertainment"}
+{"id":"mix-wiki-hamilton","url":"https://en.wikipedia.org/wiki/Hamilton_(musical)","slice":"mixed-genre","true_category":"Entertainment","note":"Entertainment vs Educational/history"}
+{"id":"mix-wiki-mediterranean-diet","url":"https://en.wikipedia.org/wiki/Mediterranean_diet","slice":"mixed-genre","true_category":"Health","note":"Food vs Health — the classic tie"}
+{"id":"r-mix-wiki-chernobyl","url":"https://en.wikipedia.org/wiki/Chernobyl_disaster","slice":"mixed-genre","true_category":"Educational","note":"Educational vs News vs Health vs Horror-adjacent"}
+{"id":"r-mix-wiki-titanic","url":"https://en.wikipedia.org/wiki/Titanic_(1997_film)","slice":"mixed-genre","true_category":"Entertainment","note":"Entertainment vs Emotional vs Educational/history"}
+{"id":"mix-wiki-jaws","url":"https://en.wikipedia.org/wiki/Jaws_(film)","slice":"mixed-genre","true_category":"Entertainment","note":"Horror vs Entertainment — genuinely ambiguous"}
+{"id":"mix-wiki-opioid-litigation","url":"https://en.wikipedia.org/wiki/Opioid_epidemic_in_the_United_States","slice":"mixed-genre","true_category":"Health","note":"Health vs Legal vs News"}
+{"id":"mix-wiki-get-out","url":"https://en.wikipedia.org/wiki/Get_Out","slice":"mixed-genre","true_category":"Horror","note":"Horror / Comedy / social commentary"}
+{"id":"mix-wiki-thanksgiving","url":"https://en.wikipedia.org/wiki/Thanksgiving","slice":"mixed-genre","true_category":"Food","note":"Food vs Mythological/tradition vs Emotional"}
+{"id":"s2-rethink-advice","url":"https://www.rethink.org/advice-and-information/","slice":"sensitive","true_category":"Health","note":"UK mental-health support"}
+{"id":"sen-beat-eatingdisorder","url":"https://www.beateatingdisorders.org.uk/get-information-and-support/","slice":"sensitive","true_category":"Health","note":"Eating-disorder support"}
+{"id":"sen-samaritans-contact","url":"https://www.samaritans.org/how-we-can-help/contact-samaritan/","slice":"sensitive","true_category":"Health","note":"Crisis helpline — must produce silence"}
+{"id":"s2-womensaid","url":"https://www.womensaid.org.uk/information-support/","slice":"sensitive","true_category":"Health","note":"Domestic-abuse support"}
+{"id":"s2-sane","url":"https://www.sane.org.uk/how-we-help","slice":"sensitive","true_category":"Health","note":"UK mental-health charity"}
+{"id":"s2-papyrus","url":"https://www.papyrus-uk.org/","slice":"sensitive","true_category":"Health","note":"Youth suicide-prevention charity"}
+{"id":"s2-helpguide-suicide","url":"https://www.helpguide.org/mental-health/suicidal-ideation/suicide-prevention","slice":"sensitive","true_category":"Health","note":"Crisis-prevention guidance"}
+{"id":"sen-988-lifeline","url":"https://988lifeline.org/","slice":"sensitive","true_category":"Health","note":"US crisis line — must produce silence"}
+{"id":"sen-cruse-grief","url":"https://www.cruse.org.uk/understanding-grief/","slice":"sensitive","true_category":"Health","note":"Grief support charity"}
+{"id":"s2-rainn","url":"https://www.rainn.org/get-help","slice":"sensitive","true_category":"Health","note":"Sexual-assault crisis support"}
+{"id":"sen-nhs-ptsd","url":"https://www.nhs.uk/mental-health/conditions/post-traumatic-stress-disorder-ptsd/","slice":"sensitive","true_category":"Health","note":"Trauma content"}
+{"id":"s2-nhs-bipolar","url":"https://www.nhs.uk/mental-health/conditions/bipolar-disorder/","slice":"sensitive","true_category":"Health","note":"Serious mental illness content"}
+{"id":"nea-ncbi-eatingdisorder","url":"https://www.ncbi.nlm.nih.gov/books/NBK499953/","slice":"sensitive-near-miss","true_category":"Health","note":"Clinical writing using a SEVERE single-hit term — the detector's known FP mode"}
+{"id":"d-nea-cdc-injury-stats","url":"https://www.cdc.gov/injury/about/index.html","slice":"sensitive-near-miss","true_category":"Health","note":"Epidemiological framing of injury/death — statistics, not crisis"}
+{"id":"d-nea-nps-deathvalley","url":"https://www.nps.gov/deva/index.htm","slice":"sensitive-near-miss","true_category":"Travel","note":"'Death' as a place name, official source"}
+{"id":"d-nea-gutenberg-mobydick","url":"https://www.gutenberg.org/files/2701/2701-h/2701-h.htm","slice":"sensitive-near-miss","true_category":"Entertainment","note":"Violence/death in literary register"}
+{"id":"r-nea-wiki-selfharm-research","url":"https://en.wikipedia.org/wiki/Self-harm","slice":"sensitive-near-miss","true_category":"Educational","note":"Hard case: encyclopedic vs crisis-support framing of the same topic"}
+{"id":"d-nea-gutenberg-hamlet","url":"https://www.gutenberg.org/files/1524/1524-h/1524-h.htm","slice":"sensitive-near-miss","true_category":"Entertainment","note":"Literary suicide soliloquy — strong near-miss, must NOT silence"}
+{"id":"nea-wiki-palliative","url":"https://en.wikipedia.org/wiki/Palliative_care","slice":"sensitive-near-miss","true_category":"Health","note":"Hard case: end-of-life care as clinical information, not crisis"}
+{"id":"r-nea-wiki-suicide-bridge-eng","url":"https://en.wikipedia.org/wiki/Golden_Gate_Bridge","slice":"sensitive-near-miss","true_category":"Travel","note":"Landmark article that mentions suicide in a factual/engineering context"}
+{"id":"nea-wiki-anxiety-disorder-research","url":"https://en.wikipedia.org/wiki/Anxiety","slice":"sensitive-near-miss","true_category":"Educational","note":"Encyclopedic treatment of anxiety, not crisis support"}
+{"id":"nea-wiki-killer-whale","url":"https://en.wikipedia.org/wiki/Killer_whale","slice":"sensitive-near-miss","true_category":"Educational","note":"'Killer' in a zoology context"}
+{"id":"nea-wiki-suicide-squad","url":"https://en.wikipedia.org/wiki/Suicide_Squad_(2016_film)","slice":"sensitive-near-miss","true_category":"Entertainment","note":"'Suicide' as a film title — must NOT silence"}
+{"id":"nea-wiki-euthanasia-law","url":"https://en.wikipedia.org/wiki/Euthanasia","slice":"sensitive-near-miss","true_category":"Legal","note":"Hard case: legal/ethical treatment of a genuinely sensitive topic"}
+{"id":"nea-wiki-terminator","url":"https://en.wikipedia.org/wiki/The_Terminator","slice":"sensitive-near-miss","true_category":"Entertainment","note":"Violent film plot summary"}
+{"id":"r-nea-wiki-depression-econ","url":"https://en.wikipedia.org/wiki/Recession","slice":"sensitive-near-miss","true_category":"Finance","note":"Economic downturn vocabulary, no crisis"}
+{"id":"nea-wiki-great-depression","url":"https://en.wikipedia.org/wiki/Great_Depression","slice":"sensitive-near-miss","true_category":"Educational","note":"The plan's named near-miss: 'depression' in an economic sense"}
+{"id":"byp-wikimedia-donate","url":"https://donate.wikimedia.org/wiki/Ways_to_Give","slice":"bypass","true_category":null,"note":"Payment/donation page"}
+{"id":"byp-eff-donate","url":"https://supporters.eff.org/donate","slice":"bypass","true_category":null,"note":"Payment/donation page"}
+{"id":"r-byp-mozilla-donate","url":"https://foundation.mozilla.org/en/donate/","slice":"bypass","true_category":null,"note":"Payment/donation page"}
+{"id":"byp-chrome-settings","url":"chrome://settings/","slice":"bypass","true_category":null,"note":"Browser-internal — must never be extracted"}
+{"id":"byp-chrome-extensions","url":"chrome://extensions/","slice":"bypass","true_category":null,"note":"Browser-internal — must never be extracted"}
+{"id":"byp-chrome-history","url":"chrome://history/","slice":"bypass","true_category":null,"note":"Browser-internal, and privacy-sensitive by definition"}

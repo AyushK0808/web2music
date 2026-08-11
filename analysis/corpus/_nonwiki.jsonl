@@ -1,0 +1,341 @@
+{"id":"n-edu-mdn-0","url":"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures","slice":"general","true_category":"Educational"}
+{"id":"n-edu-mdn-1","url":"https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods","slice":"general","true_category":"Educational"}
+{"id":"n-edu-mdn-2","url":"https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch","slice":"general","true_category":"Educational"}
+{"id":"n-edu-mdn-3","url":"https://developer.mozilla.org/en-US/docs/Web/CSS/Specificity","slice":"general","true_category":"Educational"}
+{"id":"n-edu-mdn-4","url":"https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise","slice":"general","true_category":"Educational"}
+{"id":"n-edu-mdn-5","url":"https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA","slice":"general","true_category":"Educational"}
+{"id":"n-edu-mdn-6","url":"https://developer.mozilla.org/en-US/docs/Glossary/TCP","slice":"general","true_category":"Educational"}
+{"id":"n-edu-mdn-7","url":"https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy","slice":"general","true_category":"Educational"}
+{"id":"n-edu-sep-0","url":"https://plato.stanford.edu/entries/aristotle-ethics/","slice":"general","true_category":"Educational"}
+{"id":"n-edu-sep-1","url":"https://plato.stanford.edu/entries/justice/","slice":"general","true_category":"Educational"}
+{"id":"n-edu-sep-2","url":"https://plato.stanford.edu/entries/time/","slice":"general","true_category":"Educational"}
+{"id":"n-edu-sep-3","url":"https://plato.stanford.edu/entries/causation-metaphysics/","slice":"general","true_category":"Educational"}
+{"id":"n-edu-sep-4","url":"https://plato.stanford.edu/entries/space-spacetime/","slice":"general","true_category":"Educational"}
+{"id":"n-edu-arxiv-0","url":"https://arxiv.org/abs/1706.03762","slice":"general","true_category":"Educational"}
+{"id":"n-edu-arxiv-1","url":"https://arxiv.org/abs/1512.03385","slice":"general","true_category":"Educational"}
+{"id":"n-edu-arxiv-2","url":"https://arxiv.org/abs/1810.04805","slice":"general","true_category":"Educational"}
+{"id":"n-edu-arxiv-3","url":"https://arxiv.org/abs/2005.14165","slice":"general","true_category":"Educational"}
+{"id":"n-edu-nasa-0","url":"https://science.nasa.gov/sun/","slice":"general","true_category":"Educational"}
+{"id":"n-edu-nasa-1","url":"https://science.nasa.gov/earth/","slice":"general","true_category":"Educational"}
+{"id":"n-edu-nasa-2","url":"https://science.nasa.gov/jupiter/","slice":"general","true_category":"Educational"}
+{"id":"n-edu-nasa-3","url":"https://science.nasa.gov/black-holes/","slice":"general","true_category":"Educational"}
+{"id":"n-edu-noaa","url":"https://www.climate.gov/news-features/understanding-climate","slice":"general","true_category":"Educational"}
+{"id":"n-edu-hyper1","url":"http://hyperphysics.phy-astr.gsu.edu/hbase/hframe.html","slice":"general","true_category":"Educational"}
+{"id":"n-edu-hyper2","url":"http://hyperphysics.phy-astr.gsu.edu/hbase/Chemical/chemcon.html","slice":"general","true_category":"Educational"}
+{"id":"n-edu-mathsisfun","url":"https://www.mathsisfun.com/calculus/introduction.html","slice":"general","true_category":"Educational"}
+{"id":"n-edu-physicsclassroom","url":"https://www.physicsclassroom.com/class/newtlaws","slice":"general","true_category":"Educational"}
+{"id":"n-edu-bbcfuture","url":"https://www.bbc.com/future","slice":"general","true_category":"Educational"}
+{"id":"n-news-ap-0","url":"https://apnews.com/hub/world-news","slice":"general","true_category":"News"}
+{"id":"n-news-ap-1","url":"https://apnews.com/hub/us-news","slice":"general","true_category":"News"}
+{"id":"n-news-ap-2","url":"https://apnews.com/hub/business","slice":"general","true_category":"News"}
+{"id":"n-news-ap-3","url":"https://apnews.com/hub/science","slice":"general","true_category":"News"}
+{"id":"n-news-ap-4","url":"https://apnews.com/hub/health","slice":"general","true_category":"News"}
+{"id":"n-news-ap-5","url":"https://apnews.com/hub/technology","slice":"general","true_category":"News"}
+{"id":"n-news-npr-0","url":"https://www.npr.org/sections/world/","slice":"general","true_category":"News"}
+{"id":"n-news-npr-1","url":"https://www.npr.org/sections/business/","slice":"general","true_category":"News"}
+{"id":"n-news-npr-2","url":"https://www.npr.org/sections/science/","slice":"general","true_category":"News"}
+{"id":"n-news-npr-3","url":"https://www.npr.org/sections/health/","slice":"general","true_category":"News"}
+{"id":"n-news-bbc-0","url":"https://www.bbc.com/news/world","slice":"general","true_category":"News"}
+{"id":"n-news-bbc-1","url":"https://www.bbc.com/news/business","slice":"general","true_category":"News"}
+{"id":"n-news-bbc-2","url":"https://www.bbc.com/news/science-environment","slice":"general","true_category":"News"}
+{"id":"n-news-bbc-3","url":"https://www.bbc.com/news/technology","slice":"general","true_category":"News"}
+{"id":"n-news-aj-econ","url":"https://www.aljazeera.com/economy/","slice":"general","true_category":"News"}
+{"id":"n-news-guardian-env","url":"https://www.theguardian.com/environment","slice":"general","true_category":"News"}
+{"id":"n-news-pbs-politics","url":"https://www.pbs.org/newshour/politics","slice":"general","true_category":"News"}
+{"id":"n-news-france24-eu","url":"https://www.france24.com/en/europe/","slice":"general","true_category":"News"}
+{"id":"n-news-dw-business","url":"https://www.dw.com/en/business/s-1431","slice":"general","true_category":"News"}
+{"id":"n-news-un-climate","url":"https://news.un.org/en/news/topic/climate-change","slice":"general","true_category":"News"}
+{"id":"n-news-propublica-local","url":"https://www.propublica.org/topics/local-reporting-network","slice":"general","true_category":"News"}
+{"id":"n-hor-gut-dracula","url":"https://www.gutenberg.org/files/345/345-h/345-h.htm","slice":"general","true_category":"Horror"}
+{"id":"n-hor-gut-frankenstein","url":"https://www.gutenberg.org/files/84/84-h/84-h.htm","slice":"general","true_category":"Horror"}
+{"id":"n-hor-gut-jekyll","url":"https://www.gutenberg.org/files/43/43-h/43-h.htm","slice":"general","true_category":"Horror"}
+{"id":"n-hor-gut-poe-works","url":"https://www.gutenberg.org/files/2148/2148-h/2148-h.htm","slice":"general","true_category":"Horror"}
+{"id":"n-hor-gut-turn-of-the-screw","url":"https://www.gutenberg.org/files/209/209-h/209-h.htm","slice":"general","true_category":"Horror"}
+{"id":"n-hor-gut-carmilla","url":"https://www.gutenberg.org/files/10007/10007-h/10007-h.htm","slice":"general","true_category":"Horror"}
+{"id":"n-hor-gut-king-in-yellow","url":"https://www.gutenberg.org/files/8492/8492-h/8492-h.htm","slice":"general","true_category":"Horror"}
+{"id":"n-hor-gut-great-god-pan","url":"https://www.gutenberg.org/files/389/389-h/389-h.htm","slice":"general","true_category":"Horror"}
+{"id":"n-hor-scp-055","url":"https://scp-wiki.wikidot.com/scp-055","slice":"general","true_category":"Horror"}
+{"id":"n-hor-scp-087","url":"https://scp-wiki.wikidot.com/scp-087","slice":"general","true_category":"Horror"}
+{"id":"n-hor-scp-106","url":"https://scp-wiki.wikidot.com/scp-106","slice":"general","true_category":"Horror"}
+{"id":"n-hor-scp-682","url":"https://scp-wiki.wikidot.com/scp-682","slice":"general","true_category":"Horror"}
+{"id":"n-hor-scp-3008","url":"https://scp-wiki.wikidot.com/scp-3008","slice":"general","true_category":"Horror"}
+{"id":"n-hor-scp-914","url":"https://scp-wiki.wikidot.com/scp-914","slice":"general","true_category":"Horror"}
+{"id":"n-hor-nightmare","url":"https://nightmare-magazine.com/fiction/","slice":"general","true_category":"Horror"}
+{"id":"n-hor-dreadcentral","url":"https://www.dreadcentral.com/","slice":"general","true_category":"Horror"}
+{"id":"n-hor-bloodydisgusting","url":"https://bloody-disgusting.com/","slice":"general","true_category":"Horror"}
+{"id":"n-hor-eastoftheweb","url":"https://www.eastoftheweb.com/short-stories/UBooks/TelTal.shtml","slice":"general","true_category":"Horror"}
+{"id":"n-food-bbcgf-0","url":"https://www.bbcgoodfood.com/recipes/classic-lasagne","slice":"general","true_category":"Food"}
+{"id":"n-food-bbcgf-1","url":"https://www.bbcgoodfood.com/recipes/easy-pancakes","slice":"general","true_category":"Food"}
+{"id":"n-food-bbcgf-2","url":"https://www.bbcgoodfood.com/recipes/chicken-tikka-masala","slice":"general","true_category":"Food"}
+{"id":"n-food-bbcgf-3","url":"https://www.bbcgoodfood.com/recipes/mushroom-risotto","slice":"general","true_category":"Food"}
+{"id":"n-food-bbcgf-4","url":"https://www.bbcgoodfood.com/recipes/best-ever-chocolate-brownies-recipe","slice":"general","true_category":"Food"}
+{"id":"n-food-bbcgf-5","url":"https://www.bbcgoodfood.com/recipes/spaghetti-bolognese-recipe","slice":"general","true_category":"Food"}
+{"id":"n-food-bbcgf-6","url":"https://www.bbcgoodfood.com/recipes/roast-chicken","slice":"general","true_category":"Food"}
+{"id":"n-food-bbcgf-7","url":"https://www.bbcgoodfood.com/recipes/victoria-sponge-cake","slice":"general","true_category":"Food"}
+{"id":"n-food-bbcgf-8","url":"https://www.bbcgoodfood.com/recipes/thai-green-curry","slice":"general","true_category":"Food"}
+{"id":"n-food-bbcgf-9","url":"https://www.bbcgoodfood.com/recipes/beef-wellington","slice":"general","true_category":"Food"}
+{"id":"n-food-ka-0","url":"https://www.kingarthurbaking.com/recipes/rustic-sourdough-bread-recipe","slice":"general","true_category":"Food"}
+{"id":"n-food-ka-1","url":"https://www.kingarthurbaking.com/recipes/chocolate-chip-cookies-recipe","slice":"general","true_category":"Food"}
+{"id":"n-food-ka-2","url":"https://www.kingarthurbaking.com/recipes/no-knead-pizza-crust-recipe","slice":"general","true_category":"Food"}
+{"id":"n-food-ka-3","url":"https://www.kingarthurbaking.com/recipes/banana-bread-recipe","slice":"general","true_category":"Food"}
+{"id":"n-food-ka-4","url":"https://www.kingarthurbaking.com/recipes/classic-birthday-cake-recipe","slice":"general","true_category":"Food"}
+{"id":"n-food-ka-5","url":"https://www.kingarthurbaking.com/recipes/soft-sandwich-bread-recipe","slice":"general","true_category":"Food"}
+{"id":"n-food-bb-0","url":"https://www.budgetbytes.com/vegetable-fried-rice/","slice":"general","true_category":"Food"}
+{"id":"n-food-bb-1","url":"https://www.budgetbytes.com/black-bean-quesadillas/","slice":"general","true_category":"Food"}
+{"id":"n-food-bb-2","url":"https://www.budgetbytes.com/creamy-tomato-pasta/","slice":"general","true_category":"Food"}
+{"id":"n-food-bbcfood-recipes","url":"https://www.bbc.co.uk/food/recipes","slice":"general","true_category":"Food"}
+{"id":"n-food-bbcfood-curry","url":"https://www.bbc.co.uk/food/curry","slice":"general","true_category":"Food"}
+{"id":"n-food-jamieoliver","url":"https://www.jamieoliver.com/recipes/","slice":"general","true_category":"Food"}
+{"id":"n-food-lebovitz","url":"https://www.davidlebovitz.com/recipe-index/","slice":"general","true_category":"Food"}
+{"id":"n-food-101cookbooks","url":"https://www.101cookbooks.com/","slice":"general","true_category":"Food"}
+{"id":"n-food-minimalistbaker","url":"https://minimalistbaker.com/recipe-index/","slice":"general","true_category":"Food"}
+{"id":"n-food-loveandlemons","url":"https://www.loveandlemons.com/recipes/","slice":"general","true_category":"Food"}
+{"id":"n-ent-pitchfork","url":"https://pitchfork.com/reviews/albums/","slice":"general","true_category":"Entertainment"}
+{"id":"n-ent-pitchfork-news","url":"https://pitchfork.com/news/","slice":"general","true_category":"Entertainment"}
+{"id":"n-ent-avclub","url":"https://www.avclub.com/","slice":"general","true_category":"Entertainment"}
+{"id":"n-ent-avclub-film","url":"https://www.avclub.com/film","slice":"general","true_category":"Entertainment"}
+{"id":"n-ent-rollingstone","url":"https://www.rollingstone.com/music/","slice":"general","true_category":"Entertainment"}
+{"id":"n-ent-variety","url":"https://variety.com/v/film/","slice":"general","true_category":"Entertainment"}
+{"id":"n-ent-ign","url":"https://www.ign.com/","slice":"general","true_category":"Entertainment"}
+{"id":"n-ent-polygon","url":"https://www.polygon.com/","slice":"general","true_category":"Entertainment"}
+{"id":"n-ent-eurogamer","url":"https://www.eurogamer.net/","slice":"general","true_category":"Entertainment"}
+{"id":"n-ent-rps","url":"https://www.rockpapershotgun.com/","slice":"general","true_category":"Entertainment"}
+{"id":"n-ent-gamespot","url":"https://www.gamespot.com/","slice":"general","true_category":"Entertainment"}
+{"id":"n-ent-ebert","url":"https://www.rogerebert.com/reviews","slice":"general","true_category":"Entertainment"}
+{"id":"n-ent-nme","url":"https://www.nme.com/reviews","slice":"general","true_category":"Entertainment"}
+{"id":"n-ent-stereogum","url":"https://www.stereogum.com/","slice":"general","true_category":"Entertainment"}
+{"id":"n-ent-consequence","url":"https://consequence.net/category/music/","slice":"general","true_category":"Entertainment"}
+{"id":"n-ent-criterion","url":"https://www.criterion.com/current","slice":"general","true_category":"Entertainment"}
+{"id":"n-spo-bbc-0","url":"https://www.bbc.com/sport/football","slice":"general","true_category":"Sports"}
+{"id":"n-spo-bbc-1","url":"https://www.bbc.com/sport/cricket","slice":"general","true_category":"Sports"}
+{"id":"n-spo-bbc-2","url":"https://www.bbc.com/sport/tennis","slice":"general","true_category":"Sports"}
+{"id":"n-spo-bbc-3","url":"https://www.bbc.com/sport/rugby-union","slice":"general","true_category":"Sports"}
+{"id":"n-spo-bbc-4","url":"https://www.bbc.com/sport/athletics","slice":"general","true_category":"Sports"}
+{"id":"n-spo-bbc-5","url":"https://www.bbc.com/sport/formula1","slice":"general","true_category":"Sports"}
+{"id":"n-spo-bbc-6","url":"https://www.bbc.com/sport/golf","slice":"general","true_category":"Sports"}
+{"id":"n-spo-bbc-7","url":"https://www.bbc.com/sport/cycling","slice":"general","true_category":"Sports"}
+{"id":"n-spo-bbc-8","url":"https://www.bbc.com/sport/boxing","slice":"general","true_category":"Sports"}
+{"id":"n-spo-sky-football","url":"https://www.skysports.com/football","slice":"general","true_category":"Sports"}
+{"id":"n-spo-sky-f1","url":"https://www.skysports.com/f1","slice":"general","true_category":"Sports"}
+{"id":"n-spo-guardian","url":"https://www.theguardian.com/sport","slice":"general","true_category":"Sports"}
+{"id":"n-spo-guardian-football","url":"https://www.theguardian.com/football","slice":"general","true_category":"Sports"}
+{"id":"n-spo-worldathletics","url":"https://worldathletics.org/news","slice":"general","true_category":"Sports"}
+{"id":"n-spo-uefa","url":"https://www.uefa.com/uefachampionsleague/","slice":"general","true_category":"Sports"}
+{"id":"n-spo-formula1","url":"https://www.formula1.com/en/latest/all","slice":"general","true_category":"Sports"}
+{"id":"n-spo-cyclingnews","url":"https://www.cyclingnews.com/","slice":"general","true_category":"Sports"}
+{"id":"n-fin-fed-monetary","url":"https://www.federalreserve.gov/monetarypolicy.htm","slice":"general","true_category":"Finance"}
+{"id":"n-fin-fed-faq","url":"https://www.federalreserve.gov/faqs/about_12594.htm","slice":"general","true_category":"Finance"}
+{"id":"n-fin-irs-credits","url":"https://www.irs.gov/credits-and-deductions-for-individuals","slice":"general","true_category":"Finance"}
+{"id":"n-fin-irs-brackets","url":"https://www.irs.gov/filing/federal-income-tax-rates-and-brackets","slice":"general","true_category":"Finance"}
+{"id":"n-fin-cfpb-0","url":"https://www.consumerfinance.gov/consumer-tools/mortgages/","slice":"general","true_category":"Finance"}
+{"id":"n-fin-cfpb-1","url":"https://www.consumerfinance.gov/consumer-tools/credit-cards/","slice":"general","true_category":"Finance"}
+{"id":"n-fin-cfpb-2","url":"https://www.consumerfinance.gov/consumer-tools/student-loans/","slice":"general","true_category":"Finance"}
+{"id":"n-fin-cfpb-3","url":"https://www.consumerfinance.gov/consumer-tools/auto-loans/","slice":"general","true_category":"Finance"}
+{"id":"n-fin-treasury-bonds","url":"https://www.treasurydirect.gov/savings-bonds/","slice":"general","true_category":"Finance"}
+{"id":"n-fin-imf-facts","url":"https://www.imf.org/en/About/Factsheets","slice":"general","true_category":"Finance"}
+{"id":"n-fin-worldbank","url":"https://www.worldbank.org/en/topic/macroeconomics","slice":"general","true_category":"Finance"}
+{"id":"n-fin-boe-rates","url":"https://www.bankofengland.co.uk/monetary-policy/the-interest-rate-bank-rate","slice":"general","true_category":"Finance"}
+{"id":"n-fin-boe-inflation","url":"https://www.bankofengland.co.uk/explainers/what-is-inflation","slice":"general","true_category":"Finance"}
+{"id":"n-fin-moneyhelper","url":"https://www.moneyhelper.org.uk/en/savings","slice":"general","true_category":"Finance"}
+{"id":"n-fin-oecd-econ","url":"https://www.oecd.org/en/topics/economy.html","slice":"general","true_category":"Finance"}
+{"id":"n-fin-bis","url":"https://www.bis.org/about/index.htm","slice":"general","true_category":"Finance"}
+{"id":"n-fin-fdic","url":"https://www.fdic.gov/resources/deposit-insurance/","slice":"general","true_category":"Finance"}
+{"id":"n-leg-wex-tort","url":"https://www.law.cornell.edu/wex/tort","slice":"general","true_category":"Legal"}
+{"id":"n-leg-wex-contract","url":"https://www.law.cornell.edu/wex/contract","slice":"general","true_category":"Legal"}
+{"id":"n-leg-wex-habeas_corpus","url":"https://www.law.cornell.edu/wex/habeas_corpus","slice":"general","true_category":"Legal"}
+{"id":"n-leg-wex-negligence","url":"https://www.law.cornell.edu/wex/negligence","slice":"general","true_category":"Legal"}
+{"id":"n-leg-wex-jurisdiction","url":"https://www.law.cornell.edu/wex/jurisdiction","slice":"general","true_category":"Legal"}
+{"id":"n-leg-wex-defamation","url":"https://www.law.cornell.edu/wex/defamation","slice":"general","true_category":"Legal"}
+{"id":"n-leg-wex-due_process","url":"https://www.law.cornell.edu/wex/due_process","slice":"general","true_category":"Legal"}
+{"id":"n-leg-wex-mens_rea","url":"https://www.law.cornell.edu/wex/mens_rea","slice":"general","true_category":"Legal"}
+{"id":"n-leg-wex-strict_liability","url":"https://www.law.cornell.edu/wex/strict_liability","slice":"general","true_category":"Legal"}
+{"id":"n-leg-wex-fiduciary_duty","url":"https://www.law.cornell.edu/wex/fiduciary_duty","slice":"general","true_category":"Legal"}
+{"id":"n-leg-wex-eminent_domain","url":"https://www.law.cornell.edu/wex/eminent_domain","slice":"general","true_category":"Legal"}
+{"id":"n-leg-wex-class_action","url":"https://www.law.cornell.edu/wex/class_action","slice":"general","true_category":"Legal"}
+{"id":"n-leg-wex-discovery","url":"https://www.law.cornell.edu/wex/discovery","slice":"general","true_category":"Legal"}
+{"id":"n-leg-wex-injunction","url":"https://www.law.cornell.edu/wex/injunction","slice":"general","true_category":"Legal"}
+{"id":"n-leg-eff-privacy","url":"https://www.eff.org/issues/privacy","slice":"general","true_category":"Legal"}
+{"id":"n-leg-eff-speech","url":"https://www.eff.org/issues/free-speech","slice":"general","true_category":"Legal"}
+{"id":"n-leg-gdprinfo","url":"https://gdpr-info.eu/","slice":"general","true_category":"Legal"}
+{"id":"n-leg-ico","url":"https://ico.org.uk/for-the-public/","slice":"general","true_category":"Legal"}
+{"id":"n-leg-uscourts","url":"https://www.uscourts.gov/about-federal-courts/court-role-and-structure","slice":"general","true_category":"Legal"}
+{"id":"n-leg-wipo","url":"https://www.wipo.int/patents/en/","slice":"general","true_category":"Legal"}
+{"id":"n-leg-legislation-uk","url":"https://www.legislation.gov.uk/ukpga/1998/42/contents","slice":"general","true_category":"Legal"}
+{"id":"n-leg-echr","url":"https://www.echr.coe.int/documents/d/echr/convention_ENG","slice":"general","true_category":"Legal"}
+{"id":"n-hea-nhs-0","url":"https://www.nhs.uk/conditions/type-2-diabetes/","slice":"general","true_category":"Health"}
+{"id":"n-hea-nhs-1","url":"https://www.nhs.uk/conditions/asthma/","slice":"general","true_category":"Health"}
+{"id":"n-hea-nhs-2","url":"https://www.nhs.uk/conditions/high-blood-pressure-hypertension/","slice":"general","true_category":"Health"}
+{"id":"n-hea-nhs-3","url":"https://www.nhs.uk/conditions/migraine/","slice":"general","true_category":"Health"}
+{"id":"n-hea-nhs-4","url":"https://www.nhs.uk/conditions/back-pain/","slice":"general","true_category":"Health"}
+{"id":"n-hea-nhs-5","url":"https://www.nhs.uk/conditions/iron-deficiency-anaemia/","slice":"general","true_category":"Health"}
+{"id":"n-hea-nhs-6","url":"https://www.nhs.uk/conditions/coeliac-disease/","slice":"general","true_category":"Health"}
+{"id":"n-hea-nhs-7","url":"https://www.nhs.uk/conditions/physiotherapy/","slice":"general","true_category":"Health"}
+{"id":"n-hea-nhs-8","url":"https://www.nhs.uk/conditions/osteoarthritis/","slice":"general","true_category":"Health"}
+{"id":"n-hea-nhs-9","url":"https://www.nhs.uk/conditions/psoriasis/","slice":"general","true_category":"Health"}
+{"id":"n-hea-mlp-0","url":"https://medlineplus.gov/cholesterol.html","slice":"general","true_category":"Health"}
+{"id":"n-hea-mlp-1","url":"https://medlineplus.gov/highbloodpressure.html","slice":"general","true_category":"Health"}
+{"id":"n-hea-mlp-2","url":"https://medlineplus.gov/diabetes.html","slice":"general","true_category":"Health"}
+{"id":"n-hea-mlp-3","url":"https://medlineplus.gov/exerciseandphysicalfitness.html","slice":"general","true_category":"Health"}
+{"id":"n-hea-mlp-4","url":"https://medlineplus.gov/sleepdisorders.html","slice":"general","true_category":"Health"}
+{"id":"n-hea-mlp-5","url":"https://medlineplus.gov/nutrition.html","slice":"general","true_category":"Health"}
+{"id":"n-hea-mlp-6","url":"https://medlineplus.gov/vitaminandmineralsupplements.html","slice":"general","true_category":"Health"}
+{"id":"n-hea-who-0","url":"https://www.who.int/news-room/fact-sheets/detail/physical-activity","slice":"general","true_category":"Health"}
+{"id":"n-hea-who-1","url":"https://www.who.int/news-room/fact-sheets/detail/healthy-diet","slice":"general","true_category":"Health"}
+{"id":"n-hea-who-2","url":"https://www.who.int/news-room/fact-sheets/detail/obesity-and-overweight","slice":"general","true_category":"Health"}
+{"id":"n-hea-who-3","url":"https://www.who.int/news-room/fact-sheets/detail/immunization-coverage","slice":"general","true_category":"Health"}
+{"id":"n-hea-harvard-plate","url":"https://www.hsph.harvard.edu/nutritionsource/healthy-eating-plate/","slice":"general","true_category":"Health"}
+{"id":"n-hea-harvard-protein","url":"https://www.hsph.harvard.edu/nutritionsource/what-should-you-eat/protein/","slice":"general","true_category":"Health"}
+{"id":"n-hea-bhf","url":"https://www.bhf.org.uk/informationsupport/conditions/heart-attack","slice":"general","true_category":"Health"}
+{"id":"n-hea-cruk","url":"https://www.cancerresearchuk.org/about-cancer/causes-of-cancer","slice":"general","true_category":"Health"}
+{"id":"n-hea-diabetesuk","url":"https://www.diabetes.org.uk/about-diabetes","slice":"general","true_category":"Health"}
+{"id":"n-com-onion-0","url":"https://www.theonion.com/politics/","slice":"general","true_category":"Comedy"}
+{"id":"n-com-onion-1","url":"https://www.theonion.com/entertainment/","slice":"general","true_category":"Comedy"}
+{"id":"n-com-onion-2","url":"https://www.theonion.com/sports/","slice":"general","true_category":"Comedy"}
+{"id":"n-com-onion-3","url":"https://www.theonion.com/local/","slice":"general","true_category":"Comedy"}
+{"id":"n-com-mcsw-0","url":"https://www.mcsweeneys.net/columns/lists","slice":"general","true_category":"Comedy"}
+{"id":"n-com-mcsw-1","url":"https://www.mcsweeneys.net/columns","slice":"general","true_category":"Comedy"}
+{"id":"n-com-mcsw-2","url":"https://www.mcsweeneys.net/articles","slice":"general","true_category":"Comedy"}
+{"id":"n-com-xkcd-1053","url":"https://xkcd.com/1053/","slice":"general","true_category":"Comedy"}
+{"id":"n-com-xkcd-327","url":"https://xkcd.com/327/","slice":"general","true_category":"Comedy"}
+{"id":"n-com-xkcd-386","url":"https://xkcd.com/386/","slice":"general","true_category":"Comedy"}
+{"id":"n-com-xkcd-936","url":"https://xkcd.com/936/","slice":"general","true_category":"Comedy"}
+{"id":"n-com-xkcd-303","url":"https://xkcd.com/303/","slice":"general","true_category":"Comedy"}
+{"id":"n-com-xkcd-1190","url":"https://xkcd.com/1190/","slice":"general","true_category":"Comedy"}
+{"id":"n-com-hardtimes","url":"https://thehardtimes.net/","slice":"general","true_category":"Comedy"}
+{"id":"n-com-knowyourmeme","url":"https://knowyourmeme.com/memes","slice":"general","true_category":"Comedy"}
+{"id":"n-com-comedy-uk","url":"https://www.comedy.co.uk/tv/","slice":"general","true_category":"Comedy"}
+{"id":"n-com-clickhole","url":"https://clickhole.com/","slice":"general","true_category":"Comedy"}
+{"id":"n-emo-pt-0","url":"https://www.psychologytoday.com/us/basics/relationships","slice":"general","true_category":"Emotional"}
+{"id":"n-emo-pt-1","url":"https://www.psychologytoday.com/us/basics/grief","slice":"general","true_category":"Emotional"}
+{"id":"n-emo-pt-2","url":"https://www.psychologytoday.com/us/basics/loneliness","slice":"general","true_category":"Emotional"}
+{"id":"n-emo-pt-3","url":"https://www.psychologytoday.com/us/basics/forgiveness","slice":"general","true_category":"Emotional"}
+{"id":"n-emo-pt-4","url":"https://www.psychologytoday.com/us/basics/empathy","slice":"general","true_category":"Emotional"}
+{"id":"n-emo-pt-5","url":"https://www.psychologytoday.com/us/basics/attachment","slice":"general","true_category":"Emotional"}
+{"id":"n-emo-pt-6","url":"https://www.psychologytoday.com/us/basics/gratitude","slice":"general","true_category":"Emotional"}
+{"id":"n-emo-pt-7","url":"https://www.psychologytoday.com/us/basics/anger","slice":"general","true_category":"Emotional"}
+{"id":"n-emo-pt-8","url":"https://www.psychologytoday.com/us/basics/happiness","slice":"general","true_category":"Emotional"}
+{"id":"n-emo-pt-9","url":"https://www.psychologytoday.com/us/basics/motivation","slice":"general","true_category":"Emotional"}
+{"id":"n-emo-gut-pride","url":"https://www.gutenberg.org/files/1342/1342-h/1342-h.htm","slice":"general","true_category":"Emotional"}
+{"id":"n-emo-gut-wuthering","url":"https://www.gutenberg.org/files/768/768-h/768-h.htm","slice":"general","true_category":"Emotional"}
+{"id":"n-emo-gut-janeeyre","url":"https://www.gutenberg.org/files/1260/1260-h/1260-h.htm","slice":"general","true_category":"Emotional"}
+{"id":"n-emo-gut-mansfield","url":"https://www.gutenberg.org/files/141/141-h/141-h.htm","slice":"general","true_category":"Emotional"}
+{"id":"n-emo-captainawkward","url":"https://captainawkward.com/","slice":"general","true_category":"Emotional"}
+{"id":"n-emo-greatergood","url":"https://greatergood.berkeley.edu/topic/empathy","slice":"general","true_category":"Emotional"}
+{"id":"n-emo-mindful","url":"https://www.mindful.org/what-is-mindfulness/","slice":"general","true_category":"Emotional"}
+{"id":"n-emo-longreads","url":"https://longreads.com/","slice":"general","true_category":"Emotional"}
+{"id":"n-myth-theoi-zeus","url":"https://www.theoi.com/Olympios/Zeus.html","slice":"general","true_category":"Mythological"}
+{"id":"n-myth-theoi-athena","url":"https://www.theoi.com/Olympios/Athena.html","slice":"general","true_category":"Mythological"}
+{"id":"n-myth-theoi-poseidon","url":"https://www.theoi.com/Olympios/Poseidon.html","slice":"general","true_category":"Mythological"}
+{"id":"n-myth-theoi-artemis","url":"https://www.theoi.com/Olympios/Artemis.html","slice":"general","true_category":"Mythological"}
+{"id":"n-myth-theoi-apollon","url":"https://www.theoi.com/Olympios/Apollon.html","slice":"general","true_category":"Mythological"}
+{"id":"n-myth-theoi-haides","url":"https://www.theoi.com/Khthonios/Haides.html","slice":"general","true_category":"Mythological"}
+{"id":"n-myth-theoi-hera","url":"https://www.theoi.com/Olympios/Hera.html","slice":"general","true_category":"Mythological"}
+{"id":"n-myth-theoi-kronos","url":"https://www.theoi.com/Titan/TitanKronos.html","slice":"general","true_category":"Mythological"}
+{"id":"n-myth-wh-0","url":"https://www.worldhistory.org/Norse_Mythology/","slice":"general","true_category":"Mythological"}
+{"id":"n-myth-wh-1","url":"https://www.worldhistory.org/Egyptian_Mythology/","slice":"general","true_category":"Mythological"}
+{"id":"n-myth-wh-2","url":"https://www.worldhistory.org/Greek_Mythology/","slice":"general","true_category":"Mythological"}
+{"id":"n-myth-wh-3","url":"https://www.worldhistory.org/Odin/","slice":"general","true_category":"Mythological"}
+{"id":"n-myth-wh-4","url":"https://www.worldhistory.org/zeus/","slice":"general","true_category":"Mythological"}
+{"id":"n-myth-wh-5","url":"https://www.worldhistory.org/Osiris/","slice":"general","true_category":"Mythological"}
+{"id":"n-myth-wh-6","url":"https://www.worldhistory.org/Thor/","slice":"general","true_category":"Mythological"}
+{"id":"n-myth-mythopedia-greek","url":"https://mythopedia.com/topics/greek-mythology","slice":"general","true_category":"Mythological"}
+{"id":"n-myth-mythopedia-norse","url":"https://mythopedia.com/topics/norse-mythology","slice":"general","true_category":"Mythological"}
+{"id":"n-myth-bbc-religion","url":"https://www.bbc.co.uk/religion/religions/","slice":"general","true_category":"Mythological"}
+{"id":"n-myth-learnreligions","url":"https://www.learnreligions.com/hinduism-4684868","slice":"general","true_category":"Mythological"}
+{"id":"n-tra-nps-yell","url":"https://www.nps.gov/yell/index.htm","slice":"general","true_category":"Travel"}
+{"id":"n-tra-nps-grca","url":"https://www.nps.gov/grca/index.htm","slice":"general","true_category":"Travel"}
+{"id":"n-tra-nps-yose","url":"https://www.nps.gov/yose/index.htm","slice":"general","true_category":"Travel"}
+{"id":"n-tra-nps-zion","url":"https://www.nps.gov/zion/index.htm","slice":"general","true_category":"Travel"}
+{"id":"n-tra-nps-acad","url":"https://www.nps.gov/acad/index.htm","slice":"general","true_category":"Travel"}
+{"id":"n-tra-nps-olym","url":"https://www.nps.gov/olym/index.htm","slice":"general","true_category":"Travel"}
+{"id":"n-tra-nps-glac","url":"https://www.nps.gov/glac/index.htm","slice":"general","true_category":"Travel"}
+{"id":"n-tra-nps-grsm","url":"https://www.nps.gov/grsm/index.htm","slice":"general","true_category":"Travel"}
+{"id":"n-tra-nps-romo","url":"https://www.nps.gov/romo/index.htm","slice":"general","true_category":"Travel"}
+{"id":"n-tra-nps-arch","url":"https://www.nps.gov/arch/index.htm","slice":"general","true_category":"Travel"}
+{"id":"n-tra-atlas","url":"https://www.atlasobscura.com/","slice":"general","true_category":"Travel"}
+{"id":"n-tra-atlas-places","url":"https://www.atlasobscura.com/places","slice":"general","true_category":"Travel"}
+{"id":"n-tra-lp-japan","url":"https://www.lonelyplanet.com/japan","slice":"general","true_category":"Travel"}
+{"id":"n-tra-lp-italy","url":"https://www.lonelyplanet.com/italy","slice":"general","true_category":"Travel"}
+{"id":"n-tra-rough-portugal","url":"https://www.roughguides.com/portugal/","slice":"general","true_category":"Travel"}
+{"id":"n-tra-japanguide","url":"https://www.japan-guide.com/e/e2164.html","slice":"general","true_category":"Travel"}
+{"id":"n-tra-ricksteves","url":"https://www.ricksteves.com/europe/italy/rome","slice":"general","true_category":"Travel"}
+{"id":"n-tra-statedept","url":"https://travel.state.gov/content/travel/en/international-travel.html","slice":"general","true_category":"Travel"}
+{"id":"n-tra-bbc-travel","url":"https://www.bbc.com/travel","slice":"general","true_category":"Travel"}
+{"id":"n-mis-pg-greatwork","url":"https://www.paulgraham.com/greatwork.html","slice":"vocabulary-mismatch","true_category":"Educational","note":"Essay register — topic carried by narrative, not vocabulary"}
+{"id":"n-mis-pg-cities","url":"https://www.paulgraham.com/cities.html","slice":"vocabulary-mismatch","true_category":"Educational","note":"Essay register — topic carried by narrative, not vocabulary"}
+{"id":"n-mis-pg-good","url":"https://www.paulgraham.com/good.html","slice":"vocabulary-mismatch","true_category":"Educational","note":"Essay register — topic carried by narrative, not vocabulary"}
+{"id":"n-mis-pg-nerds","url":"https://www.paulgraham.com/nerds.html","slice":"vocabulary-mismatch","true_category":"Educational","note":"Essay register — topic carried by narrative, not vocabulary"}
+{"id":"n-mis-pg-hs","url":"https://www.paulgraham.com/hs.html","slice":"vocabulary-mismatch","true_category":"Educational","note":"Essay register — topic carried by narrative, not vocabulary"}
+{"id":"n-mis-pg-persistence","url":"https://www.paulgraham.com/persistence.html","slice":"vocabulary-mismatch","true_category":"Educational","note":"Essay register — topic carried by narrative, not vocabulary"}
+{"id":"n-mis-pg-makersschedule","url":"https://www.paulgraham.com/makersschedule.html","slice":"vocabulary-mismatch","true_category":"Educational","note":"Essay register — topic carried by narrative, not vocabulary"}
+{"id":"n-mis-pg-wealth","url":"https://www.paulgraham.com/wealth.html","slice":"vocabulary-mismatch","true_category":"Educational","note":"Essay register — topic carried by narrative, not vocabulary"}
+{"id":"n-mis-pg-startupideas","url":"https://www.paulgraham.com/startupideas.html","slice":"vocabulary-mismatch","true_category":"Educational","note":"Essay register — topic carried by narrative, not vocabulary"}
+{"id":"n-mis-pg-writing44","url":"https://www.paulgraham.com/writing44.html","slice":"vocabulary-mismatch","true_category":"Educational","note":"Essay register — topic carried by narrative, not vocabulary"}
+{"id":"n-mis-aeon","url":"https://aeon.co/essays","slice":"vocabulary-mismatch","true_category":"Educational","note":"Long-form, topic rarely keyworded"}
+{"id":"n-mis-nautilus","url":"https://nautil.us/","slice":"vocabulary-mismatch","true_category":"Educational","note":"Science without science keywords"}
+{"id":"n-mis-quanta","url":"https://www.quantamagazine.org/","slice":"vocabulary-mismatch","true_category":"Educational","note":"Maths in narrative register"}
+{"id":"n-mis-longreads","url":"https://longreads.com/","slice":"vocabulary-mismatch","true_category":"Emotional","note":"Personal essay aggregator"}
+{"id":"n-mis-ribbonfarm","url":"https://www.ribbonfarm.com/","slice":"vocabulary-mismatch","true_category":"Educational","note":"Idiosyncratic vocabulary by design"}
+{"id":"n-mis-acx","url":"https://www.astralcodexten.com/","slice":"vocabulary-mismatch","true_category":"Educational","note":"Long-form, mixed topic"}
+{"id":"n-mis-mit-tech","url":"https://www.technologyreview.com/","slice":"vocabulary-mismatch","true_category":"Educational","note":"Tech topics in prose register"}
+{"id":"n-nen-lemonde","url":"https://www.lemonde.fr/","slice":"non-english","true_category":"News","note":"French"}
+{"id":"n-nen-lefigaro","url":"https://www.lefigaro.fr/","slice":"non-english","true_category":"News","note":"French"}
+{"id":"n-nen-liberation","url":"https://www.liberation.fr/","slice":"non-english","true_category":"News","note":"French"}
+{"id":"n-nen-rfi","url":"https://www.rfi.fr/fr/","slice":"non-english","true_category":"News","note":"French"}
+{"id":"n-nen-elpais","url":"https://elpais.com/","slice":"non-english","true_category":"News","note":"Spanish"}
+{"id":"n-nen-elmundo","url":"https://www.elmundo.es/","slice":"non-english","true_category":"News","note":"Spanish"}
+{"id":"n-nen-abces","url":"https://www.abc.es/","slice":"non-english","true_category":"News","note":"Spanish"}
+{"id":"n-nen-clarin","url":"https://www.clarin.com/","slice":"non-english","true_category":"News","note":"Spanish"}
+{"id":"n-nen-spiegel","url":"https://www.spiegel.de/","slice":"non-english","true_category":"News","note":"German"}
+{"id":"n-nen-zeit","url":"https://www.zeit.de/index","slice":"non-english","true_category":"News","note":"German"}
+{"id":"n-nen-faz","url":"https://www.faz.net/aktuell/","slice":"non-english","true_category":"News","note":"German"}
+{"id":"n-nen-tagesschau","url":"https://www.tagesschau.de/","slice":"non-english","true_category":"News","note":"German"}
+{"id":"n-nen-corriere","url":"https://www.corriere.it/","slice":"non-english","true_category":"News","note":"Italian"}
+{"id":"n-nen-repubblica","url":"https://www.repubblica.it/","slice":"non-english","true_category":"News","note":"Italian"}
+{"id":"n-nen-folha","url":"https://www.folha.uol.com.br/","slice":"non-english","true_category":"News","note":"Portuguese"}
+{"id":"n-nen-publico-pt","url":"https://www.publico.pt/","slice":"non-english","true_category":"News","note":"Portuguese"}
+{"id":"n-nen-asahi","url":"https://www.asahi.com/","slice":"non-english","true_category":"News","note":"Japanese"}
+{"id":"n-nen-mainichi","url":"https://mainichi.jp/","slice":"non-english","true_category":"News","note":"Japanese"}
+{"id":"n-nen-hani","url":"https://www.hani.co.kr/","slice":"non-english","true_category":"News","note":"Korean"}
+{"id":"n-nen-aljazeera-ar","url":"https://www.aljazeera.net/","slice":"non-english","true_category":"News","note":"Arabic, RTL"}
+{"id":"n-nen-alarabiya","url":"https://www.alarabiya.net/","slice":"non-english","true_category":"News","note":"Arabic, RTL"}
+{"id":"n-nen-lenta","url":"https://lenta.ru/","slice":"non-english","true_category":"News","note":"Russian, Cyrillic"}
+{"id":"n-nen-nos-nl","url":"https://nos.nl/","slice":"non-english","true_category":"News","note":"Dutch"}
+{"id":"n-nen-svt-se","url":"https://www.svt.se/","slice":"non-english","true_category":"News","note":"Swedish"}
+{"id":"n-nen-marca-es","url":"https://www.marca.com/","slice":"non-english","true_category":"Sports","note":"Spanish, Sports"}
+{"id":"n-nen-lequipe","url":"https://www.lequipe.fr/","slice":"non-english","true_category":"Sports","note":"French, Sports"}
+{"id":"n-nen-marmiton","url":"https://www.marmiton.org/","slice":"non-english","true_category":"Food","note":"French, Food"}
+{"id":"n-nen-chefkoch","url":"https://www.chefkoch.de/","slice":"non-english","true_category":"Food","note":"German, Food"}
+{"id":"n-mix-harvard-eat","url":"https://www.hsph.harvard.edu/nutritionsource/what-should-you-eat/","slice":"mixed-genre","true_category":"Health","note":"Health vs Food"}
+{"id":"n-mix-bbcgf-med","url":"https://www.bbcgoodfood.com/howto/guide/what-mediterranean-diet","slice":"mixed-genre","true_category":"Food","note":"Food vs Health"}
+{"id":"n-mix-atlas-foods","url":"https://www.atlasobscura.com/foods","slice":"mixed-genre","true_category":"Food","note":"Food vs Travel"}
+{"id":"n-mix-atlas-articles","url":"https://www.atlasobscura.com/articles","slice":"mixed-genre","true_category":"Travel","note":"Travel vs Educational"}
+{"id":"n-mix-nps-gett","url":"https://www.nps.gov/gett/index.htm","slice":"mixed-genre","true_category":"Travel","note":"Travel vs history"}
+{"id":"n-mix-nps-liberty","url":"https://www.nps.gov/stli/index.htm","slice":"mixed-genre","true_category":"Travel","note":"Travel vs history"}
+{"id":"n-mix-olympics-ancient","url":"https://www.olympics.com/ioc/ancient-olympic-games","slice":"mixed-genre","true_category":"Sports","note":"Sports vs Mythological"}
+{"id":"n-mix-seat61","url":"https://www.seat61.com/","slice":"mixed-genre","true_category":"Travel","note":"Travel vs technical"}
+{"id":"n-mix-npr-food","url":"https://www.npr.org/sections/food/","slice":"mixed-genre","true_category":"Food","note":"News vs Food"}
+{"id":"n-mix-guardian-food","url":"https://www.theguardian.com/food","slice":"mixed-genre","true_category":"Food","note":"News vs Food"}
+{"id":"n-mix-bbc-food-health","url":"https://www.bbc.co.uk/food/diets","slice":"mixed-genre","true_category":"Health","note":"Food vs Health"}
+{"id":"n-mix-cruk-diet","url":"https://www.cancerresearchuk.org/about-cancer/causes-of-cancer/diet-and-cancer","slice":"mixed-genre","true_category":"Health","note":"Health vs Food"}
+{"id":"n-mix-ebert-doc","url":"https://www.rogerebert.com/reviews/hoop-dreams-1994","slice":"mixed-genre","true_category":"Entertainment","note":"Entertainment vs Sports"}
+{"id":"n-mix-guardian-sportblog","url":"https://www.theguardian.com/sport/blog","slice":"mixed-genre","true_category":"Sports","note":"Sports vs commentary"}
+{"id":"n-mix-aeon-hist","url":"https://aeon.co/essays","slice":"mixed-genre","true_category":"Educational","note":"Deliberately genre-crossing"}
+{"id":"n-mix-eff-law-tech","url":"https://www.eff.org/issues/innovation","slice":"mixed-genre","true_category":"Legal","note":"Legal vs Educational/tech"}
+{"id":"n-nea-gut-hamlet","url":"https://www.gutenberg.org/files/1524/1524-h/1524-h.htm","slice":"sensitive-near-miss","true_category":"Entertainment","note":"Literary suicide soliloquy"}
+{"id":"n-nea-gut-mobydick","url":"https://www.gutenberg.org/files/2701/2701-h/2701-h.htm","slice":"sensitive-near-miss","true_category":"Entertainment","note":"Literary violence"}
+{"id":"n-nea-gut-romeo","url":"https://www.gutenberg.org/files/1112/1112-h/1112-h.htm","slice":"sensitive-near-miss","true_category":"Entertainment","note":"Literary double suicide"}
+{"id":"n-nea-gut-greatexpectations","url":"https://www.gutenberg.org/files/1400/1400-h/1400-h.htm","slice":"sensitive-near-miss","true_category":"Entertainment","note":"Literary death themes"}
+{"id":"n-nea-gut-huckfinn","url":"https://www.gutenberg.org/files/76/76-h/76-h.htm","slice":"sensitive-near-miss","true_category":"Entertainment","note":"Literary violence in period register"}
+{"id":"n-nea-man-kill-1","url":"https://man7.org/linux/man-pages/man1/kill.1.html","slice":"sensitive-near-miss","true_category":"Educational","note":"Unix docs saturated with kill/abort/terminate — pure FP bait"}
+{"id":"n-nea-man-killall-1","url":"https://man7.org/linux/man-pages/man1/killall.1.html","slice":"sensitive-near-miss","true_category":"Educational","note":"Unix docs saturated with kill/abort/terminate — pure FP bait"}
+{"id":"n-nea-man-abort-3","url":"https://man7.org/linux/man-pages/man3/abort.3.html","slice":"sensitive-near-miss","true_category":"Educational","note":"Unix docs saturated with kill/abort/terminate — pure FP bait"}
+{"id":"n-nea-man-raise-3","url":"https://man7.org/linux/man-pages/man3/raise.3.html","slice":"sensitive-near-miss","true_category":"Educational","note":"Unix docs saturated with kill/abort/terminate — pure FP bait"}
+{"id":"n-nea-man-signal-7","url":"https://man7.org/linux/man-pages/man7/signal.7.html","slice":"sensitive-near-miss","true_category":"Educational","note":"Unix docs saturated with kill/abort/terminate — pure FP bait"}
+{"id":"n-nea-nps-deva","url":"https://www.nps.gov/deva/index.htm","slice":"sensitive-near-miss","true_category":"Travel","note":"'Death' as a place name"}
+{"id":"n-nea-cdc-injury","url":"https://www.cdc.gov/injury/about/index.html","slice":"sensitive-near-miss","true_category":"Health","note":"Epidemiological, not crisis"}
+{"id":"n-nea-who-violence","url":"https://www.who.int/health-topics/violence","slice":"sensitive-near-miss","true_category":"Health","note":"Policy framing of violence"}
+{"id":"n-nea-ncbi-ed","url":"https://www.ncbi.nlm.nih.gov/books/NBK499953/","slice":"sensitive-near-miss","true_category":"Health","note":"Clinical SEVERE-term FP mode"}
+{"id":"n-nea-wh-wars","url":"https://www.worldhistory.org/war/","slice":"sensitive-near-miss","true_category":"Educational","note":"Historical warfare"}
+{"id":"n-nea-iwm","url":"https://www.iwm.org.uk/history","slice":"sensitive-near-miss","true_category":"Educational","note":"War history, museum register"}
+{"id":"n-nea-ebert-violent","url":"https://www.rogerebert.com/reviews/no-country-for-old-men-2007","slice":"sensitive-near-miss","true_category":"Entertainment","note":"Review describing violence"}

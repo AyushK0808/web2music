@@ -1,0 +1,147 @@
+{
+  "_notice": "C-11 seed adversarial slice for the sensitive-content detector. Deliberately small and deliberately hard: the near-misses are the exact examples RESULTS_AND_DISCUSSION_PLAN.md §3 S2 names, plus the failure modes b2_moodClassifier.js's own ethics note admits to (euphemism, non-English, topics outside the term list). Replace with the real slice once D-01 captures it; the shape is identical, so nothing downstream changes.",
+  "provenance": "hand-written from the term lists in b1_contentUnderstanding.js and the failure modes documented in b2_moodClassifier.js runB2",
+  "pages": [
+    {
+      "id": "sens-suicide-helpline",
+      "sensitive": true,
+      "slice": "severe-explicit",
+      "title": "Suicide prevention: how to get help now",
+      "text": "If you are having thoughts of suicide, help is available. Trained counsellors are on the line day and night. Self-harm is not something you have to face alone."
+    },
+    {
+      "id": "sens-dv-shelter",
+      "sensitive": true,
+      "slice": "severe-explicit",
+      "title": "Finding a domestic violence shelter near you",
+      "text": "Leaving an abusive partner is dangerous. Domestic violence advocates can help you build a safety plan and find emergency housing tonight."
+    },
+    {
+      "id": "sens-eating-disorder",
+      "sensitive": true,
+      "slice": "severe-explicit",
+      "title": "Recognising the early signs of an eating disorder",
+      "text": "Anorexia and bulimia often begin quietly. A person may restrict food, exercise compulsively, or withdraw from meals with others."
+    },
+    {
+      "id": "sens-assault-support",
+      "sensitive": true,
+      "slice": "severe-explicit",
+      "title": "After a sexual assault: your options",
+      "text": "Survivors of rape and sexual assault can seek medical care, report to police, or do neither. Advocates are available to explain each option without pressure."
+    },
+    {
+      "id": "sens-breaking-shooting",
+      "sensitive": true,
+      "slice": "severe-news",
+      "title": "Breaking: mass shooting reported downtown",
+      "text": "Police responded to reports of a mass shooting this afternoon. Officials have not confirmed casualties. The area remains closed."
+    },
+    {
+      "id": "sens-grief-support",
+      "sensitive": true,
+      "slice": "ambiguous-genuine",
+      "title": "Living with grief after a sudden death",
+      "text": "Grief after a sudden bereavement does not follow stages. Many people describe trauma symptoms months later, long after others expect them to have moved on."
+    },
+    {
+      "id": "sens-euphemism",
+      "sensitive": true,
+      "slice": "euphemism",
+      "title": "I don't want to be here anymore",
+      "text": "Some nights I think about ending it all. I don't have a plan exactly, I just want the noise to stop and for everything to be over."
+    },
+    {
+      "id": "sens-addiction",
+      "sensitive": true,
+      "slice": "outside-term-list",
+      "title": "Detoxing from alcohol at home is dangerous",
+      "text": "Withdrawal from heavy drinking can cause seizures. People in recovery from addiction should not attempt an unsupervised detox."
+    },
+    {
+      "id": "sens-miscarriage",
+      "sensitive": true,
+      "slice": "outside-term-list",
+      "title": "What to expect after a miscarriage",
+      "text": "Pregnancy loss in the first trimester is common and rarely anyone's fault. Physical recovery takes days; the rest takes longer."
+    },
+    {
+      "id": "sens-terminal",
+      "sensitive": true,
+      "slice": "outside-term-list",
+      "title": "Talking to your family about a terminal diagnosis",
+      "text": "A palliative care team can help you decide what to say and when. Hospice does not mean giving up on comfort."
+    },
+    {
+      "id": "sens-nonenglish-es",
+      "sensitive": true,
+      "slice": "non-english",
+      "lang": "es",
+      "title": "Prevención del suicidio: líneas de ayuda",
+      "text": "Si tienes pensamientos de quitarte la vida, hay ayuda disponible. Los consejeros atienden a cualquier hora del día."
+    },
+    {
+      "id": "near-great-depression",
+      "sensitive": false,
+      "slice": "near-miss",
+      "title": "The Great Depression: causes and consequences",
+      "text": "The Great Depression began with the 1929 crash. Unemployment reached twenty-five percent and the resulting economic depression reshaped a generation of policy."
+    },
+    {
+      "id": "near-grief-degree",
+      "sensitive": false,
+      "slice": "near-miss",
+      "title": "Grief counselling degree programs, ranked",
+      "text": "A master's in grief counselling prepares graduates for hospice and bereavement work. Programs vary in clinical hours, tuition, and licensure pathway."
+    },
+    {
+      "id": "near-war-history",
+      "sensitive": false,
+      "slice": "near-miss",
+      "title": "How the Armenian genocide is taught in schools",
+      "text": "Historians debate how the genocide should appear in secondary curricula. The question is one of pedagogy and national memory more than of fact."
+    },
+    {
+      "id": "near-psych-textbook",
+      "sensitive": false,
+      "slice": "near-miss",
+      "title": "Chapter 12: Eating disorders — a clinical overview",
+      "text": "This chapter surveys the diagnostic criteria for anorexia nervosa and bulimia nervosa, prevalence by cohort, and the evidence base for family-based treatment."
+    },
+    {
+      "id": "near-trauma-engineering",
+      "sensitive": false,
+      "slice": "near-miss",
+      "title": "Blunt force trauma testing in helmet design",
+      "text": "Impact trauma is measured with an instrumented headform. Engineers compare abuse-case loads against the standard's threshold."
+    },
+    {
+      "id": "near-market-depression",
+      "sensitive": false,
+      "slice": "near-miss",
+      "title": "Is the housing market in a depression or a correction?",
+      "text": "Analysts disagree on whether the current slump counts as a depression. Volume is down, prices are flat, and inventory is rising."
+    },
+    {
+      "id": "benign-pasta",
+      "sensitive": false,
+      "slice": "benign",
+      "title": "The best weeknight tomato pasta",
+      "text": "Blister the tomatoes in olive oil until they collapse. Add garlic, a splash of pasta water, and finish off the heat with basil."
+    },
+    {
+      "id": "benign-rust-lifetimes",
+      "sensitive": false,
+      "slice": "benign",
+      "title": "Understanding lifetimes in Rust",
+      "text": "A lifetime annotation tells the borrow checker how long a reference is valid. Most of the time elision handles it for you."
+    },
+    {
+      "id": "benign-transfer-window",
+      "sensitive": false,
+      "slice": "benign",
+      "title": "Transfer window: the ten deals still on the table",
+      "text": "Clubs have until Monday to complete business. Two of the moves below hinge on a medical, and one on a manager who has not yet been appointed."
+    }
+  ]
+}
