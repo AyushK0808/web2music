@@ -118,10 +118,29 @@ function findMainContentElement(root = document.body) {
     }
   }
 
-  // Descend while one child still holds nearly all the non-link text.
+  // Descend while one child still holds nearly all the non-link text AND
+  // nearly all the text overall.
+  //
+  // Requiring both is what keeps link-dominated pages intact. Selection
+  // scores by non-link text (so a nav/link farm can't win), but extraction
+  // afterwards takes innerText — *all* the text — from whatever was
+  // selected. On a directory/index page those two measures come apart
+  // completely: crates.io's homepage is 4541 chars of text of which only
+  // 249 are outside an <a>, because the page genuinely is a list of links.
+  // Its one incidental prose block (the 238-char tagline) therefore held
+  // 95.6% of the non-link text, counted as "dominant", and the walk
+  // descended into it — returning a tagline as the page's main content and
+  // throwing away everything else. crates.io extracted 36 of 632 visible
+  // words this way. Any aggregator/package-index/category page has the
+  // same shape.
+  //
+  // A real article container dominates on both measures at once, so this
+  // costs article pages nothing; it only stops the walk from mistaking a
+  // rounding error for the content.
   for (;;) {
     const currentText = nonLinkTextLength(current);
     if (currentText < MIN_CONTENT_TEXT_LENGTH) break;
+    const currentTotal = (current.textContent || '').trim().length;
 
     let dominant = null;
     const children = current.children || [];
@@ -129,8 +148,10 @@ function findMainContentElement(root = document.body) {
       const child = children[i];
       if (looksLikeBoilerplate(child)) continue;
       const childText = nonLinkTextLength(child);
+      const childTotal = (child.textContent || '').trim().length;
       if (childText >= currentText * DOMINANT_CHILD_SHARE &&
-          childText >= MIN_CONTENT_TEXT_LENGTH) {
+          childText >= MIN_CONTENT_TEXT_LENGTH &&
+          childTotal >= currentTotal * DOMINANT_CHILD_SHARE) {
         dominant = child;
         break; // only one child can hold >=90%, so the first is the one
       }
