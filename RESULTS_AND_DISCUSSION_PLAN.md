@@ -6,7 +6,7 @@ placeholder shaped like the number we intend to report.
 the loop-generation contribution outgrows the interaction contribution.
 **Scope:** §5 Results and §6 Discussion only. System description (§3) and
 implementation (§4) are assumed written.
-**Last updated:** 2026-08-09.
+**Last updated:** 2026-08-10.
 
 ---
 
@@ -124,12 +124,12 @@ not running an experiment, we are running a demo.
 
 | # | Subsection | Study | Status |
 |---|---|---|---|
-| 5.1 | System latency and cost | S1 | `INSTRUMENTED` |
-| 5.2 | Page classification accuracy and the tier cascade | S2 | `TO BUILD` (corpus + annotation) |
-| 5.3 | Generated-audio and loop quality | S3 | `INSTRUMENTED` (objective) / `TO BUILD` (listening test) |
+| 5.1 | System latency and cost | S1 | `IN PROGRESS` — extraction cost `READY` (105/105 sites); `d4_latency.py` running |
+| 5.2 | Page classification accuracy and the tier cascade | S2 | `TO BUILD` (corpus + annotation) — harness itself now `READY` |
+| 5.3 | Generated-audio and loop quality | S3 | `READY` (objective, n=116) / `TO BUILD` (listening test) |
 | 5.4 | Perceived music–page fit | S4 | `BLOCKED` (ethics) |
 | 5.5 | Task performance and workload | S4 | `BLOCKED` (ethics) |
-| 5.6 | Behaviour in the wild | S5 | `TO BUILD` |
+| 5.6 | Behaviour in the wild | S5 | `TO BUILD` (deployment) — analysis script now `READY` |
 
 ### §6 Discussion (target ~2 pages)
 
@@ -334,8 +334,13 @@ optional note").
   guess about which moods occur; this measures it);
 * tier escalation rate on real pages vs the curated S2 corpus — expect the real
   distribution to be far more skewed, and say so;
-* voluntary disable rate and time-to-first-disable, the harshest usability
-  measure we have.
+* **voluntary disable (toggle-off) rate** and time-to-first-disable, the
+  harshest usability measure we have available. This is *not* an uninstall
+  rate, and uninstall rate is not obtainable in this build at all: Chrome
+  deletes `chrome.storage.local` — the telemetry ring buffer with it — on
+  uninstall, and the only surviving hook (`setUninstallURL`) requires a
+  network call the local-only guarantee forbids. `POPUP_SET_ENABLED` toggles
+  are the closest measurable proxy, not a substitute.
 
 **Analysis caution:** N = 12 with unequal exposure supports description, not
 inference. Report distributions and per-participant traces; do not run
@@ -362,8 +367,10 @@ in this table it does not go in a figure.
 | `fallback_rate` | `metadata.is_fallback` true / total | same |
 | `macro_f1_category` | unweighted mean per-category F1, 13 classes | S2 harness (to build) |
 | `macro_f1_mood` | unweighted mean per-mood F1, 11 classes | S2 harness (to build) |
-| `escalation_rate[tier]` | share of pages decided at each tier | `category.source` ∈ {`keyword`, `zero-shot`, `llm`, `default`} |
-| `exposure_rate` | share of pages whose text left the device | derived: `source == "llm"` (+ proxy zero-shot) |
+| `escalation_rate[tier]` | share of pages decided at each tier | S2: `category.source` ∈ {`keyword`, `zero-shot`, `llm`, `default`}; S5: `tier_escalation_rate`/`tier_counts`, `s5_telemetry_analysis.js` (via `onDiagnostics`, every page, not just transitions) |
+| `exposure_rate` | share of pages whose text left the device | S2: derived, `source == "llm"` (+ proxy zero-shot); S5: `llm_exposure_rate`, `s5_telemetry_analysis.js` |
+| `disabled_rate` | share of session time the extension was toggled off | `s5_telemetry_analysis.js`: `user_enabled_toggle` events (`POPUP_SET_ENABLED`) — toggle-off, not uninstall; see §3 S5 |
+| `disables_per_hour` | voluntary disable presses per hour of session | same |
 | `abstention_rate` | tier-1.5 declines / tier-1.5 invocations | `b1_zeroShotCategory.js` abstain log |
 | `zs_margin` | top score − runner-up score | `parseZeroShotResult` |
 | `seam_energy_delta_db` | RMS dB difference across the loop seam, pre-crossfade | `d4_process._seam_discontinuity` |
@@ -634,18 +641,19 @@ Ordered by what blocks what, not by who is free.
 | 1. Ethics/IRB submission | S4, S5 entirely | — | not started; **start this first, it has the longest latency of anything here** |
 | 2. Freeze the S2 corpus (600 pages, extracted) | S2, S4 page selection | Feature A owner | not started |
 | 3. Annotation round + α | S2, C1/C3 | all three annotators | blocked on 2 |
-| 4. S2 harness (A1–A7 runner) | T2, F4, F5 | Feature B owner | not started |
-| 5. Run S1 on all three hardware configs | T1, F1–F3 | Feature D owner | instruments ready — **runnable today** |
-| 6. Fill `d2_loop_test.py`, run S3 objective | F6 | Feature D owner | stub empty |
-| 7. Loop AB listening test | T3 | any | blocked on 6 |
-| 8. Pre-registration | S4 validity | lead | blocked on 4 (need pilot effect sizes) |
+| 4. S2 harness (A1–A7 runner) | T2, F4, F5 | Feature B owner | **harness built and smoke-tested 2026-08-10** (`s2_tier_ablation.js`); real 600-page corpus + annotation still not started |
+| 5. Run S1 on all three hardware configs | T1, F1–F3 | Feature D owner | **CPU config in progress 2026-08-10** (`extractionCost.js` done; `d4_latency.py` running); GPU config and cache-cold-vs-warm comparison still open |
+| 6. Fill `d2_loop_test.py`, run S3 objective | F6 | Feature D owner | **done 2026-08-10** — n=141 after a compliance-check fix; see research_log.md. Note the new finding: median clip retains 50.3% of its requested duration |
+| 7. Loop AB listening test | T3 | any | blocked on human listeners — objective half (6) no longer blocks this |
+| 8. Pre-registration | S4 validity | lead | blocked on 4's real corpus (need pilot effect sizes) |
 | 9. Pilot S4 (n = 6) | S4 protocol | lead | blocked on 1, 2 |
 | 10. Run S4 | F7, T4 | lead | blocked on 9 |
-| 11. S5 deployment (2 weeks) | F8 | any | blocked on 1 |
+| 11. S5 deployment (2 weeks) | F8 | any | blocked on 1; analysis script (`s5_telemetry_analysis.js`) is ready to receive its output the moment it isn't |
 
-Steps 5 and 6 are the only ones runnable with what exists in the repo right
-now, and step 1 is the only one whose delay cannot be recovered by working
-harder later. Start 1 and 5 in the same week.
+Steps 5 and 6 were the only ones runnable with what existed in the repo
+before this session; 6 is now done and 5 is partway there. Step 1 (ethics)
+is still the only one whose delay cannot be recovered by working harder
+later — nothing above changes that it should have started already.
 
 ---
 
@@ -669,17 +677,29 @@ Decided in advance, so the decision is not made by sunk cost at 3 a.m.:
 
 ## Appendix A — What exists in the repo today
 
+**Updated 2026-08-10.** Everything below this line reflects an actual work
+session, not a plan — every "ran" claim has a `research_log.md` entry with
+a command, git SHA, and real numbers.
+
 | Asset | State |
 |---|---|
-| `d4_latency.py` | Written; fallback/warm/cold/duration/concurrency sections; JSON + summary output; never run against a real backend |
-| `latency.e2e.mjs` | Written; wall-clock and compute-only timelines over the 11-mood corpus; never run to completion |
-| `extractionCost.js` | Written; never run |
-| `chromiumExtension.e2e.mjs` | Written and passing; 12-site corpus (11 moods + 1 sensitive) |
-| `d1_prompt_ablation.py`, `d2_loop_test.py`, `d3_clip_length.py` | Empty stubs (0 bytes) |
-| `research_log.md` | Empty (0 bytes) |
-| Fallback clips | 11 moods present (`.ogg` + `.json`) |
-| `_seam_discontinuity` | Implemented, returned per clip, never aggregated |
-| Telemetry ring buffer | Implemented, URL-hashed, exportable; no analysis script yet |
-| Zero-shot tier (B1.5) | Implemented, unit-tested, **off by default**; no accuracy data |
-| Auto-mute | Implemented, unit-tested; no in-the-wild data |
-| S2 corpus, annotations, user study | Do not exist |
+| `d4_latency.py` | Running now (`--sections all`, backgrounded) against a live backend. `fallback`/`warm` sections producing real cache-hit numbers as moods complete; `cold`/`duration`/`concurrency` still in flight. **Real finding: a single 28s CPU generation took ~19 min on this hardware** — far past the docstring's "15-95s" assumption; reinforces C2's fallback-then-swap argument, doesn't undermine it. |
+| `latency.e2e.mjs` | Still not run — deliberately held back until `d4_latency.py`'s generation-heavy sections finish, since both hit the same MusicGen resource and would contaminate each other's timings if run concurrently. |
+| `extractionCost.js` | **Done.** 105/105 real sites, clean run — see `research_log.md`. Found and fixed two real production bugs along the way (`syllableCounter.js` load order, and Feature A's link-dominated-page extraction — both below). |
+| `chromiumExtension.e2e.mjs` | Re-confirmed passing, 12/12, after the fix below (rebuilt extension first) |
+| `d2_loop_test.py` | **Written and run** (was an empty stub). Re-run after the compliance fix below: n=141 real clips (11 fallback + 130 audio-cache, joined against Postgres). Adds a genuinely new pre-vs-post-crossfade comparison the API response never exposed on its own, and now reports the duration-retention distribution rather than a pass/fail flag. |
+| `d1_prompt_ablation.py`, `d3_clip_length.py` | Still empty stubs (0 bytes) — not touched this session |
+| `research_log.md` | No longer empty — dated entries for every run above, each with command/git-SHA/output-path |
+| Fallback clips | 11 moods present (`.ogg` + `.json`), all analysed by `d2_loop_test.py` |
+| `_seam_discontinuity` | Implemented; now aggregated (`d2_loop_test.py`) across 141 clips, pre- **and** post-crossfade |
+| Telemetry ring buffer | Implemented, URL-hashed, exportable; **analysis script now exists** (`ui/experiments/s5_telemetry_analysis.js`), smoke-tested against a synthetic session — real deployment still needed for real numbers |
+| Zero-shot tier (B1.5) | Implemented, unit-tested, **off by default**; was **silently non-functional in production** — its HF Inference API endpoint (`api-inference.huggingface.co`) is fully decommissioned, every call failed "fetch failed" and fell through to the LLM tier. Fixed (`services/classify/classifyService.js` now uses `router.huggingface.co`); verified live against the plan's own gut-microbiome example. `classify-service` also had to be rebuilt — the running container predated the `/v1/zero-shot` route by 6 days. |
+| S2 tier-ablation harness | **Built** (`mood-classification/experiments/s2_tier_ablation.js`), all tiers live (Groq + fixed HF proxy), A1–A7 sweep working. Smoke-tested on an 18-page single-annotator corpus (explicitly not the real S2 corpus) — real finding: A5 (shipped cascade) trades ~6 macro-F1 points for zero page-text exposure vs. A4 (previous keyword→LLM system). |
+| Auto-mute | Implemented, unit-tested; no in-the-wild data (S5 analysis script above is ready to consume it once there is) |
+| Production bug: `syllableCounter.js` missing from content-script load order | **Found and fixed.** `ui/manifest.json` + `ui/build.mjs` never included it before `Readability.js`, which reads it at top-level const-binding time — the shipped extension has thrown and silently swallowed this on every real page load since the syllable counter was split into its own file. `flesch`/`readingComplexity` has never once reached Handoff 1. Non-fatal today (B computes its own reading-complexity fallback) but was quietly dead code. |
+| `audio-generation` test suite | **Fixed and green: 60 passed on Python 3.14.2 *and* 3.12.0.** The previous "numba access violation" diagnosis was wrong in every particular — it is a hang, not a crash (0% CPU across a 20s sample; `py-spy` shows the loop parked in `select`), and it reproduces identically on both interpreters with identical `numba==0.66.0`, so the interpreter was never the variable. All 13 `test_d4_process.py` tests, including the one named as the crash site, pass on both. **No dependency pin was needed to fix the hang** — `numba`/`llvmlite` were never the cause. A pin was made afterward anyway, for §12 reproducibility, not correctness: `requirements.txt` pulled both transitively via `librosa` with no version constraint, so a future install could silently resolve a different pair than the one actually verified here; now pinned to `numba==0.66.0`/`llvmlite==0.48.0`. Two independent bugs were behind the hang: (1) `d3_generate._run_batch` completed `asyncio.Future`s **across a thread boundary**, and `loop.call_soon` does not wake a sleeping loop, so a batch that is the last outstanding work is never collected — **a production defect on `/generate`**, masked in the field by ambient socket traffic; fixed with `call_soon_threadsafe`. (2) `test_main_roundtrip.py` re-imports `d3_generate`, leaving `prewarm` bound to the original module copy that `conftest.py` never reset — **test isolation only**; fixed by resetting every live copy. |
+| Production bug: D3 batch futures resolved off-loop | **Found and fixed** (`audio-generation/d3_generate.py`). See the row above — the bug that had been misfiled for a session as a numba/Python-3.14 incompatibility. |
+| Production bug: Feature A discards link-dominated pages | **Found and fixed** (`data-extraction/Textextractor.js`). `findMainContentElement` scores containers by *non-link* text but extraction then takes all text, so on a link directory the two measures come apart: crates.io's 238-char tagline held 95.6% of the page's 249 non-link chars (of 4541 total), was treated as the dominant child, and was returned as the whole page's content — 36 of 632 words extracted. A dominant child must now win on total text as well. crates.io 4.9% → 85.5% coverage; corpus p50 80.8% → 82.6%; zero genuine under-extractions left across 105 sites; text stage got faster (mean 17.1 → 10.7ms). Affects every aggregator/package-index/category page, not just crates.io. |
+| Harness bug: `d2_loop_test.py` duration compliance | **Found and fixed.** The lower bound was a bare `3000` while the pipeline clamps to `MIN_LOOP_SECONDS` and *then* shrinks by `CROSSFADE_MS` — so the single "non-compliant" clip was behaving exactly as designed. 141/141 compliant once corrected. More importantly the check was near-vacuous (3s–28s counts as a pass), hiding the real distribution: **median clip retains only 50.3% of its requested duration, 12.8% retain under 20%**. §5.3/§6.6 need that number, not the 99.1% pass rate. **Whether the short retention is correct behaviour on non-self-similar audio or a loop-detector defect is undecidable from stored data** — `audio-cache/` holds clips post-trim, so the source audio the detector actually saw is gone. The obvious mechanism (chroma self-similarity decaying with distance, biasing argmax early) was tested on the three longest surviving clips and is **not supported** (corr(similarity, time) = +0.383, −0.130, +0.140 — no systematic decay). The loop objective was deliberately *not* changed on a hypothesis that failed to confirm; doing so would invalidate all 130 cached clips and every §5.3 number. Settling this needs retaining pre-trim audio for a sample of future generations. |
+| S5 telemetry gaps (tier source, voluntary disable) | **Both closed.** `B_decision` now carries `categorySource`/`moodTier` for every page (via a new `onDiagnostics` hook on `runFeatureB`, deliberately *not* via handoff 2 — a handoff only exists on a transition, so that route would have measured a biased subset). `POPUP_SET_ENABLED` now emits `user_enabled_toggle`. `s5_telemetry_analysis.js` computes `tier_escalation_rate`, `llm_exposure_rate`, `tier_counts`, `disables_per_hour`, `disabled_rate`. **§3 S5 wording needs narrowing: this is a toggle-off rate, not an uninstall rate** — Chrome deletes the ring buffer on uninstall and `setUninstallURL` needs a network call the local-only guarantee forbids, so uninstall rate is not measurable in this build at all. |
+| S2 corpus (600 pages, annotated), user study, S5 deployment | Still do not exist — need human annotators / ethics approval / participants, none of which a coding session can substitute for |
