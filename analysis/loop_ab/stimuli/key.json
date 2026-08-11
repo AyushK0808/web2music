@@ -1,0 +1,248 @@
+{
+  "generated_at": "2026-08-10T23:43:20",
+  "seed": 20260810,
+  "target_lufs": -18.0,
+  "n_trials": 22,
+  "moods": [
+    "calm",
+    "curious",
+    "dark",
+    "energetic",
+    "focused",
+    "joyful",
+    "neutral",
+    "nostalgic",
+    "sad",
+    "tense",
+    "uplifting"
+  ],
+  "clips_without_a_known_mood": 6,
+  "skipped": [
+    {
+      "file": "8412854cdd8c46289ba57097a40eaf588aec52cd0d9052d763894b3a160a76de.ogg",
+      "reason": "too short to split into a pair"
+    }
+  ],
+  "trials": [
+    {
+      "trial": 0,
+      "mood": "calm",
+      "source_clip": "32ef8ad8bb33927059f2f13002e91e81e3bda057ede82c8ffa5f552ae5d1b20c",
+      "a": "trial-000-a.ogg",
+      "b": "trial-000-b.ogg",
+      "answer": "a",
+      "duration_ms": 10300,
+      "loop_length_ms": 5175
+    },
+    {
+      "trial": 1,
+      "mood": "calm",
+      "source_clip": "2965f1ce0eeeb2ca579bdf45bcee4728bca26ba85c496a16491e7c9b0e0919bb",
+      "a": "trial-001-a.ogg",
+      "b": "trial-001-b.ogg",
+      "answer": "b",
+      "duration_ms": 18940,
+      "loop_length_ms": 9495
+    },
+    {
+      "trial": 2,
+      "mood": "curious",
+      "source_clip": "6d9230d1a540c96dfc0c0e41bba1283aa90a7c4948c355dcc9a67918c1a21503",
+      "a": "trial-002-a.ogg",
+      "b": "trial-002-b.ogg",
+      "answer": "b",
+      "duration_ms": 8300,
+      "loop_length_ms": 4175
+    },
+    {
+      "trial": 3,
+      "mood": "curious",
+      "source_clip": "ecc371ab51782136d6ad7385a467af3e2357c06a3ea37007445ad292e49988fb",
+      "a": "trial-003-a.ogg",
+      "b": "trial-003-b.ogg",
+      "answer": "b",
+      "duration_ms": 13852,
+      "loop_length_ms": 6951
+    },
+    {
+      "trial": 4,
+      "mood": "dark",
+      "source_clip": "d5b35587f2adf9d701208c3f53b9fbf77fb4e587721345983a7dc15f1bdf988d",
+      "a": "trial-004-a.ogg",
+      "b": "trial-004-b.ogg",
+      "answer": "b",
+      "duration_ms": 6908,
+      "loop_length_ms": 3479
+    },
+    {
+      "trial": 5,
+      "mood": "dark",
+      "source_clip": "2b24bd13b590a8a27715b266b4492606c535937627c550a08a4b535592dc6d6c",
+      "a": "trial-005-a.ogg",
+      "b": "trial-005-b.ogg",
+      "answer": "a",
+      "duration_ms": 5564,
+      "loop_length_ms": 2807
+    },
+    {
+      "trial": 6,
+      "mood": "energetic",
+      "source_clip": "f0720a74fda8d8d1aa459cd1847d2f9e579ed149717e31cdc89451519538a02b",
+      "a": "trial-006-a.ogg",
+      "b": "trial-006-b.ogg",
+      "answer": "a",
+      "duration_ms": 15308,
+      "loop_length_ms": 7679
+    },
+    {
+      "trial": 7,
+      "mood": "energetic",
+      "source_clip": "eae3e25161d3bbb3d617d39ae0a4c1ca2abf750ac4a6d7a46e12a94028853d50",
+      "a": "trial-007-a.ogg",
+      "b": "trial-007-b.ogg",
+      "answer": "b",
+      "duration_ms": 6412,
+      "loop_length_ms": 3231
+    },
+    {
+      "trial": 8,
+      "mood": "focused",
+      "source_clip": "9d4c5fd4bfbf5a18d3093c29240f89d5266fe2b865085d591c408b99ba970178",
+      "a": "trial-008-a.ogg",
+      "b": "trial-008-b.ogg",
+      "answer": "a",
+      "duration_ms": 10172,
+      "loop_length_ms": 5111
+    },
+    {
+      "trial": 9,
+      "mood": "focused",
+      "source_clip": "8c9e0678d562ef6ca6a078b5930fbc8963e61ac14198be7f2225ae58234eb85d",
+      "a": "trial-009-a.ogg",
+      "b": "trial-009-b.ogg",
+      "answer": "a",
+      "duration_ms": 9276,
+      "loop_length_ms": 4663
+    },
+    {
+      "trial": 10,
+      "mood": "joyful",
+      "source_clip": "44748a25ad8eeb7eca6c3d1ea29b6564fdbc554ee2c7fc60af7c6de772263913",
+      "a": "trial-010-a.ogg",
+      "b": "trial-010-b.ogg",
+      "answer": "b",
+      "duration_ms": 8220,
+      "loop_length_ms": 4135
+    },
+    {
+      "trial": 11,
+      "mood": "joyful",
+      "source_clip": "04fa44dfb1dc521c3bc44445a9f5eb01ba7ff373de91238249f2f44684d65f9a",
+      "a": "trial-011-a.ogg",
+      "b": "trial-011-b.ogg",
+      "answer": "a",
+      "duration_ms": 6668,
+      "loop_length_ms": 3359
+    },
+    {
+      "trial": 12,
+      "mood": "neutral",
+      "source_clip": "f7b5bf1588138a2290c9a5ef74526de487db840d0820214d2bbea670f5b39599",
+      "a": "trial-012-a.ogg",
+      "b": "trial-012-b.ogg",
+      "answer": "a",
+      "duration_ms": 19276,
+      "loop_length_ms": 9663
+    },
+    {
+      "trial": 13,
+      "mood": "neutral",
+      "source_clip": "bf10513b900d6b9b1182eb5da598a7a274c9c1f611737e9560f22350bd14ac21",
+      "a": "trial-013-a.ogg",
+      "b": "trial-013-b.ogg",
+      "answer": "a",
+      "duration_ms": 15724,
+      "loop_length_ms": 7887
+    },
+    {
+      "trial": 14,
+      "mood": "nostalgic",
+      "source_clip": "cbac8654928b6a101ee79890efc78fcbb1a0cbf865ffe0ab789f01313160f6a5",
+      "a": "trial-014-a.ogg",
+      "b": "trial-014-b.ogg",
+      "answer": "b",
+      "duration_ms": 17308,
+      "loop_length_ms": 8679
+    },
+    {
+      "trial": 15,
+      "mood": "nostalgic",
+      "source_clip": "a8636e9327a996284e6c9003f6d788d0c7579ad4fdce2807a23ea5c2b62c5193",
+      "a": "trial-015-a.ogg",
+      "b": "trial-015-b.ogg",
+      "answer": "a",
+      "duration_ms": 26844,
+      "loop_length_ms": 13447
+    },
+    {
+      "trial": 16,
+      "mood": "sad",
+      "source_clip": "d1d087cd514c16474c11e2ed15e7b78c9d4fe6842fcf47ca52dc0a31ae739360",
+      "a": "trial-016-a.ogg",
+      "b": "trial-016-b.ogg",
+      "answer": "a",
+      "duration_ms": 5788,
+      "loop_length_ms": 2919
+    },
+    {
+      "trial": 17,
+      "mood": "sad",
+      "source_clip": "79defe318b8ea5dd75b0ee695eb4147618e79c06ed308497337bd5bf303aab7a",
+      "a": "trial-017-a.ogg",
+      "b": "trial-017-b.ogg",
+      "answer": "a",
+      "duration_ms": 4908,
+      "loop_length_ms": 2479
+    },
+    {
+      "trial": 18,
+      "mood": "tense",
+      "source_clip": "2cbe9701b5790fae1100e7399b09f94c43ca82cca8e9e8f5df6f375af33cd79b",
+      "a": "trial-018-a.ogg",
+      "b": "trial-018-b.ogg",
+      "answer": "a",
+      "duration_ms": 21900,
+      "loop_length_ms": 10975
+    },
+    {
+      "trial": 19,
+      "mood": "tense",
+      "source_clip": "93414df8a17efeee7e14df09d4c3dd0d1e013cea39de39dc416a993ad0851e25",
+      "a": "trial-019-a.ogg",
+      "b": "trial-019-b.ogg",
+      "answer": "a",
+      "duration_ms": 15596,
+      "loop_length_ms": 7823
+    },
+    {
+      "trial": 20,
+      "mood": "uplifting",
+      "source_clip": "1a881090dfb8ef5eadb28864cce332b31df7acc5ca51f040c4c18de2827b1bdb",
+      "a": "trial-020-a.ogg",
+      "b": "trial-020-b.ogg",
+      "answer": "a",
+      "duration_ms": 12396,
+      "loop_length_ms": 6223
+    },
+    {
+      "trial": 21,
+      "mood": "uplifting",
+      "source_clip": "5691bf84af7cfd283682595f98a098720c557f1926a5b0c09945cb373b404218",
+      "a": "trial-021-a.ogg",
+      "b": "trial-021-b.ogg",
+      "answer": "a",
+      "duration_ms": 25308,
+      "loop_length_ms": 12679
+    }
+  ]
+}

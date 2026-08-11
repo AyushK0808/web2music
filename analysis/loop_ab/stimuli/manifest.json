@@ -1,0 +1,137 @@
+{
+  "n_trials": 22,
+  "trials": [
+    {
+      "trial": 0,
+      "a": "trial-000-a.ogg",
+      "b": "trial-000-b.ogg",
+      "duration_ms": 10300
+    },
+    {
+      "trial": 1,
+      "a": "trial-001-a.ogg",
+      "b": "trial-001-b.ogg",
+      "duration_ms": 18940
+    },
+    {
+      "trial": 2,
+      "a": "trial-002-a.ogg",
+      "b": "trial-002-b.ogg",
+      "duration_ms": 8300
+    },
+    {
+      "trial": 3,
+      "a": "trial-003-a.ogg",
+      "b": "trial-003-b.ogg",
+      "duration_ms": 13852
+    },
+    {
+      "trial": 4,
+      "a": "trial-004-a.ogg",
+      "b": "trial-004-b.ogg",
+      "duration_ms": 6908
+    },
+    {
+      "trial": 5,
+      "a": "trial-005-a.ogg",
+      "b": "trial-005-b.ogg",
+      "duration_ms": 5564
+    },
+    {
+      "trial": 6,
+      "a": "trial-006-a.ogg",
+      "b": "trial-006-b.ogg",
+      "duration_ms": 15308
+    },
+    {
+      "trial": 7,
+      "a": "trial-007-a.ogg",
+      "b": "trial-007-b.ogg",
+      "duration_ms": 6412
+    },
+    {
+      "trial": 8,
+      "a": "trial-008-a.ogg",
+      "b": "trial-008-b.ogg",
+      "duration_ms": 10172
+    },
+    {
+      "trial": 9,
+      "a": "trial-009-a.ogg",
+      "b": "trial-009-b.ogg",
+      "duration_ms": 9276
+    },
+    {
+      "trial": 10,
+      "a": "trial-010-a.ogg",
+      "b": "trial-010-b.ogg",
+      "duration_ms": 8220
+    },
+    {
+      "trial": 11,
+      "a": "trial-011-a.ogg",
+      "b": "trial-011-b.ogg",
+      "duration_ms": 6668
+    },
+    {
+      "trial": 12,
+      "a": "trial-012-a.ogg",
+      "b": "trial-012-b.ogg",
+      "duration_ms": 19276
+    },
+    {
+      "trial": 13,
+      "a": "trial-013-a.ogg",
+      "b": "trial-013-b.ogg",
+      "duration_ms": 15724
+    },
+    {
+      "trial": 14,
+      "a": "trial-014-a.ogg",
+      "b": "trial-014-b.ogg",
+      "duration_ms": 17308
+    },
+    {
+      "trial": 15,
+      "a": "trial-015-a.ogg",
+      "b": "trial-015-b.ogg",
+      "duration_ms": 26844
+    },
+    {
+      "trial": 16,
+      "a": "trial-016-a.ogg",
+      "b": "trial-016-b.ogg",
+      "duration_ms": 5788
+    },
+    {
+      "trial": 17,
+      "a": "trial-017-a.ogg",
+      "b": "trial-017-b.ogg",
+      "duration_ms": 4908
+    },
+    {
+      "trial": 18,
+      "a": "trial-018-a.ogg",
+      "b": "trial-018-b.ogg",
+      "duration_ms": 21900
+    },
+    {
+      "trial": 19,
+      "a": "trial-019-a.ogg",
+      "b": "trial-019-b.ogg",
+      "duration_ms": 15596
+    },
+    {
+      "trial": 20,
+      "a": "trial-020-a.ogg",
+      "b": "trial-020-b.ogg",
+      "duration_ms": 12396
+    },
+    {
+      "trial": 21,
+      "a": "trial-021-a.ogg",
+      "b": "trial-021-b.ogg",
+      "duration_ms": 25308
+    }
+  ]
+}
