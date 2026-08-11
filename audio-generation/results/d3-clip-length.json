@@ -1,0 +1,2479 @@
+{
+  "started_at": "2026-08-10T23:27:09",
+  "elapsed_s": 0.0,
+  "offline_source": "results/d2-loop.json",
+  "config": {
+    "durations": [
+      5,
+      10,
+      15,
+      20,
+      28
+    ],
+    "moods": [
+      "calm",
+      "focused",
+      "tense"
+    ],
+    "repeats": 3
+  },
+  "summary": {
+    "per_duration": {
+      "10": {
+        "n": 2,
+        "delivered_ms": {
+          "n": 2,
+          "min": 3246,
+          "p50": 6382,
+          "p95": 6382,
+          "max": 6382,
+          "mean": 4814.0,
+          "stdev": 2217.487
+        },
+        "duration_retention": {
+          "n": 2,
+          "min": 0.325,
+          "p50": 0.638,
+          "p95": 0.638,
+          "max": 0.638,
+          "mean": 0.482,
+          "stdev": 0.221
+        },
+        "seam_energy_delta_db": {
+          "n": 2,
+          "min": 1.16,
+          "p50": 5.62,
+          "p95": 5.62,
+          "max": 5.62,
+          "mean": 3.39,
+          "stdev": 3.154
+        },
+        "loop_cost": {
+          "n": 2,
+          "min": 21.442,
+          "p50": 52.836,
+          "p95": 52.836,
+          "max": 52.836,
+          "mean": 37.139,
+          "stdev": 22.199
+        },
+        "loops_per_minute": 9.4,
+        "wall_ms": {
+          "n": 0
+        },
+        "d3_generate_ms": {
+          "n": 0
+        }
+      },
+      "15": {
+        "n": 1,
+        "delivered_ms": {
+          "n": 1,
+          "min": 6382,
+          "p50": 6382,
+          "p95": 6382,
+          "max": 6382,
+          "mean": 6382.0,
+          "stdev": 0.0
+        },
+        "duration_retention": {
+          "n": 1,
+          "min": 0.425,
+          "p50": 0.425,
+          "p95": 0.425,
+          "max": 0.425,
+          "mean": 0.425,
+          "stdev": 0.0
+        },
+        "seam_energy_delta_db": {
+          "n": 1,
+          "min": 5.61,
+          "p50": 5.61,
+          "p95": 5.61,
+          "max": 5.61,
+          "mean": 5.61,
+          "stdev": 0.0
+        },
+        "loop_cost": {
+          "n": 1,
+          "min": 52.742,
+          "p50": 52.742,
+          "p95": 52.742,
+          "max": 52.742,
+          "mean": 52.742,
+          "stdev": 0.0
+        },
+        "loops_per_minute": 9.4,
+        "wall_ms": {
+          "n": 0
+        },
+        "d3_generate_ms": {
+          "n": 0
+        }
+      },
+      "20": {
+        "n": 1,
+        "delivered_ms": {
+          "n": 1,
+          "min": 10366,
+          "p50": 10366,
+          "p95": 10366,
+          "max": 10366,
+          "mean": 10366.0,
+          "stdev": 0.0
+        },
+        "duration_retention": {
+          "n": 1,
+          "min": 0.518,
+          "p50": 0.518,
+          "p95": 0.518,
+          "max": 0.518,
+          "mean": 0.518,
+          "stdev": 0.0
+        },
+        "seam_energy_delta_db": {
+          "n": 1,
+          "min": 10.6,
+          "p50": 10.6,
+          "p95": 10.6,
+          "max": 10.6,
+          "mean": 10.6,
+          "stdev": 0.0
+        },
+        "loop_cost": {
+          "n": 1,
+          "min": 61.354,
+          "p50": 61.354,
+          "p95": 61.354,
+          "max": 61.354,
+          "mean": 61.354,
+          "stdev": 0.0
+        },
+        "loops_per_minute": 5.79,
+        "wall_ms": {
+          "n": 0
+        },
+        "d3_generate_ms": {
+          "n": 0
+        }
+      },
+      "28": {
+        "n": 126,
+        "delivered_ms": {
+          "n": 126,
+          "min": 2958,
+          "p50": 13902,
+          "p95": 25934,
+          "max": 26894,
+          "mean": 13496.024,
+          "stdev": 7089.126
+        },
+        "duration_retention": {
+          "n": 126,
+          "min": 0.106,
+          "p50": 0.496,
+          "p95": 0.926,
+          "max": 0.961,
+          "mean": 0.482,
+          "stdev": 0.253
+        },
+        "seam_energy_delta_db": {
+          "n": 126,
+          "min": 0.09,
+          "p50": 2.64,
+          "p95": 10.57,
+          "max": 12.84,
+          "mean": 3.51,
+          "stdev": 3.116
+        },
+        "loop_cost": {
+          "n": 126,
+          "min": 0.225,
+          "p50": 12.471,
+          "p95": 73.186,
+          "max": 218.458,
+          "mean": 23.203,
+          "stdev": 31.443
+        },
+        "loops_per_minute": 4.32,
+        "wall_ms": {
+          "n": 0
+        },
+        "d3_generate_ms": {
+          "n": 0
+        }
+      }
+    },
+    "retention_fit": {
+      "n": 130,
+      "slope": 0.0005363988461642142,
+      "intercept": 0.46700833026302785,
+      "r": 0.005526049954111456
+    },
+    "delivered_fit": {
+      "n": 130,
+      "slope": 0.4882786369640819,
+      "intercept": -0.17405658647927247,
+      "r": 0.17730104652901094
+    },
+    "verdict": "retention is roughly flat in requested length \u2014 the detector keeps a constant fraction, so the choice is a straight latency/loop-frequency trade and the loop-cost column decides it."
+  },
+  "rows": [
+    {
+      "duration_seconds": 15,
+      "mood": "calm",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": true,
+      "quality": {
+        "duration_ms": 10670,
+        "duration_ratio": 0.711,
+        "post_energy_delta_db": -4.98,
+        "post_spectral_centroid_delta_hz": 191.7,
+        "lufs": -19.44,
+        "loop_cost": 28.0037488284911
+      }
+    },
+    {
+      "duration_seconds": 15,
+      "mood": "curious",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": true,
+      "quality": {
+        "duration_ms": 8766,
+        "duration_ratio": 0.584,
+        "post_energy_delta_db": -0.43,
+        "post_spectral_centroid_delta_hz": 999.9,
+        "lufs": -18.16,
+        "loop_cost": 2.943189596167009
+      }
+    },
+    {
+      "duration_seconds": 15,
+      "mood": "dark",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": true,
+      "quality": {
+        "duration_ms": 5294,
+        "duration_ratio": 0.353,
+        "post_energy_delta_db": -3.11,
+        "post_spectral_centroid_delta_hz": 113.2,
+        "lufs": -18.05,
+        "loop_cost": 35.24744994333207
+      }
+    },
+    {
+      "duration_seconds": 15,
+      "mood": "energetic",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": true,
+      "quality": {
+        "duration_ms": 8654,
+        "duration_ratio": 0.577,
+        "post_energy_delta_db": -0.63,
+        "post_spectral_centroid_delta_hz": 276.6,
+        "lufs": -20.63,
+        "loop_cost": 4.367922348047146
+      }
+    },
+    {
+      "duration_seconds": 15,
+      "mood": "focused",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": true,
+      "quality": {
+        "duration_ms": 10350,
+        "duration_ratio": 0.69,
+        "post_energy_delta_db": 2.31,
+        "post_spectral_centroid_delta_hz": 618.1,
+        "lufs": -18.28,
+        "loop_cost": 13.391304347826088
+      }
+    },
+    {
+      "duration_seconds": 15,
+      "mood": "joyful",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": true,
+      "quality": {
+        "duration_ms": 3198,
+        "duration_ratio": 0.213,
+        "post_energy_delta_db": -40.41,
+        "post_spectral_centroid_delta_hz": 1004.1,
+        "lufs": -20.97,
+        "loop_cost": 758.1613508442776
+      }
+    },
+    {
+      "duration_seconds": 15,
+      "mood": "neutral",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": true,
+      "quality": {
+        "duration_ms": 10542,
+        "duration_ratio": 0.703,
+        "post_energy_delta_db": 1.87,
+        "post_spectral_centroid_delta_hz": 561.5,
+        "lufs": -17.9,
+        "loop_cost": 10.643141718838931
+      }
+    },
+    {
+      "duration_seconds": 15,
+      "mood": "nostalgic",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": true,
+      "quality": {
+        "duration_ms": 11742,
+        "duration_ratio": 0.783,
+        "post_energy_delta_db": 0.43,
+        "post_spectral_centroid_delta_hz": 205.3,
+        "lufs": -17.94,
+        "loop_cost": 2.197240674501788
+      }
+    },
+    {
+      "duration_seconds": 15,
+      "mood": "sad",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": true,
+      "quality": {
+        "duration_ms": 5230,
+        "duration_ratio": 0.349,
+        "post_energy_delta_db": -4.27,
+        "post_spectral_centroid_delta_hz": 557.4,
+        "lufs": -18.97,
+        "loop_cost": 48.98661567877628
+      }
+    },
+    {
+      "duration_seconds": 15,
+      "mood": "tense",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": true,
+      "quality": {
+        "duration_ms": 6270,
+        "duration_ratio": 0.418,
+        "post_energy_delta_db": -17.09,
+        "post_spectral_centroid_delta_hz": 689.8,
+        "lufs": -17.32,
+        "loop_cost": 163.54066985645935
+      }
+    },
+    {
+      "duration_seconds": 15,
+      "mood": "uplifting",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": true,
+      "quality": {
+        "duration_ms": 8734,
+        "duration_ratio": 0.582,
+        "post_energy_delta_db": 2.15,
+        "post_spectral_centroid_delta_hz": 437.2,
+        "lufs": -18.1,
+        "loop_cost": 14.769864895809478
+      }
+    },
+    {
+      "duration_seconds": 10,
+      "mood": "focused",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 3246,
+        "duration_ratio": 0.325,
+        "post_energy_delta_db": -1.16,
+        "post_spectral_centroid_delta_hz": 762.9,
+        "lufs": -18.85,
+        "loop_cost": 21.441774491682068
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "calm",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 6750,
+        "duration_ratio": 0.241,
+        "post_energy_delta_db": -2.52,
+        "post_spectral_centroid_delta_hz": 1027.5,
+        "lufs": -18.34,
+        "loop_cost": 22.400000000000002
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "calm",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 18606,
+        "duration_ratio": 0.664,
+        "post_energy_delta_db": -0.93,
+        "post_spectral_centroid_delta_hz": 230.4,
+        "lufs": -17.31,
+        "loop_cost": 2.9990325701386653
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "calm",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 19854,
+        "duration_ratio": 0.709,
+        "post_energy_delta_db": -2.16,
+        "post_spectral_centroid_delta_hz": 1485.6,
+        "lufs": -17.63,
+        "loop_cost": 6.527651858567543
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "calm",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 18062,
+        "duration_ratio": 0.645,
+        "post_energy_delta_db": -0.44,
+        "post_spectral_centroid_delta_hz": 118.5,
+        "lufs": -18.09,
+        "loop_cost": 1.4616321559074301
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "calm",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 9374,
+        "duration_ratio": 0.335,
+        "post_energy_delta_db": -0.33,
+        "post_spectral_centroid_delta_hz": 695.5,
+        "lufs": -18.8,
+        "loop_cost": 2.11222530403243
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "calm",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 10350,
+        "duration_ratio": 0.37,
+        "post_energy_delta_db": -5.85,
+        "post_spectral_centroid_delta_hz": 893.9,
+        "lufs": -20.06,
+        "loop_cost": 33.91304347826087
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "calm",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 19822,
+        "duration_ratio": 0.708,
+        "post_energy_delta_db": 0.76,
+        "post_spectral_centroid_delta_hz": 326.7,
+        "lufs": -17.78,
+        "loop_cost": 2.300474220563011
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "calm",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 17662,
+        "duration_ratio": 0.631,
+        "post_energy_delta_db": 0.87,
+        "post_spectral_centroid_delta_hz": 967.2,
+        "lufs": -18.93,
+        "loop_cost": 2.9554976786320917
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "curious",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 4254,
+        "duration_ratio": 0.152,
+        "post_energy_delta_db": -1.39,
+        "post_spectral_centroid_delta_hz": 492.8,
+        "lufs": -22.29,
+        "loop_cost": 19.605077574047954
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "uplifting",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 12446,
+        "duration_ratio": 0.445,
+        "post_energy_delta_db": -2.14,
+        "post_spectral_centroid_delta_hz": 644.7,
+        "lufs": -18.1,
+        "loop_cost": 10.316567571910655
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "neutral",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 7902,
+        "duration_ratio": 0.282,
+        "post_energy_delta_db": -7.42,
+        "post_spectral_centroid_delta_hz": 317.9,
+        "lufs": -20.62,
+        "loop_cost": 56.34016704631739
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "energetic",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 4878,
+        "duration_ratio": 0.174,
+        "post_energy_delta_db": -5.95,
+        "post_spectral_centroid_delta_hz": 789.2,
+        "lufs": -21.88,
+        "loop_cost": 73.18573185731857
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "calm",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 16462,
+        "duration_ratio": 0.588,
+        "post_energy_delta_db": -2.45,
+        "post_spectral_centroid_delta_hz": 1173.9,
+        "lufs": -17.4,
+        "loop_cost": 8.929656177864173
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "energetic",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 16110,
+        "duration_ratio": 0.575,
+        "post_energy_delta_db": -4.93,
+        "post_spectral_centroid_delta_hz": 554.5,
+        "lufs": -18.5,
+        "loop_cost": 18.36126629422719
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "energetic",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 16334,
+        "duration_ratio": 0.583,
+        "post_energy_delta_db": -1.56,
+        "post_spectral_centroid_delta_hz": 276.3,
+        "lufs": -17.95,
+        "loop_cost": 5.730378351904004
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "focused",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 10830,
+        "duration_ratio": 0.387,
+        "post_energy_delta_db": -2.7,
+        "post_spectral_centroid_delta_hz": 1322.0,
+        "lufs": -17.8,
+        "loop_cost": 14.958448753462607
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "energetic",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 6174,
+        "duration_ratio": 0.221,
+        "post_energy_delta_db": 2.63,
+        "post_spectral_centroid_delta_hz": 130.1,
+        "lufs": -20.39,
+        "loop_cost": 25.558794946550044
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "energetic",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 5614,
+        "duration_ratio": 0.201,
+        "post_energy_delta_db": -5.01,
+        "post_spectral_centroid_delta_hz": 381.0,
+        "lufs": -14.25,
+        "loop_cost": 53.54470965443534
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "energetic",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 26142,
+        "duration_ratio": 0.934,
+        "post_energy_delta_db": -8.69,
+        "post_spectral_centroid_delta_hz": 50.2,
+        "lufs": -18.03,
+        "loop_cost": 19.94491622676153
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "energetic",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 25934,
+        "duration_ratio": 0.926,
+        "post_energy_delta_db": -2.56,
+        "post_spectral_centroid_delta_hz": 963.6,
+        "lufs": -19.13,
+        "loop_cost": 5.92272692218709
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "energetic",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 5614,
+        "duration_ratio": 0.201,
+        "post_energy_delta_db": 0.95,
+        "post_spectral_centroid_delta_hz": 95.5,
+        "lufs": -20.38,
+        "loop_cost": 10.15318845742786
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "energetic",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 6462,
+        "duration_ratio": 0.231,
+        "post_energy_delta_db": -9.13,
+        "post_spectral_centroid_delta_hz": 344.4,
+        "lufs": -14.32,
+        "loop_cost": 84.77251624883938
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "focused",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 11310,
+        "duration_ratio": 0.404,
+        "post_energy_delta_db": -12.09,
+        "post_spectral_centroid_delta_hz": 83.3,
+        "lufs": -18.39,
+        "loop_cost": 64.13793103448276
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "focused",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 23694,
+        "duration_ratio": 0.846,
+        "post_energy_delta_db": 3.66,
+        "post_spectral_centroid_delta_hz": 170.9,
+        "lufs": -18.02,
+        "loop_cost": 9.268169156748545
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "focused",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 6622,
+        "duration_ratio": 0.236,
+        "post_energy_delta_db": -5.57,
+        "post_spectral_centroid_delta_hz": 268.7,
+        "lufs": -17.78,
+        "loop_cost": 50.468136514648144
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "focused",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 9326,
+        "duration_ratio": 0.333,
+        "post_energy_delta_db": -2.81,
+        "post_spectral_centroid_delta_hz": 68.0,
+        "lufs": -14.86,
+        "loop_cost": 18.078490242333263
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "focused",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 10222,
+        "duration_ratio": 0.365,
+        "post_energy_delta_db": -12.21,
+        "post_spectral_centroid_delta_hz": 261.7,
+        "lufs": -16.11,
+        "loop_cost": 71.66894932498533
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "focused",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 14846,
+        "duration_ratio": 0.53,
+        "post_energy_delta_db": 3.63,
+        "post_spectral_centroid_delta_hz": 1013.4,
+        "lufs": -18.09,
+        "loop_cost": 14.670618348376667
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "focused",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 7950,
+        "duration_ratio": 0.284,
+        "post_energy_delta_db": -4.24,
+        "post_spectral_centroid_delta_hz": 177.7,
+        "lufs": -17.4,
+        "loop_cost": 32.0
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "focused",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 17982,
+        "duration_ratio": 0.642,
+        "post_energy_delta_db": -3.88,
+        "post_spectral_centroid_delta_hz": 244.3,
+        "lufs": -17.28,
+        "loop_cost": 12.94627961294628
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "focused",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 4318,
+        "duration_ratio": 0.154,
+        "post_energy_delta_db": -2.4,
+        "post_spectral_centroid_delta_hz": 807.3,
+        "lufs": -19.12,
+        "loop_cost": 33.348772579898096
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "joyful",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 12190,
+        "duration_ratio": 0.435,
+        "post_energy_delta_db": -1.9,
+        "post_spectral_centroid_delta_hz": 1655.5,
+        "lufs": -18.06,
+        "loop_cost": 9.351927809680065
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "joyful",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 6718,
+        "duration_ratio": 0.24,
+        "post_energy_delta_db": -4.15,
+        "post_spectral_centroid_delta_hz": 769.5,
+        "lufs": -16.38,
+        "loop_cost": 37.0646025602858
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "joyful",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 6318,
+        "duration_ratio": 0.226,
+        "post_energy_delta_db": -1.31,
+        "post_spectral_centroid_delta_hz": 457.0,
+        "lufs": -18.62,
+        "loop_cost": 12.440645773979108
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "joyful",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 5758,
+        "duration_ratio": 0.206,
+        "post_energy_delta_db": -10.13,
+        "post_spectral_centroid_delta_hz": 1075.4,
+        "lufs": -23.91,
+        "loop_cost": 105.55748523792984
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "joyful",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 24014,
+        "duration_ratio": 0.858,
+        "post_energy_delta_db": -8.43,
+        "post_spectral_centroid_delta_hz": 1021.2,
+        "lufs": -18.12,
+        "loop_cost": 21.062713417173313
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "joyful",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 13406,
+        "duration_ratio": 0.479,
+        "post_energy_delta_db": 1.83,
+        "post_spectral_centroid_delta_hz": 771.4,
+        "lufs": -18.54,
+        "loop_cost": 8.190362524242877
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "joyful",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 23998,
+        "duration_ratio": 0.857,
+        "post_energy_delta_db": 3.55,
+        "post_spectral_centroid_delta_hz": 909.7,
+        "lufs": -17.95,
+        "loop_cost": 8.875739644970412
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "joyful",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 4494,
+        "duration_ratio": 0.161,
+        "post_energy_delta_db": 0.66,
+        "post_spectral_centroid_delta_hz": 1415.8,
+        "lufs": -23.51,
+        "loop_cost": 8.811748998664887
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "joyful",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 8270,
+        "duration_ratio": 0.295,
+        "post_energy_delta_db": 0.75,
+        "post_spectral_centroid_delta_hz": 751.9,
+        "lufs": -21.98,
+        "loop_cost": 5.441354292623942
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "sad",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 5742,
+        "duration_ratio": 0.205,
+        "post_energy_delta_db": -2.93,
+        "post_spectral_centroid_delta_hz": 689.1,
+        "lufs": -18.12,
+        "loop_cost": 30.616509926854757
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "sad",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 17230,
+        "duration_ratio": 0.615,
+        "post_energy_delta_db": -1.56,
+        "post_spectral_centroid_delta_hz": 1326.6,
+        "lufs": -18.22,
+        "loop_cost": 5.43238537434707
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "sad",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 4958,
+        "duration_ratio": 0.177,
+        "post_energy_delta_db": -0.52,
+        "post_spectral_centroid_delta_hz": 336.5,
+        "lufs": -18.27,
+        "loop_cost": 6.292860024203308
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "sad",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 17742,
+        "duration_ratio": 0.634,
+        "post_energy_delta_db": 0.39,
+        "post_spectral_centroid_delta_hz": 887.5,
+        "lufs": -17.75,
+        "loop_cost": 1.3189042948934733
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "sad",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 24030,
+        "duration_ratio": 0.858,
+        "post_energy_delta_db": -0.09,
+        "post_spectral_centroid_delta_hz": 1310.8,
+        "lufs": -18.2,
+        "loop_cost": 0.2247191011235955
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "sad",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 26574,
+        "duration_ratio": 0.949,
+        "post_energy_delta_db": -3.51,
+        "post_spectral_centroid_delta_hz": 648.5,
+        "lufs": -17.85,
+        "loop_cost": 7.92503951230526
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "sad",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 5838,
+        "duration_ratio": 0.208,
+        "post_energy_delta_db": 1.99,
+        "post_spectral_centroid_delta_hz": 172.9,
+        "lufs": -18.47,
+        "loop_cost": 20.452209660842755
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "sad",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 13902,
+        "duration_ratio": 0.496,
+        "post_energy_delta_db": 0.5,
+        "post_spectral_centroid_delta_hz": 699.5,
+        "lufs": -18.43,
+        "loop_cost": 2.1579628830384117
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "dark",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 17774,
+        "duration_ratio": 0.635,
+        "post_energy_delta_db": 4.01,
+        "post_spectral_centroid_delta_hz": 964.5,
+        "lufs": -17.88,
+        "loop_cost": 13.536626533138291
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "sad",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 21166,
+        "duration_ratio": 0.756,
+        "post_energy_delta_db": -2.83,
+        "post_spectral_centroid_delta_hz": 839.1,
+        "lufs": -18.22,
+        "loop_cost": 8.022299914957951
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "dark",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 8382,
+        "duration_ratio": 0.299,
+        "post_energy_delta_db": -0.23,
+        "post_spectral_centroid_delta_hz": 716.2,
+        "lufs": -15.65,
+        "loop_cost": 1.6463851109520402
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "dark",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 20318,
+        "duration_ratio": 0.726,
+        "post_energy_delta_db": 1.61,
+        "post_spectral_centroid_delta_hz": 15.3,
+        "lufs": -18.13,
+        "loop_cost": 4.754404961118221
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "dark",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 6958,
+        "duration_ratio": 0.248,
+        "post_energy_delta_db": -12.84,
+        "post_spectral_centroid_delta_hz": 671.9,
+        "lufs": -21.88,
+        "loop_cost": 110.72147168726644
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "dark",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 5614,
+        "duration_ratio": 0.201,
+        "post_energy_delta_db": 2.07,
+        "post_spectral_centroid_delta_hz": 161.0,
+        "lufs": -18.01,
+        "loop_cost": 22.123263270395437
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "dark",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 5022,
+        "duration_ratio": 0.179,
+        "post_energy_delta_db": -0.49,
+        "post_spectral_centroid_delta_hz": 507.5,
+        "lufs": -22.54,
+        "loop_cost": 5.854241338112305
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "dark",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 6382,
+        "duration_ratio": 0.228,
+        "post_energy_delta_db": -1.58,
+        "post_spectral_centroid_delta_hz": 160.2,
+        "lufs": -15.56,
+        "loop_cost": 14.85427765590724
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "dark",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 19934,
+        "duration_ratio": 0.712,
+        "post_energy_delta_db": 3.25,
+        "post_spectral_centroid_delta_hz": 375.7,
+        "lufs": -17.99,
+        "loop_cost": 9.78228152904585
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "dark",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 25966,
+        "duration_ratio": 0.927,
+        "post_energy_delta_db": -9.43,
+        "post_spectral_centroid_delta_hz": 292.2,
+        "lufs": -17.86,
+        "loop_cost": 21.790033120234153
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "nostalgic",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 3470,
+        "duration_ratio": 0.124,
+        "post_energy_delta_db": -9.9,
+        "post_spectral_centroid_delta_hz": 458.5,
+        "lufs": -23.22,
+        "loop_cost": 171.18155619596544
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "nostalgic",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 17310,
+        "duration_ratio": 0.618,
+        "post_energy_delta_db": -4.72,
+        "post_spectral_centroid_delta_hz": 536.8,
+        "lufs": -16.59,
+        "loop_cost": 16.36048526863085
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "nostalgic",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 17358,
+        "duration_ratio": 0.62,
+        "post_energy_delta_db": -1.48,
+        "post_spectral_centroid_delta_hz": 215.1,
+        "lufs": -17.06,
+        "loop_cost": 5.115796750777739
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "nostalgic",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 25854,
+        "duration_ratio": 0.923,
+        "post_energy_delta_db": 1.72,
+        "post_spectral_centroid_delta_hz": 319.0,
+        "lufs": -18.19,
+        "loop_cost": 3.9916453933627287
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "nostalgic",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 4686,
+        "duration_ratio": 0.167,
+        "post_energy_delta_db": -0.98,
+        "post_spectral_centroid_delta_hz": 209.2,
+        "lufs": -16.07,
+        "loop_cost": 12.548015364916774
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "nostalgic",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 3870,
+        "duration_ratio": 0.138,
+        "post_energy_delta_db": -6.39,
+        "post_spectral_centroid_delta_hz": 919.3,
+        "lufs": -15.3,
+        "loop_cost": 99.06976744186045
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "nostalgic",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 4638,
+        "duration_ratio": 0.166,
+        "post_energy_delta_db": -4.94,
+        "post_spectral_centroid_delta_hz": 780.0,
+        "lufs": -18.3,
+        "loop_cost": 63.90685640362226
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "nostalgic",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 26894,
+        "duration_ratio": 0.961,
+        "post_energy_delta_db": 0.34,
+        "post_spectral_centroid_delta_hz": 697.0,
+        "lufs": -18.04,
+        "loop_cost": 0.7585335018963338
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "nostalgic",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 16334,
+        "duration_ratio": 0.583,
+        "post_energy_delta_db": -1.91,
+        "post_spectral_centroid_delta_hz": 109.9,
+        "lufs": -17.93,
+        "loop_cost": 7.016040161626056
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "curious",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 23998,
+        "duration_ratio": 0.857,
+        "post_energy_delta_db": -0.35,
+        "post_spectral_centroid_delta_hz": 485.1,
+        "lufs": -18.0,
+        "loop_cost": 0.8750729227435619
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "curious",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 8350,
+        "duration_ratio": 0.298,
+        "post_energy_delta_db": 0.43,
+        "post_spectral_centroid_delta_hz": 35.8,
+        "lufs": -20.51,
+        "loop_cost": 3.089820359281437
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "curious",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 21534,
+        "duration_ratio": 0.769,
+        "post_energy_delta_db": 2.64,
+        "post_spectral_centroid_delta_hz": 427.2,
+        "lufs": -18.21,
+        "loop_cost": 7.355809417665088
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "curious",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 2958,
+        "duration_ratio": 0.106,
+        "post_energy_delta_db": -10.77,
+        "post_spectral_centroid_delta_hz": 522.0,
+        "lufs": -14.73,
+        "loop_cost": 218.45841784989858
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "curious",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 13902,
+        "duration_ratio": 0.496,
+        "post_energy_delta_db": 3.56,
+        "post_spectral_centroid_delta_hz": 329.5,
+        "lufs": -17.68,
+        "loop_cost": 15.36469572723349
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "curious",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 6478,
+        "duration_ratio": 0.231,
+        "post_energy_delta_db": 2.69,
+        "post_spectral_centroid_delta_hz": 866.5,
+        "lufs": -20.77,
+        "loop_cost": 24.915097252238343
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "curious",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 15822,
+        "duration_ratio": 0.565,
+        "post_energy_delta_db": 1.5,
+        "post_spectral_centroid_delta_hz": 102.1,
+        "lufs": -18.59,
+        "loop_cost": 5.688282138794084
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "curious",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 4510,
+        "duration_ratio": 0.161,
+        "post_energy_delta_db": 2.08,
+        "post_spectral_centroid_delta_hz": 1116.7,
+        "lufs": -20.63,
+        "loop_cost": 27.671840354767188
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "curious",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 14350,
+        "duration_ratio": 0.512,
+        "post_energy_delta_db": -1.42,
+        "post_spectral_centroid_delta_hz": 976.6,
+        "lufs": -18.17,
+        "loop_cost": 5.937282229965157
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "tense",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 23790,
+        "duration_ratio": 0.85,
+        "post_energy_delta_db": 1.22,
+        "post_spectral_centroid_delta_hz": 320.4,
+        "lufs": -18.03,
+        "loop_cost": 3.076923076923077
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "tense",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 22510,
+        "duration_ratio": 0.804,
+        "post_energy_delta_db": 0.52,
+        "post_spectral_centroid_delta_hz": 466.0,
+        "lufs": -19.76,
+        "loop_cost": 1.386050644158152
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "tense",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 16670,
+        "duration_ratio": 0.595,
+        "post_energy_delta_db": -3.35,
+        "post_spectral_centroid_delta_hz": 197.4,
+        "lufs": -20.78,
+        "loop_cost": 12.05758848230354
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "tense",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 22046,
+        "duration_ratio": 0.787,
+        "post_energy_delta_db": 0.76,
+        "post_spectral_centroid_delta_hz": 28.9,
+        "lufs": -18.32,
+        "loop_cost": 2.0684024312800506
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "tense",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 4990,
+        "duration_ratio": 0.178,
+        "post_energy_delta_db": -3.23,
+        "post_spectral_centroid_delta_hz": 712.1,
+        "lufs": -27.68,
+        "loop_cost": 38.8376753507014
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "tense",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 8574,
+        "duration_ratio": 0.306,
+        "post_energy_delta_db": 2.26,
+        "post_spectral_centroid_delta_hz": 233.0,
+        "lufs": -18.04,
+        "loop_cost": 15.815255423372987
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "tense",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 4478,
+        "duration_ratio": 0.16,
+        "post_energy_delta_db": -4.3,
+        "post_spectral_centroid_delta_hz": 315.7,
+        "lufs": -13.32,
+        "loop_cost": 57.615006699419375
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "tense",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 10350,
+        "duration_ratio": 0.37,
+        "post_energy_delta_db": -3.72,
+        "post_spectral_centroid_delta_hz": 138.0,
+        "lufs": -17.29,
+        "loop_cost": 21.565217391304348
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "uplifting",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 4126,
+        "duration_ratio": 0.147,
+        "post_energy_delta_db": -1.57,
+        "post_spectral_centroid_delta_hz": 485.2,
+        "lufs": -13.33,
+        "loop_cost": 22.830828889966067
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "tense",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 21950,
+        "duration_ratio": 0.784,
+        "post_energy_delta_db": 0.73,
+        "post_spectral_centroid_delta_hz": 5.7,
+        "lufs": -18.46,
+        "loop_cost": 1.9954441913439636
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "uplifting",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 9582,
+        "duration_ratio": 0.342,
+        "post_energy_delta_db": -6.73,
+        "post_spectral_centroid_delta_hz": 1131.9,
+        "lufs": -21.16,
+        "loop_cost": 42.14151534126487
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "uplifting",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 16350,
+        "duration_ratio": 0.584,
+        "post_energy_delta_db": -2.93,
+        "post_spectral_centroid_delta_hz": 250.8,
+        "lufs": -17.11,
+        "loop_cost": 10.752293577981652
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "uplifting",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 9294,
+        "duration_ratio": 0.332,
+        "post_energy_delta_db": -11.01,
+        "post_spectral_centroid_delta_hz": 410.8,
+        "lufs": -16.73,
+        "loop_cost": 71.078114912847
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "uplifting",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 17166,
+        "duration_ratio": 0.613,
+        "post_energy_delta_db": 0.18,
+        "post_spectral_centroid_delta_hz": 422.9,
+        "lufs": -18.43,
+        "loop_cost": 0.6291506466270534
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "uplifting",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 6654,
+        "duration_ratio": 0.238,
+        "post_energy_delta_db": 0.42,
+        "post_spectral_centroid_delta_hz": 760.3,
+        "lufs": -17.91,
+        "loop_cost": 3.787195671776375
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "uplifting",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 19262,
+        "duration_ratio": 0.688,
+        "post_energy_delta_db": -7.86,
+        "post_spectral_centroid_delta_hz": 942.2,
+        "lufs": -19.15,
+        "loop_cost": 24.48343889523414
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "uplifting",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 25182,
+        "duration_ratio": 0.899,
+        "post_energy_delta_db": -2.59,
+        "post_spectral_centroid_delta_hz": 209.8,
+        "lufs": -17.98,
+        "loop_cost": 6.1710745770788655
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "uplifting",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 25358,
+        "duration_ratio": 0.906,
+        "post_energy_delta_db": -8.79,
+        "post_spectral_centroid_delta_hz": 442.5,
+        "lufs": -17.72,
+        "loop_cost": 20.79817020269737
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "neutral",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 15774,
+        "duration_ratio": 0.563,
+        "post_energy_delta_db": -3.92,
+        "post_spectral_centroid_delta_hz": 1363.6,
+        "lufs": -17.57,
+        "loop_cost": 14.910612400152148
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "neutral",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 23614,
+        "duration_ratio": 0.843,
+        "post_energy_delta_db": 2.2,
+        "post_spectral_centroid_delta_hz": 1179.0,
+        "lufs": -17.79,
+        "loop_cost": 5.589904294062845
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "neutral",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 7934,
+        "duration_ratio": 0.283,
+        "post_energy_delta_db": -2.77,
+        "post_spectral_centroid_delta_hz": 884.5,
+        "lufs": -17.55,
+        "loop_cost": 20.947819510965466
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "neutral",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 7998,
+        "duration_ratio": 0.286,
+        "post_energy_delta_db": -3.72,
+        "post_spectral_centroid_delta_hz": 202.3,
+        "lufs": -17.95,
+        "loop_cost": 27.90697674418605
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "neutral",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 18510,
+        "duration_ratio": 0.661,
+        "post_energy_delta_db": -0.72,
+        "post_spectral_centroid_delta_hz": 609.0,
+        "lufs": -17.71,
+        "loop_cost": 2.3338735818476497
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "neutral",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 19326,
+        "duration_ratio": 0.69,
+        "post_energy_delta_db": 1.71,
+        "post_spectral_centroid_delta_hz": 558.4,
+        "lufs": -17.68,
+        "loop_cost": 5.308910276311704
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "neutral",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 8910,
+        "duration_ratio": 0.318,
+        "post_energy_delta_db": -3.03,
+        "post_spectral_centroid_delta_hz": 789.2,
+        "lufs": -18.3,
+        "loop_cost": 20.404040404040405
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "neutral",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 11998,
+        "duration_ratio": 0.428,
+        "post_energy_delta_db": -4.11,
+        "post_spectral_centroid_delta_hz": 306.6,
+        "lufs": -16.67,
+        "loop_cost": 20.55342557092849
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "neutral",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 14766,
+        "duration_ratio": 0.527,
+        "post_energy_delta_db": -2.49,
+        "post_spectral_centroid_delta_hz": 538.8,
+        "lufs": -18.77,
+        "loop_cost": 10.117838277123122
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "focused",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 20014,
+        "duration_ratio": 0.715,
+        "post_energy_delta_db": 2.73,
+        "post_spectral_centroid_delta_hz": 395.8,
+        "lufs": -18.27,
+        "loop_cost": 8.184271010292795
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "calm",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 10366,
+        "duration_ratio": 0.37,
+        "post_energy_delta_db": -10.57,
+        "post_spectral_centroid_delta_hz": 758.8,
+        "lufs": -17.16,
+        "loop_cost": 61.1807833301177
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "energetic",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 20030,
+        "duration_ratio": 0.715,
+        "post_energy_delta_db": 0.15,
+        "post_spectral_centroid_delta_hz": 652.4,
+        "lufs": -18.08,
+        "loop_cost": 0.4493260109835247
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "focused",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 15422,
+        "duration_ratio": 0.551,
+        "post_energy_delta_db": -2.64,
+        "post_spectral_centroid_delta_hz": 925.7,
+        "lufs": -18.81,
+        "loop_cost": 10.271041369472183
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "focused",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 3246,
+        "duration_ratio": 0.116,
+        "post_energy_delta_db": -1.21,
+        "post_spectral_centroid_delta_hz": 764.4,
+        "lufs": -19.09,
+        "loop_cost": 22.365988909426985
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "joyful",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 10782,
+        "duration_ratio": 0.385,
+        "post_energy_delta_db": 2.28,
+        "post_spectral_centroid_delta_hz": 417.0,
+        "lufs": -18.41,
+        "loop_cost": 12.687813021702837
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "sad",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 17918,
+        "duration_ratio": 0.64,
+        "post_energy_delta_db": 3.72,
+        "post_spectral_centroid_delta_hz": 168.0,
+        "lufs": -19.02,
+        "loop_cost": 12.456747404844291
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "dark",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 14654,
+        "duration_ratio": 0.523,
+        "post_energy_delta_db": -6.98,
+        "post_spectral_centroid_delta_hz": 1645.4,
+        "lufs": -17.18,
+        "loop_cost": 28.579227514671768
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "nostalgic",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 9918,
+        "duration_ratio": 0.354,
+        "post_energy_delta_db": -0.92,
+        "post_spectral_centroid_delta_hz": 806.4,
+        "lufs": -18.52,
+        "loop_cost": 5.565638233514822
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "curious",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 6046,
+        "duration_ratio": 0.216,
+        "post_energy_delta_db": 0.99,
+        "post_spectral_centroid_delta_hz": 1151.6,
+        "lufs": -19.48,
+        "loop_cost": 9.824677472709228
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "tense",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 15646,
+        "duration_ratio": 0.559,
+        "post_energy_delta_db": -7.92,
+        "post_spectral_centroid_delta_hz": 569.0,
+        "lufs": -18.63,
+        "loop_cost": 30.371980058800972
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "uplifting",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 16317,
+        "duration_ratio": 0.583,
+        "post_energy_delta_db": 3.22,
+        "post_spectral_centroid_delta_hz": 681.7,
+        "lufs": -17.7,
+        "loop_cost": 11.840411840411841
+      }
+    },
+    {
+      "duration_seconds": 10,
+      "mood": "calm",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 6382,
+        "duration_ratio": 0.638,
+        "post_energy_delta_db": -5.62,
+        "post_spectral_centroid_delta_hz": 74.5,
+        "lufs": -16.79,
+        "loop_cost": 52.83610153556879
+      }
+    },
+    {
+      "duration_seconds": 15,
+      "mood": "calm",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 6382,
+        "duration_ratio": 0.425,
+        "post_energy_delta_db": -5.61,
+        "post_spectral_centroid_delta_hz": 72.6,
+        "lufs": -16.1,
+        "loop_cost": 52.742087120025076
+      }
+    },
+    {
+      "duration_seconds": 20,
+      "mood": "calm",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 10366,
+        "duration_ratio": 0.518,
+        "post_energy_delta_db": -10.6,
+        "post_spectral_centroid_delta_hz": 760.9,
+        "lufs": -16.98,
+        "loop_cost": 61.35442793748794
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "focused",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 3134,
+        "duration_ratio": 0.112,
+        "post_energy_delta_db": 3.3,
+        "post_spectral_centroid_delta_hz": 334.7,
+        "lufs": -17.58,
+        "loop_cost": 63.178047223994895
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "sad",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 5150,
+        "duration_ratio": 0.184,
+        "post_energy_delta_db": 0.77,
+        "post_spectral_centroid_delta_hz": 945.8,
+        "lufs": -21.06,
+        "loop_cost": 8.970873786407767
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "neutral",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 9806,
+        "duration_ratio": 0.35,
+        "post_energy_delta_db": -6.14,
+        "post_spectral_centroid_delta_hz": 588.3,
+        "lufs": -18.31,
+        "loop_cost": 37.56883540689373
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "calm",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 18990,
+        "duration_ratio": 0.678,
+        "post_energy_delta_db": -2.06,
+        "post_spectral_centroid_delta_hz": 208.6,
+        "lufs": -17.76,
+        "loop_cost": 6.5086887835703005
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "neutral",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 14078,
+        "duration_ratio": 0.503,
+        "post_energy_delta_db": -2.66,
+        "post_spectral_centroid_delta_hz": 1305.2,
+        "lufs": -18.45,
+        "loop_cost": 11.336837618979969
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "dark",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 19582,
+        "duration_ratio": 0.699,
+        "post_energy_delta_db": -4.07,
+        "post_spectral_centroid_delta_hz": 634.6,
+        "lufs": -17.51,
+        "loop_cost": 12.47063629864161
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "focused",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 26094,
+        "duration_ratio": 0.932,
+        "post_energy_delta_db": 2.74,
+        "post_spectral_centroid_delta_hz": 954.3,
+        "lufs": -18.37,
+        "loop_cost": 6.300298919291792
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "focused",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 6078,
+        "duration_ratio": 0.217,
+        "post_energy_delta_db": -1.16,
+        "post_spectral_centroid_delta_hz": 406.6,
+        "lufs": -14.54,
+        "loop_cost": 11.451135241855873
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "energetic",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 15358,
+        "duration_ratio": 0.548,
+        "post_energy_delta_db": -9.86,
+        "post_spectral_centroid_delta_hz": 812.9,
+        "lufs": -17.91,
+        "loop_cost": 38.520640708425574
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "nostalgic",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 26510,
+        "duration_ratio": 0.947,
+        "post_energy_delta_db": -12.71,
+        "post_spectral_centroid_delta_hz": 682.4,
+        "lufs": -17.89,
+        "loop_cost": 28.766503206337234
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "focused",
+      "iteration": 0,
+      "wall_ms": null,
+      "error": null,
+      "is_fallback": false,
+      "quality": {
+        "duration_ms": 15278,
+        "duration_ratio": 0.546,
+        "post_energy_delta_db": -4.41,
+        "post_spectral_centroid_delta_hz": 1361.1,
+        "lufs": -17.9,
+        "loop_cost": 17.319020814242702
+      }
+    }
+  ]
+}

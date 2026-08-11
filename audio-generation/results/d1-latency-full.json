@@ -1,0 +1,1861 @@
+{
+  "started_at": "2026-08-09T20:05:29.974500+00:00",
+  "base_url": "http://127.0.0.1:8000",
+  "config": {
+    "sections": [
+      "fallback",
+      "warm",
+      "cold",
+      "duration",
+      "concurrency"
+    ],
+    "moods": [
+      "calm",
+      "energetic",
+      "focused",
+      "joyful",
+      "sad",
+      "dark",
+      "nostalgic",
+      "curious",
+      "tense",
+      "uplifting",
+      "neutral"
+    ],
+    "repeats": 3,
+    "duration": 28,
+    "durations": [
+      5,
+      10,
+      15,
+      20,
+      28
+    ],
+    "concurrency_levels": [
+      1,
+      2,
+      4,
+      8
+    ]
+  },
+  "sections": {
+    "fallback": [
+      {
+        "wall_ms": 4.7,
+        "error": null,
+        "mood": "calm",
+        "iteration": 0,
+        "cache": null,
+        "is_fallback": true,
+        "timings": {},
+        "audio_url": "http://127.0.0.1:8000/fallback-clips/calm.ogg"
+      },
+      {
+        "wall_ms": 23.5,
+        "error": null,
+        "mood": "calm",
+        "iteration": 1,
+        "cache": null,
+        "is_fallback": true,
+        "timings": {},
+        "audio_url": "http://127.0.0.1:8000/fallback-clips/calm.ogg"
+      },
+      {
+        "wall_ms": 4.6,
+        "error": null,
+        "mood": "calm",
+        "iteration": 2,
+        "cache": null,
+        "is_fallback": true,
+        "timings": {},
+        "audio_url": "http://127.0.0.1:8000/fallback-clips/calm.ogg"
+      },
+      {
+        "wall_ms": 152.8,
+        "error": null,
+        "mood": "energetic",
+        "iteration": 0,
+        "cache": null,
+        "is_fallback": true,
+        "timings": {},
+        "audio_url": "http://127.0.0.1:8000/fallback-clips/energetic.ogg"
+      },
+      {
+        "wall_ms": 5.1,
+        "error": null,
+        "mood": "energetic",
+        "iteration": 1,
+        "cache": null,
+        "is_fallback": true,
+        "timings": {},
+        "audio_url": "http://127.0.0.1:8000/fallback-clips/energetic.ogg"
+      },
+      {
+        "wall_ms": 25.4,
+        "error": null,
+        "mood": "energetic",
+        "iteration": 2,
+        "cache": null,
+        "is_fallback": true,
+        "timings": {},
+        "audio_url": "http://127.0.0.1:8000/fallback-clips/energetic.ogg"
+      },
+      {
+        "wall_ms": 7.4,
+        "error": null,
+        "mood": "focused",
+        "iteration": 0,
+        "cache": null,
+        "is_fallback": true,
+        "timings": {},
+        "audio_url": "http://127.0.0.1:8000/fallback-clips/focused.ogg"
+      },
+      {
+        "wall_ms": 3.9,
+        "error": null,
+        "mood": "focused",
+        "iteration": 1,
+        "cache": null,
+        "is_fallback": true,
+        "timings": {},
+        "audio_url": "http://127.0.0.1:8000/fallback-clips/focused.ogg"
+      },
+      {
+        "wall_ms": 5.1,
+        "error": null,
+        "mood": "focused",
+        "iteration": 2,
+        "cache": null,
+        "is_fallback": true,
+        "timings": {},
+        "audio_url": "http://127.0.0.1:8000/fallback-clips/focused.ogg"
+      },
+      {
+        "wall_ms": 7.6,
+        "error": null,
+        "mood": "joyful",
+        "iteration": 0,
+        "cache": null,
+        "is_fallback": true,
+        "timings": {},
+        "audio_url": "http://127.0.0.1:8000/fallback-clips/joyful.ogg"
+      },
+      {
+        "wall_ms": 4.8,
+        "error": null,
+        "mood": "joyful",
+        "iteration": 1,
+        "cache": null,
+        "is_fallback": true,
+        "timings": {},
+        "audio_url": "http://127.0.0.1:8000/fallback-clips/joyful.ogg"
+      },
+      {
+        "wall_ms": 4.8,
+        "error": null,
+        "mood": "joyful",
+        "iteration": 2,
+        "cache": null,
+        "is_fallback": true,
+        "timings": {},
+        "audio_url": "http://127.0.0.1:8000/fallback-clips/joyful.ogg"
+      },
+      {
+        "wall_ms": 122.6,
+        "error": null,
+        "mood": "sad",
+        "iteration": 0,
+        "cache": null,
+        "is_fallback": true,
+        "timings": {},
+        "audio_url": "http://127.0.0.1:8000/fallback-clips/sad.ogg"
+      },
+      {
+        "wall_ms": 28.9,
+        "error": null,
+        "mood": "sad",
+        "iteration": 1,
+        "cache": null,
+        "is_fallback": true,
+        "timings": {},
+        "audio_url": "http://127.0.0.1:8000/fallback-clips/sad.ogg"
+      },
+      {
+        "wall_ms": 5.5,
+        "error": null,
+        "mood": "sad",
+        "iteration": 2,
+        "cache": null,
+        "is_fallback": true,
+        "timings": {},
+        "audio_url": "http://127.0.0.1:8000/fallback-clips/sad.ogg"
+      },
+      {
+        "wall_ms": 153.7,
+        "error": null,
+        "mood": "dark",
+        "iteration": 0,
+        "cache": null,
+        "is_fallback": true,
+        "timings": {},
+        "audio_url": "http://127.0.0.1:8000/fallback-clips/dark.ogg"
+      },
+      {
+        "wall_ms": 4.5,
+        "error": null,
+        "mood": "dark",
+        "iteration": 1,
+        "cache": null,
+        "is_fallback": true,
+        "timings": {},
+        "audio_url": "http://127.0.0.1:8000/fallback-clips/dark.ogg"
+      },
+      {
+        "wall_ms": 23.5,
+        "error": null,
+        "mood": "dark",
+        "iteration": 2,
+        "cache": null,
+        "is_fallback": true,
+        "timings": {},
+        "audio_url": "http://127.0.0.1:8000/fallback-clips/dark.ogg"
+      },
+      {
+        "wall_ms": 6.1,
+        "error": null,
+        "mood": "nostalgic",
+        "iteration": 0,
+        "cache": null,
+        "is_fallback": true,
+        "timings": {},
+        "audio_url": "http://127.0.0.1:8000/fallback-clips/nostalgic.ogg"
+      },
+      {
+        "wall_ms": 3.7,
+        "error": null,
+        "mood": "nostalgic",
+        "iteration": 1,
+        "cache": null,
+        "is_fallback": true,
+        "timings": {},
+        "audio_url": "http://127.0.0.1:8000/fallback-clips/nostalgic.ogg"
+      },
+      {
+        "wall_ms": 4.9,
+        "error": null,
+        "mood": "nostalgic",
+        "iteration": 2,
+        "cache": null,
+        "is_fallback": true,
+        "timings": {},
+        "audio_url": "http://127.0.0.1:8000/fallback-clips/nostalgic.ogg"
+      },
+      {
+        "wall_ms": 144.6,
+        "error": null,
+        "mood": "curious",
+        "iteration": 0,
+        "cache": null,
+        "is_fallback": true,
+        "timings": {},
+        "audio_url": "http://127.0.0.1:8000/fallback-clips/curious.ogg"
+      },
+      {
+        "wall_ms": 24.4,
+        "error": null,
+        "mood": "curious",
+        "iteration": 1,
+        "cache": null,
+        "is_fallback": true,
+        "timings": {},
+        "audio_url": "http://127.0.0.1:8000/fallback-clips/curious.ogg"
+      },
+      {
+        "wall_ms": 3.4,
+        "error": null,
+        "mood": "curious",
+        "iteration": 2,
+        "cache": null,
+        "is_fallback": true,
+        "timings": {},
+        "audio_url": "http://127.0.0.1:8000/fallback-clips/curious.ogg"
+      },
+      {
+        "wall_ms": 4.4,
+        "error": null,
+        "mood": "tense",
+        "iteration": 0,
+        "cache": null,
+        "is_fallback": true,
+        "timings": {},
+        "audio_url": "http://127.0.0.1:8000/fallback-clips/tense.ogg"
+      },
+      {
+        "wall_ms": 3.3,
+        "error": null,
+        "mood": "tense",
+        "iteration": 1,
+        "cache": null,
+        "is_fallback": true,
+        "timings": {},
+        "audio_url": "http://127.0.0.1:8000/fallback-clips/tense.ogg"
+      },
+      {
+        "wall_ms": 19.8,
+        "error": null,
+        "mood": "tense",
+        "iteration": 2,
+        "cache": null,
+        "is_fallback": true,
+        "timings": {},
+        "audio_url": "http://127.0.0.1:8000/fallback-clips/tense.ogg"
+      },
+      {
+        "wall_ms": 133.0,
+        "error": null,
+        "mood": "uplifting",
+        "iteration": 0,
+        "cache": null,
+        "is_fallback": true,
+        "timings": {},
+        "audio_url": "http://127.0.0.1:8000/fallback-clips/uplifting.ogg"
+      },
+      {
+        "wall_ms": 24.2,
+        "error": null,
+        "mood": "uplifting",
+        "iteration": 1,
+        "cache": null,
+        "is_fallback": true,
+        "timings": {},
+        "audio_url": "http://127.0.0.1:8000/fallback-clips/uplifting.ogg"
+      },
+      {
+        "wall_ms": 15.4,
+        "error": null,
+        "mood": "uplifting",
+        "iteration": 2,
+        "cache": null,
+        "is_fallback": true,
+        "timings": {},
+        "audio_url": "http://127.0.0.1:8000/fallback-clips/uplifting.ogg"
+      },
+      {
+        "wall_ms": 17.3,
+        "error": null,
+        "mood": "neutral",
+        "iteration": 0,
+        "cache": null,
+        "is_fallback": true,
+        "timings": {},
+        "audio_url": "http://127.0.0.1:8000/fallback-clips/neutral.ogg"
+      },
+      {
+        "wall_ms": 3.2,
+        "error": null,
+        "mood": "neutral",
+        "iteration": 1,
+        "cache": null,
+        "is_fallback": true,
+        "timings": {},
+        "audio_url": "http://127.0.0.1:8000/fallback-clips/neutral.ogg"
+      },
+      {
+        "wall_ms": 25.6,
+        "error": null,
+        "mood": "neutral",
+        "iteration": 2,
+        "cache": null,
+        "is_fallback": true,
+        "timings": {},
+        "audio_url": "http://127.0.0.1:8000/fallback-clips/neutral.ogg"
+      }
+    ],
+    "warm": [
+      {
+        "wall_ms": 2095.7,
+        "error": null,
+        "mood": "calm",
+        "iteration": 0,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2073
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/328e1caafde995d03e4d34b3707994be0d3203656776fa7a2cf22dd08b297c71.ogg"
+      },
+      {
+        "wall_ms": 2088.1,
+        "error": null,
+        "mood": "calm",
+        "iteration": 1,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2084
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/328e1caafde995d03e4d34b3707994be0d3203656776fa7a2cf22dd08b297c71.ogg"
+      },
+      {
+        "wall_ms": 2072.1,
+        "error": null,
+        "mood": "calm",
+        "iteration": 2,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2068
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/328e1caafde995d03e4d34b3707994be0d3203656776fa7a2cf22dd08b297c71.ogg"
+      },
+      {
+        "wall_ms": 2085.8,
+        "error": null,
+        "mood": "energetic",
+        "iteration": 0,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2082
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/4a0253140172f7eba8857561b33d16490f72e353bb38c1cd6da30e6371d891d2.ogg"
+      },
+      {
+        "wall_ms": 2099.1,
+        "error": null,
+        "mood": "energetic",
+        "iteration": 1,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2083
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/4a0253140172f7eba8857561b33d16490f72e353bb38c1cd6da30e6371d891d2.ogg"
+      },
+      {
+        "wall_ms": 2108.9,
+        "error": null,
+        "mood": "energetic",
+        "iteration": 2,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2104
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/4a0253140172f7eba8857561b33d16490f72e353bb38c1cd6da30e6371d891d2.ogg"
+      },
+      {
+        "wall_ms": 300005.1,
+        "error": "TimeoutError: timed out",
+        "mood": "focused",
+        "iteration": 0
+      },
+      {
+        "wall_ms": 2093.0,
+        "error": null,
+        "mood": "focused",
+        "iteration": 1,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2087
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/87423cf3b9cd004761ff546295c6e4d74b5fb1be9390d9a81cea07b3b96b397c.ogg"
+      },
+      {
+        "wall_ms": 2086.3,
+        "error": null,
+        "mood": "focused",
+        "iteration": 2,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2080
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/87423cf3b9cd004761ff546295c6e4d74b5fb1be9390d9a81cea07b3b96b397c.ogg"
+      },
+      {
+        "wall_ms": 300008.5,
+        "error": "TimeoutError: timed out",
+        "mood": "joyful",
+        "iteration": 0
+      },
+      {
+        "wall_ms": 2090.0,
+        "error": null,
+        "mood": "joyful",
+        "iteration": 1,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2085
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/31cd7d986d2369e46296fc8a7d50266b1bdc18e8f75c2f93312027f628b480f5.ogg"
+      },
+      {
+        "wall_ms": 2082.0,
+        "error": null,
+        "mood": "joyful",
+        "iteration": 2,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2076
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/31cd7d986d2369e46296fc8a7d50266b1bdc18e8f75c2f93312027f628b480f5.ogg"
+      },
+      {
+        "wall_ms": 300008.5,
+        "error": "TimeoutError: timed out",
+        "mood": "sad",
+        "iteration": 0
+      },
+      {
+        "wall_ms": 300008.7,
+        "error": "TimeoutError: timed out",
+        "mood": "sad",
+        "iteration": 1
+      },
+      {
+        "wall_ms": 300015.9,
+        "error": "TimeoutError: timed out",
+        "mood": "sad",
+        "iteration": 2
+      },
+      {
+        "wall_ms": 300008.1,
+        "error": "TimeoutError: timed out",
+        "mood": "dark",
+        "iteration": 0
+      },
+      {
+        "wall_ms": 300011.1,
+        "error": "TimeoutError: timed out",
+        "mood": "dark",
+        "iteration": 1
+      },
+      {
+        "wall_ms": 300006.6,
+        "error": "TimeoutError: timed out",
+        "mood": "dark",
+        "iteration": 2
+      },
+      {
+        "wall_ms": 300015.3,
+        "error": "TimeoutError: timed out",
+        "mood": "nostalgic",
+        "iteration": 0
+      },
+      {
+        "wall_ms": 2098.9,
+        "error": null,
+        "mood": "nostalgic",
+        "iteration": 1,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2092
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/5fc45060970787e2de579ed0f76a14ae528a20f344e78e0b2a1bd3a7c7c0ef72.ogg"
+      },
+      {
+        "wall_ms": 2083.8,
+        "error": null,
+        "mood": "nostalgic",
+        "iteration": 2,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2079
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/5fc45060970787e2de579ed0f76a14ae528a20f344e78e0b2a1bd3a7c7c0ef72.ogg"
+      },
+      {
+        "wall_ms": 300018.5,
+        "error": "TimeoutError: timed out",
+        "mood": "curious",
+        "iteration": 0
+      },
+      {
+        "wall_ms": 2071.9,
+        "error": null,
+        "mood": "curious",
+        "iteration": 1,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2064
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/48c4a25401856093353e1b676504b13bd8c0ac184900153a0c0b1cf908cea1bc.ogg"
+      },
+      {
+        "wall_ms": 2070.4,
+        "error": null,
+        "mood": "curious",
+        "iteration": 2,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2065
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/48c4a25401856093353e1b676504b13bd8c0ac184900153a0c0b1cf908cea1bc.ogg"
+      },
+      {
+        "wall_ms": 300017.2,
+        "error": "TimeoutError: timed out",
+        "mood": "tense",
+        "iteration": 0
+      },
+      {
+        "wall_ms": 2096.9,
+        "error": null,
+        "mood": "tense",
+        "iteration": 1,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2077
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/93414df8a17efeee7e14df09d4c3dd0d1e013cea39de39dc416a993ad0851e25.ogg"
+      },
+      {
+        "wall_ms": 2099.7,
+        "error": null,
+        "mood": "tense",
+        "iteration": 2,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2095
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/93414df8a17efeee7e14df09d4c3dd0d1e013cea39de39dc416a993ad0851e25.ogg"
+      },
+      {
+        "wall_ms": 300011.9,
+        "error": "TimeoutError: timed out",
+        "mood": "uplifting",
+        "iteration": 0
+      },
+      {
+        "wall_ms": 2103.3,
+        "error": null,
+        "mood": "uplifting",
+        "iteration": 1,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2098
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/f94e21c16411dd0a806ea9acab2eb56790711f8410bf224e4e60d4567f25eedb.ogg"
+      },
+      {
+        "wall_ms": 2086.3,
+        "error": null,
+        "mood": "uplifting",
+        "iteration": 2,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2081
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/f94e21c16411dd0a806ea9acab2eb56790711f8410bf224e4e60d4567f25eedb.ogg"
+      },
+      {
+        "wall_ms": 2057.6,
+        "error": null,
+        "mood": "neutral",
+        "iteration": 0,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2053
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/bf10513b900d6b9b1182eb5da598a7a274c9c1f611737e9560f22350bd14ac21.ogg"
+      },
+      {
+        "wall_ms": 2100.3,
+        "error": null,
+        "mood": "neutral",
+        "iteration": 1,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2094
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/bf10513b900d6b9b1182eb5da598a7a274c9c1f611737e9560f22350bd14ac21.ogg"
+      },
+      {
+        "wall_ms": 2091.8,
+        "error": null,
+        "mood": "neutral",
+        "iteration": 2,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2087
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/bf10513b900d6b9b1182eb5da598a7a274c9c1f611737e9560f22350bd14ac21.ogg"
+      }
+    ],
+    "cold": [
+      {
+        "wall_ms": 2088.9,
+        "error": null,
+        "mood": "calm",
+        "iteration": 0,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2083
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/328e1caafde995d03e4d34b3707994be0d3203656776fa7a2cf22dd08b297c71.ogg"
+      },
+      {
+        "wall_ms": 2087.6,
+        "error": null,
+        "mood": "calm",
+        "iteration": 1,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2082
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/328e1caafde995d03e4d34b3707994be0d3203656776fa7a2cf22dd08b297c71.ogg"
+      },
+      {
+        "wall_ms": 2083.4,
+        "error": null,
+        "mood": "calm",
+        "iteration": 2,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2079
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/328e1caafde995d03e4d34b3707994be0d3203656776fa7a2cf22dd08b297c71.ogg"
+      },
+      {
+        "wall_ms": 2084.1,
+        "error": null,
+        "mood": "energetic",
+        "iteration": 0,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2077
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/4a0253140172f7eba8857561b33d16490f72e353bb38c1cd6da30e6371d891d2.ogg"
+      },
+      {
+        "wall_ms": 2091.4,
+        "error": null,
+        "mood": "energetic",
+        "iteration": 1,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2087
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/4a0253140172f7eba8857561b33d16490f72e353bb38c1cd6da30e6371d891d2.ogg"
+      },
+      {
+        "wall_ms": 2056.6,
+        "error": null,
+        "mood": "energetic",
+        "iteration": 2,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2052
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/4a0253140172f7eba8857561b33d16490f72e353bb38c1cd6da30e6371d891d2.ogg"
+      },
+      {
+        "wall_ms": 2069.5,
+        "error": null,
+        "mood": "focused",
+        "iteration": 0,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2065
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/87423cf3b9cd004761ff546295c6e4d74b5fb1be9390d9a81cea07b3b96b397c.ogg"
+      },
+      {
+        "wall_ms": 2077.7,
+        "error": null,
+        "mood": "focused",
+        "iteration": 1,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2073
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/87423cf3b9cd004761ff546295c6e4d74b5fb1be9390d9a81cea07b3b96b397c.ogg"
+      },
+      {
+        "wall_ms": 2086.6,
+        "error": null,
+        "mood": "focused",
+        "iteration": 2,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2080
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/87423cf3b9cd004761ff546295c6e4d74b5fb1be9390d9a81cea07b3b96b397c.ogg"
+      },
+      {
+        "wall_ms": 2089.3,
+        "error": null,
+        "mood": "joyful",
+        "iteration": 0,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2084
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/31cd7d986d2369e46296fc8a7d50266b1bdc18e8f75c2f93312027f628b480f5.ogg"
+      },
+      {
+        "wall_ms": 2104.8,
+        "error": null,
+        "mood": "joyful",
+        "iteration": 1,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2100
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/31cd7d986d2369e46296fc8a7d50266b1bdc18e8f75c2f93312027f628b480f5.ogg"
+      },
+      {
+        "wall_ms": 2069.8,
+        "error": null,
+        "mood": "joyful",
+        "iteration": 2,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2064
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/31cd7d986d2369e46296fc8a7d50266b1bdc18e8f75c2f93312027f628b480f5.ogg"
+      },
+      {
+        "wall_ms": 2058.9,
+        "error": null,
+        "mood": "sad",
+        "iteration": 0,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2054
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/b6ed45ce39aa211a9fb834a799506ef90f808b06efa862e469cfe52a69064a63.ogg"
+      },
+      {
+        "wall_ms": 2093.9,
+        "error": null,
+        "mood": "sad",
+        "iteration": 1,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2089
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/b6ed45ce39aa211a9fb834a799506ef90f808b06efa862e469cfe52a69064a63.ogg"
+      },
+      {
+        "wall_ms": 2099.3,
+        "error": null,
+        "mood": "sad",
+        "iteration": 2,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2094
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/b6ed45ce39aa211a9fb834a799506ef90f808b06efa862e469cfe52a69064a63.ogg"
+      },
+      {
+        "wall_ms": 2065.6,
+        "error": null,
+        "mood": "dark",
+        "iteration": 0,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2061
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/d66cc64e1740f855463b86b4bdd603a31b935a8d7c469e60fabc51e6af22c4af.ogg"
+      },
+      {
+        "wall_ms": 2112.8,
+        "error": null,
+        "mood": "dark",
+        "iteration": 1,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2107
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/d66cc64e1740f855463b86b4bdd603a31b935a8d7c469e60fabc51e6af22c4af.ogg"
+      },
+      {
+        "wall_ms": 2080.2,
+        "error": null,
+        "mood": "dark",
+        "iteration": 2,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2073
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/d66cc64e1740f855463b86b4bdd603a31b935a8d7c469e60fabc51e6af22c4af.ogg"
+      },
+      {
+        "wall_ms": 2093.1,
+        "error": null,
+        "mood": "nostalgic",
+        "iteration": 0,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2087
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/5fc45060970787e2de579ed0f76a14ae528a20f344e78e0b2a1bd3a7c7c0ef72.ogg"
+      },
+      {
+        "wall_ms": 2102.3,
+        "error": null,
+        "mood": "nostalgic",
+        "iteration": 1,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2097
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/5fc45060970787e2de579ed0f76a14ae528a20f344e78e0b2a1bd3a7c7c0ef72.ogg"
+      },
+      {
+        "wall_ms": 2081.6,
+        "error": null,
+        "mood": "nostalgic",
+        "iteration": 2,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2059
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/5fc45060970787e2de579ed0f76a14ae528a20f344e78e0b2a1bd3a7c7c0ef72.ogg"
+      },
+      {
+        "wall_ms": 2071.6,
+        "error": null,
+        "mood": "curious",
+        "iteration": 0,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2066
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/48c4a25401856093353e1b676504b13bd8c0ac184900153a0c0b1cf908cea1bc.ogg"
+      },
+      {
+        "wall_ms": 2093.1,
+        "error": null,
+        "mood": "curious",
+        "iteration": 1,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2074
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/48c4a25401856093353e1b676504b13bd8c0ac184900153a0c0b1cf908cea1bc.ogg"
+      },
+      {
+        "wall_ms": 2097.4,
+        "error": null,
+        "mood": "curious",
+        "iteration": 2,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2092
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/48c4a25401856093353e1b676504b13bd8c0ac184900153a0c0b1cf908cea1bc.ogg"
+      },
+      {
+        "wall_ms": 2086.6,
+        "error": null,
+        "mood": "tense",
+        "iteration": 0,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2082
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/93414df8a17efeee7e14df09d4c3dd0d1e013cea39de39dc416a993ad0851e25.ogg"
+      },
+      {
+        "wall_ms": 2083.6,
+        "error": null,
+        "mood": "tense",
+        "iteration": 1,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2076
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/93414df8a17efeee7e14df09d4c3dd0d1e013cea39de39dc416a993ad0851e25.ogg"
+      },
+      {
+        "wall_ms": 2101.4,
+        "error": null,
+        "mood": "tense",
+        "iteration": 2,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2095
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/93414df8a17efeee7e14df09d4c3dd0d1e013cea39de39dc416a993ad0851e25.ogg"
+      },
+      {
+        "wall_ms": 2094.3,
+        "error": null,
+        "mood": "uplifting",
+        "iteration": 0,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2090
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/f94e21c16411dd0a806ea9acab2eb56790711f8410bf224e4e60d4567f25eedb.ogg"
+      },
+      {
+        "wall_ms": 2074.2,
+        "error": null,
+        "mood": "uplifting",
+        "iteration": 1,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2069
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/f94e21c16411dd0a806ea9acab2eb56790711f8410bf224e4e60d4567f25eedb.ogg"
+      },
+      {
+        "wall_ms": 2088.3,
+        "error": null,
+        "mood": "uplifting",
+        "iteration": 2,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2084
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/f94e21c16411dd0a806ea9acab2eb56790711f8410bf224e4e60d4567f25eedb.ogg"
+      },
+      {
+        "wall_ms": 2091.9,
+        "error": null,
+        "mood": "neutral",
+        "iteration": 0,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2086
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/bf10513b900d6b9b1182eb5da598a7a274c9c1f611737e9560f22350bd14ac21.ogg"
+      },
+      {
+        "wall_ms": 2074.5,
+        "error": null,
+        "mood": "neutral",
+        "iteration": 1,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2069
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/bf10513b900d6b9b1182eb5da598a7a274c9c1f611737e9560f22350bd14ac21.ogg"
+      },
+      {
+        "wall_ms": 2093.9,
+        "error": null,
+        "mood": "neutral",
+        "iteration": 2,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2088
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/bf10513b900d6b9b1182eb5da598a7a274c9c1f611737e9560f22350bd14ac21.ogg"
+      }
+    ],
+    "duration": [
+      {
+        "wall_ms": 239516.4,
+        "error": null,
+        "mood": "calm",
+        "duration_seconds": 5,
+        "iteration": 0,
+        "cache": "miss",
+        "is_fallback": true,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2081,
+          "d2_prompt_ms": 0
+        },
+        "audio_url": "http://127.0.0.1:8000/fallback-clips/calm.ogg"
+      },
+      {
+        "wall_ms": 126733.3,
+        "error": null,
+        "mood": "calm",
+        "duration_seconds": 5,
+        "iteration": 1,
+        "cache": "miss",
+        "is_fallback": true,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2086,
+          "d2_prompt_ms": 0
+        },
+        "audio_url": "http://127.0.0.1:8000/fallback-clips/calm.ogg"
+      },
+      {
+        "wall_ms": 123395.1,
+        "error": null,
+        "mood": "calm",
+        "duration_seconds": 5,
+        "iteration": 2,
+        "cache": "miss",
+        "is_fallback": true,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2069,
+          "d2_prompt_ms": 0
+        },
+        "audio_url": "http://127.0.0.1:8000/fallback-clips/calm.ogg"
+      },
+      {
+        "wall_ms": 86843.4,
+        "error": null,
+        "mood": "calm",
+        "duration_seconds": 10,
+        "iteration": 0,
+        "cache": "miss",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2083,
+          "d2_prompt_ms": 0,
+          "d3_generate_ms": 82181,
+          "d4_process_ms": 516,
+          "d5_save_ms": 2059
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/e7b02a4e6252c16a4387d5b0ddc3b54041f0280c4eaa739999635d0c447421cc.ogg"
+      },
+      {
+        "wall_ms": 2114.2,
+        "error": null,
+        "mood": "calm",
+        "duration_seconds": 10,
+        "iteration": 1,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2090
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/e7b02a4e6252c16a4387d5b0ddc3b54041f0280c4eaa739999635d0c447421cc.ogg"
+      },
+      {
+        "wall_ms": 2055.1,
+        "error": null,
+        "mood": "calm",
+        "duration_seconds": 10,
+        "iteration": 2,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2053
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/e7b02a4e6252c16a4387d5b0ddc3b54041f0280c4eaa739999635d0c447421cc.ogg"
+      },
+      {
+        "wall_ms": 139317.5,
+        "error": null,
+        "mood": "calm",
+        "duration_seconds": 15,
+        "iteration": 0,
+        "cache": "miss",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2074,
+          "d2_prompt_ms": 0,
+          "d3_generate_ms": 134673,
+          "d4_process_ms": 504,
+          "d5_save_ms": 2063
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/eadf7bc5be52a1f74d9955b505ef682ed6f44fd6f9b5659957920279bb2337f0.ogg"
+      },
+      {
+        "wall_ms": 2110.6,
+        "error": null,
+        "mood": "calm",
+        "duration_seconds": 15,
+        "iteration": 1,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2086
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/eadf7bc5be52a1f74d9955b505ef682ed6f44fd6f9b5659957920279bb2337f0.ogg"
+      },
+      {
+        "wall_ms": 2101.1,
+        "error": null,
+        "mood": "calm",
+        "duration_seconds": 15,
+        "iteration": 2,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2087
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/eadf7bc5be52a1f74d9955b505ef682ed6f44fd6f9b5659957920279bb2337f0.ogg"
+      },
+      {
+        "wall_ms": 207468.3,
+        "error": null,
+        "mood": "calm",
+        "duration_seconds": 20,
+        "iteration": 0,
+        "cache": "miss",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2077,
+          "d2_prompt_ms": 0,
+          "d3_generate_ms": 202828,
+          "d4_process_ms": 482,
+          "d5_save_ms": 2077
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/4e3df633220d94d3a1a05678355f5c93726e64c3b7c3643dedf65666d5640fd5.ogg"
+      },
+      {
+        "wall_ms": 2109.5,
+        "error": null,
+        "mood": "calm",
+        "duration_seconds": 20,
+        "iteration": 1,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2082
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/4e3df633220d94d3a1a05678355f5c93726e64c3b7c3643dedf65666d5640fd5.ogg"
+      },
+      {
+        "wall_ms": 2089.7,
+        "error": null,
+        "mood": "calm",
+        "duration_seconds": 20,
+        "iteration": 2,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2084
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/4e3df633220d94d3a1a05678355f5c93726e64c3b7c3643dedf65666d5640fd5.ogg"
+      },
+      {
+        "wall_ms": 2090.4,
+        "error": null,
+        "mood": "calm",
+        "duration_seconds": 28,
+        "iteration": 0,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2073
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/328e1caafde995d03e4d34b3707994be0d3203656776fa7a2cf22dd08b297c71.ogg"
+      },
+      {
+        "wall_ms": 2080.5,
+        "error": null,
+        "mood": "calm",
+        "duration_seconds": 28,
+        "iteration": 1,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2078
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/328e1caafde995d03e4d34b3707994be0d3203656776fa7a2cf22dd08b297c71.ogg"
+      },
+      {
+        "wall_ms": 2080.3,
+        "error": null,
+        "mood": "calm",
+        "duration_seconds": 28,
+        "iteration": 2,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2076
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/328e1caafde995d03e4d34b3707994be0d3203656776fa7a2cf22dd08b297c71.ogg"
+      }
+    ],
+    "concurrency": [
+      {
+        "wall_ms": 2072.3,
+        "error": null,
+        "mood": "calm",
+        "level": 1,
+        "mode": "concurrent",
+        "iteration": 0,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2056
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/328e1caafde995d03e4d34b3707994be0d3203656776fa7a2cf22dd08b297c71.ogg"
+      },
+      {
+        "wall_ms": 2082.3,
+        "error": null,
+        "mood": "calm",
+        "level": 1,
+        "mode": "sequential",
+        "iteration": 0,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2062
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/328e1caafde995d03e4d34b3707994be0d3203656776fa7a2cf22dd08b297c71.ogg"
+      },
+      {
+        "aggregate": true,
+        "level": 1,
+        "concurrent_wall_ms": 2085.9,
+        "sequential_wall_ms": 2082.5,
+        "speedup": 0.998
+      },
+      {
+        "wall_ms": 2072.5,
+        "error": null,
+        "mood": "calm",
+        "level": 2,
+        "mode": "concurrent",
+        "iteration": 0,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2070
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/328e1caafde995d03e4d34b3707994be0d3203656776fa7a2cf22dd08b297c71.ogg"
+      },
+      {
+        "wall_ms": 2094.6,
+        "error": null,
+        "mood": "calm",
+        "level": 2,
+        "mode": "concurrent",
+        "iteration": 1,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2068
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/328e1caafde995d03e4d34b3707994be0d3203656776fa7a2cf22dd08b297c71.ogg"
+      },
+      {
+        "wall_ms": 2127.4,
+        "error": null,
+        "mood": "calm",
+        "level": 2,
+        "mode": "sequential",
+        "iteration": 0,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2106
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/328e1caafde995d03e4d34b3707994be0d3203656776fa7a2cf22dd08b297c71.ogg"
+      },
+      {
+        "wall_ms": 2089.9,
+        "error": null,
+        "mood": "calm",
+        "level": 2,
+        "mode": "sequential",
+        "iteration": 1,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2087
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/328e1caafde995d03e4d34b3707994be0d3203656776fa7a2cf22dd08b297c71.ogg"
+      },
+      {
+        "aggregate": true,
+        "level": 2,
+        "concurrent_wall_ms": 2095.8,
+        "sequential_wall_ms": 4217.5,
+        "speedup": 2.012
+      },
+      {
+        "wall_ms": 2169.0,
+        "error": null,
+        "mood": "calm",
+        "level": 4,
+        "mode": "concurrent",
+        "iteration": 0,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2085
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/328e1caafde995d03e4d34b3707994be0d3203656776fa7a2cf22dd08b297c71.ogg"
+      },
+      {
+        "wall_ms": 2078.8,
+        "error": null,
+        "mood": "calm",
+        "level": 4,
+        "mode": "concurrent",
+        "iteration": 1,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2074
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/328e1caafde995d03e4d34b3707994be0d3203656776fa7a2cf22dd08b297c71.ogg"
+      },
+      {
+        "wall_ms": 2159.1,
+        "error": null,
+        "mood": "calm",
+        "level": 4,
+        "mode": "concurrent",
+        "iteration": 2,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2077
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/328e1caafde995d03e4d34b3707994be0d3203656776fa7a2cf22dd08b297c71.ogg"
+      },
+      {
+        "wall_ms": 2102.9,
+        "error": null,
+        "mood": "calm",
+        "level": 4,
+        "mode": "concurrent",
+        "iteration": 3,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2086
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/328e1caafde995d03e4d34b3707994be0d3203656776fa7a2cf22dd08b297c71.ogg"
+      },
+      {
+        "wall_ms": 2079.3,
+        "error": null,
+        "mood": "calm",
+        "level": 4,
+        "mode": "sequential",
+        "iteration": 0,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2059
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/328e1caafde995d03e4d34b3707994be0d3203656776fa7a2cf22dd08b297c71.ogg"
+      },
+      {
+        "wall_ms": 2101.5,
+        "error": null,
+        "mood": "calm",
+        "level": 4,
+        "mode": "sequential",
+        "iteration": 1,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2084
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/328e1caafde995d03e4d34b3707994be0d3203656776fa7a2cf22dd08b297c71.ogg"
+      },
+      {
+        "wall_ms": 2100.1,
+        "error": null,
+        "mood": "calm",
+        "level": 4,
+        "mode": "sequential",
+        "iteration": 2,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2085
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/328e1caafde995d03e4d34b3707994be0d3203656776fa7a2cf22dd08b297c71.ogg"
+      },
+      {
+        "wall_ms": 2121.0,
+        "error": null,
+        "mood": "calm",
+        "level": 4,
+        "mode": "sequential",
+        "iteration": 3,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2104
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/328e1caafde995d03e4d34b3707994be0d3203656776fa7a2cf22dd08b297c71.ogg"
+      },
+      {
+        "aggregate": true,
+        "level": 4,
+        "concurrent_wall_ms": 2183.0,
+        "sequential_wall_ms": 8402.3,
+        "speedup": 3.849
+      },
+      {
+        "wall_ms": 2092.1,
+        "error": null,
+        "mood": "calm",
+        "level": 8,
+        "mode": "concurrent",
+        "iteration": 0,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2089
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/328e1caafde995d03e4d34b3707994be0d3203656776fa7a2cf22dd08b297c71.ogg"
+      },
+      {
+        "wall_ms": 2073.7,
+        "error": null,
+        "mood": "calm",
+        "level": 8,
+        "mode": "concurrent",
+        "iteration": 1,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2069
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/328e1caafde995d03e4d34b3707994be0d3203656776fa7a2cf22dd08b297c71.ogg"
+      },
+      {
+        "wall_ms": 2088.5,
+        "error": null,
+        "mood": "calm",
+        "level": 8,
+        "mode": "concurrent",
+        "iteration": 2,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2084
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/328e1caafde995d03e4d34b3707994be0d3203656776fa7a2cf22dd08b297c71.ogg"
+      },
+      {
+        "wall_ms": 2093.7,
+        "error": null,
+        "mood": "calm",
+        "level": 8,
+        "mode": "concurrent",
+        "iteration": 3,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2089
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/328e1caafde995d03e4d34b3707994be0d3203656776fa7a2cf22dd08b297c71.ogg"
+      },
+      {
+        "wall_ms": 2099.7,
+        "error": null,
+        "mood": "calm",
+        "level": 8,
+        "mode": "concurrent",
+        "iteration": 4,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2094
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/328e1caafde995d03e4d34b3707994be0d3203656776fa7a2cf22dd08b297c71.ogg"
+      },
+      {
+        "wall_ms": 2097.7,
+        "error": null,
+        "mood": "calm",
+        "level": 8,
+        "mode": "concurrent",
+        "iteration": 5,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2090
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/328e1caafde995d03e4d34b3707994be0d3203656776fa7a2cf22dd08b297c71.ogg"
+      },
+      {
+        "wall_ms": 2099.0,
+        "error": null,
+        "mood": "calm",
+        "level": 8,
+        "mode": "concurrent",
+        "iteration": 6,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2085
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/328e1caafde995d03e4d34b3707994be0d3203656776fa7a2cf22dd08b297c71.ogg"
+      },
+      {
+        "wall_ms": 2098.3,
+        "error": null,
+        "mood": "calm",
+        "level": 8,
+        "mode": "concurrent",
+        "iteration": 7,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2086
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/328e1caafde995d03e4d34b3707994be0d3203656776fa7a2cf22dd08b297c71.ogg"
+      },
+      {
+        "wall_ms": 2077.2,
+        "error": null,
+        "mood": "calm",
+        "level": 8,
+        "mode": "sequential",
+        "iteration": 0,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2075
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/328e1caafde995d03e4d34b3707994be0d3203656776fa7a2cf22dd08b297c71.ogg"
+      },
+      {
+        "wall_ms": 2099.4,
+        "error": null,
+        "mood": "calm",
+        "level": 8,
+        "mode": "sequential",
+        "iteration": 1,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2096
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/328e1caafde995d03e4d34b3707994be0d3203656776fa7a2cf22dd08b297c71.ogg"
+      },
+      {
+        "wall_ms": 2087.3,
+        "error": null,
+        "mood": "calm",
+        "level": 8,
+        "mode": "sequential",
+        "iteration": 2,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2073
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/328e1caafde995d03e4d34b3707994be0d3203656776fa7a2cf22dd08b297c71.ogg"
+      },
+      {
+        "wall_ms": 2081.7,
+        "error": null,
+        "mood": "calm",
+        "level": 8,
+        "mode": "sequential",
+        "iteration": 3,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2069
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/328e1caafde995d03e4d34b3707994be0d3203656776fa7a2cf22dd08b297c71.ogg"
+      },
+      {
+        "wall_ms": 2065.5,
+        "error": null,
+        "mood": "calm",
+        "level": 8,
+        "mode": "sequential",
+        "iteration": 4,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2052
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/328e1caafde995d03e4d34b3707994be0d3203656776fa7a2cf22dd08b297c71.ogg"
+      },
+      {
+        "wall_ms": 2100.9,
+        "error": null,
+        "mood": "calm",
+        "level": 8,
+        "mode": "sequential",
+        "iteration": 5,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2078
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/328e1caafde995d03e4d34b3707994be0d3203656776fa7a2cf22dd08b297c71.ogg"
+      },
+      {
+        "wall_ms": 2106.2,
+        "error": null,
+        "mood": "calm",
+        "level": 8,
+        "mode": "sequential",
+        "iteration": 6,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2089
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/328e1caafde995d03e4d34b3707994be0d3203656776fa7a2cf22dd08b297c71.ogg"
+      },
+      {
+        "wall_ms": 2075.6,
+        "error": null,
+        "mood": "calm",
+        "level": 8,
+        "mode": "sequential",
+        "iteration": 7,
+        "cache": "hit",
+        "is_fallback": false,
+        "timings": {
+          "d1_validate_ms": 0,
+          "d5_cache_check_ms": 2073
+        },
+        "audio_url": "http://127.0.0.1:8000/audio-cache/328e1caafde995d03e4d34b3707994be0d3203656776fa7a2cf22dd08b297c71.ogg"
+      },
+      {
+        "aggregate": true,
+        "level": 8,
+        "concurrent_wall_ms": 2103.2,
+        "sequential_wall_ms": 16694.9,
+        "speedup": 7.938
+      }
+    ]
+  },
+  "elapsed_s": 7102.2
+}
