@@ -1,0 +1,1246 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{url}
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\begin{document}
+
+\title{Web2Music: Page-Conditioned Ambient Music Generation\\
+in the Browser with a Tiered, Abstaining Classifier}
+
+\author{\IEEEauthorblockN{1\textsuperscript{st} Ayush Kumar}
+\IEEEauthorblockA{\textit{School of Computer Science and Engineering (SCOPE)} \\
+\textit{Vellore Institute of Technology}\\
+Vellore, Tamil Nadu, India \\
+theofficialayush.kumar@gmail.com}
+\and
+\IEEEauthorblockN{2\textsuperscript{nd} Sneha}
+\IEEEauthorblockA{\textit{School of Computer Science and Engineering (SCOPE)} \\
+\textit{Vellore Institute of Technology}\\
+Vellore, Tamil Nadu, India \\
+sneha@vitstudent.ac.in}
+\and
+\IEEEauthorblockN{3\textsuperscript{rd} Vedant}
+\IEEEauthorblockA{\textit{School of Computer Science and Engineering (SCOPE)} \\
+\textit{Vellore Institute of Technology}\\
+Vellore, Tamil Nadu, India \\
+vedant@vitstudent.ac.in}
+\and
+\IEEEauthorblockN{4\textsuperscript{th} Tvisha}
+\IEEEauthorblockA{\textit{School of Computer Science and Engineering (SCOPE)} \\
+\textit{Vellore Institute of Technology}\\
+Vellore, Tamil Nadu, India \\
+tvisha@vitstudent.ac.in}
+\and
+\IEEEauthorblockN{5\textsuperscript{th} Pari}
+\IEEEauthorblockA{\textit{School of Computer Science and Engineering (SCOPE)} \\
+\textit{Vellore Institute of Technology}\\
+Vellore, Tamil Nadu, India \\
+pari@vitstudent.ac.in}
+\and
+\IEEEauthorblockN{6\textsuperscript{th} Sixth Author}
+\IEEEauthorblockA{\textit{School of Computer Science and Engineering (SCOPE)} \\
+\textit{Vellore Institute of Technology}\\
+Vellore, Tamil Nadu, India \\
+sixth.author@vit.ac.in}
+}
+
+\maketitle
+
+\begin{abstract}
+Generative audio models can produce plausible instrumental music from a text
+prompt, but placing one inside an always-on consumer application raises three
+problems that model quality alone does not solve: the prompt has to be derived
+from something, the derivation must not leak the user's browsing history, and
+the model is far too slow to sit on the critical path of a page load. We
+present Web2Music, a Chrome extension that generates mood-adaptive ambient
+music conditioned on the page the user is reading. Three contributions follow
+from those constraints. First, a four-signal extraction layer, comprising
+article text, a local sentence embedding, dominant page colour, and
+scroll and cursor behaviour, produces a compact page descriptor at a median
+cost of 86 ms per page in a real renderer across 105 websites. Second, a
+three-tier classifier, consisting of a free keyword heuristic, a zero-shot
+natural-language-inference tier that may abstain, and a remote large language
+model as a last resort, maps that descriptor onto an eleven-way mood and a
+thirteen-way content category; because the middle tier abstains rather than
+guesses, its two confidence thresholds form a continuous dial between accuracy
+and the fraction of pages whose text leaves the device. Third, a
+fallback-then-swap playback design hides a generator whose median cold
+generation takes 139 s behind a pre-generated per-mood clip served in 7 ms,
+while bar-snapped loop-point detection and a 50 ms equal-power crossfade turn
+a one-shot generator's output into loopable material. We report a systems
+evaluation over 105 websites, 144 generation requests and 141 generated clips,
+an adversarial audit of the system's refusal behaviour, and a cost model
+showing the cascade classifies a thousand pages for 0.004 USD. We also report
+three negative results: the crossfade removes a median of only 0.93 dB of seam
+energy discontinuity, the delivered clip retains a median of 50.3 percent of
+its requested duration, and the sensitive-content detector misses 45.5 percent
+of an adversarial crisis slice.
+\end{abstract}
+
+\begin{IEEEkeywords}
+generative audio, context-aware computing, browser extensions, zero-shot
+classification, model cascades, on-device inference, ambient interfaces
+\end{IEEEkeywords}
+
+% ===========================================================================
+\section{Introduction}
+% ===========================================================================
+
+Background music is one of the few media people consume while doing something
+else. It is chosen once, for a session, and then ignored: a lo-fi playlist runs
+for four hours across a tax form, a horror wiki and a birthday message without
+ever acknowledging that anything changed. The music is context-free because,
+historically, making it context-aware required either a human curator or a
+library large enough to cover every context in advance.
+
+Text-conditioned generative audio models remove that constraint in principle.
+MusicGen \cite{musicgen} generates instrumental audio from a natural-language
+description in a single autoregressive pass over EnCodec \cite{encodec} tokens;
+MusicLM \cite{musiclm} does so hierarchically at higher fidelity; AudioGen
+\cite{audiogen} and AudioLDM \cite{audioldm} extend the same idea to general
+audio. If the description can be derived automatically from what the user is
+doing, the music can track it, and the curator is no longer needed.
+
+Deriving it is where the engineering lives. This paper concerns what happens
+when a generative audio model is placed behind a consumer browser extension and
+made to respond to the open web. Three constraints dominate, and none of them
+is about audio quality.
+
+\textbf{The prompt has to come from somewhere.} A web page is not a prompt. It
+is a DOM containing navigation chrome, advertisements, a colour scheme, and a
+reader whose scroll velocity says something about how they are engaging with
+it. Turning that into ``lo-fi study, minimal electronic, deep focus, 88 BPM,
+D minor'' is a multi-stage inference problem over noisy, adversarially
+formatted input.
+
+\textbf{Classification is a privacy decision.} The most accurate way to
+classify a page is to send its text to a large language model. Doing that on
+every page turns a music player into a browsing-history exfiltration channel.
+The interesting design question is not whether to use an LLM, but how few pages
+can be sent to one.
+
+\textbf{The model is too slow to be on the critical path.} We measure a median
+of 139 s to generate a 28 s clip on a CPU laptop, against a page load of about
+two seconds. No amount of optimisation closes a two-order-of-magnitude gap; the
+interaction has to be designed so that the gap is not visible.
+
+\subsection{Contributions}
+
+\begin{itemize}
+\item A four-signal page descriptor and its measured cost, characterised over
+105 real websites in an instrumented Chromium with per-stage latency and forced
+layout counts.
+
+\item An abstaining three-tier classifier that functions as a privacy dial. A
+zero-shot NLI tier sits between a free keyword heuristic and a remote LLM and
+is permitted to decline when its top score, or its margin over the runner-up,
+falls below a threshold. Because it abstains rather than guesses, its two
+thresholds trade classification accuracy against \emph{exposure rate}, the
+fraction of pages whose text leaves the machine.
+
+\item A latency-hiding playback design, measured end to end on the server side:
+instant fallback followed by an abort-on-stale crossfaded swap, reported with
+its full latency distribution including failure modes.
+
+\item Loop synthesis from a non-loop model: bar-snapped chroma self-similarity,
+a 50 ms equal-power crossfade, and a gapless Ogg/Opus container, evaluated
+objectively over 141 generated clips.
+
+\item An evaluation apparatus that constrains overclaiming. Every number is
+emitted by a named script against a machine-readable metric registry that
+rejects any figure consuming an undeclared metric, and reports artefacts whose
+input data does not exist as blocked rather than building them from
+placeholders.
+\end{itemize}
+
+The remainder of the paper is organised as follows. Section \ref{sec:related}
+reviews related work. Section \ref{sec:gaps} states the research gaps and the
+problem this system addresses. Section \ref{sec:arch} describes the system
+architecture. Section \ref{sec:results} presents and discusses the results.
+Sections \ref{sec:conclusion}, \ref{sec:limitations} and \ref{sec:future} give
+the conclusion, limitations, and future scope.
+
+% ===========================================================================
+\section{Related Work}
+\label{sec:related}
+% ===========================================================================
+
+\subsection{Text-conditioned music and audio generation}
+
+MusicGen \cite{musicgen} is the generator used in this work. It models discrete
+EnCodec \cite{encodec} audio tokens with a single-stage transformer, avoiding
+the cascade of models earlier systems required, and conditions on a free-text
+description, which is what makes an automatically derived prompt possible at
+all. Jukebox \cite{jukebox} established that raw-audio generative modelling of
+music was feasible but at a computational cost far beyond interactive use.
+MusicLM \cite{musiclm} produces higher-fidelity long-form audio from text via a
+hierarchical sequence-to-sequence formulation, and latent-diffusion approaches
+such as AudioLDM \cite{audioldm} and timing-conditioned latent diffusion
+\cite{stableaudio} have since improved both quality and speed. AudioGen
+\cite{audiogen} applies the same conditioning idea to environmental audio.
+AudioCraft \cite{audiocraft} provides the reference implementation for MusicGen
+and EnCodec. We use the smallest MusicGen variant because it is the only one in
+the family that produces a 28 s clip on a consumer CPU in a time that a
+fallback path can plausibly hide.
+
+\subsection{Affective and context-aware music selection}
+
+A separate line of work drives music from an explicit affective specification
+rather than free text. AffectMachine-Pop \cite{affectmachine} is a controllable
+expert system that generates pop music in real time from a target
+valence--arousal point, demonstrating that real-time affective control is
+achievable when the generator is rule-based rather than learned. Web2Music
+occupies the opposite corner of that trade-off: a learned generator with
+greater timbral variety, and an interaction design that pays for its latency.
+MusicSense \cite{musicsense} recommends existing tracks from an emotional model
+of the text a user is reading and is the closest predecessor in intent; the
+difference is that it retrieves from a library where we generate, a choice we
+quantify rather than assert in Section \ref{sec:res-retrieval}.
+
+The affective vocabulary itself derives from dimensional models of emotion,
+principally Russell's circumplex \cite{russell} and Thayer's arousal model
+\cite{thayer}, which we use to place moods in a valence--arousal space and to
+map colour and behaviour signals onto shifts within it. Music emotion
+recognition, surveyed by Kim et al. \cite{kim2010} and Yang and Chen
+\cite{yang2012}, addresses the inverse problem of inferring the mood
+\emph{of} a piece of music, using audio and lyrics jointly
+\cite{multimodalmood}; the relationship between mood metadata and other
+descriptors was characterised early by Hu and Downie \cite{hu2007}. Our
+problem is the reverse, and is not strictly a classification problem with a
+ground truth, a point we return to in Section \ref{sec:limitations}.
+
+Context-aware computing supplies the framing for a system that reacts to
+implicit signals rather than explicit commands \cite{schilit, dey}, and calm
+technology \cite{weiser} supplies the design stance: an ambient system's most
+important property is often its ability to remain in the periphery. The
+psychological literature on background music and cognitive performance is
+mixed; a meta-analysis by K\"ampfe et al. \cite{kampfe} finds small and
+context-dependent effects, and the irrelevant-speech effect \cite{salame}
+suggests why instrumental, non-lyrical material is the safer choice for a
+system that plays while people read.
+
+\subsection{Zero-shot classification and model cascades}
+
+The middle tier of our classifier follows the natural-language-inference
+formulation of zero-shot classification: a candidate label is turned into a
+hypothesis and scored by an entailment model, admitting an unseen label set
+without task-specific training. Yin et al. \cite{zeroshotnli} established the
+formulation, and work on NLI prompt design for emotion classification
+\cite{nliprompts} shows that hypothesis phrasing materially changes accuracy
+across corpora, which is why we treat our template as a tunable parameter.
+Generative language models offer an alternative zero-shot route
+\cite{zeroshotgen}, and that is effectively what our remote tier provides. The
+relevant model background is the transformer architecture \cite{attention},
+BERT \cite{bert}, its distilled successors \cite{distilbert}, and the sentence
+embedding models \cite{sbert, minilm} whose small size makes in-browser
+inference practical.
+
+The property we exploit is not accuracy but \emph{abstention}. An entailment
+model returns a score per candidate label and cannot invent a label outside the
+candidate set, unlike a generative tier, which can return a category that does
+not exist. That makes a confidence gate meaningful. Cascading cheap classifiers
+in front of expensive ones is a long-established efficiency pattern, from Viola
+and Jones \cite{violajones} to recent work on routing queries across language
+models of differing cost \cite{frugalgpt}. Our contribution is not the cascade
+itself but the observation that when the cascade is deployed on a user's own
+machine, the quantity it controls is not latency or cost but disclosure.
+
+\subsection{Extracting signal from a rendered page}
+
+Boilerplate removal, separating article text from navigation, advertising and
+footers, is a mature problem; density-based approaches of the kind we implement
+were characterised by Kohlsch\"utter et al. \cite{boilerplate}. Readability
+scoring follows Flesch \cite{flesch}. Dominant-colour extraction from rendered
+content \cite{dominantcolour} gives a cheap, language-independent signal that
+survives on pages with little text. Cursor and scroll behaviour carries
+information about user engagement and attention in web contexts
+\cite{arapakis, cursorcikm}, which motivates our third and fourth signals; we
+use them only as a bias term on an already-computed mood distribution rather
+than as a primary classifier.
+
+\subsection{Loop synthesis and audio post-processing}
+
+Detecting a repeat point in generated audio is a structural-analysis problem.
+Self-similarity over spectral features, introduced for audio segmentation by
+Foote \cite{foote}, gives the candidate loop points, and beat tracking
+\cite{ellis} as implemented in librosa \cite{librosa} supplies the bar grid we
+snap them to. Loudness normalisation follows the integrated-loudness
+formulation standardised for broadcast \cite{ebu128}, and the delivered clip is
+carried in Opus \cite{opus}, whose container semantics, unlike MP3's, permit
+genuinely gapless playback.
+
+% ===========================================================================
+\section{Research Gaps and Problem Statement}
+\label{sec:gaps}
+% ===========================================================================
+
+\subsection{Gaps}
+
+Reading the two bodies of work above against each other exposes five gaps.
+
+\textbf{G1: generation systems are evaluated as models, not as deployments.}
+MusicGen, MusicLM and their successors are evaluated on audio quality and text
+adherence given a prompt. How a prompt is obtained in a running application,
+what it costs to obtain, and what happens during the tens of seconds the model
+takes are outside the frame. There is consequently little published guidance on
+placing such a model behind an interactive system.
+
+\textbf{G2: context-aware music systems assume a library.} MusicSense
+\cite{musicsense} and comparable recommenders select from a fixed catalogue.
+That bounds the achievable specificity to whatever was licensed, and the size
+of the request space needed to cover a mood, style, tempo and energy
+combination is not usually quantified. Whether generation is worth its cost
+relative to retrieval is asserted rather than measured.
+
+\textbf{G3: on-device classification is treated as a latency or cost problem.}
+Cascades \cite{violajones, frugalgpt} are motivated by compute and money. When
+the cheap tiers run on a user's own machine and the expensive tier is a remote
+API, the dominant quantity is neither: it is how much of the user's content
+leaves the device. We are not aware of published work that reports an
+\emph{exposure rate} as a first-class metric alongside accuracy, or that
+exposes it as a tunable operating curve.
+
+\textbf{G4: generative audio models do not produce loops.} A model trained to
+produce a fixed-length excerpt gives no guarantee that its end joins its
+beginning. Systems that need continuous ambient output must synthesise
+loopability after the fact, and the effectiveness of doing so, in particular
+how much audio must be discarded and how much discontinuity a crossfade
+actually removes, is not characterised in the literature we found.
+
+\textbf{G5: abstention policies in always-on generative systems are
+unmeasured.} A system that plays audio over whatever the user reads will
+sometimes encounter content over which music is inappropriate. Systems commonly
+claim such safeguards; we found no evaluation of one against adversarial input,
+including near-miss content that must \emph{not} trigger the safeguard.
+
+\subsection{Problem statement}
+
+Given a rendered web page $p$, produce a continuous ambient audio stream $a(t)$
+that is perceived as appropriate to $p$, subject to four constraints:
+
+\begin{enumerate}
+\item \textbf{Latency.} Audio must begin within a few hundred milliseconds of a
+committed decision about $p$, despite a generator with a service time of tens
+to hundreds of seconds.
+\item \textbf{Disclosure.} The fraction of pages whose text is transmitted off
+the device must be minimised and must be measurable, and must be zero for
+pages classified as sensitive.
+\item \textbf{Continuity.} A clip of bounded length must repeat without an
+audible seam or container gap for as long as the user remains on $p$.
+\item \textbf{Restraint.} For identifiable classes of page, the correct output
+is no output, and the system must be verifiable against that requirement.
+\end{enumerate}
+
+The claims we test are: (C1) the fallback-then-swap design keeps
+time-to-first-audio within the latency constraint while the generator runs;
+(C2) the abstaining cascade reduces exposure relative to a keyword-then-LLM
+design at a measurable accuracy cost, and the thresholds expose that as a
+continuous trade-off; (C3) bar-snapped loop synthesis reduces measured seam
+discontinuity; (C4) generation covers a request space that retrieval of a
+plausibly sized library does not; and (C5) the restraint policies fire when
+they should and not otherwise. C1, C3, C4 and C5 are answered in this paper.
+C2 is answered only in part, for reasons stated in Section
+\ref{sec:res-classification}.
+
+% ===========================================================================
+\section{System Architecture}
+\label{sec:arch}
+% ===========================================================================
+
+Web2Music is a Manifest V3 Chrome extension plus one HTTP audio-generation
+service. Four subsystems, referred to throughout as Features A, B, C and D,
+are chained by three versioned handoffs. Fig.~\ref{fig:pipeline} shows the
+process topology. The division of labour is dictated by browser security
+boundaries as much as by design: Feature A must run in the page's content
+script to reach the DOM, Feature B runs in the service worker because the
+content script's origin is untrusted, and playback and ONNX inference run in an
+offscreen document because Manifest V3 forbids audio in a service worker and a
+page's content security policy blocks WebAssembly compilation. Only Feature D
+is a network service.
+
+\begin{figure}[t]
+\centerline{\includegraphics[width=0.93\columnwidth]{figures/pipeline.pdf}}
+\caption{Process topology and the three handoffs. Everything except Feature D
+executes on the user's machine; Feature D is drawn with a dashed border to mark
+the only network boundary. The dotted edge carries ONNX inference and IndexedDB
+access from the content script to the offscreen document, because a page's
+content security policy blocks both in the page context.}
+\label{fig:pipeline}
+\end{figure}
+
+\subsection{Feature A: page descriptor extraction}
+
+A single function assembles a validated descriptor from six extractors. Text
+extraction strips boilerplate by text-density scoring over the DOM and reads
+the meta description and document language. A 384-dimension MiniLM sentence
+embedding \cite{minilm} is computed in-browser through ONNX in a Web Worker
+hosted by the offscreen document, with remote model loading disabled outright.
+Colour extraction builds an area-weighted HSL histogram over the computed
+background colours of up to 800 sampled elements, yielding dominant hues, a
+scalar colour-energy term, and a representative hue, saturation and lightness
+triple. A behaviour tracker exposes rolling scroll and cursor velocity in
+pixels per second from throttled listeners, capped at ten and twenty events per
+second respectively. Readability is a Flesch score \cite{flesch} normalised to
+the unit interval. Finally a persistent IndexedDB vector store answers whether
+a similar page has been seen before, so that a revisit can reuse a mood rather
+than re-run the pipeline; cosine thresholds are 0.95 for a duplicate, 0.85 for
+the same topic and 0.70 for a related page.
+
+Two invariants matter. Vectors from different embedding models are never
+compared, because a 384-dimension MiniLM vector and a 1536-dimension
+alternative describe different spaces, and comparing them returns confident
+nonsense rather than an error; records are therefore namespaced by backend,
+model and dimensionality. URLs are canonicalised, with tracking parameters and
+fragments stripped but meaningful query strings preserved, so that one article
+reachable at three URLs is one record.
+
+Extraction is kept off the critical path: it is debounced, scheduled through
+the browser's idle callback, and re-run on single-page-application navigation
+and throttled DOM mutation.
+
+\subsection{Feature B: the tiered classifier}
+
+Feature B maps the descriptor onto a thirteen-way content category and an
+eleven-way mood, then onto a music profile and a text prompt. The cascade is
+shown in Fig.~\ref{fig:cascade}.
+
+\begin{figure*}[t]
+\centerline{\includegraphics[width=\textwidth]{figures/cascade.pdf}}
+\caption{The three-tier classifier. Each tier carries its own acceptance
+condition; a tier that cannot meet it escalates. Tier 1.5 is an entailment
+model and can therefore \emph{abstain}, which is what makes its two thresholds
+a continuous dial between accuracy and exposure rather than a fixed operating
+point. Tier 2 is the only stage that transmits page text off the device, and it
+is unreachable for pages the sensitive check has already short-circuited.}
+\label{fig:cascade}
+\end{figure*}
+
+\textbf{Tier 1, keyword heuristic.} A keyword map over title, description and
+cleaned text produces a category. The mood distribution blends the keyword
+score with an HSL colour bias, in which saturation and lightness shift valence
+and arousal, and a behaviour bias, in which scroll and cursor velocity shift
+arousal. If the resulting confidence reaches 0.5 the pipeline stops here, at
+essentially zero cost and with nothing leaving the device. The tier is skipped
+by construction for non-English pages, which is the single largest known gap in
+the design.
+
+\textbf{Tier 1.5, zero-shot NLI with abstention.} On escalation the cleaned
+text is scored as an NLI premise against thirteen category hypotheses. The tier
+returns a label only if the top score is at least 0.45 \emph{and} its margin
+over the runner-up is at least 0.10; otherwise it abstains and escalates. Two
+backends exist: a hosted entailment endpoint, and a fully local quantised ONNX
+export that runs in the extension's own worker, which makes a zero-exposure
+configuration possible at some accuracy cost.
+
+\textbf{Tier 2, remote LLM.} A hosted instruction-tuned model with a structured
+JSON response, an eight-second timeout, and a fall-back-to-tier-1 path on any
+failure. This is the only tier that transmits page text, and the fraction of
+pages reaching it is the exposure rate.
+
+\textbf{Profile and prompt.} The committed mood is mapped to a music profile,
+comprising tempo, key, energy, valence, intensity, instrument list, timbre,
+reverb, ambience, style and dynamics, and thence to a generator prompt. For the
+\emph{focused} mood this yields, in part: ``lo-fi study, minimal electronic,
+deep focus. Instruments: piano, minimalist synth, light percussion, bass drone.
+Key: D minor, 88 BPM. No vocals. Seamlessly loopable. Instrumental only.''
+
+\textbf{The confidence window.} A newly classified mood does not take effect
+immediately; it must remain stable for five seconds before a transition is
+committed, so that scrolling through a link-heavy page or a brief detour does
+not cause the music to lurch. As Section \ref{sec:res-latency} shows, this is
+by far the largest term in the end-to-end wall clock, and it is a design
+parameter rather than an implementation limitation.
+
+\subsection{Feature D: generation, loop synthesis and caching}
+
+Feature D is an HTTP service with a five-stage pipeline, shown in
+Fig.~\ref{fig:featured}: validate, prompt, generate, post-process, cache.
+Validation fills every missing field with a default, so a malformed profile
+degrades rather than fails.
+
+\begin{figure*}[t]
+\centerline{\includegraphics[width=\textwidth]{figures/featured.pdf}}
+\caption{Feature D. The cache is consulted before the generator, and any stage
+failure diverts to a pre-generated per-mood clip rather than an error. The D4
+box is the loop-synthesis stage that converts a one-shot generator output into
+material that repeats; step 3 is where roughly half the generated audio is
+discarded, and step 5 is where the container choice, rather than the crossfade,
+is what actually makes the loop gapless.}
+\label{fig:featured}
+\end{figure*}
+
+\textbf{Loop synthesis.} The generator produces a one-shot clip, not a loop.
+Chroma features are computed and a vectorised self-similarity curve
+\cite{foote} is evaluated over candidate loop lengths, excluding anything
+shorter than three seconds. The best candidate is snapped to a bar boundary
+inferred from beat times \cite{ellis, librosa} under a 4/4 assumption, since
+true downbeats are not available. The clip is truncated at the loop point, and
+its head and tail are blended with a 50 ms equal-power crossfade so that the
+loop is continuous in energy across the seam. Loudness is normalised to
+$-18$ LUFS \cite{ebu128} and the clip is exported as Ogg/Opus \cite{opus}
+rather than MP3. That last choice is not aesthetic: an MP3 encoder pads the
+stream, and the padding is audible as a gap on every loop iteration. The
+container, not the crossfade, is what makes the loop gapless. The service also
+computes a diagnostic seam discontinuity, the RMS energy and spectral-centroid
+differences across the seam, both before and after the crossfade; this is the
+objective measure reported in Section \ref{sec:res-loop}.
+
+\textbf{Cache.} Requests are keyed on mood, style and key exactly, on energy,
+valence and arousal to one decimal place, on a three-way tempo bucket, a
+two-second duration bucket, and the export codec, so that a codec change
+invalidates the cache automatically. The generation seed is deliberately
+excluded: retries use fresh seeds, and including it would defeat caching
+entirely. A pre-warm grid of ninety-nine mood, style and tempo-bucket
+combinations is generated ahead of time.
+
+\subsection{Feature C: extension shell and playback}
+
+Playback lives in an offscreen document. Two alternating decks over raw audio
+buffer sources, rather than a higher-level player abstraction, are required so
+that loop start and end points can honour the detected loop point. They feed
+four independent gain stages in series, for crossfade, user volume, ducking and
+mood fade, so that un-ducking cannot erase a mood fade in progress, and then an
+equaliser, reverb and analyser chain.
+
+\textbf{Fallback-then-swap} is the mechanism that hides generation latency. On
+a committed mood the client issues a request for the pre-generated fallback
+clip and a generation request in parallel. The fallback clip, correct in mood
+and generic in content, begins playing immediately; when generation completes,
+the generated clip is crossfaded in on the second deck. One abort controller
+per request means a new mood cancels a stale generation rather than letting it
+arrive late and overwrite a now-incorrect track.
+
+\textbf{Restraint.} Three behaviours are deliberate refusals to produce output.
+Pages classified as sensitive, covering crisis, grief, self-harm and violence,
+produce silence, and their text is short-circuited before either LLM tier. If
+the active tab is itself audible the extension mutes, and if a background tab
+is audible it ducks, so that it never competes with media the user chose.
+Payment, banking and checkout pages, and all browser-internal URLs, are
+bypassed entirely.
+
+\textbf{Telemetry} is a local-only ring buffer. Every URL is hashed with
+SHA-256 before storage and nothing leaves the machine unless the user
+explicitly exports it.
+
+% ===========================================================================
+\section{Results and Discussion}
+\label{sec:results}
+% ===========================================================================
+
+\subsection{Evaluation design and provenance}
+
+The evaluation is organised as five studies. S1 is a systems benchmark covering
+extraction cost on real sites, generation latency by request class and server
+stage, and cost accounting in tokens, bytes and currency. S2 is a
+classification accuracy and tier ablation over seven configurations run offline
+against a frozen corpus. S3 covers audio and loop quality, objectively over
+every clip on disk and subjectively through a forced-choice listening test. S4
+is a controlled within-subjects user study with four conditions: silence, a
+fixed playlist, a shuffled condition in which the real generator is driven by a
+mood drawn from a \emph{different} page, and the adaptive system. S5 is an
+in-the-wild deployment. The shuffled condition is what would make the central
+perceptual claim falsifiable, since it holds generator, loop processing,
+crossfades and latency profile constant and varies only whether the music
+matches the page.
+
+S1, the objective half of S3, the retrieval baseline and the restraint audit
+have been executed and are reported here. S4 and S5 require institutional
+ethics approval that has not been obtained, and no human-subjects data has been
+collected. S2 requires an annotated corpus that does not yet exist; what we
+report for it is explicitly preliminary and is labelled as such.
+
+Every metric the evaluation may print is declared in a machine-readable
+registry with its definition, units, producing script and output field. Each
+figure and table generator declares the metric identifiers it consumes, and the
+build driver rejects any generator naming an undeclared metric and reports
+generators whose input data is absent as blocked, rather than allowing them to
+produce an empty or imputed plot. At the time of writing the driver builds
+seven of thirteen declared artefacts and blocks six. This apparatus is worth
+describing because it is the mechanism that surfaced two of the three negative
+results below: a generator refused to print a number its input did not support.
+
+\textbf{Corpus.} The classification corpus is stored as extracted page
+descriptors rather than URLs, because live pages change underneath a benchmark
+and destroy replication. A capture of 260 pages exists, of which 255 were
+captured, three were correctly bypassed and two failed navigation, across seven
+deliberately adversarial slices: 182 general, 15 vocabulary-mismatch pages
+whose words do not match their category, 15 non-English, 15 mixed-genre, 12
+sensitive, 15 sensitive near-miss pages that must \emph{not} trigger silence,
+and 6 bypass. No bypass violations and no duplicate content hashes were
+recorded. The corpus is not yet annotated.
+
+\textbf{Hardware.} All timings are from a single CPU laptop running Windows 11
+with the generation service in a local container alongside a PostgreSQL cache.
+No GPU configuration was measured.
+
+\subsection{Extraction cost}
+\label{sec:res-extraction}
+
+Table \ref{tab:extraction} reports descriptor construction over 105 real
+websites in a Playwright-driven Chromium, with the browser's own layout and
+style-recalculation counters read per page.
+
+\begin{table}[t]
+\caption{Feature A extraction cost, 105 real sites, CPU laptop. The embedding
+stage was stubbed in this run; see the caveat in the text.}
+\label{tab:extraction}
+\begin{center}
+\small
+\begin{tabular}{lrr}
+\toprule
+\textbf{Stage} & \textbf{p50 (ms)} & \textbf{p95 (ms)} \\
+\midrule
+Text extraction (boilerplate removal) & 11.0 & 55.5 \\
+Colour histogram (800 elements) & 3.9 & 9.7 \\
+Readability (Flesch) & 1.5 & 7.1 \\
+Behaviour snapshot & 0.13 & 0.30 \\
+Embedding (stubbed) & 1.2 & 2.6 \\
+Vector-store similarity search & 50.3 & 1222 \\
+\midrule
+\textbf{Total descriptor construction} & \textbf{85.9} & \textbf{1303.6} \\
+\midrule
+Forced layouts (count) & 21 & 100 \\
+Layout duration (ms) & 151.3 & 620.6 \\
+Text coverage (extracted / visible words) & 0.808 & --- \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+
+The descriptor is cheap at the median, 86 ms against a median navigation time
+of 1989 ms on the same pages, and it is scheduled at idle so it does not
+contend with page load. The cost is, however, strongly skewed: the 95th
+percentile is fifteen times the median and the maximum is 5.1 s, driven almost
+entirely by the vector-store similarity search, whose 95th percentile of 1222
+ms sits against a median of 50 ms on pages where the store has grown large.
+Boilerplate removal retains a median of 80.8 percent of visible words, which is
+the figure that matters for downstream classification quality.
+
+One caveat bounds this table. The embedding stage in this run was stubbed, so
+its 1.2 ms median is harness overhead rather than MiniLM inference. The total
+should be read as covering everything except the embedding; the in-browser
+embedding cost is not measured here.
+
+\subsection{Generation latency and its failure modes}
+\label{sec:res-latency}
+
+Table \ref{tab:d-latency} reports 144 requests against the running service.
+The distribution is not merely bimodal but has five distinct modes, and a mean
+over it would describe nothing that ever happened.
+
+\begin{table}[t]
+\caption{Generation service latency by request class, $n=144$, CPU laptop.
+Nearest-rank percentiles.}
+\label{tab:d-latency}
+\begin{center}
+\small
+\begin{tabular}{lrrrr}
+\toprule
+\textbf{Request class} & \textbf{n} & \textbf{p50 (ms)} & \textbf{p95 (ms)} & \textbf{max (ms)} \\
+\midrule
+Fallback endpoint & 33 & 7 & 153 & 154 \\
+Cache hit & 93 & 2{,}090 & 2{,}114 & 2{,}169 \\
+Cache miss (generated) & 3 & 139{,}318 & 207{,}468 & 207{,}468 \\
+Generation to fallback & 3 & 126{,}733 & 239{,}516 & 239{,}516 \\
+Client timeout (300 s) & 12 & 300{,}009 & 300{,}018 & 300{,}018 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+
+\begin{table}[t]
+\caption{Server-side stage times, same run.}
+\label{tab:d-stages}
+\begin{center}
+\small
+\begin{tabular}{lrrr}
+\toprule
+\textbf{Stage} & \textbf{n} & \textbf{p50 (ms)} & \textbf{p95 (ms)} \\
+\midrule
+D1 validate & 99 & 0 & 0 \\
+D5 cache check & 99 & 2{,}082 & 2{,}100 \\
+D2 prompt build & 6 & 0 & 0 \\
+D3 generate & 3 & 134{,}673 & 202{,}828 \\
+D4 post-process (loop and export) & 3 & 504 & 516 \\
+D5 save & 3 & 2{,}063 & 2{,}077 \\
+Unaccounted (queue and transport) & 99 & 6 & 82 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+
+The central systems result is the ratio between the first and third rows of
+Table \ref{tab:d-latency}: the fallback clip is served in a median of 7 ms and
+generation takes a median of 139 s, a factor of roughly twenty thousand. The
+fallback-then-swap design is not an optimisation; on CPU it is the only reason
+the system is usable at all. This establishes C1 on the server side.
+Fig.~\ref{fig:f1} shows the timeline, Table \ref{tab:d-stages} attributes the
+time to stages, Fig.~\ref{fig:f2} shows how generation scales with requested
+clip duration, and Fig.~\ref{fig:f3} the request path under concurrency.
+
+\begin{figure*}[t]
+\centerline{\includegraphics[width=0.98\textwidth]{figures/f1.pdf}}
+\caption{Server-side timeline: navigation to first sound to generated swap,
+with the five-second confidence window shaded as a design interval rather than
+a cost. Client-side extraction, classification and decode segments are absent
+because the end-to-end browser latency harness has not been run; the shape of
+the argument is unchanged, but navigation-to-audible is not yet measured end to
+end.}
+\label{fig:f1}
+\end{figure*}
+
+\begin{figure*}[t]
+\centerline{\includegraphics[width=0.98\textwidth]{figures/f2.pdf}}
+\caption{Generation latency against requested clip duration, with the
+real-time-factor line. Open markers are duration cells in which no request
+reached the generator; three of five cells produced generation timings, and the
+real-time-factor line is drawn only where it is measured.}
+\label{fig:f2}
+\end{figure*}
+
+\begin{figure}[t]
+\centerline{\includegraphics[width=\columnwidth]{figures/f3.pdf}}
+\caption{Speedup against concurrency. Every request in this sweep was a cache
+hit, so the near-linear speedup describes the request and cache path rather
+than generator batching; reporting it as batching would require a cold-cache
+re-run.}
+\label{fig:f3}
+\end{figure}
+
+Four qualifications belong with these tables. First, only three of 144 requests
+actually invoked the generator, because the pre-warm grid was already populated
+when the run executed; the generation percentiles therefore rest on $n=3$ and
+their confidence intervals are correspondingly wide, with a 95 percent interval
+on the median of 86.8 s to 207.5 s. Second, there is no cold-cache column: the
+run's cold section produced 33 cache hits and no misses, and measuring
+cold-cache behaviour requires flushing the cache before the section. Third,
+8.3 percent of requests, twelve of 144, hit the client's 300 s timeout; these
+are reported as their own row rather than dropped from the percentiles, and a
+one-in-twelve timeout rate is itself a finding about the viability of CPU-only
+deployment. Fourth, the 2.08 s cache check is anomalous and unexplained: a
+lookup against a local database should take single-digit milliseconds, yet it
+dominates every cache-hit response and is the largest addressable inefficiency
+in the system.
+
+\textbf{Discussion.} The interesting engineering result is not that generation
+is slow, which is well known, but that a two-stage fallback-then-swap makes a
+139 s generator feel immediate, at the cost of the first seconds of every mood
+being generic rather than specific. That cost is nearly invisible, because a
+listener who has not heard the specific clip cannot miss it. The corollary is
+that the dominant term in the end-to-end wall clock is not the model at all: it
+is the five-second confidence window, which we chose, and which exists to stop
+the music lurching on a brief detour. Reporting a single time-to-music figure
+for this system would therefore be actively misleading, attributing a design
+decision about stability to an implementation limitation about speed. We report
+the two separately and suggest that any always-on adaptive-media system do the
+same.
+
+\subsection{Cost and cache behaviour}
+\label{sec:res-cost}
+
+Cost accounting was computed over per-page token and byte counts from the
+preliminary corpus, but the unit costs are properties of the models and their
+pricing rather than of the corpus, so the per-page figures scale with whatever
+escalation rate a larger corpus produces. At the observed escalation rate the
+cascade sends a mean of 73.3 LLM tokens per page, 330 on the pages that
+actually escalate, performs thirteen NLI forward passes per zero-shot
+invocation and 2.89 per page on average, and transmits 501 bytes per page. At
+the tier-2 provider's published price this is 0.004 USD per thousand pages,
+rising to 0.018 USD if every page escalated.
+
+That figure changes what the cascade contribution claims. Even the pessimistic
+number is negligible, so nobody needs a cascade here to save money. The cascade
+is worth building because the quantity it controls is how much of the user's
+browsing leaves their machine, and that quantity has no price at which it
+becomes acceptable to stop measuring. This is the substance of gap G3: the same
+mechanism that the efficiency literature motivates by cost is, on a user's own
+device, a disclosure control.
+
+Audio cost is dominated by cache behaviour. Over a simulated 200-page browsing
+session against the ninety-nine-cell pre-warm grid, the expected cache hit rate
+is 57 percent under a uniform mood distribution, 65 percent under mild skew and
+83 percent under heavy skew. Which regime real browsing occupies is what the
+in-the-wild study would measure, and browsing is almost certainly not uniform.
+
+\subsection{Classification and the tier cascade}
+\label{sec:res-classification}
+
+This subsection is preliminary and should be read as an indication of the
+experiment's shape rather than as a result. The 260-page corpus exists but is
+unannotated; the figures in Table \ref{tab:tiers} were computed against an
+18-page development subset labelled by a single annotator, with no
+inter-annotator agreement and therefore no human ceiling to interpret them
+against. At that sample size a single page moves accuracy by more than five
+points.
+
+\begin{table}[t]
+\caption{Tier ablation on an 18-page development subset with one annotator.
+Preliminary; reported to show the ablation structure, not as a result.}
+\label{tab:tiers}
+\begin{center}
+\scriptsize
+\begin{tabular}{llrrrr}
+\toprule
+\textbf{\#} & \textbf{Configuration} & \textbf{Acc.} & \textbf{Macro-F1} & \textbf{Expos.} & \textbf{ZS proxy} \\
+\midrule
+A1 & keyword only & .722 & .856 & 0 & 0 \\
+A2 & zero-shot only, ungated & .722 & .679 & 0 & 1.00 \\
+A3 & LLM only & .833 & .828 & 1.00 & 0 \\
+A4 & keyword to LLM (prior system) & .889 & .908 & .222 & 0 \\
+A5 & keyword to ZS to LLM (this work) & .833 & .846 & \textbf{0} & .222 \\
+A6 & keyword to local ZS, no LLM & .778 & .810 & \textbf{0} & \textbf{0} \\
+A6b & keyword to local ZS to LLM & .889 & .897 & .111 & 0 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+
+Two observations will survive whatever a larger corpus shows, and one of them
+is uncomfortable. On this subset the full cascade (A5) is \emph{less} accurate
+than the design it replaced (A4), because the zero-shot tier absorbed four
+pages that would otherwise have escalated and answered two of them wrongly.
+What it bought in exchange was exposure: A5 transmitted no page text where A4
+transmitted 22 percent. Whether that trade is worth making is exactly the
+question the threshold sweep is designed to answer, and it cannot be answered
+at this sample size. Claim C2 is therefore only partly addressed: the exposure
+reduction is mechanically real and visible in the escalation counts, but the
+accuracy cost and the shape of the trade-off curve are not yet measured.
+
+The second observation is that the fully local configuration A6b, which uses an
+in-extension quantised entailment model, matched the prior system's accuracy
+while halving exposure. If that survives a real corpus, a zero-exposure
+operating point is available, and the privacy argument becomes considerably
+stronger.
+
+\textbf{Discussion.} The generalisable pattern is a free heuristic, a local
+model permitted to abstain, and a remote model as a last resort, with the
+abstention gates as the dial. Turning them up sends more pages to the remote
+model and buys accuracy; turning them down keeps text on the device and costs
+accuracy. Because the middle tier is an entailment model rather than a
+generative one, it also cannot hallucinate a category outside its candidate
+set, which is a robustness property and not merely a cost property. A
+generative middle tier would not have it.
+
+\subsection{Loop quality}
+\label{sec:res-loop}
+
+Table \ref{tab:seam} and Fig.~\ref{fig:f6} report objective loop metrics over
+141 real generated clips, 130 from the live cache and eleven pre-generated
+fallback clips, measuring the seam both before the crossfade, from the
+pipeline's own diagnostic, and after it, by re-measuring the tail against the
+head of the finished exported file.
+
+\begin{table}[t]
+\caption{Loop quality over 141 generated clips. Seam values are absolute
+differences across the loop point.}
+\label{tab:seam}
+\begin{center}
+\small
+\begin{tabular}{lrr}
+\toprule
+\textbf{Measure} & \textbf{p50} & \textbf{p95} \\
+\midrule
+Seam energy difference, pre-crossfade (dB) & 3.73 & 14.15 \\
+Seam energy difference, post-crossfade (dB) & 2.64 & 10.77 \\
+Paired improvement (dB) & \textbf{0.93} & --- \\
+Clips improved by the crossfade & \multicolumn{2}{r}{\textbf{58.9\%}} \\
+\midrule
+Spectral centroid difference, pre (Hz) & 441 & 2017 \\
+Spectral centroid difference, post (Hz) & 557 & 1322 \\
+\midrule
+Integrated loudness (LUFS; target $-18.0$) & $-18.09$ & --- \\
+Duration retention (delivered / requested) & \textbf{0.503} & 0.923 \\
+Duration compliance & \multicolumn{2}{r}{141/141 (100\%)} \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+
+\begin{figure*}[t]
+\centerline{\includegraphics[width=0.98\textwidth]{figures/f6.pdf}}
+\caption{Seam discontinuity before and after the equal-power crossfade, and the
+distribution of duration retention, over 141 clips. Sparse moods seam better
+than dense ones, but the predicted ordering does not hold cleanly.}
+\label{fig:f6}
+\end{figure*}
+
+Loudness normalisation works exactly as specified, at a median of $-18.09$ LUFS
+against a $-18.0$ target, and every clip is duration-compliant. The other two
+results are worse than the design assumed, and they qualify C3 rather than
+support it.
+
+\textbf{The crossfade helps less than expected, and not always.} The median
+paired improvement is 0.93 dB, and the crossfade \emph{worsens} the measured
+seam on 41.1 percent of clips. Spectral-centroid discontinuity rises at the
+median, from 441 to 557 Hz, while falling at the tail, from 2017 to 1322 Hz:
+the crossfade reliably clips the worst seams but perturbs already-good ones. An
+earlier run over a subset of 116 clips reported a median improvement of 3.82
+dB; the larger sample does not support that figure, and we report the larger
+one. A 50 ms window is short relative to the musical events at a bar boundary,
+and the obvious hypotheses, a longer or content-adaptive window, or selecting
+the loop point to minimise measured seam rather than to maximise chroma
+self-similarity, are untested.
+
+\textbf{Half the requested audio is discarded.} The delivered clip retains a
+median of 50.3 percent of its requested duration, because the loop point is
+chosen for musical self-similarity and everything after it is thrown away.
+Requesting 28 s reliably yields about 14 s. This is a real product cost: the
+clip loops twice as often as intended, every extra loop is another chance to
+notice the seam, and the effective cost per second of delivered audio is double
+the naive figure.
+
+Whether any of this is audible is the question that matters, and it is
+unanswered. A forced-choice listening harness with twenty-two seeded stimulus
+pairs and a scoring script has been built and validated end to end, but only
+against simulated listeners, which carries no information about human
+perception. No claim about seam audibility is made here.
+
+\textbf{Discussion.} Making a one-shot generator loop requires three things,
+and the least obvious one matters most. Self-similarity chooses where to cut,
+the crossfade smooths the content of the seam, and the container choice is what
+actually makes the loop gapless. Our results suggest the second step is the
+weakest link, and that the first step is expensive in a way the design did not
+anticipate. This is the concrete content of gap G4: the post-hoc
+loopability route works, but at a 50 percent yield and with a smaller
+discontinuity reduction than a designer would assume. A generator that could be
+conditioned to produce loop-closed material directly would dominate all of it.
+
+\subsection{Restraint policies}
+\label{sec:res-audit}
+
+Fourteen behavioural policies have executable tests and all fourteen pass
+(Table \ref{tab:audit}). This covers the mechanisms: sensitive pages short-circuit before both LLM tiers,
+audible tabs cause mute or duck correctly, payment and browser-internal URLs
+bypass, the word ``payload'' is not mistaken for a payment page, and every
+stored telemetry event carries a SHA-256 URL hash rather than a URL.
+
+\begin{table}[t]
+\caption{Restraint audit, abridged. All fourteen policies pass their tests.}
+\label{tab:audit}
+\begin{center}
+\scriptsize
+\begin{tabular}{p{4.3cm}p{3.1cm}}
+\toprule
+\textbf{Policy} & \textbf{Trigger} \\
+\midrule
+Crisis and sensitive content yields silence & one severe term, or two distinct ambiguous terms \\
+Sensitive page text never reaches either LLM tier & short-circuits both escalation paths \\
+Pages already playing audio are not competed with & active tab audible gives mute; background gives duck \\
+Payment, banking and checkout bypassed & pattern match on URL and title \\
+Browser-internal URLs bypassed & pattern match on URL scheme \\
+No browsing history leaves the device in plaintext & every event stores a SHA-256 URL hash \\
+A silent tier-2 model change is detectable & golden fixtures re-checked against the pinned model \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+
+The mechanisms pass; the predicate does not. Against a 20-page adversarial
+slice, eleven sensitive and nine benign, the sensitive-content detector records
+a false-negative rate of 0.455 and a false-positive rate of 0.333. The failures
+are systematic rather than noise. Three of the five false negatives are
+vocabulary outside the term list: pages on addiction, miscarriage and terminal
+illness are not detected at all, because the detector is a term list and those
+terms are not on it. One is euphemism, a page that never names the thing it is
+about. One is non-English, missed entirely by the same language gate that skips
+tier 1. All three false positives are near-misses: a page on grief-counselling
+degree programmes, a psychology textbook, and an engineering article using the
+word ``trauma'' are all wrongly silenced.
+
+This answers C5 in the negative, and it is the finding with the clearest
+consequence for anyone deploying such a system. A keyword list is not a
+sensitive-content detector. A system that promises silence on crisis content
+and delivers it 55 percent of the time has not implemented the policy it
+claims. The architecture is sound, in that the short-circuit is in the right
+place and provably fires, but the predicate feeding it is inadequate, and the
+remedy is a classifier rather than more keywords. The entailment tier already
+loaded for category classification can score a sensitivity hypothesis at near
+zero marginal cost.
+
+More generally, this is the substance of gap G5. For an always-on generative
+system, the quality of the abstention policy is as much part of the design as
+the quality of the generation, and unlike aesthetic quality it is directly
+measurable. Measuring it is what produced the most uncomfortable result in this
+paper: every mechanism passes its test, while the predicate feeding the most
+important mechanism fails on nearly half of an adversarial slice. That gap
+between ``the architecture is correct'' and ``the policy is delivered'' is
+invisible to any evaluation that tests only the mechanism.
+
+\subsection{Generation against retrieval}
+\label{sec:res-retrieval}
+
+The obvious cheaper design is to retrieve from a curated library, and gap G2
+notes that this is usually asserted rather than quantified. The request space
+the classifier can emit is eleven moods by seven styles by five tempo buckets
+by five energy buckets, or 1925 cells. Table \ref{tab:retrieval} gives the
+coverage a library of each size achieves.
+
+\begin{table}[t]
+\caption{Retrieval-baseline coverage of the 1925-cell request space. ``Dims
+wrong'' is the expected number of the four dimensions on which the nearest
+available track differs from the request.}
+\label{tab:retrieval}
+\begin{center}
+\small
+\begin{tabular}{rrrr}
+\toprule
+\textbf{Library size} & \textbf{Coverage} & \textbf{Skewed cov.} & \textbf{Dims wrong} \\
+\midrule
+50 & 2.6\% & 2.0\% & 3.90 \\
+99 & 5.0\% & 3.5\% & 3.80 \\
+200 & 9.9\% & 6.1\% & 3.61 \\
+500 & 22.9\% & 12.4\% & 3.09 \\
+1000 & 40.5\% & 20.4\% & 2.38 \\
+5000 & 92.6\% & 54.8\% & 0.30 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+
+A 500-track library, already a serious licensing and curation undertaking,
+covers under a quarter of the space, and the track it returns differs from the
+request on three of four dimensions on average. Reaching 90 percent coverage
+requires roughly 5000 tracks, and under a realistic skewed commissioning
+process even that falls to 55 percent. Add the requirement that every track be
+seamlessly loopable and the retrieval design is not obviously cheaper than
+generation. This supports C4. The bucket granularity is stated deliberately:
+coarser buckets would flatter the generation argument, so we chose defensible
+ones and publish them alongside the number.
+
+% ===========================================================================
+\section{Conclusion}
+\label{sec:conclusion}
+% ===========================================================================
+
+We presented Web2Music, a browser extension that conditions generative ambient
+music on the page being read, and reported a systems evaluation of it: a
+four-signal page descriptor costing 86 ms at the median across 105 real sites;
+a three-tier abstaining classifier that turns confidence thresholds into a
+disclosure control and classifies a thousand pages for less than half a cent; a
+fallback-then-swap playback design that hides a 139 s generator behind a 7 ms
+placeholder; and loop synthesis that makes a one-shot generator's output repeat
+without a container gap.
+
+Three results run against the design's own assumptions and are reported as
+such. The equal-power crossfade removes a median of only 0.93 dB of seam
+discontinuity and worsens the measured seam on 41 percent of clips. Half the
+generated audio is discarded to find a loop point, so a 28 s request yields
+about 14 s of delivered material. And the sensitive-content detector, whose
+refusal mechanism is architecturally correct and fully covered by passing
+tests, misses 45 percent of an adversarial crisis slice because its predicate
+is a keyword list rather than a classifier.
+
+The claim that page-conditioned music is perceived as fitting the page better
+than page-agnostic music remains untested. The study that would test it,
+including the shuffled condition that makes it falsifiable, is designed and
+instrumented but has not been run.
+
+% ===========================================================================
+\section{Limitations}
+\label{sec:limitations}
+% ===========================================================================
+
+\textbf{No human-subjects data.} The central perceptual claim is untested.
+Everything established here is about the system, not about its effect on
+people. The shuffled condition that would isolate conditioning from generation
+has never been run with a participant, and the forced-choice loop test has been
+validated only against simulated listeners.
+
+\textbf{Construct validity of page mood.} What mood a page ``should'' have is a
+preference, not a fact. We frame the annotation task as which of the eleven
+moods an annotator would least object to hearing while reading the page, and we
+hold that any reported accuracy must be printed alongside the inter-annotator
+ceiling. No accuracy figure in this paper has that ceiling attached, which is
+one reason Section \ref{sec:res-classification} is preliminary.
+
+\textbf{Preliminary classification results.} Table \ref{tab:tiers} rests on 18
+pages and one annotator. It shows the structure of the ablation and nothing
+more. The threshold sweep that would render the accuracy-exposure trade-off as
+a continuous curve, which is the primary evidence C2 requires, has not been run
+in any form.
+
+\textbf{English-only.} Tier 1 is skipped by construction on non-English pages,
+and the sensitive detector missed the one non-English sensitive page in the
+audit. Both are consequences of the same language gate. The pipeline nominally
+handles other languages by escalating; whether it handles them well is
+unmeasured.
+
+\textbf{Single hardware configuration.} Every latency figure comes from one CPU
+laptop. A GPU configuration, on which the fallback-then-swap design plausibly
+stops being necessary, and a cache-cold comparison, are both unmeasured.
+
+\textbf{Small samples inside the systems results.} Generation percentiles rest
+on three requests, the restraint audit on twenty pages, and the classification
+ablation on eighteen. These are stated at each point of use rather than
+aggregated away. The concurrency figure measures the request and cache path
+rather than generator batching, because every request in that sweep was a cache
+hit.
+
+\textbf{Cache state confounds latency and audio together.} A cache hit changes
+both the response time and the returned audio, since an identical clip recurs.
+Any user study must record cache state per session and should probably force
+fresh generation, accepting the latency cost.
+
+\textbf{Ethics and measurement boundaries.} No human-subjects data was
+collected; the planned studies require institutional approval that has not been
+obtained. Three design decisions are ethically load-bearing: page text is
+transmitted off-device only on escalation and never for pages marked sensitive;
+telemetry is local-only, URL-hashed at write time and exported only on an
+explicit user action; and crisis content produces silence rather than music. We
+regard the 45 percent false-negative rate on that last policy as a defect to be
+fixed before any deployment to participants, not a limitation to be noted in
+passing. Separately, uninstall rate is not measurable in this build, because
+the browser deletes extension-local storage on uninstall and the only surviving
+hook would require a network call that the local-only guarantee forbids;
+voluntary toggle-off is a proxy and not a substitute.
+
+% ===========================================================================
+\section{Future Scope}
+\label{sec:future}
+% ===========================================================================
+
+\textbf{Complete the perceptual evaluation.} The immediate priority is
+institutional ethics approval, followed by the four-condition within-subjects
+study and the in-the-wild deployment. The analysis plan is pre-specified:
+ordinal outcomes through cumulative-link mixed models with random intercepts
+for participant and page, comprehension treated as an equivalence claim rather
+than a null result, and multiple-comparison control within a declared
+confirmatory family. Sample size is set at 56 to survive attrition at a
+small-to-medium effect size.
+
+\textbf{Annotate the corpus and run the threshold sweep.} The 260-page corpus
+needs three independent annotators, an agreement coefficient per label set, and
+a reported human ceiling. The accuracy-exposure curve obtained by sweeping the
+two abstention thresholds is the single most valuable missing artefact, because
+it converts a fixed operating point into the dial that gap G3 identifies.
+
+\textbf{Replace the sensitive-content predicate.} A model-based detector,
+plausibly the entailment tier already resident in the extension, scoring
+sensitivity hypotheses directly, with the adversarial slice expanded well
+beyond twenty pages and rebalanced across euphemism, non-English and
+outside-vocabulary cases.
+
+\textbf{Improve loop synthesis.} Three cheap experiments follow directly from
+Section \ref{sec:res-loop}: a crossfade-window sweep, loop-point selection that
+minimises measured seam discontinuity rather than maximising chroma
+self-similarity, and a clip-length study asking whether a shorter clip that
+loops sooner beats a longer one that arrives later. The larger opportunity is
+conditioning the generator to produce loop-closed material directly.
+
+\textbf{Close the measurement gaps.} An end-to-end in-browser latency run to
+supply the client-side segments of Fig.~\ref{fig:f1}; a cold-cache re-run to
+obtain a genuine cache-miss column and a batching measurement; a GPU
+configuration; and an extraction re-run with the real in-browser embedding
+rather than a stub. The 2 s cache-check anomaly should be diagnosed first,
+since it dominates the common path.
+
+\textbf{Ablate the signals.} The descriptor claims four signals. A
+per-signal ablation, removing colour, behaviour and the embedding in turn,
+would establish whether the multimodal input earns its complexity. The
+instrumentation accepts partial descriptors already, so this is a matter of
+running it.
+
+\textbf{Extend beyond English and beyond the page.} The language gate is the
+common cause of two separate failures and deserves a dedicated treatment.
+Beyond that, the same descriptor-to-profile machinery would apply to other
+continuous contexts, such as documents, code editors or reading applications,
+where the design questions of latency hiding, disclosure control and abstention
+recur unchanged.
+
+\begin{thebibliography}{00}
+
+\bibitem{musicgen} J. Copet, F. Kreuk, I. Gat, T. Remez, D. Kant, G. Synnaeve, Y. Adi, and A. D\'efossez, ``Simple and controllable music generation,'' in \emph{Advances in Neural Information Processing Systems}, 2023.
+
+\bibitem{encodec} A. D\'efossez, J. Copet, G. Synnaeve, and Y. Adi, ``High fidelity neural audio compression,'' \emph{Transactions on Machine Learning Research}, 2023.
+
+\bibitem{musiclm} A. Agostinelli, T. I. Denk, Z. Borsos, J. Engel, M. Verzetti, A. Caillon, Q. Huang, A. Jansen, A. Roberts, M. Tagliasacchi, M. Sharifi, N. Zeghidour, and C. Frank, ``MusicLM: Generating music from text,'' arXiv:2301.11325, 2023.
+
+\bibitem{audiogen} F. Kreuk, G. Synnaeve, A. Polyak, U. Singer, A. D\'efossez, J. Copet, D. Parikh, Y. Taigman, and Y. Adi, ``AudioGen: Textually guided audio generation,'' in \emph{Proc. Int. Conf. Learning Representations}, 2023.
+
+\bibitem{audioldm} H. Liu, Z. Chen, Y. Yuan, X. Mei, X. Liu, D. Mandic, W. Wang, and M. D. Plumbley, ``AudioLDM: Text-to-audio generation with latent diffusion models,'' in \emph{Proc. Int. Conf. Machine Learning}, 2023.
+
+\bibitem{jukebox} P. Dhariwal, H. Jun, C. Payne, J. W. Kim, A. Radford, and I. Sutskever, ``Jukebox: A generative model for music,'' arXiv:2005.00341, 2020.
+
+\bibitem{stableaudio} Z. Evans, C. J. Carr, J. Taylor, S. H. Hawley, and J. Pons, ``Fast timing-conditioned latent audio diffusion,'' in \emph{Proc. Int. Conf. Machine Learning}, 2024.
+
+\bibitem{audiocraft} Meta AI, ``AudioCraft: A library for audio processing and generation with deep learning.'' [Online]. Available: \url{https://github.com/facebookresearch/audiocraft}
+
+\bibitem{affectmachine} ``AffectMachine-Pop: A controllable expert system for real-time pop music generation,'' arXiv:2506.08200, 2025.
+
+\bibitem{musicsense} R. Cai, C. Zhang, C. Wang, L. Zhang, and W.-Y. Ma, ``MusicSense: Contextual music recommendation using emotional allocation modeling,'' in \emph{Proc. ACM Int. Conf. Multimedia}, 2007, pp. 553--556.
+
+\bibitem{russell} J. A. Russell, ``A circumplex model of affect,'' \emph{Journal of Personality and Social Psychology}, vol. 39, no. 6, pp. 1161--1178, 1980.
+
+\bibitem{thayer} R. E. Thayer, \emph{The Biopsychology of Mood and Arousal}. New York: Oxford University Press, 1989.
+
+\bibitem{kim2010} Y. E. Kim, E. M. Schmidt, R. Migneco, B. G. Morton, P. Richardson, J. Scott, J. A. Speck, and D. Turnbull, ``Music emotion recognition: A state of the art review,'' in \emph{Proc. Int. Society for Music Information Retrieval Conf.}, 2010, pp. 255--266.
+
+\bibitem{yang2012} Y.-H. Yang and H. H. Chen, ``Machine recognition of music emotion: A review,'' \emph{ACM Trans. Intelligent Systems and Technology}, vol. 3, no. 3, pp. 1--30, 2012.
+
+\bibitem{hu2007} X. Hu and J. S. Downie, ``Exploring mood metadata: Relationships with genre, artist and usage metadata,'' in \emph{Proc. Int. Society for Music Information Retrieval Conf.}, 2007, pp. 67--72.
+
+\bibitem{multimodalmood} ``Multi-modal song mood detection with deep learning,'' Proc. Workshop on Computer Simulation of Musical Creativity, 2020.
+
+\bibitem{zeroshotnli} W. Yin, J. Hay, and D. Roth, ``Benchmarking zero-shot text classification: Datasets, evaluation and entailment approach,'' in \emph{Proc. EMNLP-IJCNLP}, 2019, pp. 3914--3923.
+
+\bibitem{nliprompts} F. M. Plaza-del-Arco, M.-T. Mart\'in-Valdivia, and R. Klinger, ``Natural language inference prompts for zero-shot emotion classification in text across corpora,'' in \emph{Proc. Int. Conf. Computational Linguistics}, 2022.
+
+\bibitem{zeroshotgen} R. Puri and B. Catanzaro, ``Zero-shot text classification with generative language models,'' arXiv:1912.10165, 2019.
+
+\bibitem{bert} J. Devlin, M.-W. Chang, K. Lee, and K. Toutanova, ``BERT: Pre-training of deep bidirectional transformers for language understanding,'' in \emph{Proc. NAACL-HLT}, 2019, pp. 4171--4186.
+
+\bibitem{distilbert} V. Sanh, L. Debut, J. Chaumond, and T. Wolf, ``DistilBERT, a distilled version of BERT: Smaller, faster, cheaper and lighter,'' arXiv:1910.01108, 2019.
+
+\bibitem{attention} A. Vaswani, N. Shazeer, N. Parmar, J. Uszkoreit, L. Jones, A. N. Gomez, {\L}. Kaiser, and I. Polosukhin, ``Attention is all you need,'' in \emph{Advances in Neural Information Processing Systems}, 2017.
+
+\bibitem{sbert} N. Reimers and I. Gurevych, ``Sentence-BERT: Sentence embeddings using Siamese BERT-networks,'' in \emph{Proc. EMNLP-IJCNLP}, 2019, pp. 3982--3992.
+
+\bibitem{minilm} W. Wang, F. Wei, L. Dong, H. Bao, N. Yang, and M. Zhou, ``MiniLM: Deep self-attention distillation for task-agnostic compression of pre-trained transformers,'' in \emph{Advances in Neural Information Processing Systems}, 2020.
+
+\bibitem{frugalgpt} L. Chen, M. Zaharia, and J. Zou, ``FrugalGPT: How to use large language models while reducing cost and improving performance,'' arXiv:2305.05176, 2023.
+
+\bibitem{violajones} P. Viola and M. Jones, ``Rapid object detection using a boosted cascade of simple features,'' in \emph{Proc. IEEE Conf. Computer Vision and Pattern Recognition}, 2001, pp. 511--518.
+
+\bibitem{boilerplate} C. Kohlsch\"utter, P. Fankhauser, and W. Nejdl, ``Boilerplate detection using shallow text features,'' in \emph{Proc. ACM Int. Conf. Web Search and Data Mining}, 2010, pp. 441--450.
+
+\bibitem{arapakis} I. Arapakis and L. A. Leiva, ``Predicting user engagement with direct displays using mouse cursor information,'' in \emph{Proc. ACM SIGIR}, 2016, pp. 599--608.
+
+\bibitem{cursorcikm} I. Arapakis, M. Lalmas, and G. Valkanas, ``Understanding within-content engagement through pattern analysis of mouse gestures,'' in \emph{Proc. ACM Int. Conf. Information and Knowledge Management}, 2014, pp. 1439--1448.
+
+\bibitem{dominantcolour} ``Dominant colour extraction from web content,'' \emph{IEEE Xplore}, document 9869653, 2022.
+
+\bibitem{flesch} R. Flesch, ``A new readability yardstick,'' \emph{Journal of Applied Psychology}, vol. 32, no. 3, pp. 221--233, 1948.
+
+\bibitem{foote} J. Foote, ``Automatic audio segmentation using a measure of audio novelty,'' in \emph{Proc. IEEE Int. Conf. Multimedia and Expo}, 2000, pp. 452--455.
+
+\bibitem{ellis} D. P. W. Ellis, ``Beat tracking by dynamic programming,'' \emph{Journal of New Music Research}, vol. 36, no. 1, pp. 51--60, 2007.
+
+\bibitem{librosa} B. McFee, C. Raffel, D. Liang, D. P. W. Ellis, M. McVicar, E. Battenberg, and O. Nieto, ``librosa: Audio and music signal analysis in Python,'' in \emph{Proc. Python in Science Conf.}, 2015, pp. 18--25.
+
+\bibitem{ebu128} European Broadcasting Union, ``Loudness normalisation and permitted maximum level of audio signals,'' EBU Recommendation R 128, 2020.
+
+\bibitem{opus} J.-M. Valin, K. Vos, and T. Terriberry, ``Definition of the Opus audio codec,'' IETF RFC 6716, 2012.
+
+\bibitem{schilit} B. Schilit, N. Adams, and R. Want, ``Context-aware computing applications,'' in \emph{Proc. IEEE Workshop on Mobile Computing Systems and Applications}, 1994, pp. 85--90.
+
+\bibitem{dey} A. K. Dey, ``Understanding and using context,'' \emph{Personal and Ubiquitous Computing}, vol. 5, no. 1, pp. 4--7, 2001.
+
+\bibitem{weiser} M. Weiser and J. S. Brown, ``The coming age of calm technology,'' in \emph{Beyond Calculation: The Next Fifty Years of Computing}. New York: Springer, 1997, pp. 75--85.
+
+\bibitem{kampfe} J. K\"ampfe, P. Sedlmeier, and F. Renkewitz, ``The impact of background music on adult listeners: A meta-analysis,'' \emph{Psychology of Music}, vol. 39, no. 4, pp. 424--448, 2011.
+
+\bibitem{salame} P. Salam\'e and A. Baddeley, ``Disruption of short-term memory by unattended speech: Implications for the structure of working memory,'' \emph{Journal of Verbal Learning and Verbal Behavior}, vol. 21, no. 2, pp. 150--164, 1982.
+
+\end{thebibliography}
+
+\end{document}

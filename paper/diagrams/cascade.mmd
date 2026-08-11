@@ -1,0 +1,25 @@
+flowchart LR
+  classDef free fill:#EAF0F9,stroke:#3B6FB6,stroke-width:2px,color:#14161E
+  classDef local fill:#E6F2EE,stroke:#2E8B6F,stroke-width:2px,color:#14161E
+  classDef remote fill:#FBE3E6,stroke:#B03A48,stroke-width:2px,color:#14161E
+  classDef stop fill:#EDEEF1,stroke:#6E7486,stroke-width:2px,color:#14161E
+  classDef out fill:#FFFFFF,stroke:#14161E,stroke-width:1.5px,color:#14161E
+
+  T1["<b>Tier 1 — keyword</b><br/>+ HSL colour bias<br/>+ behaviour bias<br/><i>~0 ms · nothing leaves</i><br/>accept if conf ≥ 0.5"]
+  T15["<b>Tier 1.5 — zero-shot NLI</b><br/>13 entailment hypotheses<br/><i>local ONNX or hosted</i><br/>accept if score ≥ 0.45<br/><b>and</b> margin ≥ 0.10"]
+  T2["<b>Tier 2 — remote LLM</b><br/>llama-3.1-8b-instant<br/><i>the only tier that<br/>transmits page text</i>"]
+  OUT(["mood (11) + category (13)<br/>→ music profile<br/>→ MusicGen prompt"])
+  SIL["<b>silence / bypass</b><br/>sensitive, payment<br/>or chrome:// page"]
+
+  T1 -- "escalate" --> T15
+  T15 -- "<b>abstain</b>" --> T2
+  T1 -. "accept" .-> OUT
+  T15 -. "accept" .-> OUT
+  T2 --> OUT
+  T1 -. "short-circuit" .-> SIL
+
+  class T1 free
+  class T15 local
+  class T2 remote
+  class SIL stop
+  class OUT out

@@ -130,3 +130,14 @@ temp/
 
 # Feature A benchmark output (regenerate with `npm run bench`)
 data-extraction/benchmark/extraction-cost-results.json
+
+# ── Paper build outputs (regenerate with `make` in paper/) ──
+paper/main.pdf
+paper/*.aux
+paper/*.out
+paper/*.bbl
+paper/*.blg
+paper/*.synctex.gz
+# The mermaid 10.x UMD bundle the diagram renderer needs: 3.3 MB, fetched from
+# any CDN mirror rather than vendored. See paper/README.md.
+paper/diagrams/mermaid10.js
