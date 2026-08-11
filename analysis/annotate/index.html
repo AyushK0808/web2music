@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Web2Music — S2 annotation (C-05)</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<!--
+  C-05 — the annotation tool.
+
+  Deliberately one self-contained file with no build step, no server and no
+  network access of any kind. Three reasons, all of which are about the data
+  rather than about convenience:
+
+  1. **Annotators must see exactly what the classifier saw.** If this page
+     could load the live URL, an annotator would label the page as it is today
+     rather than the frozen pageData record, and the ground truth would stop
+     describing the corpus. The URL is shown as text and is deliberately not a
+     link.
+  2. **Independence.** Five people annotating the same 600 pages produce a
+     defensible alpha only if they do not confer. A file each, opened locally,
+     with no shared state, makes conferring an act rather than an accident.
+  3. **It has to still open in two years.** A reviewer checking the
+     reproducibility bundle should be able to double-click this file.
+
+  Presentation order is shuffled per annotator from a seed derived from the
+  annotator id, so systematic fatigue (quality falling after ~an hour) does not
+  land on the same pages for everyone — which would look like those pages being
+  intrinsically hard.
+-->
+<style>
+  :root {
+    --bg: #f4f5f8; --card: #fff; --ink: #14161e; --soft: #4a4f60; --faint: #767c8f;
+    --line: #d9dce4; --accent: #2f5fa8; --accent-bg: #e8effa;
+    --warn: #8a3a34; --warn-bg: #f9e6e4; --ok: #1f6b4a; --ok-bg: #e2f1e9;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #12131a; --card: #1a1c24; --ink: #e9eaef; --soft: #b4b8c5; --faint: #868b9c;
+      --line: #303341; --accent: #7ea6e8; --accent-bg: #1c2739;
+      --warn: #e0928a; --warn-bg: #33201e; --ok: #74c79c; --ok-bg: #17301f;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.55 -apple-system,
+    BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  header {
+    position: sticky; top: 0; z-index: 5; background: var(--card);
+    border-bottom: 1px solid var(--line); padding: 10px 18px;
+    display: flex; gap: 18px; align-items: center; flex-wrap: wrap;
+  }
+  header h1 { font-size: 15px; margin: 0; font-weight: 650; }
+  .who { font: 12px ui-monospace, Menlo, Consolas, monospace; color: var(--faint); }
+  .bar { flex: 1; min-width: 140px; height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--accent); }
+  main { max-width: 1180px; margin: 0 auto; padding: 18px; display: grid; gap: 18px; grid-template-columns: 1fr; }
+  @media (min-width: 900px) { main { grid-template-columns: minmax(0,1.35fr) minmax(320px,1fr); align-items: start; } }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; }
+  .card h2 { font-size: 12px; letter-spacing: .09em; text-transform: uppercase; color: var(--faint);
+             margin: 0 0 10px; font-weight: 650; }
+  .page-title { font-size: 19px; font-weight: 650; margin: 0 0 4px; line-height: 1.28; }
+  .page-url { font: 12px ui-monospace, Menlo, Consolas, monospace; color: var(--faint);
+              word-break: break-all; margin: 0 0 12px; }
+  .page-text { white-space: pre-wrap; max-height: 46vh; overflow-y: auto; font-size: 14.5px;
+               line-height: 1.62; border-top: 1px solid var(--line); padding-top: 12px; }
+  .meta { display: flex; gap: 8px 16px; flex-wrap: wrap; font-size: 12px; color: var(--faint); margin-bottom: 10px; }
+  .swatches { display: inline-flex; gap: 4px; vertical-align: middle; }
+  .swatches span { width: 14px; height: 14px; border-radius: 3px; border: 1px solid var(--line); display: inline-block; }
+  fieldset { border: 0; padding: 0; margin: 0 0 18px; }
+  legend { font-size: 12px; letter-spacing: .09em; text-transform: uppercase; color: var(--faint);
+           font-weight: 650; padding: 0; margin-bottom: 8px; }
+  .prompt { font-size: 13.5px; color: var(--soft); margin: -4px 0 10px; }
+  .opts { display: flex; flex-wrap: wrap; gap: 6px; }
+  .opts label {
+    border: 1px solid var(--line); border-radius: 6px; padding: 5px 10px; cursor: pointer;
+    font-size: 13.5px; display: inline-flex; gap: 6px; align-items: baseline; background: var(--card);
+  }
+  .opts label:hover { border-color: var(--accent); }
+  .opts input { position: absolute; opacity: 0; pointer-events: none; }
+  .opts label:has(input:checked) { background: var(--accent-bg); border-color: var(--accent); font-weight: 600; }
+  .opts kbd { font: 11px ui-monospace, Menlo, Consolas, monospace; color: var(--faint); }
+  .nav { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 6px; }
+  button {
+    font: inherit; font-size: 14px; padding: 7px 14px; border-radius: 6px; cursor: pointer;
+    border: 1px solid var(--line); background: var(--card); color: var(--ink);
+  }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  .note { background: var(--warn-bg); color: var(--warn); border-radius: 6px; padding: 10px 12px;
+          font-size: 13px; margin-bottom: 14px; }
+  .note.ok { background: var(--ok-bg); color: var(--ok); }
+  .hide { display: none !important; }
+  input[type=text], input[type=file] { font: inherit; padding: 7px 10px; border-radius: 6px;
+    border: 1px solid var(--line); background: var(--card); color: var(--ink); width: 100%; }
+  .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+  .stat { font: 12px ui-monospace, Menlo, Consolas, monospace; color: var(--faint); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>S2 annotation</h1>
+  <span class="who" id="who"></span>
+  <div class="bar"><i id="progress" style="width:0%"></i></div>
+  <span class="stat" id="count"></span>
+  <button id="export">Export session</button>
+</header>
+
+<main id="setup">
+  <div class="card">
+    <h2>Before you start</h2>
+    <div class="note">
+      <strong>Do not discuss any page with another annotator until everyone has submitted.</strong>
+      Agreement produced by conversation inflates Krippendorff's α, and α is the ceiling every
+      accuracy number in the paper is measured against. An inflated ceiling is worse than a low
+      one, because it silently raises the bar the classifier is judged by and nobody can see it.
+    </div>
+    <p>You will see the text the extension extracted from each page — not the live page. That is
+      deliberate: you are labelling the same thing the classifier sees.</p>
+    <p>Roughly 45 seconds per page. Take a break every 30–40 pages; label quality falls off
+      noticeably after about an hour, and your progress is saved automatically.</p>
+
+    <div class="row">
+      <label style="flex:1">Your annotator id (initials are fine, but be consistent)<br>
+        <input type="text" id="annotator" placeholder="e.g. ak" autocomplete="off"></label>
+    </div>
+    <div class="row">
+      <label style="flex:1">Corpus file (<code>s2_corpus.json</code> from C-04)<br>
+        <input type="file" id="corpusFile" accept=".json,application/json"></label>
+    </div>
+    <div class="row">
+      <label style="flex:1">Resume from a previous export (optional)<br>
+        <input type="file" id="resumeFile" accept=".json,application/json"></label>
+    </div>
+    <button class="primary" id="start" disabled>Start</button>
+    <p class="stat" id="setupStatus"></p>
+  </div>
+
+  <div class="card">
+    <h2>What the three labels mean</h2>
+    <p><strong>Category</strong> — what the page is about. One of thirteen. If two fit, pick the
+      one a reader would name first.</p>
+    <p><strong>Mood</strong> — framed as a preference, not a fact:
+      <em>which of these eleven moods would you least object to hearing while reading this page?</em>
+      There is no correct answer, and that is the point. Do not try to guess what the system
+      would say.</p>
+    <p><strong>Sensitive</strong> — would auto-playing <em>any</em> music here be an intrusion?
+      Crisis and harm content, not merely serious or sad content. A history article about a
+      famine is not sensitive; a page about someone's suicidal thoughts is.</p>
+  </div>
+</main>
+
+<main id="app" class="hide">
+  <section class="card">
+    <div class="meta" id="pageMeta"></div>
+    <h2 style="margin-bottom:6px">Extracted page</h2>
+    <p class="page-title" id="pageTitle"></p>
+    <p class="page-url" id="pageUrl"></p>
+    <div class="page-text" id="pageText"></div>
+  </section>
+
+  <section class="card">
+    <fieldset>
+      <legend>Category</legend>
+      <div class="opts" id="categoryOpts"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Mood</legend>
+      <p class="prompt">Which of these would you <em>least object to hearing</em> while reading
+        this page?</p>
+      <div class="opts" id="moodOpts"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Sensitive</legend>
+      <p class="prompt">Would auto-playing any music here be an intrusion?</p>
+      <div class="opts" id="sensitiveOpts"></div>
+    </fieldset>
+
+    <div class="nav">
+      <button id="prev">← Previous</button>
+      <button class="primary" id="next">Next →</button>
+      <button id="skip">Can't judge — skip</button>
+      <span class="stat" id="pos"></span>
+    </div>
+    <p class="stat">Keys: 1–9/0/q/w/e category · a–k mood · s toggle sensitive · Enter next ·
+      Backspace previous</p>
+  </section>
+</main>
+
+<script>
+// ── Label sets. Mirrored from feature_b, and checked against the corpus if it
+//    happens to carry pre-labels, so a taxonomy change is caught here rather
+//    than at analysis time when the annotations are already collected.
+const CATEGORIES = ["Educational","News","Horror","Food","Entertainment","Sports","Finance",
+                    "Legal","Health","Comedy","Emotional","Mythological","Travel"];
+const MOODS = ["calm","focused","joyful","energetic","sad","dark","nostalgic","curious",
+               "tense","uplifting","neutral"];
+const CAT_KEYS = "1234567890qwe".split("");
+const MOOD_KEYS = "abcdefghijk".split("");
+
+const STORE = "w2m_annotation_v1";
+let state = { annotator: "", order: [], idx: 0, labels: {}, corpus: null, startedAt: null };
+
+// ── Deterministic per-annotator order ────────────────────────────────────────
+// A different seed per annotator, so fatigue does not fall on the same pages
+// for everyone. Same annotator id always gets the same order, so a resume
+// after a crash lands where they left off.
+function hashSeed(s) {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return h >>> 0;
+}
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function shuffled(ids, seedStr) {
+  const rnd = mulberry32(hashSeed(seedStr));
+  const a = ids.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(rnd() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// ── Setup ────────────────────────────────────────────────────────────────────
+const $ = (id) => document.getElementById(id);
+let pendingCorpus = null, pendingResume = null;
+
+function setupStatus(msg, bad) {
+  $("setupStatus").textContent = msg;
+  $("setupStatus").style.color = bad ? "var(--warn)" : "";
+}
+
+$("corpusFile").addEventListener("change", async (e) => {
+  const f = e.target.files[0];
+  if (!f) return;
+  try {
+    const raw = JSON.parse(await f.text());
+    const pages = (raw.pages || []).filter((p) => p.pageData);
+    if (!pages.length) throw new Error("no pages with extracted pageData in that file");
+    pendingCorpus = { ...raw, pages };
+    const skipped = (raw.pages || []).length - pages.length;
+    setupStatus(`${pages.length} annotatable page(s) loaded`
+      + (skipped ? ` — ${skipped} had no extraction and are excluded` : ""));
+  } catch (err) {
+    pendingCorpus = null;
+    setupStatus(`Could not read that file: ${err.message}`, true);
+  }
+  refreshStart();
+});
+
+$("resumeFile").addEventListener("change", async (e) => {
+  const f = e.target.files[0];
+  if (!f) return;
+  try {
+    pendingResume = JSON.parse(await f.text());
+    $("annotator").value = pendingResume.annotator || $("annotator").value;
+    setupStatus(`Resuming ${Object.keys(pendingResume.labels || {}).length} existing judgement(s)`);
+  } catch (err) {
+    pendingResume = null;
+    setupStatus(`Could not read that session file: ${err.message}`, true);
+  }
+  refreshStart();
+});
+
+$("annotator").addEventListener("input", refreshStart);
+function refreshStart() { $("start").disabled = !(pendingCorpus && $("annotator").value.trim()); }
+
+$("start").addEventListener("click", () => {
+  const annotator = $("annotator").value.trim();
+  const saved = loadLocal(annotator);
+  state.annotator = annotator;
+  state.corpus = pendingCorpus;
+  state.order = shuffled(pendingCorpus.pages.map((p) => p.id), annotator);
+  state.labels = { ...(saved?.labels || {}), ...(pendingResume?.labels || {}) };
+  state.startedAt = saved?.startedAt || new Date().toISOString();
+  // Resume at the first unlabelled page rather than at zero.
+  const firstOpen = state.order.findIndex((id) => !state.labels[id]);
+  state.idx = firstOpen === -1 ? state.order.length - 1 : firstOpen;
+  $("setup").classList.add("hide");
+  $("app").classList.remove("hide");
+  $("who").textContent = `${annotator} · ${state.corpus.pages.length} pages`;
+  renderOptions();
+  render();
+});
+
+// ── Options ──────────────────────────────────────────────────────────────────
+function renderOptions() {
+  $("categoryOpts").innerHTML = CATEGORIES.map((c, i) =>
+    `<label><input type="radio" name="category" value="${c}"><span>${c}</span>`
+    + `<kbd>${CAT_KEYS[i] || ""}</kbd></label>`).join("");
+  $("moodOpts").innerHTML = MOODS.map((m, i) =>
+    `<label><input type="radio" name="mood" value="${m}"><span>${m}</span>`
+    + `<kbd>${MOOD_KEYS[i] || ""}</kbd></label>`).join("");
+  $("sensitiveOpts").innerHTML =
+    `<label><input type="radio" name="sensitive" value="no"><span>Not sensitive</span></label>`
+    + `<label><input type="radio" name="sensitive" value="yes"><span>Sensitive — music would intrude</span><kbd>s</kbd></label>`;
+  for (const name of ["category", "mood", "sensitive"]) {
+    document.querySelectorAll(`input[name=${name}]`).forEach((el) =>
+      el.addEventListener("change", capture));
+  }
+}
+
+function currentPage() {
+  const id = state.order[state.idx];
+  return state.corpus.pages.find((p) => p.id === id);
+}
+
+function render() {
+  const p = currentPage();
+  const pd = p.pageData || {};
+  const text = pd.rawText || pd.text || pd.content || "";
+  $("pageTitle").textContent = pd.title || "(no title)";
+  $("pageUrl").textContent = pd.url || p.url || "";   // text, never a link
+  $("pageText").textContent = text || "(the extractor returned no text for this page)";
+  $("pageText").scrollTop = 0;
+
+  const colours = pd.colors ? Object.values(pd.colors).filter((v) => typeof v === "string") : [];
+  $("pageMeta").innerHTML = [
+    `${text.length} chars`,
+    pd.lang ? `lang ${pd.lang}` : null,
+    pd.wordCount ? `${pd.wordCount} words` : null,
+    colours.length ? `<span class="swatches">${colours.map((c) =>
+      `<span style="background:${c}" title="${c}"></span>`).join("")}</span>` : null,
+  ].filter(Boolean).map((s) => `<span>${s}</span>`).join("");
+
+  const lab = state.labels[p.id] || {};
+  for (const [name, val] of [["category", lab.category], ["mood", lab.mood],
+                             ["sensitive", lab.sensitive === undefined ? undefined
+                               : (lab.sensitive ? "yes" : "no")]]) {
+    document.querySelectorAll(`input[name=${name}]`).forEach((el) => {
+      el.checked = val !== undefined && el.value === val;
+    });
+  }
+
+  const done = Object.keys(state.labels).length;
+  const total = state.order.length;
+  $("progress").style.width = `${(done / total) * 100}%`;
+  $("count").textContent = `${done}/${total}`;
+  $("pos").textContent = `page ${state.idx + 1} of ${total} — id ${p.id}`;
+  $("prev").disabled = state.idx === 0;
+  $("next").disabled = state.idx >= total - 1 && !!state.labels[p.id];
+}
+
+function capture() {
+  const p = currentPage();
+  const get = (n) => document.querySelector(`input[name=${n}]:checked`)?.value;
+  const category = get("category"), mood = get("mood"), sensitive = get("sensitive");
+  if (!category && !mood && sensitive === undefined) return;
+  state.labels[p.id] = {
+    ...(state.labels[p.id] || {}),
+    ...(category ? { category } : {}),
+    ...(mood ? { mood } : {}),
+    ...(sensitive === undefined ? {} : { sensitive: sensitive === "yes" }),
+    at: new Date().toISOString(),
+  };
+  saveLocal();
+  render();
+}
+
+// ── Navigation ───────────────────────────────────────────────────────────────
+function go(delta) {
+  const n = state.idx + delta;
+  if (n < 0 || n >= state.order.length) return;
+  state.idx = n;
+  render();
+}
+$("next").addEventListener("click", () => go(1));
+$("prev").addEventListener("click", () => go(-1));
+$("skip").addEventListener("click", () => {
+  // A recorded skip, not a silent gap. "This annotator could not judge this
+  // page" is information; a missing row that might be fatigue is not.
+  const p = currentPage();
+  state.labels[p.id] = { skipped: true, at: new Date().toISOString() };
+  saveLocal();
+  go(1);
+});
+
+document.addEventListener("keydown", (e) => {
+  if ($("app").classList.contains("hide")) return;
+  if (e.target.tagName === "INPUT" && e.target.type === "text") return;
+  const k = e.key.toLowerCase();
+  if (e.key === "Enter") { e.preventDefault(); return go(1); }
+  if (e.key === "Backspace") { e.preventDefault(); return go(-1); }
+  const ci = CAT_KEYS.indexOf(k);
+  if (ci >= 0 && ci < CATEGORIES.length) {
+    document.querySelector(`input[name=category][value="${CATEGORIES[ci]}"]`).checked = true;
+    return capture();
+  }
+  const mi = MOOD_KEYS.indexOf(k);
+  if (mi >= 0 && mi < MOODS.length) {
+    document.querySelector(`input[name=mood][value="${MOODS[mi]}"]`).checked = true;
+    return capture();
+  }
+  if (k === "s") {
+    const yes = document.querySelector('input[name=sensitive][value=yes]');
+    const no = document.querySelector('input[name=sensitive][value=no]');
+    if (yes.checked) { no.checked = true; } else { yes.checked = true; }
+    return capture();
+  }
+});
+
+// ── Persistence ──────────────────────────────────────────────────────────────
+function saveLocal() {
+  try {
+    localStorage.setItem(`${STORE}:${state.annotator}`, JSON.stringify({
+      annotator: state.annotator, labels: state.labels, startedAt: state.startedAt,
+      corpusHash: state.corpus?.captured_at || null,
+    }));
+  } catch { /* quota or private mode — the export button is the real save */ }
+}
+function loadLocal(annotator) {
+  try { return JSON.parse(localStorage.getItem(`${STORE}:${annotator}`) || "null"); }
+  catch { return null; }
+}
+
+$("export").addEventListener("click", () => {
+  // Exactly the shape analysis/krippendorff.py reads.
+  const payload = {
+    annotator: state.annotator,
+    corpus_captured_at: state.corpus?.captured_at || null,
+    started_at: state.startedAt,
+    exported_at: new Date().toISOString(),
+    n_labelled: Object.values(state.labels).filter((l) => !l.skipped).length,
+    n_skipped: Object.values(state.labels).filter((l) => l.skipped).length,
+    labels: state.labels,
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `annotations-${state.annotator || "unknown"}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+
+// Losing an hour of judgements to a stray tab close is the one failure that
+// makes an annotator not come back.
+window.addEventListener("beforeunload", (e) => {
+  if (state.annotator && Object.keys(state.labels).length) { e.preventDefault(); e.returnValue = ""; }
+});
+</script>
+</body>
+</html>

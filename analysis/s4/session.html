@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Reading study</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<!--
+  C-13 — the S4 session runner.
+
+  Titled "Reading study" and referring throughout to "four audio settings",
+  because a participant who can tell which condition is "the system" gives you
+  demand characteristics instead of preferences (§10). Condition names appear
+  nowhere a participant can see them; assignment.mjs assigns each participant
+  their own Setting A–D mapping.
+
+  The experimenter loads a session file produced by build_sessions.mjs. The app
+  drives: 4 blocks x 8 pages x 4 minutes, per-page comprehension and ratings,
+  raw NASA-TLX and a distraction scale per block, a final forced ranking and
+  free text. The "I wanted to turn it off" key (space) is logged continuously
+  with a timestamp, which is why it is a keypress and not a post-hoc question:
+  asked afterwards, people report a summary of a feeling; pressed in the
+  moment, it is an event with a time on it.
+
+  Behavioural measures (skip, volume, mute, mood correction) are NOT collected
+  here — ui/src/telemetry.js already records them as user_control events and
+  POPUP_MOOD_CORRECTION already yields a free per-page human mood label. Those
+  are exported from the extension and joined on (participant, page) afterwards.
+  Re-collecting them here would produce two sources of truth for the same
+  measure.
+-->
+<style>
+  :root { --bg:#f4f5f8; --card:#fff; --ink:#14161e; --soft:#4c5162; --line:#dbdee7;
+          --accent:#2f5fa8; --accent-bg:#e9f0fb; --warn:#8a3a34; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#101219; --card:#191c24; --ink:#e9eaf0; --soft:#aeb4c2; --line:#2e3240;
+            --accent:#6e9ce0; --accent-bg:#1d2839; --warn:#e0928a; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:720px;margin:0 auto;padding:26px 20px 60px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px 24px;
+        margin-bottom:16px}
+  h1{font-size:21px;margin:0 0 10px;line-height:1.28} h2{font-size:15px;margin:22px 0 8px}
+  p{color:var(--soft);margin:0 0 12px}
+  button{font:inherit;padding:11px 16px;border-radius:9px;border:1px solid var(--line);
+         background:transparent;color:var(--ink);cursor:pointer}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:650}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  .scale{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+  .scale label{border:1px solid var(--line);border-radius:8px;padding:8px 13px;cursor:pointer;
+               min-width:44px;text-align:center}
+  .scale input{position:absolute;opacity:0;pointer-events:none}
+  .scale label:has(input:checked){background:var(--accent-bg);border-color:var(--accent);font-weight:650}
+  .ends{display:flex;justify-content:space-between;font-size:12.5px;color:var(--soft);margin-bottom:16px}
+  .timer{font:600 15px ui-monospace,Menlo,Consolas,monospace;color:var(--accent)}
+  .bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin:10px 0 18px}
+  .bar i{display:block;height:100%;background:var(--accent)}
+  .hide{display:none!important}
+  .muted{font-size:13px;color:var(--soft)}
+  input[type=file],textarea{font:inherit;width:100%;padding:9px 11px;border-radius:8px;
+    border:1px solid var(--line);background:var(--card);color:var(--ink)}
+  textarea{min-height:110px;resize:vertical}
+  ol.rank{list-style:none;padding:0} ol.rank li{border:1px solid var(--line);border-radius:8px;
+    padding:10px 13px;margin-bottom:7px;cursor:grab;background:var(--card)}
+  .flash{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--accent);
+         color:#fff;padding:9px 16px;border-radius:20px;font-size:14px;opacity:0;transition:opacity .2s}
+  .flash.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <section id="setup" class="card">
+    <h1>Reading study — session setup</h1>
+    <p class="muted">Experimenter only. The participant should not see this screen.</p>
+    <h2>Session file</h2>
+    <input type="file" id="sessionFile" accept=".json">
+    <p class="muted" id="setupStatus"></p>
+    <button class="primary" id="begin" disabled>Begin session</button>
+  </section>
+
+  <section id="brief" class="card hide">
+    <h1>Welcome</h1>
+    <p>You will read eight web pages, four times over, under <strong>four different audio
+      settings</strong>. Each page is on screen for four minutes.</p>
+    <p>After each page there are four short questions about what you read, and a couple of
+      questions about the audio. After each set of eight pages there is a short questionnaire
+      about how the block felt.</p>
+    <p><strong>One thing to remember:</strong> at any moment, if you find yourself wishing the
+      audio would stop, press the <strong>space bar</strong>. You do not need to explain it and
+      nothing will happen — we just want to know when it happened. Press it as often as you
+      like.</p>
+    <p>The whole session takes about an hour. You can stop at any time.</p>
+    <button class="primary" id="startBlocks">I'm ready</button>
+  </section>
+
+  <section id="reading" class="card hide">
+    <div class="bar"><i id="prog"></i></div>
+    <h1 id="readingTitle">Page 1 of 8</h1>
+    <p id="readingSetting" class="muted"></p>
+    <p>Read this page as you normally would. Move on when the timer ends.</p>
+    <p class="timer" id="timer">4:00</p>
+    <p class="muted">Press <strong>space</strong> any time you wish the audio would stop.</p>
+    <button id="skipTimer" class="muted">Finished early — continue</button>
+  </section>
+
+  <section id="questions" class="card hide">
+    <h1>About the page you just read</h1>
+    <div id="comprehension"></div>
+    <div id="audioQuestions">
+      <h2>The music suited this page.</h2>
+      <div class="scale" id="fitScale"></div>
+      <div class="ends"><span>strongly disagree</span><span>strongly agree</span></div>
+      <h2>I liked the music itself.</h2>
+      <div class="scale" id="likingScale"></div>
+      <div class="ends"><span>strongly disagree</span><span>strongly agree</span></div>
+    </div>
+    <button class="primary" id="nextPage" disabled>Continue</button>
+  </section>
+
+  <section id="tlx" class="card hide">
+    <h1>How did that set of pages feel?</h1>
+    <div id="tlxItems"></div>
+    <h2>The audio pulled my attention away from reading.</h2>
+    <div class="scale" id="d1"></div>
+    <h2>I found the audio irritating.</h2>
+    <div class="scale" id="d2"></div>
+    <h2>I stopped noticing the audio after a while.</h2>
+    <div class="scale" id="d3"></div>
+    <div class="ends"><span>strongly disagree</span><span>strongly agree</span></div>
+    <button class="primary" id="nextBlock" disabled>Continue</button>
+  </section>
+
+  <section id="final" class="card hide">
+    <h1>Last part</h1>
+    <p>Rank the four audio settings from best to worst for reading. Drag to reorder.</p>
+    <ol class="rank" id="ranking"></ol>
+    <h2>Anything you want to say about any of them?</h2>
+    <textarea id="freeText" placeholder="Optional."></textarea>
+    <button class="primary" id="finish">Finish</button>
+  </section>
+
+  <section id="done" class="card hide">
+    <h1>Done — thank you</h1>
+    <p>Please hand back to the experimenter.</p>
+    <button class="primary" id="download">Save session data</button>
+    <p class="muted" id="doneStats"></p>
+  </section>
+
+</div>
+<div class="flash" id="flash">noted</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const STORE = "w2m_s4_session";
+let session = null, flat = [], idx = 0, data = null;
+let timerHandle = null, remaining = 0, pageStartedAt = 0;
+
+const PAGE_SECONDS = 240;   // 4 minutes, per the protocol
+const TLX_ITEMS = [
+  ["mental", "Mental demand — how mentally demanding was it?"],
+  ["physical", "Physical demand — how physically demanding was it?"],
+  ["temporal", "Temporal demand — how hurried or rushed did you feel?"],
+  ["performance", "Performance — how successful were you at understanding what you read?"],
+  ["effort", "Effort — how hard did you have to work?"],
+  ["frustration", "Frustration — how insecure, irritated or annoyed were you?"],
+];
+
+function scale(container, name, n = 7) {
+  container.innerHTML = Array.from({ length: n }, (_, i) =>
+    `<label><input type="radio" name="${name}" value="${i + 1}"><span>${i + 1}</span></label>`).join("");
+}
+
+// ── Setup ────────────────────────────────────────────────────────────────
+$("sessionFile").addEventListener("change", async (e) => {
+  const f = e.target.files[0];
+  if (!f) return;
+  try {
+    const raw = JSON.parse(await f.text());
+    session = Array.isArray(raw) ? raw[0] : raw;
+    if (!session?.blocks?.length) throw new Error("no blocks in that file");
+    $("setupStatus").textContent =
+      `${session.participantId}: ${session.blocks.length} blocks x `
+      + `${session.blocks[0].trials.length} pages`;
+    $("begin").disabled = false;
+  } catch (err) {
+    $("setupStatus").textContent = `Could not read that file: ${err.message}`;
+    $("begin").disabled = true;
+  }
+});
+
+$("begin").onclick = () => {
+  flat = [];
+  session.blocks.forEach((b, bi) => b.trials.forEach((t, ti) =>
+    flat.push({ ...t, blockIndex: bi, pageIndex: ti, displayName: b.displayName })));
+  const saved = JSON.parse(localStorage.getItem(`${STORE}:${session.participantId}`) || "null");
+  data = saved?.data || {
+    participantId: session.participantId,
+    conditionOrder: session.conditionOrder,
+    displayName: session.displayName,
+    diagnostics: session.diagnostics,
+    startedAt: new Date().toISOString(),
+    responses: [], blocks: [], turnoffEvents: [], ranking: null, freeText: null,
+  };
+  idx = saved?.idx || 0;
+  $("setup").classList.add("hide");
+  ($ (idx === 0 ? "brief" : "reading")).classList.remove("hide");
+  if (idx > 0) startPage();
+};
+$("startBlocks").onclick = () => {
+  $("brief").classList.add("hide"); $("reading").classList.remove("hide"); startPage();
+};
+
+// ── The turn-it-off key ──────────────────────────────────────────────────
+// Logged with a timestamp and the page it happened on, everywhere in the
+// session, not only during reading — the urge does not stop at a screen
+// boundary and neither should the logger.
+document.addEventListener("keydown", (e) => {
+  if (e.code !== "Space" || !data) return;
+  if (["INPUT", "TEXTAREA"].includes(e.target.tagName)) return;
+  e.preventDefault();
+  const t = flat[idx];
+  data.turnoffEvents.push({
+    at: new Date().toISOString(),
+    block: t?.blockIndex ?? null, page: t?.pageId ?? null,
+    condition: t?.condition ?? null,
+    secondsIntoPage: pageStartedAt ? Math.round((Date.now() - pageStartedAt) / 1000) : null,
+  });
+  save();
+  const f = $("flash"); f.classList.add("show"); setTimeout(() => f.classList.remove("show"), 700);
+});
+
+// ── Reading ──────────────────────────────────────────────────────────────
+function startPage() {
+  const t = flat[idx];
+  $("reading").classList.remove("hide");
+  $("questions").classList.add("hide");
+  $("readingTitle").textContent =
+    `Page ${t.pageIndex + 1} of ${session.blocks[0].trials.length}`;
+  $("readingSetting").textContent = `Audio: ${t.displayName}`;
+  $("prog").style.width = `${(idx / flat.length) * 100}%`;
+  pageStartedAt = Date.now();
+  remaining = PAGE_SECONDS;
+  tick();
+  clearInterval(timerHandle);
+  timerHandle = setInterval(tick, 1000);
+
+  // The page itself opens in a second window driven by the extension. The
+  // session file carries the URL and the generation nonce; the experimenter's
+  // harness is what navigates. This app deliberately does not embed the page:
+  // an iframe would change how the extension sees it, and the extension's
+  // behaviour is the independent variable.
+  window.dispatchEvent(new CustomEvent("w2m-s4-page", { detail: t }));
+}
+
+function tick() {
+  const m = Math.floor(remaining / 60), s = remaining % 60;
+  $("timer").textContent = `${m}:${String(s).padStart(2, "0")}`;
+  if (remaining-- <= 0) { clearInterval(timerHandle); askQuestions(); }
+}
+$("skipTimer").onclick = () => { clearInterval(timerHandle); askQuestions(); };
+
+// ── Per-page questions ───────────────────────────────────────────────────
+function askQuestions() {
+  const t = flat[idx];
+  $("reading").classList.add("hide"); $("questions").classList.remove("hide");
+
+  const items = t.comprehension || [];
+  $("comprehension").innerHTML = items.length
+    ? items.map((q, i) => `<h2>${i + 1}. ${q.question}</h2>`
+        + `<div class="scale">${q.options.map((o, j) =>
+            `<label><input type="radio" name="c${i}" value="${j}"><span>${o}</span></label>`).join("")}</div>`).join("")
+    : `<p class="muted">(no comprehension items in the session file for this page)</p>`;
+
+  // SILENCE has no music, so the audio questions are not asked. Asking them
+  // anyway and recording a number would put a fit rating on a condition where
+  // fit is undefined — see the same point in F7.
+  const silent = t.condition === "SILENCE";
+  $("audioQuestions").classList.toggle("hide", silent);
+  if (!silent) { scale($("fitScale"), "fit"); scale($("likingScale"), "liking"); }
+
+  $("nextPage").disabled = true;
+  $("questions").onchange = () => {
+    const answered = items.every((_, i) => document.querySelector(`input[name=c${i}]:checked`));
+    const audioOk = silent || (document.querySelector("input[name=fit]:checked")
+                            && document.querySelector("input[name=liking]:checked"));
+    $("nextPage").disabled = !(answered && audioOk);
+  };
+  if (!items.length && silent) $("nextPage").disabled = false;
+}
+
+$("nextPage").onclick = () => {
+  const t = flat[idx];
+  const items = t.comprehension || [];
+  const correct = items.reduce((acc, q, i) => {
+    const v = document.querySelector(`input[name=c${i}]:checked`);
+    return acc + (v && Number(v.value) === q.answer ? 1 : 0);
+  }, 0);
+  const val = (n) => {
+    const el = document.querySelector(`input[name=${n}]:checked`);
+    return el ? Number(el.value) : null;
+  };
+  data.responses.push({
+    participant: session.participantId, condition: t.condition, page: t.pageId,
+    block: t.blockIndex, fit: val("fit"), liking: val("liking"),
+    comprehension: items.length ? correct : null,
+    n_comprehension_items: items.length,
+    played_mood: t.playedMood ?? null, true_mood: t.trueMood,
+    shuffle_distance: t.shuffleDistance ?? null,
+    seconds_on_page: Math.round((Date.now() - pageStartedAt) / 1000),
+  });
+  idx++;
+  save();
+
+  const endOfBlock = idx >= flat.length || flat[idx].blockIndex !== t.blockIndex;
+  $("questions").classList.add("hide");
+  if (endOfBlock) askBlockQuestions(t);
+  else startPage();
+};
+
+// ── Per-block questionnaire ──────────────────────────────────────────────
+function askBlockQuestions(lastTrial) {
+  $("tlx").classList.remove("hide");
+  $("tlxItems").innerHTML = TLX_ITEMS.map(([k, label]) =>
+    `<h2>${label}</h2><div class="scale" id="tlx_${k}"></div>`).join("");
+  // Raw TLX: 21-point subscales, unweighted. The weighting procedure is
+  // dropped deliberately — raw TLX is what the plan specifies and the pairwise
+  // weighting adds ten minutes per block for a difference this design does not
+  // need.
+  for (const [k] of TLX_ITEMS) scale($(`tlx_${k}`), `tlx_${k}`, 21);
+  scale($("d1"), "d1"); scale($("d2"), "d2"); scale($("d3"), "d3");
+  $("nextBlock").disabled = true;
+  $("tlx").onchange = () => {
+    const all = [...TLX_ITEMS.map(([k]) => `tlx_${k}`), "d1", "d2", "d3"];
+    $("nextBlock").disabled = !all.every((n) => document.querySelector(`input[name=${n}]:checked`));
+  };
+  $("nextBlock").onclick = () => {
+    const v = (n) => Number(document.querySelector(`input[name=${n}]:checked`).value);
+    const subs = Object.fromEntries(TLX_ITEMS.map(([k]) => [k, v(`tlx_${k}`)]));
+    // 1..21 -> 0..100, the standard raw-TLX rescale.
+    const rescaled = Object.values(subs).map((x) => ((x - 1) / 20) * 100);
+    data.blocks.push({
+      participant: session.participantId, condition: lastTrial.condition,
+      block: lastTrial.blockIndex,
+      tlx_subscales: subs,
+      tlx: rescaled.reduce((a, b) => a + b, 0) / rescaled.length,
+      // Item 3 is reverse-coded: "I stopped noticing it" is low distraction.
+      distraction: (v("d1") + v("d2") + (8 - v("d3"))) / 3,
+      distraction_items: { pulled_attention: v("d1"), irritating: v("d2"), habituated: v("d3") },
+      turnoff_presses: data.turnoffEvents.filter((e) => e.block === lastTrial.blockIndex).length,
+    });
+    save();
+    $("tlx").classList.add("hide");
+    if (idx >= flat.length) askFinal(); else startPage();
+  };
+}
+
+// ── Final ranking ────────────────────────────────────────────────────────
+function askFinal() {
+  $("final").classList.remove("hide");
+  const names = session.blocks.map((b) => b.displayName);
+  $("ranking").innerHTML = names.map((n) =>
+    `<li draggable="true" data-name="${n}">${n}</li>`).join("");
+  let dragged = null;
+  $("ranking").addEventListener("dragstart", (e) => { dragged = e.target; });
+  $("ranking").addEventListener("dragover", (e) => {
+    e.preventDefault();
+    const over = e.target.closest("li");
+    if (over && over !== dragged) {
+      const list = $("ranking");
+      const items = [...list.children];
+      list.insertBefore(dragged, items.indexOf(dragged) < items.indexOf(over)
+        ? over.nextSibling : over);
+    }
+  });
+}
+
+$("finish").onclick = () => {
+  // Ranking is stored by condition, not by the label the participant saw —
+  // "Setting A" means a different condition for each participant.
+  const byLabel = Object.fromEntries(
+    Object.entries(session.displayName).map(([cond, label]) => [label, cond]));
+  data.ranking = [...$("ranking").children].map((li, i) => ({
+    rank: i + 1, condition: byLabel[li.dataset.name], shown_as: li.dataset.name,
+  }));
+  data.freeText = $("freeText").value || null;
+  data.finishedAt = new Date().toISOString();
+  save();
+  $("final").classList.add("hide"); $("done").classList.remove("hide");
+  $("doneStats").textContent =
+    `${data.responses.length} page responses, ${data.blocks.length} blocks, `
+    + `${data.turnoffEvents.length} turn-it-off presses.`;
+};
+
+$("download").onclick = () => {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)],
+    { type: "application/json" }));
+  a.download = `s4-${session.participantId}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+};
+
+// Autosave after every answer: an hour-long session that loses its data to a
+// stray refresh cannot be re-run on the same participant.
+function save() {
+  try {
+    localStorage.setItem(`${STORE}:${session.participantId}`,
+      JSON.stringify({ idx, data }));
+  } catch { /* the download button is the real save */ }
+}
+window.addEventListener("beforeunload", (e) => {
+  if (data && data.responses.length) { e.preventDefault(); e.returnValue = ""; }
+});
+</script>
+</body>
+</html>
