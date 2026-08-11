@@ -1,0 +1,138 @@
+{
+  "_notice": "THIS IS NOT THE PAPER'S S2 CORPUS. Plan §3 S2 requires 600 pages, 3 independent annotators, and Krippendorff's alpha reported alongside every accuracy number. This is an 18-page smoke corpus with single-annotator (unvalidated) labels, built only to prove experiments/s2_tier_ablation.js runs correctly end-to-end against the live keyword/zero-shot/LLM tiers before the real corpus exists. Do not cite macro-F1 computed from this file in the paper.",
+  "pages": [
+    {
+      "id": "edu-photosynthesis",
+      "lang": "en",
+      "title": "How Photosynthesis Works: A Beginner's Guide",
+      "rawText": "This tutorial explains the science behind photosynthesis, the process plants use to convert sunlight into energy. We'll cover the biology, the chemistry of chlorophyll, and walk through a simple classroom experiment you can try. A great primer for any student studying botany or preparing for a biology exam.",
+      "true_category": "Educational",
+      "note": "keyword-rich, should be a trivial tier-1 win"
+    },
+    {
+      "id": "health-gut-microbiome",
+      "lang": "en",
+      "title": "What Fiber Does to Your Gut Microbiome",
+      "rawText": "A new study out of a European university followed two hundred participants over six months, tracking how fiber-rich diets shifted the balance of bacterial species in the colon. Researchers found that increased short-chain fatty acid production correlated with lower markers of systemic inflammation, and suggest the enterotype shift may explain some of the metabolic benefits seen in earlier trials.",
+      "true_category": "Health",
+      "note": "the plan's own canonical tier-1.5 test case: no 'Health' keyword-list term appears (no 'medical', 'doctor', 'disease', etc.), so tier 1 should fail and tier 1.5/2 must recover it"
+    },
+    {
+      "id": "news-election",
+      "lang": "en",
+      "title": "Parliament Passes Contested Budget Bill After Late-Night Session",
+      "rawText": "The government's budget legislation cleared a final vote after opposition senators staged an overnight protest against proposed tax changes. The finance minister called the outcome a mandate; the opposition leader called the process undemocratic. International observers noted the vote as a bellwether ahead of next year's general election.",
+      "true_category": "News"
+    },
+    {
+      "id": "horror-review",
+      "lang": "en",
+      "title": "Why This Year's Scariest Horror Movie Actually Works",
+      "rawText": "The new horror thriller leans hard into slow-burn suspense rather than jump scares, building dread through a haunted-house setting and a genuinely unsettling sound design. The monster reveal in the third act is the most terrifying practical effect the genre has produced in years — expect nightmares.",
+      "true_category": "Horror"
+    },
+    {
+      "id": "food-recipe",
+      "lang": "en",
+      "title": "A Simple Weeknight Pasta Recipe",
+      "rawText": "This recipe takes twenty minutes and needs one pot. Cook the pasta, then toss it with garlic, olive oil, chili flakes, and a handful of grated parmesan. A great weeknight dish for anyone who wants a fast, flavorful meal without a long ingredient list.",
+      "true_category": "Food"
+    },
+    {
+      "id": "entertainment-celebrity",
+      "lang": "en",
+      "title": "The Making of This Summer's Biggest Blockbuster",
+      "rawText": "Behind the scenes of the franchise's latest film, the director and lead actor talk casting decisions, the streaming deal that nearly fell through, and how the soundtrack came together in the final weeks before premiere. Early trailer reactions suggest this could be the studio's biggest opening yet.",
+      "true_category": "Entertainment"
+    },
+    {
+      "id": "sports-match-report",
+      "lang": "en",
+      "title": "Match Report: A Last-Minute Goal Sends the Championship to Extra Time",
+      "rawText": "The forward's stoppage-time goal leveled the score and sent the match into extra time, in front of a stadium crowd that had already resigned itself to defeat. The coach credited the team's fitness for the late surge; the referee's earlier penalty call remains the subject of dispute among pundits.",
+      "true_category": "Sports"
+    },
+    {
+      "id": "finance-market",
+      "lang": "en",
+      "title": "What Rising Interest Rates Mean for Your Portfolio",
+      "rawText": "As bond yields climb, investors are rebalancing portfolios away from growth equity and into fixed income. This piece walks through how mortgage rates, dividend stocks, and retirement savings accounts are all affected by the central bank's latest move, with a look at how hedge funds are positioning.",
+      "true_category": "Finance"
+    },
+    {
+      "id": "legal-case",
+      "lang": "en",
+      "title": "Appeals Court Overturns Lower Court's Contract Ruling",
+      "rawText": "A three-judge appellate panel overturned the lower court's judgment, ruling that the original contract's arbitration clause should have barred litigation entirely. The plaintiff's attorney says they intend to seek review; the defendant's counsel called the verdict a vindication after two years of litigation.",
+      "true_category": "Legal"
+    },
+    {
+      "id": "comedy-standup",
+      "lang": "en",
+      "title": "This Comedian's New Special Is Absurdly Funny",
+      "rawText": "The hour-long standup special is built entirely on a single running joke that somehow gets funnier every time it returns. Between the witty crowd work and a genuinely hilarious closing bit, it is one of the best comedy specials of the year — expect to hear the punchline quoted for months.",
+      "true_category": "Comedy"
+    },
+    {
+      "id": "emotional-essay",
+      "lang": "en",
+      "title": "What I Learned From My Divorce",
+      "rawText": "Five years after the breakup, I finally understand what the marriage counselor meant about vulnerability. This is an essay about heartbreak, about rebuilding a sense of home after a divorce, and about the strange tenderness of reconnecting with an old friend during the hardest year of my life.",
+      "true_category": "Emotional"
+    },
+    {
+      "id": "mythological-history",
+      "lang": "en",
+      "title": "The Ancient Myths Behind a Modern Festival",
+      "rawText": "Long before it became a modern holiday, this festival traces back to ancient religious ritual and folklore about a goddess of the harvest. Historians point to temple inscriptions and oral tradition passed down through generations as evidence of the ceremony's spiritual, pre-Christian origins.",
+      "true_category": "Mythological"
+    },
+    {
+      "id": "travel-blog",
+      "lang": "en",
+      "title": "A Two-Week Backpacking Itinerary Through the Mountains",
+      "rawText": "This itinerary covers two weeks of backpacking through mountain trails, with stops at a scenic overlook, a lakeside campsite, and a small town known for its hiking culture. Perfect for anyone planning an adventure trip who wants to skip the resort crowds and get further off the beaten path.",
+      "true_category": "Travel"
+    },
+    {
+      "id": "sensitive-near-miss-great-depression",
+      "lang": "en",
+      "title": "The Great Depression: An Economic Overview",
+      "rawText": "The Great Depression reshaped economic policy for a generation, triggering bank failures, mass unemployment, and a rethinking of monetary policy that led directly to the New Deal. This overview covers the stock market crash, the resulting deflationary spiral, and the eventual recovery.",
+      "true_category": "News",
+      "note": "plan-cited near-miss: must NOT trigger the sensitive/crisis path despite 'depression' appearing"
+    },
+    {
+      "id": "sensitive-near-miss-grief-counselling",
+      "lang": "en",
+      "title": "How to Become a Grief Counsellor: Degree Programs Explained",
+      "rawText": "This guide walks through the degree programs, licensing requirements, and coursework needed to become a professional grief counsellor. Most programs require a master's in counseling psychology plus a supervised clinical practicum before certification.",
+      "true_category": "Educational",
+      "note": "plan-cited near-miss: single ambiguous term ('grief') should not clear the 2-hit sensitive threshold"
+    },
+    {
+      "id": "sensitive-genuine-crisis",
+      "lang": "en",
+      "title": "Crisis Support Resources",
+      "rawText": "If you or someone you know is having thoughts of suicide or self-harm, please reach out to a crisis helpline immediately. This page lists international suicide prevention hotlines and resources for people experiencing a mental health crisis.",
+      "true_category": "Health",
+      "note": "genuine SEVERE-term hit ('suicide', 'self-harm') -- should take the skipped-sensitive path, category is secondary to that behavioural check"
+    },
+    {
+      "id": "nonenglish-food",
+      "lang": "es",
+      "title": "Una Receta Sencilla de Paella",
+      "rawText": "Esta receta de paella lleva arroz, azafran, mariscos y pollo. Es un plato tradicional espanol perfecto para una cena familiar los domingos. El truco esta en no remover el arroz mientras se cocina.",
+      "true_category": "Food",
+      "note": "non-English -- keyword tier (English-only vocabulary) must be skipped by construction (lang !== 'en')"
+    },
+    {
+      "id": "mixed-recipe-essay",
+      "lang": "en",
+      "title": "The Recipe That Got Me Through My Mother's Illness",
+      "rawText": "This is technically a recipe post -- a simple soup my mother used to cook -- but really it's about the year she was sick and how making this dish in her kitchen became a way to feel close to her again. Here's the recipe, and here's what it meant to me.",
+      "true_category": "Food",
+      "note": "mixed/ambiguous page (plan's example): recipe framing dominates, but Emotional content is a plausible secondary"
+    }
+  ]
+}

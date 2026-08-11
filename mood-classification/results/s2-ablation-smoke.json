@@ -1,0 +1,567 @@
+{
+  "corpus": "C:\\Users\\theof\\projects\\personal\\web2music\\mood-classification\\experiments\\s2_smoke_corpus.json",
+  "per_page": [
+    {
+      "id": "edu-photosynthesis",
+      "true_category": "Educational",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Educational",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.9277744889259338,
+        "margin": 0.9115812163800001,
+        "runnerUp": "Health",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 5274,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 284
+    },
+    {
+      "id": "health-gut-microbiome",
+      "true_category": "Health",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.6285471320152283,
+        "margin": 0.44589704275131226,
+        "runnerUp": "Health",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1537,
+      "llm": "Health",
+      "llmError": null,
+      "llmMs": 146
+    },
+    {
+      "id": "news-election",
+      "true_category": "News",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "News",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "News",
+        "score": 0.3723258972167969,
+        "margin": 0.17694921791553497,
+        "runnerUp": "Legal",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1830,
+      "llm": "News",
+      "llmError": null,
+      "llmMs": 242
+    },
+    {
+      "id": "horror-review",
+      "true_category": "Horror",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Horror",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Horror",
+        "score": 0.9072698950767517,
+        "margin": 0.8761233985424042,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1632,
+      "llm": "Horror",
+      "llmError": null,
+      "llmMs": 149
+    },
+    {
+      "id": "food-recipe",
+      "true_category": "Food",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Food",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Food",
+        "score": 0.8312502503395081,
+        "margin": 0.7800402007997036,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1473,
+      "llm": "Food",
+      "llmError": null,
+      "llmMs": 137
+    },
+    {
+      "id": "entertainment-celebrity",
+      "true_category": "Entertainment",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Entertainment",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.24591220915317535,
+        "margin": 0.06043790280818939,
+        "runnerUp": "Horror",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1608,
+      "llm": "Entertainment",
+      "llmError": null,
+      "llmMs": 135
+    },
+    {
+      "id": "sports-match-report",
+      "true_category": "Sports",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Sports",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Sports",
+        "score": 0.622101902961731,
+        "margin": 0.5239100828766823,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1677,
+      "llm": "Sports",
+      "llmError": null,
+      "llmMs": 146
+    },
+    {
+      "id": "finance-market",
+      "true_category": "Finance",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Finance",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Finance",
+        "score": 0.522149384021759,
+        "margin": 0.20767000317573547,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1771,
+      "llm": "Finance",
+      "llmError": null,
+      "llmMs": 146
+    },
+    {
+      "id": "legal-case",
+      "true_category": "Legal",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Legal",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Legal",
+        "score": 0.612719714641571,
+        "margin": 0.5442630350589752,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1512,
+      "llm": "News",
+      "llmError": null,
+      "llmMs": 153
+    },
+    {
+      "id": "comedy-standup",
+      "true_category": "Comedy",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Comedy",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Comedy",
+        "score": 0.8856464624404907,
+        "margin": 0.8541755601763725,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2011,
+      "llm": "Comedy",
+      "llmError": null,
+      "llmMs": 136
+    },
+    {
+      "id": "emotional-essay",
+      "true_category": "Emotional",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Emotional",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.6978272199630737,
+        "margin": 0.4291103482246399,
+        "runnerUp": "Emotional",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1549,
+      "llm": "Emotional",
+      "llmError": null,
+      "llmMs": 131
+    },
+    {
+      "id": "mythological-history",
+      "true_category": "Mythological",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Mythological",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Mythological",
+        "score": 0.746058464050293,
+        "margin": 0.5687343031167984,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1433,
+      "llm": "Mythological",
+      "llmError": null,
+      "llmMs": 139
+    },
+    {
+      "id": "travel-blog",
+      "true_category": "Travel",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Travel",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Travel",
+        "score": 0.4976707398891449,
+        "margin": 0.35079628229141235,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1765,
+      "llm": "Travel",
+      "llmError": null,
+      "llmMs": 141
+    },
+    {
+      "id": "sensitive-near-miss-great-depression",
+      "true_category": "News",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.7311376333236694,
+        "margin": 0.6283931881189346,
+        "runnerUp": "Horror",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1464,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 130
+    },
+    {
+      "id": "sensitive-near-miss-grief-counselling",
+      "true_category": "Educational",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.9011431932449341,
+        "margin": 0.8805899955332279,
+        "runnerUp": "Health",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2122,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 123
+    },
+    {
+      "id": "sensitive-genuine-crisis",
+      "true_category": "Health",
+      "lang": "en",
+      "isSensitive": true,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Horror",
+        "score": 0.3071691691875458,
+        "margin": 0.10145649313926697,
+        "runnerUp": "Health",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2000,
+      "llm": "Health",
+      "llmError": null,
+      "llmMs": 137
+    },
+    {
+      "id": "nonenglish-food",
+      "true_category": "Food",
+      "lang": "es",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Food",
+        "score": 0.6120606064796448,
+        "margin": 0.49252233654260635,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2152,
+      "llm": "Food",
+      "llmError": null,
+      "llmMs": 144
+    },
+    {
+      "id": "mixed-recipe-essay",
+      "true_category": "Food",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Food",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Food",
+        "score": 0.7722253799438477,
+        "margin": 0.6854152679443359,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2189,
+      "llm": "Emotional",
+      "llmError": null,
+      "llmMs": 256
+    }
+  ],
+  "configs": [
+    {
+      "name": "A1 keyword-only",
+      "n": 18,
+      "accuracy": 0.722,
+      "macro_f1": 0.856,
+      "escalation": {
+        "keyword": 13,
+        "none": 5
+      },
+      "exposure_rate": 0,
+      "zero_shot_proxy_rate": 0
+    },
+    {
+      "name": "A2 zero-shot-only (ungated)",
+      "n": 18,
+      "accuracy": 0.722,
+      "macro_f1": 0.679,
+      "escalation": {
+        "zero-shot": 18
+      },
+      "exposure_rate": 0,
+      "zero_shot_proxy_rate": 1
+    },
+    {
+      "name": "A3 LLM-only",
+      "n": 18,
+      "accuracy": 0.833,
+      "macro_f1": 0.828,
+      "escalation": {
+        "llm": 18
+      },
+      "exposure_rate": 1,
+      "zero_shot_proxy_rate": 0
+    },
+    {
+      "name": "A4 keyword->LLM",
+      "n": 18,
+      "accuracy": 0.889,
+      "macro_f1": 0.908,
+      "escalation": {
+        "keyword": 13,
+        "llm": 4,
+        "skipped-sensitive": 1
+      },
+      "exposure_rate": 0.222,
+      "zero_shot_proxy_rate": 0
+    },
+    {
+      "name": "A5 keyword->zero-shot->LLM",
+      "n": 18,
+      "accuracy": 0.833,
+      "macro_f1": 0.846,
+      "escalation": {
+        "keyword": 13,
+        "zero-shot": 4,
+        "skipped-sensitive": 1
+      },
+      "exposure_rate": 0,
+      "zero_shot_proxy_rate": 0.222
+    }
+  ],
+  "a7_sweep": [
+    {
+      "minScore": 0.3,
+      "minMargin": 0.05,
+      "macro_f1": 0.846,
+      "exposure_rate": 0,
+      "zero_shot_proxy_rate": 0.222
+    },
+    {
+      "minScore": 0.3,
+      "minMargin": 0.1,
+      "macro_f1": 0.846,
+      "exposure_rate": 0,
+      "zero_shot_proxy_rate": 0.222
+    },
+    {
+      "minScore": 0.3,
+      "minMargin": 0.2,
+      "macro_f1": 0.846,
+      "exposure_rate": 0,
+      "zero_shot_proxy_rate": 0.222
+    },
+    {
+      "minScore": 0.45,
+      "minMargin": 0.05,
+      "macro_f1": 0.846,
+      "exposure_rate": 0,
+      "zero_shot_proxy_rate": 0.222
+    },
+    {
+      "minScore": 0.45,
+      "minMargin": 0.1,
+      "macro_f1": 0.846,
+      "exposure_rate": 0,
+      "zero_shot_proxy_rate": 0.222
+    },
+    {
+      "minScore": 0.45,
+      "minMargin": 0.2,
+      "macro_f1": 0.846,
+      "exposure_rate": 0,
+      "zero_shot_proxy_rate": 0.222
+    },
+    {
+      "minScore": 0.6,
+      "minMargin": 0.05,
+      "macro_f1": 0.846,
+      "exposure_rate": 0,
+      "zero_shot_proxy_rate": 0.222
+    },
+    {
+      "minScore": 0.6,
+      "minMargin": 0.1,
+      "macro_f1": 0.846,
+      "exposure_rate": 0,
+      "zero_shot_proxy_rate": 0.222
+    },
+    {
+      "minScore": 0.6,
+      "minMargin": 0.2,
+      "macro_f1": 0.846,
+      "exposure_rate": 0,
+      "zero_shot_proxy_rate": 0.222
+    },
+    {
+      "minScore": 0.75,
+      "minMargin": 0.05,
+      "macro_f1": 0.908,
+      "exposure_rate": 0.167,
+      "zero_shot_proxy_rate": 0.056
+    },
+    {
+      "minScore": 0.75,
+      "minMargin": 0.1,
+      "macro_f1": 0.908,
+      "exposure_rate": 0.167,
+      "zero_shot_proxy_rate": 0.056
+    },
+    {
+      "minScore": 0.75,
+      "minMargin": 0.2,
+      "macro_f1": 0.908,
+      "exposure_rate": 0.167,
+      "zero_shot_proxy_rate": 0.056
+    }
+  ]
+}
