@@ -52,17 +52,26 @@ The **original** (non-mirror) checkpoint the dead `Xenova/distilbart-mnli-12-1`
 was converted from, re-exported to quantized ONNX and published as
 **[`AyushK0808/distilbart-mnli-12-1-onnx`](https://huggingface.co/AyushK0808/distilbart-mnli-12-1-onnx)**.
 Not wired in as the default, for reasons below, but selectable via
-`W2M_ZEROSHOT_MODEL`.
+`W2M_ZEROSHOT_MODEL` — set it to `AyushK0808/distilbart-mnli-12-1-onnx`. That
+string is also the *only* checkpoint id that resolves here: `valhalla/distilbart-mnli-12-1`
+itself has no ONNX export, so pointing the worker at that id instead would 401/404
+on both the local lookup and the hub fetch.
 
 It is **not** vendored in this repo the way `all-MiniLM-L6-v2` is: at 215 MB the
 ONNX file is past GitHub's hard 100 MB per-file push limit, so it lives on the
-Hub and `ui/models/valhalla/` is gitignored. Fetch it into the tree — where
+Hub and `ui/models/AyushK0808/` is gitignored. Fetch it into the tree — where
 `allowLocalModels` will prefer it over the hub — with:
 
 ```bash
 hf download AyushK0808/distilbart-mnli-12-1-onnx \
-  --local-dir ui/models/valhalla/distilbart-mnli-12-1
+  --local-dir ui/models/AyushK0808/distilbart-mnli-12-1-onnx
 ```
+
+The local directory name must match the model id exactly
+(`ui/models/AyushK0808/distilbart-mnli-12-1-onnx`, not
+`ui/models/valhalla/distilbart-mnli-12-1`): transformers.js resolves a local
+model by joining `env.localModelPath` with the `modelId` string verbatim, and
+the worker is passed whatever id `W2M_ZEROSHOT_MODEL` is set to.
 
 **Converting it required working around three real bugs**, all unrelated to
 this specific checkpoint and worth knowing about if converting anything else

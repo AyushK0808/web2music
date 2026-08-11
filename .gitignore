@@ -84,12 +84,15 @@ audio-generation/audio-cache/
 *.onnx
 !ui/models/**/*.onnx
 
-# ...but NOT the valhalla/distilbart-mnli-12-1 export. It is the opt-in
-# alternative checkpoint documented in ui/models/README.md, and its
-# onnx/model_quantized.onnx is 215 MB -- past GitHub's hard 100 MB per-file
-# push limit, so committing it would make every push to origin fail outright.
-# Distributed via the Hugging Face Hub instead; see ui/models/README.md.
-ui/models/valhalla/
+# ...but NOT the AyushK0808/distilbart-mnli-12-1-onnx export (the opt-in
+# alternative checkpoint documented in ui/models/README.md, converted from
+# valhalla/distilbart-mnli-12-1). Its onnx/model_quantized.onnx is 215 MB --
+# past GitHub's hard 100 MB per-file push limit, so committing it would make
+# every push to origin fail outright. Distributed via the Hugging Face Hub
+# instead; see ui/models/README.md. Vendored under the model id itself
+# (not the source checkpoint's name) because transformers.js resolves a
+# local model by joining env.localModelPath with the modelId string verbatim.
+ui/models/AyushK0808/
 
 # Hugging Face's on-disk download cache, written by the local zero-shot
 # backend and by mood-classification/experiments/localZeroShot.js on first

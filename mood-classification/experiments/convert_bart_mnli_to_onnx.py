@@ -5,7 +5,13 @@ can load, and vendor it into ``ui/models/``.
 
     python mood-classification/experiments/convert_bart_mnli_to_onnx.py \
         --model valhalla/distilbart-mnli-12-1 \
-        --out ui/models/valhalla/distilbart-mnli-12-1
+        --out ui/models/AyushK0808/distilbart-mnli-12-1-onnx
+
+Note --out here is a *vendoring* path, not a conversion detail: whatever id
+you'll later pass via W2M_ZEROSHOT_MODEL is what transformers.js joins with
+env.localModelPath to look up the local copy, so --out must match that id
+(the published Hub repo name, AyushK0808/distilbart-mnli-12-1-onnx for this
+checkpoint) rather than the --model source checkpoint's name.
 
 Requires (see requirements-onnx-export.txt in this directory):
     torch, transformers, onnx, onnxruntime, onnxscript,
