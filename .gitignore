@@ -84,6 +84,18 @@ audio-generation/audio-cache/
 *.onnx
 !ui/models/**/*.onnx
 
+# ...but NOT the valhalla/distilbart-mnli-12-1 export. It is the opt-in
+# alternative checkpoint documented in ui/models/README.md, and its
+# onnx/model_quantized.onnx is 215 MB -- past GitHub's hard 100 MB per-file
+# push limit, so committing it would make every push to origin fail outright.
+# Distributed via the Hugging Face Hub instead; see ui/models/README.md.
+ui/models/valhalla/
+
+# Hugging Face's on-disk download cache, written by the local zero-shot
+# backend and by mood-classification/experiments/localZeroShot.js on first
+# run. Pure re-downloadable cache (118 MB of it), not a vendored artifact.
+.model-cache/
+
 # ── Editors / IDEs ──
 .vscode/*
 !.vscode/settings.json
