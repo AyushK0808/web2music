@@ -23,6 +23,87 @@ import { runB4, buildFallbackPrompt } from "./b4_promptEngineer.js";
 import { DEFAULT_MODEL } from "./llmConfig.js";
 import { getTabState, setTabState, clearTabState, clearAllTabStates, DEFAULT_TAB_ID } from "./tabState.js";
 
+// ─── Per-decision timing (end-to-end latency budget) ─────────────────────────
+// A (getExtractionTelemetry) and D (the `timings` dict in every /generate
+// response) both report per-stage latency; B had none, so the request's
+// slowest leg was invisible in the budget. Two views are kept, matching A's
+// existing convention exactly rather than inventing a second one:
+//   - a cumulative aggregate (count/failures/avgMs/totalMs per stage),
+//     mirroring data-extraction/pageData.js's getExtractionTelemetry shape
+//   - a per-call breakdown (b1_ms/b2_ms/b3b4_ms) attached to the handoff2
+//     object itself, mirroring D's per-request `timings` dict in main.py
+const B_STAGE_NAMES = ["b1", "b2", "b3_b4"];
+
+function freshBTelemetry() {
+  const stages = {};
+  for (const name of B_STAGE_NAMES) stages[name] = { count: 0, failures: 0, totalMs: 0 };
+  return stages;
+}
+
+let _bTelemetry = freshBTelemetry();
+
+function nowMs() {
+  return (typeof performance !== "undefined" && performance.now) ? performance.now() : Date.now();
+}
+
+function recordBStage(name, durationMs, ok) {
+  const stage = _bTelemetry[name];
+  stage.count += 1;
+  stage.totalMs += durationMs;
+  if (!ok) stage.failures += 1;
+}
+
+// Async variant — B1/B2 are both awaited LLM/heuristic calls.
+async function timeBStage(name, fn) {
+  const start = nowMs();
+  try {
+    const result = await fn();
+    const ms = nowMs() - start;
+    recordBStage(name, ms, true);
+    return { result, ms };
+  } catch (err) {
+    recordBStage(name, nowMs() - start, false);
+    throw err;
+  }
+}
+
+// Sync variant — B3/B4 (buildHandoffFromRecord) run synchronously.
+function timeBStageSync(name, fn) {
+  const start = nowMs();
+  try {
+    const result = fn();
+    const ms = nowMs() - start;
+    recordBStage(name, ms, true);
+    return { result, ms };
+  } catch (err) {
+    recordBStage(name, nowMs() - start, false);
+    throw err;
+  }
+}
+
+/**
+ * getFeatureBTelemetry — aggregated per-stage latency + failure rate across
+ * all runFeatureB() calls since the last reset. Same shape as Feature A's
+ * getExtractionTelemetry, so a consumer can treat both uniformly.
+ */
+export function getFeatureBTelemetry() {
+  const out = {};
+  for (const [name, stage] of Object.entries(_bTelemetry)) {
+    out[name] = {
+      count: stage.count,
+      failures: stage.failures,
+      failureRate: stage.count ? stage.failures / stage.count : 0,
+      avgMs: stage.count ? stage.totalMs / stage.count : 0,
+      totalMs: stage.totalMs,
+    };
+  }
+  return out;
+}
+
+export function resetFeatureBTelemetry() {
+  _bTelemetry = freshBTelemetry();
+}
+
 // ─── Confidence interval logic (spec edge case #1) ───────────────────────────
 // The new mood must be stable for confidenceWindowMs (default 5s, spec-
 // mandated in production) before triggering a music change. Injectable via
@@ -135,10 +216,15 @@ function buildLLMConfig() {
 // never drift into rebuilding a handoff2 differently.
 function buildHandoffFromRecord(record) {
   if (record.kind === "fallback") return buildFallbackPrompt(record.timeOfDay);
-  return runB4(runB3(record.moodContext), {
+  // Timed as one combined "b3_b4" stage (not split further) — B3 and B4 are
+  // both pure/cheap compared to B1/B2's network calls, and the budget this
+  // exists for cares about which *leg* dominates, not sub-millisecond
+  // internal splits.
+  const { result, ms } = timeBStageSync("b3_b4", () => runB4(runB3(record.moodContext), {
     targetModel: _config.targetModel,
     includeAll:  _config.includeAll,
-  });
+  }));
+  return { ...result, _b3b4Ms: ms };
 }
 
 // Shared by the success path, the error-fallback path, and the alarm-driven
@@ -157,7 +243,7 @@ function buildHandoffFromRecord(record) {
 // activity should reset the idle-fade clock, otherwise the heartbeat firing
 // on its own schedule would keep the clock alive forever and the fade could
 // never trigger regardless of whether the user is actually still there.
-async function decideTransition(tabId, candidateMood, record, { isFreshActivity = true } = {}) {
+async function decideTransition(tabId, candidateMood, record, { isFreshActivity = true, stageTimings = null } = {}) {
   const state = await getTabState(tabId);
   const now = Date.now();
 
@@ -205,6 +291,23 @@ async function decideTransition(tabId, candidateMood, record, { isFreshActivity 
     result = { ...result, volume: 0, isSilent: true };
   }
 
+  // Assemble the per-request timing breakdown, same flat `<stage>_ms` shape
+  // D's main.py uses for its own `timings` dict — b1_ms/b2_ms come from the
+  // caller (runFeatureB, which ran before decideTransition), b3b4_ms from
+  // buildHandoffFromRecord above, if it actually ran this call. A stage that
+  // didn't run (e.g. b3_b4 on a held/no-op call) is simply absent, same as D
+  // omitting a stage it skipped.
+  if (result) {
+    const { _b3b4Ms, ...rest } = result;
+    result = {
+      ...rest,
+      timings: {
+        ...(stageTimings || {}),
+        ...(typeof _b3b4Ms === "number" ? { b3b4_ms: Math.round(_b3b4Ms) } : {}),
+      },
+    };
+  }
+
   await setTabState(tabId, state);
   return result;
 }
@@ -249,12 +352,13 @@ export async function runFeatureB(pageData, tabId = DEFAULT_TAB_ID, opts = {}) {
 
   try {
     // ── B1: Content Understanding ──────────────────────────────────────────
-    const cleanedContent = await runB1(pageData, buildLLMConfig(), { zeroShot: _config.zeroShot });
+    const { result: cleanedContent, ms: b1Ms } =
+      await timeBStage("b1", () => runB1(pageData, buildLLMConfig(), { zeroShot: _config.zeroShot }));
 
     // ── B2: Mood & Context Classification ─────────────────────────────────
-    const moodContext = await runB2(cleanedContent, buildLLMConfig(), {
+    const { result: moodContext, ms: b2Ms } = await timeBStage("b2", () => runB2(cleanedContent, buildLLMConfig(), {
       sensitiveContentMode: _config.sensitiveContentMode,
-    });
+    }));
 
     // B1 records which of its tiers decided on `category.source`
     // (keyword | zero-shot | llm | default | skipped-sensitive | bypass) and
@@ -265,8 +369,10 @@ export async function runFeatureB(pageData, tabId = DEFAULT_TAB_ID, opts = {}) {
       mood:           moodContext.mood,
     });
 
+    const stageTimings = { b1_ms: Math.round(b1Ms), b2_ms: Math.round(b2Ms) };
+
     // ── Confidence interval check (spec edge case #1) ─────────────────────
-    return await decideTransition(tabId, moodContext.mood, { kind: "mood", moodContext });
+    return await decideTransition(tabId, moodContext.mood, { kind: "mood", moodContext }, { stageTimings });
 
   } catch (err) {
     console.error("[FeatureB] Pipeline error:", err.message);
