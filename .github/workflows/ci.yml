@@ -19,7 +19,21 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        # `@xenova/transformers` pulls in `sharp`, which downloads a
+        # prebuilt native binary on install — that download has been seen
+        # to fail with ECONNRESET on GitHub's runners (unrelated to this
+        # repo). Retry a few times before giving up, rather than failing
+        # the whole build on a transient network blip.
+        run: |
+          for attempt in 1 2 3; do
+            if npm ci; then
+              exit 0
+            fi
+            echo "npm ci failed (attempt $attempt/3), retrying in 10s..."
+            sleep 10
+          done
+          echo "npm ci failed after 3 attempts"
+          exit 1
 
       # `npm test` already runs, in order: data-extraction's suite,
       # mood-classification's suite, mood-classification/fixture_staleness_test.js
