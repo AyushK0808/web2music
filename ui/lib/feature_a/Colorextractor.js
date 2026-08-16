@@ -1,0 +1,200 @@
+(function () {
+const HUE_BUCKET_COUNT = 12;
+const HUE_BUCKET_SIZE = 360 / HUE_BUCKET_COUNT;
+
+const MIN_ELEMENT_AREA_PX = 400;
+const MIN_ALPHA_TO_COUNT = 0.05;
+const MAX_ELEMENTS_TO_SAMPLE = 800; // caps getComputedStyle/getBoundingClientRect
+                                     // calls per page — every element read is a
+                                     // forced-layout risk if layout is dirty
+
+function parseRgba(colorString) {
+  if (!colorString || colorString === 'transparent') return null;
+
+  const match = colorString.match(
+    /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+)\s*)?\)/i
+  );
+  if (!match) return null;
+
+  return {
+    r: parseInt(match[1], 10),
+    g: parseInt(match[2], 10),
+    b: parseInt(match[3], 10),
+    a: match[4] !== undefined ? parseFloat(match[4]) : 1,
+  };
+}
+
+function rgbToHsl({ r, g, b }) {
+  const rN = r / 255, gN = g / 255, bN = b / 255;
+  const max = Math.max(rN, gN, bN);
+  const min = Math.min(rN, gN, bN);
+  const l = (max + min) / 2;
+
+  if (max === min) {
+    return { h: 0, s: 0, l };
+  }
+
+  const d = max - min;
+  const s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+
+  let h;
+  switch (max) {
+    case rN: h = ((gN - bN) / d + (gN < bN ? 6 : 0)); break;
+    case gN: h = ((bN - rN) / d + 2); break;
+    default: h = ((rN - gN) / d + 4); break;
+  }
+  h *= 60;
+
+  return { h, s, l };
+}
+
+function visibleArea(el) {
+  const rect = el.getBoundingClientRect();
+  const viewportW = window.innerWidth || document.documentElement.clientWidth;
+  const viewportH = window.innerHeight || document.documentElement.clientHeight;
+
+  const clippedWidth = Math.max(
+    0, Math.min(rect.right, viewportW) - Math.max(rect.left, 0)
+  );
+  const clippedHeight = Math.max(
+    0, Math.min(rect.bottom, viewportH) - Math.max(rect.top, 0)
+  );
+
+  return clippedWidth * clippedHeight;
+}
+
+/**
+ * Evenly-spaced sample of a NodeList/array down to `cap` items, instead of
+ * processing every element on huge DOMs. Even spacing (rather than a naive
+ * first-N slice) avoids biasing toward whatever section of the DOM happens
+ * to come first in document order.
+ */
+function sampleElements(nodeList, cap) {
+  const all = Array.from(nodeList);
+  if (all.length <= cap) return all;
+
+  const step = all.length / cap;
+  const sampled = [];
+  for (let i = 0; i < cap; i++) {
+    sampled.push(all[Math.floor(i * step)]);
+  }
+  return sampled;
+}
+
+function buildHueHistogram(root = document.body) {
+  const hueBuckets = new Array(HUE_BUCKET_COUNT).fill(0);
+  // Weighted sums of saturation/lightness per bucket, so the winning bucket's
+  // representative color can report its own s/l rather than a fixed guess.
+  const hueBucketSatWeighted = new Array(HUE_BUCKET_COUNT).fill(0);
+  const hueBucketLightWeighted = new Array(HUE_BUCKET_COUNT).fill(0);
+  let achromaticArea = 0;
+  let achromaticLightWeighted = 0;
+  let totalArea = 0;
+
+  const allElements = root.querySelectorAll('*');
+  const elements = sampleElements(allElements, MAX_ELEMENTS_TO_SAMPLE);
+
+  elements.forEach(el => {
+    const area = visibleArea(el);
+    if (area < MIN_ELEMENT_AREA_PX) return;
+
+    const style = window.getComputedStyle(el);
+    const rgba = parseRgba(style.backgroundColor);
+    if (!rgba || rgba.a < MIN_ALPHA_TO_COUNT) return;
+
+    const { h, s, l } = rgbToHsl(rgba);
+    const weightedArea = area * rgba.a;
+    totalArea += weightedArea;
+
+    const isAchromatic = s < 0.12 || l < 0.06 || l > 0.94;
+
+    if (isAchromatic) {
+      achromaticArea += weightedArea;
+      achromaticLightWeighted += l * weightedArea;
+    } else {
+      const bucketIndex = Math.floor(h / HUE_BUCKET_SIZE) % HUE_BUCKET_COUNT;
+      hueBuckets[bucketIndex] += weightedArea;
+      hueBucketSatWeighted[bucketIndex] += s * weightedArea;
+      hueBucketLightWeighted[bucketIndex] += l * weightedArea;
+    }
+  });
+
+  return {
+    hueBuckets,
+    hueBucketSatWeighted,
+    hueBucketLightWeighted,
+    achromaticArea,
+    achromaticLightWeighted,
+    totalArea,
+    sampledCount: elements.length,
+    totalElementCount: allElements.length,
+  };
+}
+
+function extractDominantColors(root = document.body, topN = 3) {
+  const {
+    hueBuckets, hueBucketSatWeighted, hueBucketLightWeighted,
+    achromaticArea, achromaticLightWeighted, totalArea,
+    sampledCount, totalElementCount,
+  } = buildHueHistogram(root);
+
+  if (totalArea === 0) {
+    return {
+      dominantHues: [],
+      colorEnergy: 0,
+      achromaticRatio: 1,
+      representativeColor: { hue: 0, saturation: 0, lightness: 0.5 },
+      sampledCount,
+      totalElementCount,
+    };
+  }
+
+  const ranked = hueBuckets
+    .map((area, i) => ({
+      hue: Math.round(i * HUE_BUCKET_SIZE + HUE_BUCKET_SIZE / 2),
+      area,
+      coverage: area / totalArea,
+      bucketIndex: i,
+    }))
+    .filter(bucket => bucket.area > 0)
+    .sort((a, b) => b.area - a.area)
+    .slice(0, topN);
+
+  const chromaticArea = totalArea - achromaticArea;
+  const colorEnergy = Math.min(1, chromaticArea / totalArea);
+
+  // Representative color = the winning hue bucket's own weighted s/l average
+  // (not a fixed guess), so downstream mood scoring gets real saturation and
+  // lightness rather than defaults. Falls back to the achromatic average
+  // lightness when no chromatic bucket won (e.g. an all-greyscale page).
+  let representativeColor;
+  if (ranked.length > 0) {
+    const top = ranked[0];
+    representativeColor = {
+      hue: top.hue,
+      saturation: hueBucketSatWeighted[top.bucketIndex] / hueBuckets[top.bucketIndex],
+      lightness: hueBucketLightWeighted[top.bucketIndex] / hueBuckets[top.bucketIndex],
+    };
+  } else {
+    representativeColor = {
+      hue: 0,
+      saturation: 0,
+      lightness: achromaticArea > 0 ? achromaticLightWeighted / achromaticArea : 0.5,
+    };
+  }
+
+  return {
+    dominantHues: ranked.map(({ hue, area, coverage }) => ({ hue, area, coverage })),
+    colorEnergy,
+    achromaticRatio: achromaticArea / totalArea,
+    representativeColor,
+    sampledCount,
+    totalElementCount,
+  };
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { extractDominantColors, rgbToHsl, parseRgba, sampleElements };
+} else if (typeof window !== 'undefined') {
+  window.Web2MusicColorExtractor = { extractDominantColors };
+}})();
