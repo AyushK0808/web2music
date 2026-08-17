@@ -209,7 +209,25 @@ function freshTelemetry() {
   for (const name of STAGE_NAMES) {
     stages[name] = { count: 0, failures: 0, totalMs: 0 };
   }
+  // similarity additionally tracks how often the search actually found a
+  // reusable prior page (isRevisit) — this is the number the paper's warm-
+  // path latency claim depends on, since a revisit short-circuits B and D
+  // entirely. Tracked separately from count/failures: a low search count
+  // with a high hit rate reads very differently from a high count with a
+  // low one, and collapsing them would hide that.
+  stages.similarity.hits = 0;
   return stages;
+}
+
+/**
+ * recordSimilarityHit — call once per buildPageData() run where the vector
+ * search actually found a reusable prior page (similarity.isRevisit). Kept
+ * separate from recordStage/timeStage because a hit is a *content* outcome,
+ * not a latency/failure outcome, and the two must not be conflated in the
+ * same counter.
+ */
+function recordSimilarityHit() {
+  _telemetry.similarity.hits += 1;
 }
 
 let _telemetry = freshTelemetry();
@@ -240,6 +258,14 @@ function getExtractionTelemetry() {
       avgMs: stage.count ? stage.totalMs / stage.count : 0,
       totalMs: stage.totalMs,
     };
+    // VectorStore hit rate as its own row (end-to-end latency budget item):
+    // this is what determines how often B and D get short-circuited on the
+    // warm path, so it's reported here rather than folded into a generic
+    // "similarity" latency number that would hide it.
+    if (name === "similarity") {
+      out[name].hits = stage.hits;
+      out[name].hitRate = stage.count ? stage.hits / stage.count : 0;
+    }
   }
   return out;
 }
@@ -433,6 +459,7 @@ async function buildPageData(options = {}) {
         });
         return found;
       });
+      if (similarity.isRevisit) recordSimilarityHit();
     } catch (err) {
       warnings.push(`similarity: ${err.message}`);
     }

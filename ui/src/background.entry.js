@@ -190,7 +190,17 @@ checkClassifyProxy();
 // which is kept only as documentation now that onHandoff2 delivers in the
 // same context instead of round-tripping through chrome.runtime.sendMessage.
 async function handleHandoff2(handoff2, tabId) {
-  recordTelemetry("B_decision", { tabId, event: "handoff2", meta: { isSilent: !!handoff2.isSilent, isFadeUpdate: !!handoff2.isFadeUpdate } });
+  // `ms` (total) + `meta.timings` (per-stage breakdown) mirrors D_generate's
+  // shape below exactly, so both sides of the latency budget line up in the
+  // same telemetry export instead of needing separate parsing per stage.
+  const bTimings = handoff2.timings || null;
+  const bMs = bTimings ? Object.values(bTimings).reduce((sum, ms) => sum + ms, 0) : undefined;
+  recordTelemetry("B_decision", {
+    tabId,
+    event: "handoff2",
+    ms: bMs,
+    meta: { isSilent: !!handoff2.isSilent, isFadeUpdate: !!handoff2.isFadeUpdate, timings: bTimings },
+  });
 
   log.info("handoff2 received", {
     tabId,

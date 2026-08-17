@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  js-tests:
+    name: JS tests + fixture staleness + reproducibility bundle
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        # `@xenova/transformers` pulls in `sharp`, which downloads a
+        # prebuilt native binary on install — that download has been seen
+        # to fail with ECONNRESET on GitHub's runners (unrelated to this
+        # repo). Retry a few times before giving up, rather than failing
+        # the whole build on a transient network blip.
+        run: |
+          for attempt in 1 2 3; do
+            if npm ci; then
+              exit 0
+            fi
+            echo "npm ci failed (attempt $attempt/3), retrying in 10s..."
+            sleep 10
+          done
+          echo "npm ci failed after 3 attempts"
+          exit 1
+
+      # `npm test` already runs, in order: data-extraction's suite,
+      # mood-classification's suite, mood-classification/fixture_staleness_test.js
+      # (C-19 — catches a silent Groq model change invalidating the golden
+      # fixtures), and the ui/ offscreen-routing + audioTabs smoke tests. See
+      # package.json's "test" script — this workflow intentionally does not
+      # duplicate that list here, so the two can't drift apart.
+      - name: Run test suite (includes fixture staleness check)
+        run: npm test
+
+      # analysis/out/ is gitignored (regenerated output, same convention as
+      # the paper's figures) — a fresh checkout never has cost.json or
+      # baselines.json, so the bundle check below would always report them
+      # MISSING otherwise. Regenerate them here, same as a contributor has to
+      # locally.
+      - name: Generate cost + retrieval-baseline artefacts
+        run: |
+          node analysis/cost/cost_accounting.js
+          node analysis/baselines/retrieval_baseline.mjs
+
+      # C-18 — the reproducibility bundle assembler in --check mode: reports
+      # missing items, stale/failing fixtures, and any secret-scan hits
+      # without writing anything. Exits non-zero on a real gap (as opposed to
+      # an item legitimately blocked_on an unrun human-subjects study, which
+      # is reported but does not fail the build). This is what would have
+      # caught the missing-jsdom / stale-fixture regression before it needed
+      # a manual audit.
+      - name: Reproducibility bundle check
+        run: node analysis/bundle/make_bundle.mjs --check
