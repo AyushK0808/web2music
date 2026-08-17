@@ -327,7 +327,18 @@ Return ONLY a valid JSON object, no explanation: { "category": "<one of the cate
 
   const requestBody = JSON.stringify({
     model,
-    max_completion_tokens: 50,
+    max_completion_tokens: 300,
+    // openai/gpt-oss-20b (Groq's replacement for the now-deprecated
+    // llama-3.1-8b-instant, see llmConfig.js) defaults reasoning_effort to
+    // "medium" and its hidden reasoning tokens count against
+    // max_completion_tokens. At the old budget of 50 tokens, reasoning alone
+    // exhausted it before any visible content was emitted, so every call
+    // returned an empty string that crashed JSON.parse. "low" keeps this a
+    // fast, cheap, single-label classification the way it was designed —
+    // set explicitly rather than relying on Groq's per-model default, which
+    // has already changed once and can again. Non-gpt-oss models on Groq
+    // ignore this field, so it's safe to send unconditionally.
+    reasoning_effort: "low",
     temperature: 0, // deterministic classification — reproducibility over variety
     messages:    [{ role: "user", content: prompt }],
   });
