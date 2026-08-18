@@ -80,7 +80,7 @@ while bar-snapped loop-point detection and a 50 ms equal-power crossfade turn
 a one-shot generator's output into loopable material. We report a systems
 evaluation over 105 websites, 144 generation requests and 141 generated clips,
 an adversarial audit of the system's refusal behaviour, and a cost model
-showing the cascade classifies a thousand pages for 0.004 USD. We also report
+showing the cascade classifies a thousand pages for 0.0132 USD. We also report. We also report
 three negative results: the crossfade removes a median of only 0.93 dB of seam
 energy discontinuity, the delivered clip retains a median of 50.3 percent of
 its requested duration, and the sensitive-content detector misses 45.5 percent
@@ -748,15 +748,21 @@ same.
 \subsection{Cost and cache behaviour}
 \label{sec:res-cost}
 
-Cost accounting was computed over per-page token and byte counts from the
-preliminary corpus, but the unit costs are properties of the models and their
-pricing rather than of the corpus, so the per-page figures scale with whatever
-escalation rate a larger corpus produces. At the observed escalation rate the
-cascade sends a mean of 73.3 LLM tokens per page, 330 on the pages that
-actually escalate, performs thirteen NLI forward passes per zero-shot
-invocation and 2.89 per page on average, and transmits 501 bytes per page. At
-the tier-2 provider's published price this is 0.004 USD per thousand pages,
-rising to 0.018 USD if every page escalated.
+Cost accounting was recomputed over the full S2 corpus (255 of 260 pages; the
+two failed captures and three deliberately bypassed internal pages have no
+extracted content and are excluded rather than imputed), superseding the
+earlier 18-page smoke-set figures. Unit costs are properties of the models and
+their pricing rather than of the corpus, so the per-page figures scale with
+escalation rate -- and the real corpus escalates far more than the smoke set
+implied: 75.7 percent of pages reach the keyword tier's ceiling, against 22.2
+percent on the 18-page subset that Table \ref{tab:tiers} still reports pending
+the 600-page annotation (D-01/D-02). At the observed rate the cascade sends a
+mean of 241.5 LLM tokens per page, 319.1 on the pages that actually escalate,
+performs thirteen NLI forward passes per zero-shot invocation and 9.84 per
+page on average, and transmits 1642 bytes per page (979 from the LLM tier, 663
+from the zero-shot proxy). At the tier-2 provider's published price
+(re-verified 2026-08-17, unchanged) this is 0.0132 USD per thousand pages,
+rising to 0.0174 USD if every page escalated. 
 
 That figure changes what the cascade contribution claims. Even the pessimistic
 number is negligible, so nobody needs a cascade here to save money. The cascade
