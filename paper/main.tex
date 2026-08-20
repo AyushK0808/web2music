@@ -775,61 +775,103 @@ in-the-wild study would measure, and browsing is almost certainly not uniform.
 \subsection{Classification and the tier cascade}
 \label{sec:res-classification}
 
-This subsection is preliminary and should be read as an indication of the
-experiment's shape rather than as a result. The 260-page corpus exists but is
-unannotated; the figures in Table \ref{tab:tiers} were computed against an
-18-page development subset labelled by a single annotator, with no
-inter-annotator agreement and therefore no human ceiling to interpret them
-against. At that sample size a single page moves accuracy by more than five
-points.
+The 260-page S2 corpus (\S\ref{sec:results}) has now been run through the full
+tier ablation and the A7 threshold sweep end to end, in place of the 18-page
+single-annotator subset used in earlier drafts of this section. Six bypass
+pages (donation pages, \texttt{chrome://} settings pages) have no content
+category and are excluded from scoring; the 254 remaining pages are still
+labelled by a single, curation-time source rather than the three independent
+annotators \S\ref{sec:limitations} commits to before a final accuracy figure
+is reported, so accuracy and macro-F1 below remain preliminary in that
+specific sense. Escalation counts and exposure, by contrast, do not depend on
+that label at all and are not preliminary.
 
 \begin{table}[t]
-\caption{Tier ablation on an 18-page development subset with one annotator.
-Preliminary; reported to show the ablation structure, not as a result.}
+\caption{Tier configurations over the full 260-page S2 corpus (254 scored).
+Escalation is the count of pages decided at each tier; exposure is the
+LLM-only share whose text reached Groq.}
 \label{tab:tiers}
 \begin{center}
 \scriptsize
-\begin{tabular}{llrrrr}
+\begin{tabular}{lrrrr}
 \toprule
-\textbf{\#} & \textbf{Configuration} & \textbf{Acc.} & \textbf{Macro-F1} & \textbf{Expos.} & \textbf{ZS proxy} \\
+\textbf{Configuration} & \textbf{Acc.} & \textbf{Macro-F1} & \textbf{Expos.} & \textbf{ZS proxy} \\
 \midrule
-A1 & keyword only & .722 & .856 & 0 & 0 \\
-A2 & zero-shot only, ungated & .722 & .679 & 0 & 1.00 \\
-A3 & LLM only & .833 & .828 & 1.00 & 0 \\
-A4 & keyword to LLM (prior system) & .889 & .908 & .222 & 0 \\
-A5 & keyword to ZS to LLM (this work) & .833 & .846 & \textbf{0} & .222 \\
-A6 & keyword to local ZS, no LLM & .778 & .810 & \textbf{0} & \textbf{0} \\
-A6b & keyword to local ZS to LLM & .889 & .897 & .111 & 0 \\
+A1 keyword only & .189 & .315 & 0 & 0 \\
+A2 zero-shot only, ungated & .520 & .562 & 0 & .938 \\
+A3 LLM only & .685 & .678 & 1.00 & 0 \\
+A4 keyword to LLM (prior system) & .669 & .677 & .762 & 0 \\
+A5 keyword to ZS to LLM (this work) & .622 & .656 & \textbf{.250} & .512 \\
 \bottomrule
 \end{tabular}
 \end{center}
 \end{table}
 
-Two observations will survive whatever a larger corpus shows, and one of them
-is uncomfortable. On this subset the full cascade (A5) is \emph{less} accurate
-than the design it replaced (A4), because the zero-shot tier absorbed four
-pages that would otherwise have escalated and answered two of them wrongly.
-What it bought in exchange was exposure: A5 transmitted no page text where A4
-transmitted 22 percent. Whether that trade is worth making is exactly the
-question the threshold sweep is designed to answer, and it cannot be answered
-at this sample size. Claim C2 is therefore only partly addressed: the exposure
-reduction is mechanically real and visible in the escalation counts, but the
-accuracy cost and the shape of the trade-off curve are not yet measured.
+Two things follow from a real sample that a preliminary 18-page one could not
+show. First, the direction reported earlier holds: the full cascade (A5) is
+still less accurate than the keyword-to-LLM design it replaces (A4), by 4.7
+points of accuracy and 2.1 of macro-F1. Second, and this changes what the
+escalation counts alone suggest, is the shape of what A5 actually buys.
+Read narrowly, A5's LLM-only exposure (.250) looks like a large reduction from
+A4's .762. But the zero-shot tier evaluated here uses the hosted proxy
+backend, not the local ONNX export, so it is itself an off-device call: every
+page that would have reached the LLM tier in A4 now reaches the zero-shot
+proxy in A5 first, unconditionally, regardless of where the threshold sits.
+Summing LLM exposure and zero-shot-proxy usage gives a \emph{total} off-device
+rate of .762 for A5 -- identical to A4 to three significant figures. With this
+backend, the abstaining cascade does not reduce how many pages leave the
+device at all; it only decides which hosted provider a given page's text goes
+to, and for roughly half of the escalating pages, whether it goes to
+\emph{both}.
 
-The second observation is that the fully local configuration A6b, which uses an
-in-extension quantised entailment model, matched the prior system's accuracy
-while halving exposure. If that survives a real corpus, a zero-exposure
-operating point is available, and the privacy argument becomes considerably
-stronger.
+\begin{figure}[t]
+\centerline{\includegraphics[width=\columnwidth]{figures/f5.pdf}}
+\caption{Macro-F1 against total off-device rate (LLM exposure plus zero-shot
+proxy usage) for A1--A5 and the twelve-cell A7 threshold sweep. The sweep sits
+in a tight cluster near A4/A5 on the disclosure axis rather than tracing a
+curve, because the hosted zero-shot backend discloses regardless of the
+threshold; the shipped operating point (0.45 / 0.10) is marked.}
+\label{fig:f5}
+\end{figure}
+
+The A7 sweep (Fig.~\ref{fig:f5}, twelve minScore $\times$ minMargin cells)
+confirms this is not particular to the shipped thresholds. Macro-F1 ranges
+only from .653 to .668 across the entire grid, while LLM-only exposure ranges
+from .131 to .596 and total off-device rate stays within .001 of .762
+throughout. Loosening or tightening the gate reallocates disclosure between
+Groq and the zero-shot proxy and moves the smaller, LLM-specific exposure
+number substantially; it does not move the number that answers ``does this
+page's text leave the machine at all.'' That narrower number is still useful:
+Section \ref{sec:res-cost}'s cost model and the LLM-specific risk of a
+free-text prompt reaching a generative remote model both scale with it, not
+with proxy usage. But it is not the same claim as exposure reduction in
+general, and reporting only the LLM-only number, as an earlier draft of this
+section did, would have overstated what the shipped cascade achieves with
+this backend.
+
+Claim C2 is therefore answered in part, and less favourably than the
+escalation counts alone suggest. The cascade reduces LLM-specific exposure and
+cost substantially and the threshold pair genuinely dials that number
+continuously; it does not, with the hosted zero-shot backend measured here,
+reduce total disclosure below the keyword-to-LLM baseline. The one
+configuration that would change that -- A6/A6b, the local quantised ONNX
+zero-shot backend, which the 18-page preliminary run suggested could match
+A4's accuracy at half its exposure -- has not yet been run against the full
+260-page corpus (\texttt{s2\_tier\_ablation.js --with-a6}); the zero-exposure
+operating point this section's future scope depends on remains unverified at
+scale.
 
 \textbf{Discussion.} The generalisable pattern is a free heuristic, a local
 model permitted to abstain, and a remote model as a last resort, with the
 abstention gates as the dial. Turning them up sends more pages to the remote
 model and buys accuracy; turning them down keeps text on the device and costs
-accuracy. Because the middle tier is an entailment model rather than a
-generative one, it also cannot hallucinate a category outside its candidate
-set, which is a robustness property and not merely a cost property. A
-generative middle tier would not have it.
+accuracy -- \emph{provided} the model being turned down is actually local.
+With a hosted middle tier, the same knob mostly redistributes disclosure
+rather than reducing it, which is a materially different claim to make to a
+user. Because the middle tier is an entailment model rather than a generative
+one, it also cannot hallucinate a category outside its candidate set, which is
+a robustness property and not merely a cost property. A generative middle tier
+would not have it.
 
 \subsection{Loop quality}
 \label{sec:res-loop}
@@ -1063,11 +1105,18 @@ hold that any reported accuracy must be printed alongside the inter-annotator
 ceiling. No accuracy figure in this paper has that ceiling attached, which is
 one reason Section \ref{sec:res-classification} is preliminary.
 
-\textbf{Preliminary classification results.} Table \ref{tab:tiers} rests on 18
-pages and one annotator. It shows the structure of the ablation and nothing
-more. The threshold sweep that would render the accuracy-exposure trade-off as
-a continuous curve, which is the primary evidence C2 requires, has not been run
-in any form.
+\textbf{Preliminary classification results.} Table \ref{tab:tiers} now rests
+on 254 scored pages rather than 18, and the threshold sweep in
+Fig.~\ref{fig:f5} covers a full twelve-cell grid rather than none. What is
+still preliminary is narrower than before: the ground-truth label is a
+single, curation-time source, not the three-annotator, agreement-checked
+label \S\ref{sec:limitations} otherwise requires, so accuracy and macro-F1
+specifically should still be read as indicative rather than final. Exposure,
+total off-device rate, and the sweep's shape do not depend on that label and
+are not preliminary in this sense. Separately, A6/A6b (the local zero-shot
+backend, the one configuration that could reduce total disclosure rather than
+redistribute it) has not been run at this scale, which is now the more
+consequential of the two gaps.
 
 \textbf{English-only.} Tier 1 is skipped by construction on non-English pages,
 and the sensitive detector missed the one non-English sensitive page in the
@@ -1118,11 +1167,19 @@ than a null result, and multiple-comparison control within a declared
 confirmatory family. Sample size is set at 56 to survive attrition at a
 small-to-medium effect size.
 
-\textbf{Annotate the corpus and run the threshold sweep.} The 260-page corpus
-needs three independent annotators, an agreement coefficient per label set, and
-a reported human ceiling. The accuracy-exposure curve obtained by sweeping the
-two abstention thresholds is the single most valuable missing artefact, because
-it converts a fixed operating point into the dial that gap G3 identifies.
+\textbf{Annotate the corpus.} The threshold sweep itself has now been run
+(Fig.~\ref{fig:f5}); what remains is the label it is scored against. The
+260-page corpus needs three independent annotators, an agreement coefficient
+per label set, and a reported human ceiling before the accuracy and macro-F1
+numbers in Table \ref{tab:tiers} can be treated as final rather than
+indicative.
+
+\textbf{Run the local zero-shot backend at scale.} A6/A6b (\S\ref{sec:res-classification})
+is the one configuration that could reduce total disclosure rather than
+redistribute it between hosted providers, and it has only been measured on
+the 18-page preliminary subset. This is now the more load-bearing gap than the
+annotation above: it determines whether a genuinely lower-disclosure operating
+point exists at all, not just how precisely the current one is measured.
 
 \textbf{Replace the sensitive-content predicate.} A model-based detector,
 plausibly the entailment tier already resident in the extension, scoring
