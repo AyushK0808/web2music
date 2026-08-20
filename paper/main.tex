@@ -83,7 +83,7 @@ an adversarial audit of the system's refusal behaviour, and a cost model
 showing the cascade classifies a thousand pages for 0.004 USD. We also report
 three negative results: the crossfade removes a median of only 0.93 dB of seam
 energy discontinuity, the delivered clip retains a median of 50.3 percent of
-its requested duration, and the sensitive-content detector misses 45.5 percent
+its requested duration, and the sensitive-content detector misses 65.5 percent
 of an adversarial crisis slice.
 \end{abstract}
 
@@ -1044,22 +1044,32 @@ A silent tier-2 model change is detectable & golden fixtures re-checked against 
 \end{center}
 \end{table}
 
-The mechanisms pass; the predicate does not. Against a 20-page adversarial
-slice, eleven sensitive and nine benign, the sensitive-content detector records
-a false-negative rate of 0.455 and a false-positive rate of 0.333. The failures
-are systematic rather than noise. Three of the five false negatives are
-vocabulary outside the term list: pages on addiction, miscarriage and terminal
-illness are not detected at all, because the detector is a term list and those
-terms are not on it. One is euphemism, a page that never names the thing it is
-about. One is non-English, missed entirely by the same language gate that skips
-tier 1. All three false positives are near-misses: a page on grief-counselling
-degree programmes, a psychology textbook, and an engineering article using the
-word ``trauma'' are all wrongly silenced.
+The mechanisms pass; the predicate does not. Against a 47-page adversarial
+slice, 29 sensitive and 18 benign, more than doubled from an original 20-page
+seed specifically to rebalance toward the detector's own admitted failure
+modes, the sensitive-content detector records a false-negative rate of 0.655
+and a false-positive rate of 0.167. The failures are systematic rather than
+noise. Seven of the nineteen false negatives are vocabulary outside the term
+list entirely: pages on addiction, miscarriage, terminal illness, overdose,
+workplace harassment, homelessness and post-incarceration reentry are not
+detected at all, because the detector is a term list and those terms are not
+on it. Four are euphemism, pages that describe self-harm, suicidal ideation or
+domestic violence without ever naming the thing directly. Four are non-English,
+missed entirely by the same language gate that skips tier 1. The remaining four
+are a failure mode the smaller seed slice could not surface at all: genuinely
+sensitive pages that mention exactly one term from the ambiguous list, one
+short of the two-distinct-term threshold \texttt{checkSensitiveContent}
+requires before it will act on ambiguous vocabulary alone. The false positives
+did not grow with the slice: the same three near-misses the original 20-page
+seed found, a page on grief-counselling degree programmes, a psychology
+textbook, and an engineering article using the word ``trauma'', are still the
+only three, and six additional near-miss pages added specifically to stress
+this side of the boundary produced no new ones.
 
 This answers C5 in the negative, and it is the finding with the clearest
 consequence for anyone deploying such a system. A keyword list is not a
 sensitive-content detector. A system that promises silence on crisis content
-and delivers it 55 percent of the time has not implemented the policy it
+and delivers it 34.5 percent of the time has not implemented the policy it
 claims. The architecture is sound, in that the short-circuit is in the right
 place and provably fires, but the predicate feeding it is inadequate, and the
 remedy is a classifier rather than more keywords. The entailment tier already
@@ -1186,11 +1196,15 @@ laptop. A GPU configuration, on which the fallback-then-swap design plausibly
 stops being necessary, and a cache-cold comparison, are both unmeasured.
 
 \textbf{Small samples inside the systems results.} Generation percentiles rest
-on three requests, the restraint audit on twenty pages, and the classification
-ablation on eighteen. These are stated at each point of use rather than
-aggregated away. The concurrency figure measures the request and cache path
-rather than generator batching, because every request in that sweep was a cache
-hit.
+on three requests, and the classification ablation on eighteen. These are
+stated at each point of use rather than aggregated away. The restraint audit
+now rests on forty-seven pages rather than the original twenty, but that is
+still small next to the 141-clip and 105-website samples elsewhere in the
+paper, and the false-negative categories with the fewest examples (four pages
+each for non-English and for the single-ambiguous-term case) are the ones
+whose rates should be trusted least. The concurrency figure measures the
+request and cache path rather than generator batching, because every request
+in that sweep was a cache hit.
 
 \textbf{Cache state confounds latency and audio together.} A cache hit changes
 both the response time and the returned audio, since an identical clip recurs.
@@ -1203,7 +1217,8 @@ obtained. Three design decisions are ethically load-bearing: page text is
 transmitted off-device only on escalation and never for pages marked sensitive;
 telemetry is local-only, URL-hashed at write time and exported only on an
 explicit user action; and crisis content produces silence rather than music. We
-regard the 45 percent false-negative rate on that last policy as a defect to be
+regard the 65.5 percent false-negative rate on that last policy, measured now
+on a slice more than double the size that first surfaced it, as a defect to be
 fixed before any deployment to participants, not a limitation to be noted in
 passing. Separately, uninstall rate is not measurable in this build, because
 the browser deletes extension-local storage on uninstall and the only surviving
@@ -1238,11 +1253,13 @@ the 18-page preliminary subset. This is now the more load-bearing gap than the
 annotation above: it determines whether a genuinely lower-disclosure operating
 point exists at all, not just how precisely the current one is measured.
 
-\textbf{Replace the sensitive-content predicate.} A model-based detector,
-plausibly the entailment tier already resident in the extension, scoring
-sensitivity hypotheses directly, with the adversarial slice expanded well
-beyond twenty pages and rebalanced across euphemism, non-English and
-outside-vocabulary cases.
+\textbf{Replace the sensitive-content predicate.} The adversarial slice has now
+been expanded from twenty to forty-seven pages and rebalanced across
+euphemism, non-English, outside-vocabulary and single-ambiguous-term cases
+(\S\ref{sec:res-audit}); the false-negative rate went up, not down, once the
+easier categories stopped diluting it. What remains is the fix: a model-based
+detector, plausibly the entailment tier already resident in the extension,
+scoring sensitivity hypotheses directly against this same slice.
 
 \textbf{Improve loop synthesis.} The crossfade-window sweep and seam-minimising
 loop-point selection proposed here have now been run (\S\ref{sec:res-loop},
