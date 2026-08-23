@@ -577,7 +577,11 @@ deliberately adversarial slices: 182 general, 15 vocabulary-mismatch pages
 whose words do not match their category, 15 non-English, 15 mixed-genre, 12
 sensitive, 15 sensitive near-miss pages that must \emph{not} trigger silence,
 and 6 bypass. No bypass violations and no duplicate content hashes were
-recorded. The corpus is not yet annotated.
+recorded. Coverage across the thirteen content categories is uneven by
+construction rather than a flat approximately 20 pages each: counts range from
+14 (Mythological) to 35 (Health), since curated availability differs by
+category and the original 600-page target (approximately 45 per category) was
+not reached. The corpus is not yet annotated.
 
 \textbf{Hardware.} All timings are from a single CPU laptop running Windows 11
 with the generation service in a local container alongside a PostgreSQL cache.
@@ -967,6 +971,20 @@ remedy is a classifier rather than more keywords. The entailment tier already
 loaded for category classification can score a sensitivity hypothesis at near
 zero marginal cost.
 
+That remedy has since been implemented rather than left as a proposal: the
+detector now escalates past the term list to the same entailment tier,
+scoring a page against a personal-crisis hypothesis and a reference or
+academic hypothesis, and only ever promotes a keyword miss to sensitive or
+demotes a low-severity keyword hit to benign when that tier is confident.
+Terms specific enough to trust outright, such as suicide or domestic
+violence, are never demoted. Against the same 20-page slice, with the
+entailment tier answering correctly, all eight of the false negatives and
+false positives above resolve correctly, which shows the cascade logic
+is sound. What this does not yet show is the real-world rate, since that
+depends on how well the underlying model reads crisis versus reference
+framing in practice, and that number has not yet been measured against a
+live instance of the model.
+
 More generally, this is the substance of gap G5. For an always-on generative
 system, the quality of the abstention policy is as much part of the design as
 the quality of the generation, and unlike aesthetic quality it is directly
@@ -1084,7 +1102,12 @@ on three requests, the restraint audit on twenty pages, and the classification
 ablation on eighteen. These are stated at each point of use rather than
 aggregated away. The concurrency figure measures the request and cache path
 rather than generator batching, because every request in that sweep was a cache
-hit.
+hit. The 260-page annotation corpus contains a further, smaller sensitive
+slice of twelve pages, used for category and mood ground truth rather than for
+measuring the detector directly; this is a different, smaller sample from the
+twenty-page adversarial slice above, and twelve pages is too thin to support a
+precise per-category estimate on its own. The two should not be read as
+corroborating or conflicting with each other.
 
 \textbf{Cache state confounds latency and audio together.} A cache hit changes
 both the response time and the returned audio, since an identical clip recurs.
@@ -1146,9 +1169,18 @@ since it dominates the common path.
 
 \textbf{Ablate the signals.} The descriptor claims four signals. A
 per-signal ablation, removing colour, behaviour and the embedding in turn,
-would establish whether the multimodal input earns its complexity. The
-instrumentation accepts partial descriptors already, so this is a matter of
-running it.
+establishes whether the multimodal input earns its complexity. Run offline
+against the full 255-page corpus, the predicted category never changes under
+any of the four conditions, so category is decided by text alone regardless
+of what else is present. Mood is more textured: removing the behaviour
+profile or the embedding changes nothing, removing colour shifts mood on 7.5
+percent of pages, and stripping down to text alone shifts it on 10.2 percent,
+meaning colour accounts for most of what little the non-text signals
+contribute and behaviour and the embedding currently contribute nothing
+measurable. Offline conditions decide every page by keyword or default
+rather than by either model tier, so this bounds what colour can be
+contributing rather than measuring its contribution under the shipped
+cascade, and that live-tier run has not yet been done.
 
 \textbf{Extend beyond English and beyond the page.} The language gate is the
 common cause of two separate failures and deserves a dedicated treatment.
