@@ -1,6 +1,8 @@
 import hashlib, json, os
 import psycopg2
 import psycopg2.extras
+import psycopg2.pool
+from contextlib import contextmanager
 from dotenv import load_dotenv
 from d4_process import EXPORT_CODEC
 load_dotenv()
@@ -13,6 +15,43 @@ LOCAL_SERVER_URL = os.getenv("LOCAL_SERVER_URL", "http://127.0.0.1:8000")
 
 def _connect():
     return psycopg2.connect(LOCAL_DB_URL)
+
+# check_cache/save_to_cache each opened a brand-new psycopg2.connect() and
+# closed it immediately after a single query -- this is item 5.2, the
+# unexplained ~2s p50 on every cache-hit response (Table III). A fresh TCP
+# connection plus Postgres's own auth handshake is the standard cause of
+# exactly this symptom: cache_key has a UNIQUE constraint, which Postgres
+# auto-indexes, so the SELECT itself was never the bottleneck. On plain
+# localhost loopback a fresh connect() only costs ~10ms (verified locally),
+# nowhere near 2082ms -- the gap is almost certainly Docker Desktop's
+# container-to-container networking overhead on the Windows/WSL2 host this
+# was measured on (documented to add significant per-connection latency),
+# which this fix sidesteps entirely by paying that cost once at pool
+# creation rather than on every request, regardless of its exact size on any
+# given host. ThreadedConnectionPool specifically because check_cache and
+# save_to_cache run via asyncio.to_thread (main.py), so concurrent requests
+# can call in from different threads at once; a single shared connection
+# would not be safe there.
+_pool = None
+
+def _get_pool():
+    global _pool
+    if _pool is None:
+        _pool = psycopg2.pool.ThreadedConnectionPool(minconn=1, maxconn=10, dsn=LOCAL_DB_URL)
+    return _pool
+
+@contextmanager
+def _pooled_connection():
+    pool = _get_pool()
+    conn = pool.getconn()
+    try:
+        yield conn
+    finally:
+        # Always returned, even on error -- a leaked connection would
+        # eventually exhaust maxconn and turn every request into a cache
+        # miss the same way the original schema-drift bug did (see
+        # ensure_schema's docstring), just later and harder to notice.
+        pool.putconn(conn)
 
 # Every nullable column save_to_cache() writes, as (name, type). Kept in the
 # same order as ../docker/init.sql's CREATE TABLE; tests/test_schema_sync.py
@@ -139,8 +178,7 @@ def make_cache_key(profile: dict) -> str:
     ).hexdigest()
 
 def check_cache(cache_key: str):
-    conn = _connect()
-    try:
+    with _pooled_connection() as conn:
         with conn.cursor() as cur:
             cur.execute("SELECT * FROM audio_cache WHERE cache_key = %s", (cache_key,))
             row = cur.fetchone()
@@ -151,8 +189,6 @@ def check_cache(cache_key: str):
             hit = dict(zip(columns, row))
             print(f"[D5] check_cache HIT  key={cache_key[:12]}... mood={hit.get('mood')} url={hit.get('audio_url')}")
             return hit
-    finally:
-        conn.close()
 
 def save_to_cache(cache_key, clip_bytes, profile, loop_point_ms, generation_time_ms,
                    prompt_used, seam_discontinuity, prompt_source, generation_seed):
@@ -164,8 +200,7 @@ def save_to_cache(cache_key, clip_bytes, profile, loop_point_ms, generation_time
 
     audio_url = f"{LOCAL_SERVER_URL}/audio-cache/{filename}"
 
-    conn = _connect()
-    try:
+    with _pooled_connection() as conn:
         with conn.cursor() as cur:
             cur.execute(
                 """
@@ -191,8 +226,6 @@ def save_to_cache(cache_key, clip_bytes, profile, loop_point_ms, generation_time
             # identical to a working one.
             inserted = cur.rowcount
         conn.commit()
-    finally:
-        conn.close()
 
     if inserted:
         print(f"[D5] save_to_cache: row committed key={cache_key[:12]}... mood={profile['mood']} "

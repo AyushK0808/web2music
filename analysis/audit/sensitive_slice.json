@@ -1,6 +1,6 @@
 {
-  "_notice": "C-11 seed adversarial slice for the sensitive-content detector. Deliberately small and deliberately hard: the near-misses are the exact examples RESULTS_AND_DISCUSSION_PLAN.md §3 S2 names, plus the failure modes b2_moodClassifier.js's own ethics note admits to (euphemism, non-English, topics outside the term list). Replace with the real slice once D-01 captures it; the shape is identical, so nothing downstream changes.",
-  "provenance": "hand-written from the term lists in b1_contentUnderstanding.js and the failure modes documented in b2_moodClassifier.js runB2",
+  "_notice": "C-11 adversarial slice for the sensitive-content detector, expanded past the original n=20 seed (D-track 4.8). Original 20 pages are the hand-written seed described below; the 27 added pages rebalance toward the failure modes b2_moodClassifier.js already names (euphemism, non-English, topics outside the term list) plus a new ambiguous-single-hit category (genuinely sensitive content carrying exactly one AMBIGUOUS_SENSITIVE_TERMS hit, below the countDistinctTermHits>=2 threshold) and six additional near-miss benign pages. Every page checked against the live detector (mood-classification/feature_b/b1_contentUnderstanding.js checkSensitiveContent) before being counted; see analysis/out/audit.json for the authoritative run.",
+  "provenance": "hand-written from the term lists in b1_contentUnderstanding.js and the failure modes documented in b2_moodClassifier.js runB2; expanded pages hand-written from the same term lists plus deliberately term-list-avoidant phrasing for the euphemism/outside-vocabulary/ambiguous-single-hit/non-English categories",
   "pages": [
     {
       "id": "sens-suicide-helpline",
@@ -142,6 +142,195 @@
       "slice": "benign",
       "title": "Transfer window: the ten deals still on the table",
       "text": "Clubs have until Monday to complete business. Two of the moves below hinge on a medical, and one on a manager who has not yet been appointed."
+    },
+    {
+      "id": "sens-terrorism-news",
+      "sensitive": true,
+      "slice": "severe-news",
+      "title": "Officials investigate possible terrorism motive in overnight attack",
+      "text": "Investigators say terrorism has not been ruled out following an attack on a transit hub overnight. No group has claimed responsibility. Commuters should expect delays through the morning."
+    },
+    {
+      "id": "sens-selfharm-recovery",
+      "sensitive": true,
+      "slice": "severe-explicit",
+      "title": "Five years of recovery from self-harm",
+      "text": "Self-harm was how I coped for most of my twenties. Recovery wasn't linear, and there were setbacks I'm not proud of, but I want to talk honestly about what actually helped."
+    },
+    {
+      "id": "sens-genocide-report",
+      "sensitive": true,
+      "slice": "ambiguous-genuine",
+      "title": "Survivors describe the genocide a decade on",
+      "text": "A decade later, survivors are still describing the genocide in testimony collected for the tribunal. Many carry visible trauma from what they witnessed, and few have received any formal acknowledgement."
+    },
+    {
+      "id": "sens-mentalhealth-crisis",
+      "sensitive": true,
+      "slice": "ambiguous-genuine",
+      "title": "Inside a city's mental health crisis response team",
+      "text": "The team responds to roughly forty calls a night, most involving someone in the middle of a mental health crisis with nowhere else to turn. Untreated depression is the single most common thread among the people they meet."
+    },
+    {
+      "id": "sens-euph-selfharm",
+      "sensitive": true,
+      "slice": "euphemism",
+      "title": "I've started again and I don't know how to stop",
+      "text": "I told myself I wouldn't do it again but I've been hurting myself on purpose for the last few weeks. Nobody at home knows. I don't really know why I'm writing this down."
+    },
+    {
+      "id": "sens-euph-suicidal",
+      "sensitive": true,
+      "slice": "euphemism",
+      "title": "Some days I just want it to be over",
+      "text": "Lately I keep thinking about not being around anymore, like everyone would just adjust and move on. I haven't told anyone because I don't want the whole conversation that would follow."
+    },
+    {
+      "id": "sens-euph-dv",
+      "sensitive": true,
+      "slice": "euphemism",
+      "title": "Things at home have gotten scary",
+      "text": "He didn't used to put his hands on me. Now I flinch before he even raises his voice, and I've started keeping a bag packed in the car in case tonight is the night I finally leave."
+    },
+    {
+      "id": "sens-overdose",
+      "sensitive": true,
+      "slice": "outside-vocabulary",
+      "title": "Fentanyl is now in almost everything on the street",
+      "text": "Overdose deaths in the county rose again last year, and testing strips show fentanyl turning up in supplies where users don't expect it. Naloxone kits are free at the health department, no questions asked."
+    },
+    {
+      "id": "sens-workplace-harassment",
+      "sensitive": true,
+      "slice": "outside-vocabulary",
+      "title": "What to do if a manager is bullying you",
+      "text": "Persistent belittling from a manager in front of colleagues is not something you have to accept quietly. Document dates, times and witnesses before you escalate to HR, and know that retaliation for reporting is itself against most companies' policy."
+    },
+    {
+      "id": "sens-homelessness",
+      "sensitive": true,
+      "slice": "outside-vocabulary",
+      "title": "A night at the city's largest shelter",
+      "text": "Every bed was full by nine, and a dozen more people slept in the overflow hallway on donated mats. Most of the people here had a place to live eighteen months ago; a missed paycheck or a medical bill was often all it took."
+    },
+    {
+      "id": "sens-reentry",
+      "sensitive": true,
+      "slice": "outside-vocabulary",
+      "title": "Finding an apartment after prison",
+      "text": "Most landlords won't consider an application once a background check comes back with a record, no matter how long ago the sentence was served. A handful of reentry programs now co-sign leases to get around exactly this problem."
+    },
+    {
+      "id": "sens-single-grief",
+      "sensitive": true,
+      "slice": "ambiguous-single-hit",
+      "title": "The first Christmas without my mother",
+      "text": "Every tradition we used to have felt wrong to do alone this year, so I skipped most of them. I keep reaching for the phone to call her before I remember."
+    },
+    {
+      "id": "sens-single-depression",
+      "sensitive": true,
+      "slice": "ambiguous-single-hit",
+      "title": "What clinical depression actually feels like day to day",
+      "text": "It isn't sadness so much as a grey flatness that sits over everything, including the things that used to matter to me. Getting out of bed some mornings takes an hour of just deciding to."
+    },
+    {
+      "id": "sens-single-trauma",
+      "sensitive": true,
+      "slice": "ambiguous-single-hit",
+      "title": "Why the flashbacks come back at random",
+      "text": "A smell or a sound from that night can put me right back there with no warning at all, years later. My therapist says this is completely ordinary and that it does eventually space out."
+    },
+    {
+      "id": "sens-single-abuse",
+      "sensitive": true,
+      "slice": "ambiguous-single-hit",
+      "title": "Realising, years later, what happened wasn't normal",
+      "text": "It took me most of my twenties to call what my stepfather did what it actually was. Naming it changed nothing about what happened, but it changed a lot about what I could do next."
+    },
+    {
+      "id": "sens-nonenglish-fr",
+      "sensitive": true,
+      "slice": "non-english",
+      "title": "Vivre avec des troubles alimentaires",
+      "text": "Beaucoup de personnes souffrant de troubles alimentaires cachent leurs symptomes pendant des annees avant d'en parler. Demander de l'aide n'est pas un signe de faiblesse."
+    },
+    {
+      "id": "sens-nonenglish-de",
+      "sensitive": true,
+      "slice": "non-english",
+      "title": "Wenn zu Hause Gewalt herrscht",
+      "text": "Viele Betroffene hauslicher Gewalt zoegern jahrelang, bevor sie sich Hilfe suchen. Beratungsstellen bieten anonyme und kostenlose Erstgespraeche an, auch am Wochenende."
+    },
+    {
+      "id": "sens-nonenglish-hi",
+      "sensitive": true,
+      "slice": "non-english",
+      "title": "Aatmahatya ke vichar aane par kya karein",
+      "text": "Agar aapke man mein khud ko nuksan pahunchane ke vichar aa rahe hain, to akele is se mat guzriye. Helpline par bina naam bataye baat ki ja sakti hai, chauबीस ghante."
+    },
+    {
+      "id": "near-genocide-classroom",
+      "sensitive": false,
+      "slice": "near-miss",
+      "title": "Teaching the twentieth century's darkest chapters",
+      "text": "A unit on genocide is now standard in most secondary history curricula, though teachers differ widely on how much detail is age-appropriate. The department reviews the syllabus every three years."
+    },
+    {
+      "id": "near-trauma-pedagogy",
+      "sensitive": false,
+      "slice": "near-miss",
+      "title": "What trauma-informed teaching actually means in practice",
+      "text": "Trauma-informed does not mean lowering academic expectations; it means predictable routines and choice in how a student demonstrates understanding. The framework has spread quickly through teacher training programs."
+    },
+    {
+      "id": "near-grief-literature",
+      "sensitive": false,
+      "slice": "near-miss",
+      "title": "How grief is represented across three centuries of the novel",
+      "text": "The seminar traces how the depiction of grief shifts from stylised Victorian mourning to the fragmented, non-linear treatments common in contemporary fiction. Attendance for the final session is mandatory."
+    },
+    {
+      "id": "near-barometric-depression",
+      "sensitive": false,
+      "slice": "near-miss",
+      "title": "How a depression forms over warm ocean water",
+      "text": "A tropical depression forms when a cluster of thunderstorms organises around a shared centre of low pressure. Most dissipate within days; a small fraction strengthen into named storms."
+    },
+    {
+      "id": "near-api-abuse",
+      "sensitive": false,
+      "slice": "near-miss",
+      "title": "Rate-limiting to prevent API abuse",
+      "text": "A sliding-window limiter is usually enough to stop casual abuse of a public endpoint without penalising legitimate high-volume users. Sudden traffic spikes should still page someone."
+    },
+    {
+      "id": "near-bereavement-policy",
+      "sensitive": false,
+      "slice": "near-miss",
+      "title": "Comparing bereavement leave policies across the industry",
+      "text": "Most companies in the survey offer between three and five days of bereavement leave, with a minority extending this to extended family. HR should review the policy alongside parental leave this quarter."
+    },
+    {
+      "id": "benign-sourdough",
+      "sensitive": false,
+      "slice": "benign",
+      "title": "Getting a reliable sourdough starter going",
+      "text": "Feed it equal parts flour and water by weight, at room temperature, and expect it to take five to seven days before it's reliably doubling. A hooch layer on top just means it's hungry, not dead."
+    },
+    {
+      "id": "benign-hiking-trail",
+      "sensitive": false,
+      "slice": "benign",
+      "title": "Three ridge hikes under four hours from the city",
+      "text": "All three trailheads have parking that fills by nine on weekends, so an early start matters more than fitness level here. Bring more water than you think you need on the exposed sections."
+    },
+    {
+      "id": "benign-css-grid",
+      "sensitive": false,
+      "slice": "benign",
+      "title": "CSS grid versus flexbox, for real this time",
+      "text": "Grid is for two-dimensional layout, rows and columns together; flexbox is for one dimension at a time. Most real layouts end up using both, nested inside each other."
     }
   ]
 }
