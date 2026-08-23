@@ -15,7 +15,7 @@
 "use strict";
 
 import { DEFAULT_MODEL } from "./llmConfig.js";
-import { classifyCategoryZeroShot } from "./b1_zeroShotCategory.js";
+import { classifyCategoryZeroShot, classifySensitivityZeroShot } from "./b1_zeroShotCategory.js";
 
 // ─── Handoff-1 version compatibility ─────────────────────────────────────────
 // Feature A (data-extraction/pageData.js) stamps every pageData object with
@@ -63,11 +63,20 @@ const STOPWORDS = new Set([
 // "genocide" (history discussed at a distance, not a live event) — so one
 // incidental mention isn't treated as a real signal; checkSensitiveContent
 // below requires ≥2 distinct ambiguous terms before it counts.
-const SEVERE_SENSITIVE_TERMS = [
-  "suicide", "self.harm", "self-harm", "eating disorder", "anorexia", "bulimia",
+// Split further into HARD (never overridden — see resolveSensitivity below)
+// and the remaining DEMOTABLE severe terms: eating-disorder vocabulary is
+// specific enough to trust as severe, but unlike "suicide" or "mass
+// shooting" it also shows up constantly in ordinary clinical/academic
+// writing (a psychology textbook chapter, a nurse's reference material) —
+// exactly the false positive the checklist calls out — so it's the one
+// severe category allowed to be reconsidered by the zero-shot tier.
+const HARD_SEVERE_TERMS = [
+  "suicide", "self.harm", "self-harm",
   "rape", "sexual assault", "domestic violence",
   "terrorism", "mass shooting",
 ];
+const DEMOTABLE_SEVERE_TERMS = ["eating disorder", "anorexia", "bulimia"];
+const SEVERE_SENSITIVE_TERMS = [...HARD_SEVERE_TERMS, ...DEMOTABLE_SEVERE_TERMS];
 const AMBIGUOUS_SENSITIVE_TERMS = [
   "mental health crisis", "grief", "bereavement", "depression", "trauma",
   "abuse",
@@ -449,6 +458,83 @@ export function checkSensitiveContent(text) {
 }
 
 /**
+ * resolveSensitivity — orchestrates sensitive-content detection as a
+ * two-tier cascade, mirroring resolveContentCategory above. This is the
+ * §5.1/§5.5 fix: checkSensitiveContent() alone has no escalation path, so a
+ * page it can't match via keywords just silently reads as "not sensitive"
+ * forever, and a page that trips it on a clinical/academic term or an
+ * incidental word pair has no way to be reconsidered either.
+ *
+ * The keyword tier's two failure directions get different treatment:
+ *
+ *   - it found NOTHING (0 severe hits, <2 ambiguous hits) — every false
+ *     negative in the checklist lives here: euphemism ("ending it all"),
+ *     vocabulary the list never anticipated (addiction, miscarriage, a
+ *     terminal diagnosis), and anything non-English, since the term lists
+ *     are English words. Zero-shot gets one chance to catch what grepping
+ *     cannot; if it confidently reads the page as a personal crisis, that
+ *     PROMOTES the verdict to sensitive.
+ *
+ *   - it found a HARD severe term (suicide, self-harm, sexual assault,
+ *     domestic violence, terrorism, mass shooting) — trusted outright, no
+ *     escalation. These terms are specific enough that a false negative
+ *     (failing to protect someone in genuine crisis) is a worse outcome
+ *     than the false positive risk of trusting them, so zero-shot is never
+ *     asked to weaken this verdict.
+ *
+ *   - it found a DEMOTABLE severe term (eating-disorder vocabulary) or 2+
+ *     ambiguous terms — this is where the false positives live (a
+ *     psychology textbook's "anorexia nervosa", "grief" + "bereavement" in
+ *     a degree-programme listing). Zero-shot gets a chance to recognise the
+ *     academic/reference framing and DEMOTE the verdict to not-sensitive.
+ *
+ * Either direction requires the zero-shot tier to actually be confident (its
+ * own score/margin gates in classifySensitivityZeroShot) — an abstention
+ * (null) always keeps the keyword verdict, so this is strictly additive
+ * when the tier is unavailable or disabled, exactly like the category
+ * cascade. Never reaches the Groq tier-2 LLM.
+ *
+ * @param {string} text  cleaned body text + title — same input checkSensitiveContent takes
+ * @param {{title?: string, summary?: string, keywords?: string[]}} zsContent  zero-shot premise inputs
+ * @param {Object} [opts]
+ * @param {Object} [opts.zeroShot]  same config classifyCategoryZeroShot takes, reused as-is
+ * @returns {Promise<{isSensitive: boolean, source: string, keyword: {severe: number, ambiguous: number, hard: boolean}, zeroShot: Object|null}>}
+ */
+export async function resolveSensitivity(text, zsContent, opts = {}) {
+  const hard = countDistinctTermHits(text, HARD_SEVERE_TERMS) > 0;
+  const severe = countDistinctTermHits(text, SEVERE_SENSITIVE_TERMS);
+  const ambiguous = countDistinctTermHits(text, AMBIGUOUS_SENSITIVE_TERMS);
+  const keywordSensitive = severe > 0 || ambiguous >= 2;
+  const keyword = { severe, ambiguous, hard };
+
+  if (hard) {
+    // Never escalate away from a hard-severe hit — see rationale above.
+    return { isSensitive: true, source: "keyword-hard-severe", keyword, zeroShot: null };
+  }
+
+  const zs = await classifySensitivityZeroShot(zsContent, opts.zeroShot);
+  if (!zs) {
+    return { isSensitive: keywordSensitive, source: keywordSensitive ? "keyword" : "keyword-declined", keyword, zeroShot: null };
+  }
+
+  const zeroShot = { side: zs.side, score: zs.score, margin: zs.margin, ms: zs.ms, model: zs.model, backend: zs.backend };
+
+  if (!keywordSensitive) {
+    // Promotion path: keyword tier found nothing, zero-shot may catch what
+    // it missed (euphemism, outside-vocabulary, non-English).
+    return zs.side === "crisis"
+      ? { isSensitive: true, source: "zero-shot-promoted", keyword, zeroShot }
+      : { isSensitive: false, source: "keyword", keyword, zeroShot };
+  }
+
+  // Demotion path: keyword tier found a demotable-severe or ambiguous
+  // signal, zero-shot may recognise reference/academic framing.
+  return zs.side === "reference"
+    ? { isSensitive: false, source: "zero-shot-demoted", keyword, zeroShot }
+    : { isSensitive: true, source: "keyword", keyword, zeroShot };
+}
+
+/**
  * analyseMetadata — extract signals from page metadata object (from Feature A).
  * @param {Object} meta  { title, description, ogImage, url, lang }
  * @returns {Object}     enriched metadata signals
@@ -559,10 +645,21 @@ export async function runB1(pageData, apiKey = "", opts = {}) {
     };
   }
 
-  const cleaned     = cleanText(pageData.rawText || "");
-  const isSensitive = checkSensitiveContent(cleaned + " " + meta.title);
-  const keywords    = extractKeywords(cleaned);
-  const summary     = summariseContent(cleaned);
+  const cleaned  = cleanText(pageData.rawText || "");
+  const keywords = extractKeywords(cleaned);
+  const summary  = summariseContent(cleaned);
+
+  // Zero-shot premise uses the fuller cleaned text (not the 2-sentence
+  // extractive `summary` used for category) — a crisis signal is as likely
+  // to be in sentence 3 as sentence 1, and buildZeroShotInput truncates to
+  // its own budget anyway, so there's no cost to handing it more to work
+  // with. See resolveSensitivity for the §5.1/§5.5 fix this implements.
+  const sensitivity = await resolveSensitivity(
+    cleaned + " " + meta.title,
+    { title: meta.title, summary: cleaned, keywords },
+    opts,
+  );
+  const isSensitive = sensitivity.isSensitive;
 
   // Sensitive/crisis pages never reach the category LLM — mirrors B2's own
   // sensitive-override, which never sends this content to the mood LLM either.
@@ -607,7 +704,8 @@ export async function runB1(pageData, apiKey = "", opts = {}) {
     category,          // { primary, secondary, scores }
     summary,           // short extractive summary for LLM
     readingComplexity: complexity,    // [0..1], higher = harder — prefers Feature A's value when present
-    isSensitive,       // boolean — triggers override in B2
+    isSensitive,           // boolean — triggers override in B2
+    sensitivitySource: sensitivity.source, // "keyword" | "keyword-hard-severe" | "keyword-declined" | "zero-shot-promoted" | "zero-shot-demoted"
 
     // Image-only flag — B2 will skip LLM text call if true
     isImageOnly,

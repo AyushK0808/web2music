@@ -457,19 +457,25 @@ export async function runB2(cleanedContent, apiKey, options = {}) {
      * unexpected audio in a sensitive moment (a shared workspace, a quiet
      * room) can itself be an unwanted disclosure that something is wrong.
      *
-     * The detector is also a blunt instrument — a fixed list of ~18 English
-     * terms, word-boundary regex, no semantic understanding (see
+     * The detector's base tier is still a blunt instrument — a fixed list of
+     * ~18 English terms, word-boundary regex, no semantic understanding (see
      * SEVERE_SENSITIVE_TERMS/AMBIGUOUS_SENSITIVE_TERMS in
-     * b1_contentUnderstanding.js). Its false-negative rate is high:
-     * euphemisms ("ending it all"), non-English pages (this check has no LLM
-     * fallback — content flagged sensitive is deliberately kept off any LLM,
-     * so language escalation never applies here), and entire topics outside
-     * the list (addiction, miscarriage, a terminal diagnosis) all pass
-     * through silently undetected. Its false-positive rate is low-to-moderate
-     * after requiring 2+ distinct ambiguous terms, but clinical/academic/
-     * journalistic writing using a SEVERE single-hit term (a psychology
-     * textbook chapter on eating disorders, a nurse's reference material)
-     * still triggers it.
+     * b1_contentUnderstanding.js) — but it is no longer the only tier
+     * (§5.1/§5.5 fix). B1's resolveSensitivity() escalates to the same local/
+     * proxy zero-shot entailment model the category classifier already uses
+     * (never the Groq tier-2 LLM, so the "never leaves the device" guarantee
+     * below is unaffected) whenever the keyword tier is uncertain: it can
+     * PROMOTE a keyword "not sensitive" to sensitive on euphemism ("ending it
+     * all"), non-English pages, or vocabulary outside the list (addiction,
+     * miscarriage, a terminal diagnosis), and can DEMOTE a keyword "sensitive"
+     * back to not-sensitive when a single eating-disorder term or two
+     * ambiguous terms land in clinical/academic/journalistic writing (a
+     * psychology textbook chapter, a degree-programme listing). The other six
+     * hard-severe terms (suicide, self-harm, sexual assault, domestic
+     * violence, terrorism, mass shooting) are never demoted, on the same
+     * asymmetry argued below. All of this is additive: with the zero-shot
+     * tier disabled or unavailable, behaviour is exactly the old keyword-only
+     * verdict.
      *
      * That asymmetry is why silence is the safer default: a false positive
      * under "go quiet" costs the user a few seconds of missing ambient

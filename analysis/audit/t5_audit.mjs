@@ -4,6 +4,11 @@
  *
  *   node analysis/audit/t5_audit.mjs
  *   node analysis/audit/t5_audit.mjs --with-e2e     # also runs the Chromium harness (slow)
+ *   node analysis/audit/t5_audit.mjs --with-zero-shot [serviceUrl]  # also audits the §5.1/§5.5
+ *       fix (resolveSensitivity's zero-shot tier) against a live entailment service, default
+ *       serviceUrl http://localhost:8078/v1/zero-shot (services/classify must be up — see
+ *       `npm run up`). Without this flag the keyword-only numbers below are unchanged, since
+ *       there's no live service to reach in most environments this script runs in.
  *
  * One row per policy: what it is, what triggers it, which test covers it, and
  * that test's live pass/fail *right now*. The point of generating it rather
@@ -16,7 +21,10 @@
  * including the failure modes b2_moodClassifier.js's own ethics note admits to.
  * We report those rather than wait to be asked, because a limitation the paper
  * states first reads as calibration and the same limitation found by a reviewer
- * reads as an oversight.
+ * reads as an oversight. Since the §5.1/§5.5 fix, that keyword-only number is
+ * the pre-fix baseline, not the shipped detector's ceiling — --with-zero-shot
+ * reports the post-fix numbers alongside it once a service is available to
+ * measure them against.
  *
  * Writes analysis/out/audit.json, which analysis/figures/t5_audit.py turns
  * into the table.
@@ -29,6 +37,7 @@ import { fileURLToPath } from 'node:url';
 
 import {
   checkSensitiveContent,
+  resolveSensitivity,
   analyseMetadata,
 } from '../../mood-classification/feature_b/b1_contentUnderstanding.js';
 import { decideAttenuation, ATTENUATION } from '../../ui/src/audioTabs.js';
@@ -38,6 +47,13 @@ const REPO = path.resolve(__dirname, '../..');
 const OUT = path.join(REPO, 'analysis/out');
 
 const withE2E = process.argv.includes('--with-e2e');
+const withZeroShotIdx = process.argv.indexOf('--with-zero-shot');
+const withZeroShot = withZeroShotIdx !== -1;
+const zeroShotServiceUrl = withZeroShot
+  ? (process.argv[withZeroShotIdx + 1] && !process.argv[withZeroShotIdx + 1].startsWith('--')
+      ? process.argv[withZeroShotIdx + 1]
+      : 'http://localhost:8078/v1/zero-shot')
+  : null;
 
 // ── The policies. Each names the test that covers it. ──────────────────────
 const POLICIES = [
@@ -122,17 +138,10 @@ function runTest(t) {
 const tail = (s) => (s || '').trim().split('\n').slice(-4).join('\n');
 
 // ── The adversarial slice ─────────────────────────────────────────────────
-function auditSensitive() {
-  const slice = JSON.parse(
-    fs.readFileSync(path.join(__dirname, 'sensitive_slice.json'), 'utf8'),
-  );
-  const perPage = slice.pages.map((p) => {
-    const detected = checkSensitiveContent(`${p.text} ${p.title}`);
-    return { id: p.id, slice: p.slice, expected: p.sensitive, detected,
-             outcome: p.sensitive === detected ? 'correct'
-                    : p.sensitive ? 'false negative' : 'false positive' };
-  });
-
+// summariseSlice() computes the FN/FP breakdown for one detector function
+// (id: page -> boolean) — shared between the keyword-only baseline and the
+// post-§5.1/§5.5-fix zero-shot pass below, so the two are directly comparable.
+function summariseSlice(slice, perPage) {
   const positives = perPage.filter((p) => p.expected);
   const negatives = perPage.filter((p) => !p.expected);
   const fn = positives.filter((p) => !p.detected);
@@ -157,6 +166,58 @@ function auditSensitive() {
     by_slice: bySlice,
     per_page: perPage,
   };
+}
+
+async function auditSensitive() {
+  const slice = JSON.parse(
+    fs.readFileSync(path.join(__dirname, 'sensitive_slice.json'), 'utf8'),
+  );
+
+  // Keyword-only baseline — checkSensitiveContent() alone, unchanged by the
+  // §5.1/§5.5 fix (it's still the tier-1 detector; resolveSensitivity below
+  // is what escalates past it). This is the pre-fix number the paper's
+  // limitations section quotes (FN 0.455, FP 0.333 at time of writing).
+  const keywordPerPage = slice.pages.map((p) => {
+    const detected = checkSensitiveContent(`${p.text} ${p.title}`);
+    return { id: p.id, slice: p.slice, expected: p.sensitive, detected,
+             outcome: p.sensitive === detected ? 'correct'
+                    : p.sensitive ? 'false negative' : 'false positive' };
+  });
+  const keyword = summariseSlice(slice, keywordPerPage);
+
+  if (!withZeroShot) return { keyword };
+
+  // Post-fix pass: resolveSensitivity() against a live entailment service —
+  // the same local/proxy backend the category classifier uses, never the
+  // Groq tier-2 LLM. Requires services/classify up (`npm run up`); reports
+  // a clear per-page error rather than silently falling back to the keyword
+  // verdict, so a misconfigured --with-zero-shot run doesn't get reported as
+  // "the fix didn't help" when actually the service was just unreachable.
+  process.stderr.write(`[t5_audit] --with-zero-shot: auditing resolveSensitivity() against ${zeroShotServiceUrl} …\n`);
+  const zsPerPage = [];
+  for (const p of slice.pages) {
+    const text = `${p.text} ${p.title}`;
+    let detected = null, error = null;
+    try {
+      const r = await resolveSensitivity(
+        text, { title: p.title, summary: p.text, keywords: [] },
+        { zeroShot: { enabled: true, backend: 'proxy', serviceUrl: zeroShotServiceUrl } },
+      );
+      detected = r.isSensitive;
+    } catch (e) {
+      error = e.message;
+    }
+    zsPerPage.push({
+      id: p.id, slice: p.slice, expected: p.sensitive, detected, error,
+      outcome: error ? 'error' : (p.sensitive === detected ? 'correct'
+                : p.sensitive ? 'false negative' : 'false positive'),
+    });
+  }
+  const errored = zsPerPage.filter((p) => p.error);
+  const zeroShot = summariseSlice(slice, zsPerPage.filter((p) => !p.error));
+  if (errored.length) zeroShot.errors = errored.map((p) => ({ id: p.id, error: p.error }));
+
+  return { keyword, zero_shot: zeroShot };
 }
 
 // ── Two policies are cheap enough to assert directly, so we do ────────────
@@ -195,7 +256,7 @@ const policies = POLICIES.map((p) => {
   return { ...p, test: { ...p.test, ...r } };
 });
 
-const sensitive = auditSensitive();
+const sensitive = await auditSensitive();
 const direct = directAssertions();
 
 const report = {
@@ -225,12 +286,25 @@ for (const p of policies) {
 console.log('\n  direct assertions:');
 for (const c of direct) console.log(`${c.status === 'pass' ? '    ok ' : '   FAIL'}  ${c.name}`);
 
-console.log('\n  sensitive-content detector, adversarial slice:');
-console.log(`    n=${sensitive.n}  (${sensitive.n_sensitive} sensitive, ${sensitive.n_benign} benign)`);
-console.log(`    false-negative rate ${sensitive.false_negative_rate.toFixed(3)}` +
-            `   false-positive rate ${sensitive.false_positive_rate.toFixed(3)}`);
-for (const f of sensitive.false_negatives) console.log(`      FN  ${f.id}  [${f.slice}]`);
-for (const f of sensitive.false_positives) console.log(`      FP  ${f.id}  [${f.slice}]`);
+function printSliceResult(label, s) {
+  console.log(`\n  sensitive-content detector — ${label}:`);
+  console.log(`    n=${s.n}  (${s.n_sensitive} sensitive, ${s.n_benign} benign)`);
+  console.log(`    false-negative rate ${s.false_negative_rate.toFixed(3)}` +
+              `   false-positive rate ${s.false_positive_rate.toFixed(3)}`);
+  for (const f of s.false_negatives) console.log(`      FN  ${f.id}  [${f.slice}]`);
+  for (const f of s.false_positives) console.log(`      FP  ${f.id}  [${f.slice}]`);
+  if (s.errors?.length) {
+    console.log(`    ${s.errors.length} page(s) errored (service unreachable?) and were excluded from the rates above:`);
+    for (const e of s.errors) console.log(`      ERR ${e.id}  ${e.error}`);
+  }
+}
+
+printSliceResult('adversarial slice, keyword tier only (pre-§5.1/§5.5-fix baseline)', sensitive.keyword);
+if (sensitive.zero_shot) {
+  printSliceResult('adversarial slice, resolveSensitivity() incl. zero-shot tier (post-fix)', sensitive.zero_shot);
+} else {
+  console.log('\n  (pass --with-zero-shot [serviceUrl] with services/classify up to also audit the §5.1/§5.5 fix)');
+}
 console.log('='.repeat(78));
 console.log(`\nWrote ${path.join(OUT, 'audit.json')}`);
 
