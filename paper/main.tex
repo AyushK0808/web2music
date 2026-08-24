@@ -80,7 +80,7 @@ while bar-snapped loop-point detection and a 50 ms equal-power crossfade turn
 a one-shot generator's output into loopable material. We report a systems
 evaluation over 105 websites, 144 generation requests and 141 generated clips,
 an adversarial audit of the system's refusal behaviour, and a cost model
-showing the cascade classifies a thousand pages for 0.004 USD. We also report
+showing the cascade classifies a thousand pages for 0.0132 USD. We also report
 three negative results: the crossfade removes a median of only 0.93 dB of seam
 energy discontinuity, the delivered clip retains a median of 50.3 percent of
 its requested duration, and the sensitive-content detector misses 45.5 percent
@@ -692,10 +692,9 @@ clip duration, and Fig.~\ref{fig:f3} the request path under concurrency.
 \centerline{\includegraphics[width=0.98\textwidth]{figures/f1.pdf}}
 \caption{Server-side timeline: navigation to first sound to generated swap,
 with the five-second confidence window shaded as a design interval rather than
-a cost. Client-side extraction, classification and decode segments are absent
-because the end-to-end browser latency harness has not been run; the shape of
-the argument is unchanged, but navigation-to-audible is not yet measured end to
-end.}
+a cost. This figure still shows the server-side generation path only; the
+client-side extraction, decision and decode segments have since been measured
+separately (Section~\ref{sec:res-e2e-latency}) and are not yet overlaid here.}
 \label{fig:f1}
 \end{figure*}
 
@@ -744,19 +743,100 @@ for this system would therefore be actively misleading, attributing a design
 decision about stability to an implementation limitation about speed. We report
 the two separately and suggest that any always-on adaptive-media system do the
 same.
+\subsection{Client-side (in-browser) latency}
+\label{sec:res-e2e-latency}
 
+The server-side numbers above cover navigation to a running service; they say
+nothing about extraction, mood decision, or the swap itself inside the
+browser. \texttt{ui/e2e/latency.e2e.mjs} drives the built extension with
+Playwright against eleven synthetic fixture pages, deliberately constructed to
+exercise specific code paths rather than sampled from the real web -- this is
+a different corpus from the 105-site extraction benchmark in
+Table~\ref{tab:extraction}, and the two should not be conflated. Feature D was
+stubbed at 139{,}894 ms, the mean of the three real cache-miss generation
+times in Table~\ref{tab:d-latency}, so the run isolates the client-side
+critical path from the generator itself. The classify-proxy was stubbed to
+force local tier-1 heuristics only; no real network escalation call was
+exercised. 54 of 55 page loads (11 sites $\times$ 5 repeats) reached audible
+playback; one, on the first site, produced no audio within the wait window at
+all -- distinct from a slow swap, since even the near-instant fallback never
+registered. We were not able to determine a cause and report $n=54$ rather
+than silently including it.
+
+\begin{table}[t]
+\caption{End-to-end client-side latency, $n=54$ page loads, nearest-rank
+percentiles.}
+\label{tab:e2e-latency}
+\begin{center}
+\small
+\begin{tabular}{lrrr}
+\toprule
+\textbf{Stage} & \textbf{p50 (ms)} & \textbf{p95 (ms)} & \textbf{max (ms)} \\
+\midrule
+Nav $\to$ page data (Feature A + idle/debounce) & 856 & 1{,}217 & 1{,}272 \\
+\quad of which Feature A extraction itself & 464 & 833 & 865 \\
+Feature B decision, per call & 16 & 28 & 32 \\
+Feature D round trip (stubbed) & 139{,}920 & 139{,}933 & 139{,}951 \\
+Fetch + decode + crossfade start & 38 & 74 & 86 \\
+Nav $\to$ audible (wall clock, incl. window) & 6{,}859 & 11{,}279 & 11{,}291 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+
+Nav-to-audible tracks the confidence window and fallback path almost
+exactly, and is essentially unaffected by the 139.9 s stubbed generation
+delay -- direct, in-browser confirmation of the claim in
+Section~\ref{sec:res-latency}: the fallback-then-swap design hides the
+generator's latency from what a user actually hears, not just on the server's
+own clock but end to end in a real browser. Summing every stage in
+Table~\ref{tab:e2e-latency} gives 140.8 s of real work per page load; the
+user perceives 6.9 s of it. The fetch-decode-crossfade stage,
+measured here for the first time, adds a median of 38 ms once the swap
+arrives -- small against the confidence window, and not the bottleneck
+anywhere in this pipeline.
+
+One site, \texttt{neutral\_recycling\_notice}, is a reproducible outlier: all
+five repeats landed at 11.2--11.3 s against $\sim$6.8 s for every other site,
+which is why the p95 and max above are close to its value specifically rather
+than reflecting the typical page. This is deliberate in the fixture: the page
+is built so tier-1's colour and keyword heuristics match nothing, and it
+consistently required more extraction cycles before a mood committed (max 5
+vs.\ a median of 3 elsewhere). Ambiguous pages cost real, measurable latency
+in the browser, distinct from -- and additional to -- the classification
+cascade's escalation cost already quantified in Section~\ref{sec:res-cost}.
+
+Two limitations on this measurement. First, both Feature D and the
+classify-proxy were stubbed, so the 75.7 percent real-corpus escalation rate
+found in Section~\ref{sec:res-cost} is not reflected here at all; the true
+network cost of escalation on a real page remains unmeasured end to end.
+Second, the harness reuses one persistent browser context across every site
+and repeat, so the extension's service worker persists between navigations;
+a real generation response arriving later than its site's wait deadline
+could in principle be attributed to a subsequent site's telemetry window.
+We found no evidence of this in the data -- all 54 Feature D round-trip times
+cluster tightly around the configured 139.9 s delay, with no anomalously
+short values that contamination would produce -- but the harness does not
+positively rule it out, and a request-scoped identifier would close the gap
+for future runs.
 \subsection{Cost and cache behaviour}
 \label{sec:res-cost}
 
-Cost accounting was computed over per-page token and byte counts from the
-preliminary corpus, but the unit costs are properties of the models and their
-pricing rather than of the corpus, so the per-page figures scale with whatever
-escalation rate a larger corpus produces. At the observed escalation rate the
-cascade sends a mean of 73.3 LLM tokens per page, 330 on the pages that
-actually escalate, performs thirteen NLI forward passes per zero-shot
-invocation and 2.89 per page on average, and transmits 501 bytes per page. At
-the tier-2 provider's published price this is 0.004 USD per thousand pages,
-rising to 0.018 USD if every page escalated.
+Cost accounting was recomputed over the full S2 corpus (255 of 260 pages; the
+two failed captures and three deliberately bypassed internal pages have no
+extracted content and are excluded rather than imputed), superseding the
+earlier 18-page smoke-set figures. Unit costs are properties of the models and
+their pricing rather than of the corpus, so the per-page figures scale with
+escalation rate -- and the real corpus escalates far more than the smoke set
+implied: 75.7 percent of pages reach the keyword tier's ceiling, against 22.2
+percent on the 18-page subset that Table \ref{tab:tiers} still reports pending
+the 600-page annotation (D-01/D-02). At the observed rate the cascade sends a
+mean of 241.5 LLM tokens per page, 319.1 on the pages that actually escalate,
+performs thirteen NLI forward passes per zero-shot invocation and 9.84 per
+page on average, and transmits 1642 bytes per page (979 from the LLM tier, 663
+from the zero-shot proxy). At the tier-2 provider's published price
+(re-verified 2026-08-17, unchanged) this is 0.0132 USD per thousand pages,
+rising to 0.0174 USD if every page escalated. 
 
 That figure changes what the cascade contribution claims. Even the pessimistic
 number is negligible, so nobody needs a cascade here to save money. The cascade
@@ -1026,7 +1106,7 @@ We presented Web2Music, a browser extension that conditions generative ambient
 music on the page being read, and reported a systems evaluation of it: a
 four-signal page descriptor costing 86 ms at the median across 105 real sites;
 a three-tier abstaining classifier that turns confidence thresholds into a
-disclosure control and classifies a thousand pages for less than half a cent; a
+disclosure control and classifies a thousand pages for about 1.3 cents; a
 fallback-then-swap playback design that hides a 139 s generator behind a 7 ms
 placeholder; and loop synthesis that makes a one-shot generator's output repeat
 without a container gap.
@@ -1137,12 +1217,16 @@ self-similarity, and a clip-length study asking whether a shorter clip that
 loops sooner beats a longer one that arrives later. The larger opportunity is
 conditioning the generator to produce loop-closed material directly.
 
-\textbf{Close the measurement gaps.} An end-to-end in-browser latency run to
-supply the client-side segments of Fig.~\ref{fig:f1}; a cold-cache re-run to
-obtain a genuine cache-miss column and a batching measurement; a GPU
-configuration; and an extraction re-run with the real in-browser embedding
-rather than a stub. The 2 s cache-check anomaly should be diagnosed first,
-since it dominates the common path.
+\textbf{Close the remaining measurement gaps.} The end-to-end in-browser
+latency run is now done (Section~\ref{sec:res-e2e-latency}) and its
+extraction/decision/decode segments still need to be plotted onto
+Fig.~\ref{fig:f1} itself, not just reported separately in
+Table~\ref{tab:e2e-latency}. Remaining: a cold-cache re-run to obtain a
+genuine cache-miss column and a batching measurement; a GPU configuration;
+and an extraction re-run with the real in-browser embedding rather than a
+stub -- attempted during this work but blocked on a harness gap of its own,
+detailed in that section's notes. The 2 s cache-check anomaly should be
+diagnosed first, since it dominates the common path.
 
 \textbf{Ablate the signals.} The descriptor claims four signals. A
 per-signal ablation, removing colour, behaviour and the embedding in turn,
