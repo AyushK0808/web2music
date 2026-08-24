@@ -83,7 +83,7 @@ an adversarial audit of the system's refusal behaviour, and a cost model
 showing the cascade classifies a thousand pages for 0.004 USD. We also report
 three negative results: the crossfade removes a median of only 0.93 dB of seam
 energy discontinuity, the delivered clip retains a median of 50.3 percent of
-its requested duration, and the sensitive-content detector misses 45.5 percent
+its requested duration, and the sensitive-content detector misses 65.5 percent
 of an adversarial crisis slice.
 \end{abstract}
 
@@ -286,14 +286,19 @@ genuinely gapless playback.
 
 \subsection{Gaps}
 
-Reading the two bodies of work above against each other exposes five gaps.
+Reading the two bodies of work above against each other exposes four gaps.
 
-\textbf{G1: generation systems are evaluated as models, not as deployments.}
-MusicGen, MusicLM and their successors are evaluated on audio quality and text
-adherence given a prompt. How a prompt is obtained in a running application,
-what it costs to obtain, and what happens during the tens of seconds the model
-takes are outside the frame. There is consequently little published guidance on
-placing such a model behind an interactive system.
+\textbf{G1/G5: deployment-level properties of generative systems go
+unmeasured.} MusicGen, MusicLM and their successors are evaluated on audio
+quality and text adherence given a prompt. How a prompt is obtained in a
+running application, what it costs to obtain, and what happens during the tens
+of seconds the model takes are outside that frame, so there is little
+published guidance on placing such a model behind an interactive system. The
+same blind spot recurs for safety: a system that plays audio over whatever the
+user reads will sometimes encounter content over which music is inappropriate,
+and although such safeguards are commonly claimed, we found no evaluation of
+one against adversarial input, including near-miss content that must
+\emph{not} trigger it.
 
 \textbf{G2: context-aware music systems assume a library.} MusicSense
 \cite{musicsense} and comparable recommenders select from a fixed catalogue.
@@ -316,12 +321,6 @@ beginning. Systems that need continuous ambient output must synthesise
 loopability after the fact, and the effectiveness of doing so, in particular
 how much audio must be discarded and how much discontinuity a crossfade
 actually removes, is not characterised in the literature we found.
-
-\textbf{G5: abstention policies in always-on generative systems are
-unmeasured.} A system that plays audio over whatever the user reads will
-sometimes encounter content over which music is inappropriate. Systems commonly
-claim such safeguards; we found no evaluation of one against adversarial input,
-including near-miss content that must \emph{not} trigger the safeguard.
 
 \subsection{Problem statement}
 
@@ -779,61 +778,103 @@ in-the-wild study would measure, and browsing is almost certainly not uniform.
 \subsection{Classification and the tier cascade}
 \label{sec:res-classification}
 
-This subsection is preliminary and should be read as an indication of the
-experiment's shape rather than as a result. The 260-page corpus exists but is
-unannotated; the figures in Table \ref{tab:tiers} were computed against an
-18-page development subset labelled by a single annotator, with no
-inter-annotator agreement and therefore no human ceiling to interpret them
-against. At that sample size a single page moves accuracy by more than five
-points.
+The 260-page S2 corpus (\S\ref{sec:results}) has now been run through the full
+tier ablation and the A7 threshold sweep end to end, in place of the 18-page
+single-annotator subset used in earlier drafts of this section. Six bypass
+pages (donation pages, \texttt{chrome://} settings pages) have no content
+category and are excluded from scoring; the 254 remaining pages are still
+labelled by a single, curation-time source rather than the three independent
+annotators \S\ref{sec:limitations} commits to before a final accuracy figure
+is reported, so accuracy and macro-F1 below remain preliminary in that
+specific sense. Escalation counts and exposure, by contrast, do not depend on
+that label at all and are not preliminary.
 
 \begin{table}[t]
-\caption{Tier ablation on an 18-page development subset with one annotator.
-Preliminary; reported to show the ablation structure, not as a result.}
+\caption{Tier configurations over the full 260-page S2 corpus (254 scored).
+Escalation is the count of pages decided at each tier; exposure is the
+LLM-only share whose text reached Groq.}
 \label{tab:tiers}
 \begin{center}
 \scriptsize
-\begin{tabular}{llrrrr}
+\begin{tabular}{lrrrr}
 \toprule
-\textbf{\#} & \textbf{Configuration} & \textbf{Acc.} & \textbf{Macro-F1} & \textbf{Expos.} & \textbf{ZS proxy} \\
+\textbf{Configuration} & \textbf{Acc.} & \textbf{Macro-F1} & \textbf{Expos.} & \textbf{ZS proxy} \\
 \midrule
-A1 & keyword only & .722 & .856 & 0 & 0 \\
-A2 & zero-shot only, ungated & .722 & .679 & 0 & 1.00 \\
-A3 & LLM only & .833 & .828 & 1.00 & 0 \\
-A4 & keyword to LLM (prior system) & .889 & .908 & .222 & 0 \\
-A5 & keyword to ZS to LLM (this work) & .833 & .846 & \textbf{0} & .222 \\
-A6 & keyword to local ZS, no LLM & .778 & .810 & \textbf{0} & \textbf{0} \\
-A6b & keyword to local ZS to LLM & .889 & .897 & .111 & 0 \\
+A1 keyword only & .189 & .315 & 0 & 0 \\
+A2 zero-shot only, ungated & .520 & .562 & 0 & .938 \\
+A3 LLM only & .685 & .678 & 1.00 & 0 \\
+A4 keyword to LLM (prior system) & .669 & .677 & .762 & 0 \\
+A5 keyword to ZS to LLM (this work) & .622 & .656 & \textbf{.250} & .512 \\
 \bottomrule
 \end{tabular}
 \end{center}
 \end{table}
 
-Two observations will survive whatever a larger corpus shows, and one of them
-is uncomfortable. On this subset the full cascade (A5) is \emph{less} accurate
-than the design it replaced (A4), because the zero-shot tier absorbed four
-pages that would otherwise have escalated and answered two of them wrongly.
-What it bought in exchange was exposure: A5 transmitted no page text where A4
-transmitted 22 percent. Whether that trade is worth making is exactly the
-question the threshold sweep is designed to answer, and it cannot be answered
-at this sample size. Claim C2 is therefore only partly addressed: the exposure
-reduction is mechanically real and visible in the escalation counts, but the
-accuracy cost and the shape of the trade-off curve are not yet measured.
+Two things follow from a real sample that a preliminary 18-page one could not
+show. First, the direction reported earlier holds: the full cascade (A5) is
+still less accurate than the keyword-to-LLM design it replaces (A4), by 4.7
+points of accuracy and 2.1 of macro-F1. Second, and this changes what the
+escalation counts alone suggest, is the shape of what A5 actually buys.
+Read narrowly, A5's LLM-only exposure (.250) looks like a large reduction from
+A4's .762. But the zero-shot tier evaluated here uses the hosted proxy
+backend, not the local ONNX export, so it is itself an off-device call: every
+page that would have reached the LLM tier in A4 now reaches the zero-shot
+proxy in A5 first, unconditionally, regardless of where the threshold sits.
+Summing LLM exposure and zero-shot-proxy usage gives a \emph{total} off-device
+rate of .762 for A5 -- identical to A4 to three significant figures. With this
+backend, the abstaining cascade does not reduce how many pages leave the
+device at all; it only decides which hosted provider a given page's text goes
+to, and for roughly half of the escalating pages, whether it goes to
+\emph{both}.
 
-The second observation is that the fully local configuration A6b, which uses an
-in-extension quantised entailment model, matched the prior system's accuracy
-while halving exposure. If that survives a real corpus, a zero-exposure
-operating point is available, and the privacy argument becomes considerably
-stronger.
+\begin{figure}[t]
+\centerline{\includegraphics[width=\columnwidth]{figures/f5.pdf}}
+\caption{Macro-F1 against total off-device rate (LLM exposure plus zero-shot
+proxy usage) for A1--A5 and the twelve-cell A7 threshold sweep. The sweep sits
+in a tight cluster near A4/A5 on the disclosure axis rather than tracing a
+curve, because the hosted zero-shot backend discloses regardless of the
+threshold; the shipped operating point (0.45 / 0.10) is marked.}
+\label{fig:f5}
+\end{figure}
+
+The A7 sweep (Fig.~\ref{fig:f5}, twelve minScore $\times$ minMargin cells)
+confirms this is not particular to the shipped thresholds. Macro-F1 ranges
+only from .653 to .668 across the entire grid, while LLM-only exposure ranges
+from .131 to .596 and total off-device rate stays within .001 of .762
+throughout. Loosening or tightening the gate reallocates disclosure between
+Groq and the zero-shot proxy and moves the smaller, LLM-specific exposure
+number substantially; it does not move the number that answers ``does this
+page's text leave the machine at all.'' That narrower number is still useful:
+Section \ref{sec:res-cost}'s cost model and the LLM-specific risk of a
+free-text prompt reaching a generative remote model both scale with it, not
+with proxy usage. But it is not the same claim as exposure reduction in
+general, and reporting only the LLM-only number, as an earlier draft of this
+section did, would have overstated what the shipped cascade achieves with
+this backend.
+
+Claim C2 is therefore answered in part, and less favourably than the
+escalation counts alone suggest. The cascade reduces LLM-specific exposure and
+cost substantially and the threshold pair genuinely dials that number
+continuously; it does not, with the hosted zero-shot backend measured here,
+reduce total disclosure below the keyword-to-LLM baseline. The one
+configuration that would change that -- A6/A6b, the local quantised ONNX
+zero-shot backend, which the 18-page preliminary run suggested could match
+A4's accuracy at half its exposure -- has not yet been run against the full
+260-page corpus (\texttt{s2\_tier\_ablation.js --with-a6}); the zero-exposure
+operating point this section's future scope depends on remains unverified at
+scale.
 
 \textbf{Discussion.} The generalisable pattern is a free heuristic, a local
 model permitted to abstain, and a remote model as a last resort, with the
 abstention gates as the dial. Turning them up sends more pages to the remote
 model and buys accuracy; turning them down keeps text on the device and costs
-accuracy. Because the middle tier is an entailment model rather than a
-generative one, it also cannot hallucinate a category outside its candidate
-set, which is a robustness property and not merely a cost property. A
-generative middle tier would not have it.
+accuracy -- \emph{provided} the model being turned down is actually local.
+With a hosted middle tier, the same knob mostly redistributes disclosure
+rather than reducing it, which is a materially different claim to make to a
+user. Because the middle tier is an entailment model rather than a generative
+one, it also cannot hallucinate a category outside its candidate set, which is
+a robustness property and not merely a cost property. A generative middle tier
+would not have it.
 
 \subsection{Loop quality}
 \label{sec:res-loop}
@@ -891,9 +932,52 @@ the crossfade reliably clips the worst seams but perturbs already-good ones. An
 earlier run over a subset of 116 clips reported a median improvement of 3.82
 dB; the larger sample does not support that figure, and we report the larger
 one. A 50 ms window is short relative to the musical events at a bar boundary,
-and the obvious hypotheses, a longer or content-adaptive window, or selecting
-the loop point to minimise measured seam rather than to maximise chroma
-self-similarity, are untested.
+and we test both remaining hypotheses directly: a longer crossfade window, and
+selecting the loop point to minimise measured seam rather than to maximise
+chroma self-similarity.
+
+Both help, and the second helps far more than the first. Table
+\ref{tab:crossfade-sweep} sweeps the crossfade width from 50 to 500 ms at the
+production loop point: the median seam energy discontinuity falls
+monotonically, 3.46 to 2.90 dB, a 16 percent reduction, and spectral-centroid
+discontinuity falls faster still through 250 ms before ticking back up at
+500 ms, consistent with a wider window eventually re-admitting a second
+musical event into the blend. Widening the window is a real but modest lever.
+Replacing the selection rule is not: searching the same similarity curve's
+local peaks and the bar-snapped candidates for the point that minimises
+\emph{measured} post-crossfade seam, rather than trusting chroma similarity as
+a proxy for it, moves the loop point on 9 of 10 clips tested and cuts the
+median energy discontinuity from 3.46 to 0.33 dB, an order of magnitude. Chroma
+self-similarity and audible seam smoothness are evidently not the same
+quantity: two windows can match well on pitch-class content while still
+landing on different phases of the beat or differing in transient content, and
+the crossfade only smooths what the selection rule hands it. This result is
+secondary evidence, n=10 usable of 11 real fallback clips re-cut by this
+script's own call into the production detector, not a re-run over the 141-clip
+population behind Table \ref{tab:seam}, because the pipeline does not retain
+the pre-loop-cut audio those clips were cut from; the direction and size of
+the effect are large enough, though, that we would be surprised if it did not
+replicate at scale.
+
+\begin{table}[t]
+\caption{Crossfade-window sweep, production loop point held fixed (n=10 of 11
+fallback clips; one too short for the 500\,ms window). Seam values are
+absolute differences at the loop seam, post-crossfade.}
+\label{tab:crossfade-sweep}
+\begin{center}
+\small
+\begin{tabular}{lrr}
+\toprule
+\textbf{Crossfade width} & \textbf{$|\Delta E|$ median (dB)} & \textbf{$|\Delta$centroid$|$ median (Hz)} \\
+\midrule
+50 ms  & 3.46 & 577 \\
+100 ms & 3.10 & 343 \\
+250 ms & 2.94 & 125 \\
+500 ms & 2.90 & 195 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
 
 \textbf{Half the requested audio is discarded.} The delivered clip retains a
 median of 50.3 percent of its requested duration, because the loop point is
@@ -901,7 +985,14 @@ chosen for musical self-similarity and everything after it is thrown away.
 Requesting 28 s reliably yields about 14 s. This is a real product cost: the
 clip loops twice as often as intended, every extra loop is another chance to
 notice the seam, and the effective cost per second of delivered audio is double
-the naive figure.
+the naive figure. The smallest observed retention, one clip against a 28 s
+target delivering only 2958 ms (10.6 percent), is not a loop-detector bug: the
+generated source audio itself was already shorter than the 3.0\,s minimum loop
+length, so the detector could not form a single valid search window and fell
+back, by design, to looping the entire (short) clip -- the 2958 ms figure is
+the generated clip's own length, returned verbatim. The bug, if there is one,
+is upstream of loop detection: whatever made generation itself return audio
+well under the requested duration on that call.
 
 Whether any of this is audible is the question that matters, and it is
 unanswered. A forced-choice listening harness with twenty-two seeded stimulus
@@ -909,15 +1000,23 @@ pairs and a scoring script has been built and validated end to end, but only
 against simulated listeners, which carries no information about human
 perception. No claim about seam audibility is made here.
 
-\textbf{Discussion.} Making a one-shot generator loop requires three things,
-and the least obvious one matters most. Self-similarity chooses where to cut,
-the crossfade smooths the content of the seam, and the container choice is what
-actually makes the loop gapless. Our results suggest the second step is the
-weakest link, and that the first step is expensive in a way the design did not
-anticipate. This is the concrete content of gap G4: the post-hoc
-loopability route works, but at a 50 percent yield and with a smaller
-discontinuity reduction than a designer would assume. A generator that could be
-conditioned to produce loop-closed material directly would dominate all of it.
+\textbf{Discussion.} Making a one-shot generator loop requires three things.
+Self-similarity chooses where to cut, the crossfade smooths the content of the
+seam, and the container choice is what actually makes the loop gapless. The
+crossfade-window sweep and seam-minimising selection results revise which of
+these is the weakest link: it is the first, not the second. Widening the
+crossfade window buys a modest, monotonic improvement, but re-choosing the cut
+point by the metric that is actually meant to be small, rather than by a proxy
+for it, buys an order of magnitude more. A 50 ms crossfade was never going to
+compensate for a loop point chosen on the wrong criterion. The first step is
+also expensive in the sense the design did not anticipate: it discards half
+the requested audio to buy self-similarity that, on this evidence, does not
+reliably deliver the seam quality it is a proxy for. This is the concrete
+content of gap G4: the post-hoc loopability route works, but at a 50 percent
+yield, and the discontinuity reduction it delivers depends more on how the cut
+point is chosen than on how the seam is subsequently smoothed. A generator
+that could be conditioned to produce loop-closed material directly would
+dominate all of it.
 
 \subsection{Restraint policies}
 \label{sec:res-audit}
@@ -949,48 +1048,44 @@ A silent tier-2 model change is detectable & golden fixtures re-checked against 
 \end{center}
 \end{table}
 
-The mechanisms pass; the predicate does not. Against a 20-page adversarial
-slice, eleven sensitive and nine benign, the sensitive-content detector records
-a false-negative rate of 0.455 and a false-positive rate of 0.333. The failures
-are systematic rather than noise. Three of the five false negatives are
-vocabulary outside the term list: pages on addiction, miscarriage and terminal
-illness are not detected at all, because the detector is a term list and those
-terms are not on it. One is euphemism, a page that never names the thing it is
-about. One is non-English, missed entirely by the same language gate that skips
-tier 1. All three false positives are near-misses: a page on grief-counselling
-degree programmes, a psychology textbook, and an engineering article using the
-word ``trauma'' are all wrongly silenced.
+The mechanisms pass; the predicate does not. Against a 47-page adversarial
+slice, 29 sensitive and 18 benign, more than doubled from an original 20-page
+seed specifically to rebalance toward the detector's own admitted failure
+modes, the sensitive-content detector records a false-negative rate of 0.655
+and a false-positive rate of 0.167. The failures are systematic rather than
+noise. Seven of the nineteen false negatives are vocabulary outside the term
+list entirely: pages on addiction, miscarriage, terminal illness, overdose,
+workplace harassment, homelessness and post-incarceration reentry are not
+detected at all, because the detector is a term list and those terms are not
+on it. Four are euphemism, pages that describe self-harm, suicidal ideation or
+domestic violence without ever naming the thing directly. Four are non-English,
+missed entirely by the same language gate that skips tier 1. The remaining four
+are a failure mode the smaller seed slice could not surface at all: genuinely
+sensitive pages that mention exactly one term from the ambiguous list, one
+short of the two-distinct-term threshold \texttt{checkSensitiveContent}
+requires before it will act on ambiguous vocabulary alone. The false positives
+did not grow with the slice: the same three near-misses the original 20-page
+seed found, a page on grief-counselling degree programmes, a psychology
+textbook, and an engineering article using the word ``trauma'', are still the
+only three, and six additional near-miss pages added specifically to stress
+this side of the boundary produced no new ones.
 
 This answers C5 in the negative, and it is the finding with the clearest
 consequence for anyone deploying such a system. A keyword list is not a
 sensitive-content detector. A system that promises silence on crisis content
-and delivers it 55 percent of the time has not implemented the policy it
+and delivers it 34.5 percent of the time has not implemented the policy it
 claims. The architecture is sound, in that the short-circuit is in the right
 place and provably fires, but the predicate feeding it is inadequate, and the
 remedy is a classifier rather than more keywords. The entailment tier already
 loaded for category classification can score a sensitivity hypothesis at near
 zero marginal cost.
 
-That remedy has since been implemented rather than left as a proposal: the
-detector now escalates past the term list to the same entailment tier,
-scoring a page against a personal-crisis hypothesis and a reference or
-academic hypothesis, and only ever promotes a keyword miss to sensitive or
-demotes a low-severity keyword hit to benign when that tier is confident.
-Terms specific enough to trust outright, such as suicide or domestic
-violence, are never demoted. Against the same 20-page slice, with the
-entailment tier answering correctly, all eight of the false negatives and
-false positives above resolve correctly, which shows the cascade logic
-is sound. What this does not yet show is the real-world rate, since that
-depends on how well the underlying model reads crisis versus reference
-framing in practice, and that number has not yet been measured against a
-live instance of the model.
-
-More generally, this is the substance of gap G5. For an always-on generative
+More generally, this is the substance of gap G1/G5. For an always-on generative
 system, the quality of the abstention policy is as much part of the design as
 the quality of the generation, and unlike aesthetic quality it is directly
 measurable. Measuring it is what produced the most uncomfortable result in this
 paper: every mechanism passes its test, while the predicate feeding the most
-important mechanism fails on nearly half of an adversarial slice. That gap
+important mechanism fails on nearly two-thirds of an adversarial slice. That gap
 between ``the architecture is correct'' and ``the policy is delivered'' is
 invisible to any evaluation that tests only the mechanism.
 
@@ -1081,11 +1176,18 @@ hold that any reported accuracy must be printed alongside the inter-annotator
 ceiling. No accuracy figure in this paper has that ceiling attached, which is
 one reason Section \ref{sec:res-classification} is preliminary.
 
-\textbf{Preliminary classification results.} Table \ref{tab:tiers} rests on 18
-pages and one annotator. It shows the structure of the ablation and nothing
-more. The threshold sweep that would render the accuracy-exposure trade-off as
-a continuous curve, which is the primary evidence C2 requires, has not been run
-in any form.
+\textbf{Preliminary classification results.} Table \ref{tab:tiers} now rests
+on 254 scored pages rather than 18, and the threshold sweep in
+Fig.~\ref{fig:f5} covers a full twelve-cell grid rather than none. What is
+still preliminary is narrower than before: the ground-truth label is a
+single, curation-time source, not the three-annotator, agreement-checked
+label \S\ref{sec:limitations} otherwise requires, so accuracy and macro-F1
+specifically should still be read as indicative rather than final. Exposure,
+total off-device rate, and the sweep's shape do not depend on that label and
+are not preliminary in this sense. Separately, A6/A6b (the local zero-shot
+backend, the one configuration that could reduce total disclosure rather than
+redistribute it) has not been run at this scale, which is now the more
+consequential of the two gaps.
 
 \textbf{English-only.} Tier 1 is skipped by construction on non-English pages,
 and the sensitive detector missed the one non-English sensitive page in the
@@ -1098,16 +1200,15 @@ laptop. A GPU configuration, on which the fallback-then-swap design plausibly
 stops being necessary, and a cache-cold comparison, are both unmeasured.
 
 \textbf{Small samples inside the systems results.} Generation percentiles rest
-on three requests, the restraint audit on twenty pages, and the classification
-ablation on eighteen. These are stated at each point of use rather than
-aggregated away. The concurrency figure measures the request and cache path
-rather than generator batching, because every request in that sweep was a cache
-hit. The 260-page annotation corpus contains a further, smaller sensitive
-slice of twelve pages, used for category and mood ground truth rather than for
-measuring the detector directly; this is a different, smaller sample from the
-twenty-page adversarial slice above, and twelve pages is too thin to support a
-precise per-category estimate on its own. The two should not be read as
-corroborating or conflicting with each other.
+on three requests, and the classification ablation on eighteen. These are
+stated at each point of use rather than aggregated away. The restraint audit
+now rests on forty-seven pages rather than the original twenty, but that is
+still small next to the 141-clip and 105-website samples elsewhere in the
+paper, and the false-negative categories with the fewest examples (four pages
+each for non-English and for the single-ambiguous-term case) are the ones
+whose rates should be trusted least. The concurrency figure measures the
+request and cache path rather than generator batching, because every request
+in that sweep was a cache hit.
 
 \textbf{Cache state confounds latency and audio together.} A cache hit changes
 both the response time and the returned audio, since an identical clip recurs.
@@ -1120,7 +1221,8 @@ obtained. Three design decisions are ethically load-bearing: page text is
 transmitted off-device only on escalation and never for pages marked sensitive;
 telemetry is local-only, URL-hashed at write time and exported only on an
 explicit user action; and crisis content produces silence rather than music. We
-regard the 45 percent false-negative rate on that last policy as a defect to be
+regard the 65.5 percent false-negative rate on that last policy, measured now
+on a slice more than double the size that first surfaced it, as a defect to be
 fixed before any deployment to participants, not a limitation to be noted in
 passing. Separately, uninstall rate is not measurable in this build, because
 the browser deletes extension-local storage on uninstall and the only surviving
@@ -1141,24 +1243,36 @@ than a null result, and multiple-comparison control within a declared
 confirmatory family. Sample size is set at 56 to survive attrition at a
 small-to-medium effect size.
 
-\textbf{Annotate the corpus and run the threshold sweep.} The 260-page corpus
-needs three independent annotators, an agreement coefficient per label set, and
-a reported human ceiling. The accuracy-exposure curve obtained by sweeping the
-two abstention thresholds is the single most valuable missing artefact, because
-it converts a fixed operating point into the dial that gap G3 identifies.
+\textbf{Annotate the corpus.} The threshold sweep itself has now been run
+(Fig.~\ref{fig:f5}); what remains is the label it is scored against. The
+260-page corpus needs three independent annotators, an agreement coefficient
+per label set, and a reported human ceiling before the accuracy and macro-F1
+numbers in Table \ref{tab:tiers} can be treated as final rather than
+indicative.
 
-\textbf{Replace the sensitive-content predicate.} A model-based detector,
-plausibly the entailment tier already resident in the extension, scoring
-sensitivity hypotheses directly, with the adversarial slice expanded well
-beyond twenty pages and rebalanced across euphemism, non-English and
-outside-vocabulary cases.
+\textbf{Run the local zero-shot backend at scale.} A6/A6b (\S\ref{sec:res-classification})
+is the one configuration that could reduce total disclosure rather than
+redistribute it between hosted providers, and it has only been measured on
+the 18-page preliminary subset. This is now the more load-bearing gap than the
+annotation above: it determines whether a genuinely lower-disclosure operating
+point exists at all, not just how precisely the current one is measured.
 
-\textbf{Improve loop synthesis.} Three cheap experiments follow directly from
-Section \ref{sec:res-loop}: a crossfade-window sweep, loop-point selection that
-minimises measured seam discontinuity rather than maximising chroma
-self-similarity, and a clip-length study asking whether a shorter clip that
-loops sooner beats a longer one that arrives later. The larger opportunity is
-conditioning the generator to produce loop-closed material directly.
+\textbf{Replace the sensitive-content predicate.} The adversarial slice has now
+been expanded from twenty to forty-seven pages and rebalanced across
+euphemism, non-English, outside-vocabulary and single-ambiguous-term cases
+(\S\ref{sec:res-audit}); the false-negative rate went up, not down, once the
+easier categories stopped diluting it. What remains is the fix: a model-based
+detector, plausibly the entailment tier already resident in the extension,
+scoring sensitivity hypotheses directly against this same slice.
+
+\textbf{Improve loop synthesis.} The crossfade-window sweep and seam-minimising
+loop-point selection proposed here have now been run (\S\ref{sec:res-loop},
+Table \ref{tab:crossfade-sweep}); the second in particular warrants a
+production change, pending confirmation at the scale of the full 141-clip
+population rather than the 11-clip secondary sample tested here. What remains
+is a clip-length study asking whether a shorter clip that loops sooner beats a
+longer one that arrives later. The larger opportunity is conditioning the
+generator to produce loop-closed material directly.
 
 \textbf{Close the measurement gaps.} An end-to-end in-browser latency run to
 supply the client-side segments of Fig.~\ref{fig:f1}; a cold-cache re-run to
