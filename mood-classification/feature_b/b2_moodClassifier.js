@@ -311,7 +311,14 @@ export async function callLLMClassifier(cleanedContent, llmConfig) {
 
   const requestBody = JSON.stringify({
     model,
-    max_completion_tokens: 200,
+    max_completion_tokens: 400,
+    // See the matching comment in b1_contentUnderstanding.js —
+    // openai/gpt-oss-20b defaults reasoning_effort to "medium" and its
+    // hidden reasoning tokens count against max_completion_tokens, which was
+    // silently starving B2's larger structured-output response the same way
+    // it starved B1's. Set explicitly rather than relying on the per-model
+    // default.
+    reasoning_effort: "low",
     temperature: 0, // deterministic classification — reproducibility over variety
     messages:    [{ role: "user", content: prompt }],
   });
