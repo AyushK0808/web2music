@@ -34,6 +34,16 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
 
+# Windows terminals default stdout/stderr to the system codepage (cp1252),
+# which can't encode "≈" below — without this, --self-test crashes on its
+# first print before any of the math it's checking ever runs.
+for _stream in (sys.stdout, sys.stderr):
+    if getattr(_stream, "encoding", "").lower() not in ("utf-8", "utf8"):
+        try:
+            _stream.reconfigure(encoding="utf-8")
+        except Exception:
+            pass
+
 # The plan's gates (§3 S2).
 ALPHA_MIN_USABLE = 0.667
 ALPHA_GOOD = 0.80

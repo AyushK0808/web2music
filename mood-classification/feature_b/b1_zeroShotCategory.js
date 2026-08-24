@@ -323,3 +323,129 @@ export async function classifyCategoryZeroShot(content, config = {}) {
     return null;
   }
 }
+
+// ─── Sensitivity entailment (§5.1 / §5.5 fix) ────────────────────────────────
+// checkSensitiveContent() in b1_contentUnderstanding.js is a fixed ~18-term
+// English keyword list with no escalation tier of its own — unlike category
+// classification above, a page it can't match just silently comes back "not
+// sensitive". That's the false-negative half of the bug: euphemism ("ending
+// it all"), vocabulary outside the list entirely (addiction, miscarriage, a
+// terminal diagnosis), and anything non-English (the list is English words,
+// so a Spanish suicide-prevention page has nothing to match) all pass
+// through undetected. The false-positive half is the same list cutting the
+// other way: a single clinical term ("anorexia nervosa" in a psychology
+// textbook) or two ordinary words landing together in unrelated writing
+// ("grief" + "bereavement" in a degree-programme listing) can trigger it.
+//
+// This reuses the exact same entailment model/backends as the category tier
+// above — "already loaded", nothing new to deploy — scored against two
+// contrastive hypotheses instead of 13 category ones. Off unless configured,
+// never throws, and — like the category tier — never sends anything to the
+// Groq tier-2 LLM, so b2_moodClassifier.js's "sensitive text never leaves
+// the device" guarantee is unaffected by this fix.
+export const SENSITIVITY_HYPOTHESES = {
+  crisis: "someone's own personal experience of, or a direct appeal for "
+    + "help with, suicide, self-harm, abuse, violence, addiction, a serious "
+    + "or terminal illness, pregnancy loss, or acute grief",
+  reference: "an academic, clinical, historical, or news discussion of a "
+    + "difficult topic, not a personal crisis",
+};
+
+/**
+ * Calibrated separately from DEFAULT_MIN_SCORE/MARGIN above: this is a
+ * two-way contrastive decision, not a 13-way softmax, so the score
+ * distribution isn't the same shape and shouldn't share thresholds by
+ * accident.
+ */
+export const DEFAULT_SENSITIVITY_MIN_SCORE = 0.45;
+export const DEFAULT_SENSITIVITY_MIN_MARGIN = 0.08;
+
+function sensitivityLabels() {
+  return [SENSITIVITY_HYPOTHESES.crisis, SENSITIVITY_HYPOTHESES.reference];
+}
+
+/**
+ * parseSensitivityResult — like parseZeroShotResult, but there are always
+ * exactly two sides, so the caller just needs to know which one won and by
+ * how much rather than a full ranking.
+ */
+export function parseSensitivityResult(raw) {
+  const labels = raw?.labels;
+  const scores = raw?.scores;
+  if (!Array.isArray(labels) || !Array.isArray(scores) || labels.length === 0) return null;
+  if (labels.length !== scores.length) return null;
+
+  const crisisIdx = labels.indexOf(SENSITIVITY_HYPOTHESES.crisis);
+  const refIdx = labels.indexOf(SENSITIVITY_HYPOTHESES.reference);
+  if (crisisIdx === -1 || refIdx === -1) return null;
+
+  const crisisScore = Number(scores[crisisIdx]);
+  const refScore = Number(scores[refIdx]);
+  if (!Number.isFinite(crisisScore) || !Number.isFinite(refScore)) return null;
+
+  return {
+    side: crisisScore >= refScore ? "crisis" : "reference",
+    score: Math.max(crisisScore, refScore),
+    margin: Math.abs(crisisScore - refScore),
+  };
+}
+
+/**
+ * classifySensitivityZeroShot — the tier itself. Same contract as
+ * classifyCategoryZeroShot: disabled, unavailable, or unconfident all return
+ * null and the caller keeps whatever the keyword tier already decided.
+ *
+ * @param {{title?, summary?, keywords?}} content  same shape as the category tier
+ * @param {Object} config  same shape as normaliseZeroShotConfig — the
+ *   backend/model/timeout are reused as-is from whatever the caller already
+ *   has configured for the category tier (same running service). Score/
+ *   margin gates default to this tier's own constants rather than the
+ *   category tier's, but can be overridden via config.sensitivityMinScore /
+ *   config.sensitivityMinMargin.
+ * @returns {Promise<{side: "crisis"|"reference", score, margin, ms, model, backend}|null>}
+ */
+export async function classifySensitivityZeroShot(content, config = {}) {
+  const cfg = normaliseZeroShotConfig(config);
+  if (!cfg.enabled) return null;
+  if (cfg.backend === "local" && !cfg.classify) {
+    console.warn("[B1.5-sensitivity] backend is 'local' but no classify() was injected — skipping tier");
+    return null;
+  }
+
+  const text = buildZeroShotInput(content);
+  if (text.length < 20) return null;
+
+  const minScore = Number.isFinite(config.sensitivityMinScore) ? config.sensitivityMinScore : DEFAULT_SENSITIVITY_MIN_SCORE;
+  const minMargin = Number.isFinite(config.sensitivityMinMargin) ? config.sensitivityMinMargin : DEFAULT_SENSITIVITY_MIN_MARGIN;
+
+  const labels = sensitivityLabels();
+  const startedAt = Date.now();
+
+  try {
+    const raw = cfg.backend === "local"
+      ? await withTimeout(
+          cfg.classify({ text, labels, hypothesisTemplate: HYPOTHESIS_TEMPLATE, model: cfg.model }),
+          cfg.timeoutMs,
+          "[B1.5-sensitivity] local zero-shot"
+        )
+      : await callZeroShotProxy({ text, labels, model: cfg.model, serviceUrl: cfg.serviceUrl, timeoutMs: cfg.timeoutMs });
+
+    const parsed = parseSensitivityResult(raw);
+    const ms = Date.now() - startedAt;
+    if (!parsed) {
+      console.warn("[B1.5-sensitivity] zero-shot returned an unusable payload — keeping the keyword verdict");
+      return null;
+    }
+    if (parsed.score < minScore || parsed.margin < minMargin) {
+      console.debug(
+        `[B1.5-sensitivity] abstained: ${parsed.side} score=${parsed.score.toFixed(3)} ` +
+        `margin=${parsed.margin.toFixed(3)} (need >=${minScore}/${minMargin}) in ${ms}ms`
+      );
+      return null;
+    }
+    return { side: parsed.side, score: parsed.score, margin: parsed.margin, ms, model: cfg.model, backend: cfg.backend };
+  } catch (err) {
+    console.warn(`[B1.5-sensitivity] zero-shot classification failed (${err.message}) — keeping the keyword verdict`);
+    return null;
+  }
+}
