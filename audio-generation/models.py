@@ -82,6 +82,17 @@ class HandoffPayload(BaseModel):
     isSilent: Optional[bool]  = None
     volume:   Optional[float] = None
 
+    # Cache-buster for an explicit regenerate request (X4). Same bug class
+    # as isSilent/volume above: nonce lived only on MusicProfile, so any
+    # client using the flat top-level shape (the popup's regenerate button,
+    # experiments/d4_latency.py's cold-section harness) had it silently
+    # dropped by pydantic before d1_validate.py ever ran -- every "forced
+    # cache miss" request was actually re-deriving the same cache key as a
+    # plain request and hitting the cache like any other. Declared here so
+    # the flat shape carries it through validate_profile() same as musicProfile
+    # already did.
+    nonce: Optional[str] = None
+
     # Flat dict fields — used when musicProfile is not present
     # Also accepts top-level arousal from B's real traffic
     mood:              Optional[str]   = None
