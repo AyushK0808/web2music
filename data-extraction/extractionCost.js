@@ -180,44 +180,6 @@ async function measureSite(browser, url, moduleSources, args) {
   const page = await browser.newPage();
   const result = { url, ok: false };
 
-  // Diagnostics for --real-embedding failures that reproduce on some
-  // machines/Chrome builds but not others (item 4.6) — a renderer-side
-  // console.error, an uncaught page exception, or a failed/blocked network
-  // request to the model host would all currently be invisible: they'd
-  // either get swallowed into the generic "window.transformersPipeline not
-  // available" message downstream, or not surface at all. Collected per
-  // site and attached to the result so a failing run shows the real cause
-  // instead of requiring a second, separately-instrumented run to find it.
-  const diagnostics = { console: [], pageErrors: [], failedRequests: [] };
-  page.on('console', (msg) => {
-    if (msg.type() === 'error' || msg.type() === 'warning') {
-      diagnostics.console.push(`[${msg.type()}] ${msg.text()}`);
-    }
-  });
-  page.on('pageerror', (err) => {
-    diagnostics.pageErrors.push(String(err && err.message || err));
-  });
-  page.on('requestfailed', (req) => {
-    const u = req.url();
-    // Scoped to model-fetch hosts specifically -- a real page's own ads/
-    // analytics/tracking requests fail constantly and are not this bug.
-    if (/huggingface\.co|hf\.co|cdn-lfs/.test(u)) {
-      diagnostics.failedRequests.push(`${u} -- ${req.failure()?.errorText || 'unknown'}`);
-    }
-  });
-  page.on('response', (res) => {
-    // requestfailed only fires for network-level failures (DNS, connection
-    // refused, timeout) -- an HTTP error status like 403/404/429 completes
-    // successfully at the network layer and would otherwise be invisible
-    // here even though it's exactly what blocks a real model fetch (e.g. a
-    // proxy or firewall returning 403 for a disallowed host, as opposed to
-    // the request never reaching anything at all).
-    const u = res.url();
-    if (res.status() >= 400 && /huggingface\.co|hf\.co|cdn-lfs/.test(u)) {
-      diagnostics.failedRequests.push(`${u} -- HTTP ${res.status()}`);
-    }
-  });
-
   try {
     await page.setViewport({ width: 1280, height: 800 });
     // A realistic UA: some sites serve a stripped no-JS/blocked page to
@@ -375,11 +337,6 @@ async function measureSite(browser, url, moduleSources, args) {
   } catch (err) {
     result.error = String(err && err.message || err);
   } finally {
-    // Only attach when there's something to see -- keeps clean-run output
-    // exactly as before instead of padding every result with empty arrays.
-    if (diagnostics.console.length || diagnostics.pageErrors.length || diagnostics.failedRequests.length) {
-      result.embeddingDiagnostics = diagnostics;
-    }
     await page.close().catch(() => {});
   }
 

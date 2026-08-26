@@ -591,7 +591,8 @@ style-recalculation counters read per page.
 
 \begin{table}[t]
 \caption{Feature A extraction cost, 105 real sites, CPU laptop. The embedding
-stage was stubbed in this run; see the caveat in the text.}
+stage was stubbed in this run; a real measurement is reported separately in
+the text below the table, not folded into these figures.}
 \label{tab:extraction}
 \begin{center}
 \small
@@ -626,9 +627,46 @@ Boilerplate removal retains a median of 80.8 percent of visible words, which is
 the figure that matters for downstream classification quality.
 
 One caveat bounds this table. The embedding stage in this run was stubbed, so
-its 1.2 ms median is harness overhead rather than MiniLM inference. The total
-should be read as covering everything except the embedding; the in-browser
-embedding cost is not measured here.
+its 1.2 ms median is harness overhead rather than MiniLM inference; the total
+above should be read as covering everything except the embedding.
+
+The in-browser embedding cost has since been measured directly (item 4.6),
+and the result is two findings rather than one number, neither of which
+belongs in Table \ref{tab:extraction} itself: this was a separate run against
+a real Chrome, not the Playwright-instrumented one above, and the latency
+finding below is an artefact of this benchmark's own methodology rather than
+a property of the system, for reasons stated with it.
+
+First, real MiniLM inference did not run on every site. Loading it requires a
+cross-origin fetch to the Hugging Face Hub for the model config, tokenizer and
+weights, and a real site's own Content-Security-Policy can block that
+outright -- confirmed directly on this benchmark's Wikipedia-family sites,
+whose \texttt{connect-src} allowlist admits dozens of Wikimedia and partner
+domains but not \texttt{huggingface.co}, producing a same-shaped
+\texttt{Refused to connect} console error on every one of them. Across the
+full site list, 103 of 105 sites completed navigation (the other two are
+unrelated: an execution-context-destroyed and a navigation timeout, neither
+touching embedding) and 31 of those 103 failed the embedding stage, a rate
+consistent with the same CSP mechanism though not individually confirmed for
+every failing site. Read as a lower bound on deployability: at least 69.9
+percent of real sites permit in-browser embedding as built, entirely
+independent of anything this system controls, and the remaining share is a
+real constraint on the design rather than a bug in it.
+
+Second, on the sites where it succeeded, per-page latency (mean 7.0 s, median
+9.0 s, 95th percentile 15.7 s) is dominated by a cold model download, not
+inference, and overstates what a real user would experience. Each site in
+this benchmark is a fresh page at a different origin, and browser cache
+storage is origin-scoped, so nothing carries over between sites; the one
+repeated domain in the site list (\texttt{smashingmagazine.com}, visited once
+near the start and again at the end) fell from 10.1 s to 0.4 s on the second
+visit, a twenty-five-fold difference attributable entirely to the cache. The
+real extension does not re-pay this cost per page the way this benchmark
+does: the embedding model loads once, into the extension's own persistent
+offscreen-document origin, not the origin of whatever page the user is
+reading, so the number this methodology cannot measure directly is closer to
+the 0.4 s repeat-visit figure than to the multi-second first-visit ones
+reported above.
 
 \subsection{Generation latency and its failure modes}
 \label{sec:res-latency}
@@ -743,6 +781,30 @@ numbers above; the fix itself addresses per-request connection overhead
 rather than anything specific to either machine, so it should transfer, but a
 same-hardware re-run would confirm the exact magnitude before this table's
 numbers are updated.
+
+A follow-up run on that same Apple Silicon machine, with a genuinely cold
+cache this time and $n=110$ real generations rather than three, closes the
+first three qualifications directly, though as a different-machine
+confirmation alongside Table \ref{tab:d-latency} rather than a replacement of
+it. The 28 s cold-generation median is 72.4 s (p95 119.4 s, max 183.2 s) --
+comfortably faster than the CPU laptop's 139.3 s median for the same target
+duration, though still three orders of magnitude past the fallback's 7 ms and
+still squarely dependent on the fallback-then-swap design to be usable at
+all. The wider sample surfaces something the original $n=3$ could not: median
+generation time varies nearly twofold by mood alone, from 48.5 s (uplifting)
+to 99.0 s (dark), at the same requested duration and token budget -- prompt
+content, not just length, measurably affects MusicGen's own generation time.
+The cold-cache column now exists: cache misses across the duration sweep
+scale with requested duration at roughly 1.9--2.4x realtime, consistent with
+the fallback-then-swap design being load-bearing regardless of duration.
+Third, the timeout finding replicates under genuine concurrent load rather
+than a stale cache: at eight concurrent requests, four of eight individually
+exceeded the 300 s client timeout before the batch worker's queue could clear
+them, capping that cell's reported wall time at the ceiling itself. A fixed
+300 s timeout that does not scale with queue depth will keep clipping
+legitimate slow requests as concurrency rises; this is the same finding as
+the CPU run's 8.3 percent, now reproduced on different hardware under
+directly-provoked contention rather than incidentally encountered.
 
 \textbf{Discussion.} The interesting engineering result is not that generation
 is slow, which is well known, but that a two-stage fallback-then-swap makes a
@@ -1204,20 +1266,31 @@ audit. Both are consequences of the same language gate. The pipeline nominally
 handles other languages by escalating; whether it handles them well is
 unmeasured.
 
-\textbf{Single hardware configuration.} Every latency figure comes from one CPU
-laptop. A GPU configuration, on which the fallback-then-swap design plausibly
-stops being necessary, and a cache-cold comparison, are both unmeasured.
+\textbf{Two hardware configurations, neither a controlled ablation.} The
+original latency figures come from one CPU laptop (Windows); the follow-up in
+\S\ref{sec:res-latency} adds a genuinely cold cache and a wider generation
+sample, but on a second, different machine (Apple Silicon, MPS), not the same
+laptop with a GPU added. The two runs agree that generation dominates and that
+fallback-then-swap is load-bearing either way, and the Apple Silicon numbers
+are faster in absolute terms, but a same-hardware CPU-vs-GPU comparison is
+still unmeasured.
 
-\textbf{Small samples inside the systems results.} Generation percentiles rest
-on three requests, and the classification ablation on eighteen. These are
-stated at each point of use rather than aggregated away. The restraint audit
-now rests on forty-seven pages rather than the original twenty, but that is
-still small next to the 141-clip and 105-website samples elsewhere in the
-paper, and the false-negative categories with the fewest examples (four pages
-each for non-English and for the single-ambiguous-term case) are the ones
-whose rates should be trusted least. The concurrency figure measures the
-request and cache path rather than generator batching, because every request
-in that sweep was a cache hit.
+\textbf{Small samples inside the systems results.} The original CPU-laptop
+generation percentiles rest on three requests; the Apple Silicon follow-up in
+\S\ref{sec:res-latency} widens that to 110 for the duration used elsewhere in
+this paper, though as a different-machine sample rather than more requests on
+the same laptop. The classification ablation now rests on 254 scored pages,
+not eighteen. The restraint audit now rests on forty-seven pages rather than
+the original twenty, but that is still small next to the 141-clip and
+105-website samples elsewhere in the paper, and the false-negative categories
+with the fewest examples (four pages each for non-English and for the
+single-ambiguous-term case) are the ones whose rates should be trusted least.
+Fig.~\ref{fig:f3}'s own concurrency sweep still measures the request and
+cache path rather than generator batching, because every request in that
+sweep was a cache hit; a genuine batching measurement now exists from the
+Apple Silicon follow-up instead (\S\ref{sec:res-latency}), on $n=30$ split
+across concurrency levels one, two, four and eight, again as a
+different-machine result rather than a replacement of Fig.~\ref{fig:f3}.
 
 \textbf{Cache state confounds latency and audio together.} A cache hit changes
 both the response time and the returned audio, since an identical clip recurs.
@@ -1283,14 +1356,24 @@ is a clip-length study asking whether a shorter clip that loops sooner beats a
 longer one that arrives later. The larger opportunity is conditioning the
 generator to produce loop-closed material directly.
 
-\textbf{Close the remaining measurement gaps.} An end-to-end in-browser
-latency run to supply the client-side segments of Fig.~\ref{fig:f1}; a
-cold-cache re-run to obtain a genuine cache-miss column and a batching
-measurement; a GPU configuration; and an extraction re-run with the real
-in-browser embedding rather than a stub. The 2 s cache-check anomaly
-(\S\ref{sec:res-latency}) is diagnosed and fixed; what remains is a
-same-hardware re-run to replace Table \ref{tab:d-stages}'s figure with a
-number from the same CPU laptop the rest of the table reports from.
+\textbf{Close the remaining measurement gaps.} The cold-cache re-run, a
+batching measurement, and a GPU configuration have now been run
+(\S\ref{sec:res-latency}), on Apple Silicon rather than the original CPU
+laptop; what remains here is a same-machine CPU-vs-GPU comparison rather than
+two different laptops. Still open: an end-to-end in-browser latency run to
+supply the client-side segments of Fig.~\ref{fig:f1}. The extraction re-run
+with the real in-browser embedding has been run (\S\ref{sec:res-extraction});
+what it found -- roughly 30 percent of real sites' CSP blocks the Hugging
+Face fetch outright, and per-page latency on the rest is dominated by a
+cross-origin cache-cold artefact of this benchmark's own methodology rather
+than by inference -- is itself now the open item: a same-origin measurement
+(loading the model from the extension's own persistent origin, the way
+production actually does it) to get the number this run's methodology
+couldn't. The 2 s
+cache-check anomaly (\S\ref{sec:res-latency}) is diagnosed and fixed; what
+remains is a same-hardware re-run to replace Table \ref{tab:d-stages}'s
+figure with a number from the same CPU laptop the rest of the table reports
+from.
 
 \textbf{Ablate the signals.} The descriptor claims four signals. A
 per-signal ablation, removing colour, behaviour and the embedding in turn,
