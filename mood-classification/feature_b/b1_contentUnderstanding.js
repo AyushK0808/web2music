@@ -297,20 +297,36 @@ function normalizeLLMConfig(config) {
     backend:    config?.backend ?? "direct",
     serviceUrl: config?.serviceUrl ?? "http://localhost:8078/v1/chat/completions",
     model:      config?.model ?? DEFAULT_MODEL,
+    retry:      config?.retry ?? null,
   };
 }
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
  * callCategoryLLMClassifier — tier-2 escalation for content category when the
  * keyword heuristic doesn't clear MIN_CATEGORY_HITS on its own. Same
  * graceful-fallback contract as B2's callLLMClassifier: null on any failure,
  * timeout, or hallucinated category name — never throws.
- * @param {string|Object} llmConfig  API key string, or { apiKey?, backend?, serviceUrl?, model? }
+ *
+ * Retries on HTTP 429 (rate limited) are opt-in via llmConfig.retry —
+ * { maxRetries, baseDelayMs } — and off by default, so the live extension's
+ * single-page classification keeps degrading immediately exactly as before
+ * (a user waiting on one page load should never sit through a multi-second
+ * backoff). Batch/offline callers processing many pages back-to-back against
+ * a shared rate limit (e.g. s2_tier_ablation.js) are the case this exists
+ * for: without it, a free-tier Groq key fires 429 on the large majority of a
+ * corpus run in seconds, and every rate-limited page silently reads as "the
+ * LLM tier has nothing to say" rather than "the request was never actually
+ * attempted at a rate the API would accept."
+ * @param {string|Object} llmConfig  API key string, or { apiKey?, backend?, serviceUrl?, model?, retry? }
  * @returns {Promise<string|null>}
  */
 export async function callCategoryLLMClassifier({ keywords, title, summary }, llmConfig) {
-  const { apiKey, backend, serviceUrl, model } = normalizeLLMConfig(llmConfig);
+  const { apiKey, backend, serviceUrl, model, retry } = normalizeLLMConfig(llmConfig);
   if (backend === "direct" && !apiKey) return null;
+  const maxAttempts = 1 + Math.max(0, retry?.maxRetries ?? 0);
+  const baseDelayMs = retry?.baseDelayMs ?? 1000;
 
   const categoryNames = Object.keys(CATEGORY_KEYWORDS);
   const prompt = `You are a content category classifier for a music-ambient browser extension.
@@ -331,9 +347,6 @@ Top keywords: ${keywords.slice(0, 10).map(escapePromptDelimiters).join(", ")}
 
 Return ONLY a valid JSON object, no explanation: { "category": "<one of the categories above>" }`;
 
-  const controller = new AbortController();
-  const timeout    = setTimeout(() => controller.abort(), 8000); // 8s timeout, mirrors B2
-
   const requestBody = JSON.stringify({
     model,
     max_completion_tokens: 300,
@@ -352,44 +365,60 @@ Return ONLY a valid JSON object, no explanation: { "category": "<one of the cate
     messages:    [{ role: "user", content: prompt }],
   });
 
-  try {
-    // "proxy": local container injects the real key server-side.
-    // "direct": ships the key client-side. GroqCloud's docs don't document a
-    // browser-CORS opt-in the way Anthropic's API did — whether a direct
-    // browser call CORS-succeeds here is unconfirmed. If it fails in the
-    // actual extension, switch to "proxy", which sidesteps the question
-    // entirely (the container calls Groq server-to-server, no CORS involved).
-    const res = backend === "proxy"
-      ? await fetch(serviceUrl, {
-          method:  "POST",
-          signal:  controller.signal,
-          headers: { "Content-Type": "application/json" },
-          body:    requestBody,
-        })
-      : await fetch("https://api.groq.com/openai/v1/chat/completions", {
-          method:  "POST",
-          signal:  controller.signal,
-          headers: {
-            "Content-Type":  "application/json",
-            "Authorization": `Bearer ${apiKey}`,
-          },
-          body: requestBody,
-        });
-    clearTimeout(timeout);
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const controller = new AbortController();
+    const timeout    = setTimeout(() => controller.abort(), 8000); // 8s timeout, mirrors B2
+    try {
+      // "proxy": local container injects the real key server-side.
+      // "direct": ships the key client-side. GroqCloud's docs don't document a
+      // browser-CORS opt-in the way Anthropic's API did — whether a direct
+      // browser call CORS-succeeds here is unconfirmed. If it fails in the
+      // actual extension, switch to "proxy", which sidesteps the question
+      // entirely (the container calls Groq server-to-server, no CORS involved).
+      const res = backend === "proxy"
+        ? await fetch(serviceUrl, {
+            method:  "POST",
+            signal:  controller.signal,
+            headers: { "Content-Type": "application/json" },
+            body:    requestBody,
+          })
+        : await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method:  "POST",
+            signal:  controller.signal,
+            headers: {
+              "Content-Type":  "application/json",
+              "Authorization": `Bearer ${apiKey}`,
+            },
+            body: requestBody,
+          });
+      clearTimeout(timeout);
 
-    if (!res.ok) throw new Error(`Category LLM API ${res.status}`);
-    const data = await res.json();
-    const raw  = data?.choices?.[0]?.message?.content?.trim() ?? "";
-    const jsonStr = raw.replace(/^```json\s*/i, "").replace(/```$/i, "").trim();
-    const parsed = JSON.parse(jsonStr);
+      if (res.status === 429 && attempt < maxAttempts) {
+        const waitMs = baseDelayMs * 2 ** (attempt - 1);
+        console.warn(`[B1] Category LLM rate-limited (429) — retrying in ${waitMs}ms (attempt ${attempt}/${maxAttempts})`);
+        await sleep(waitMs);
+        continue;
+      }
+      if (!res.ok) throw new Error(`Category LLM API ${res.status}`);
 
-    // Guard against a hallucinated category name that isn't one of ours.
-    return categoryNames.includes(parsed.category) ? parsed.category : null;
-  } catch (err) {
-    clearTimeout(timeout);
-    console.warn("[B1] Category LLM classifier failed:", err.message, "— falling back");
-    return null;
+      const data = await res.json();
+      const raw  = data?.choices?.[0]?.message?.content?.trim() ?? "";
+      const jsonStr = raw.replace(/^```json\s*/i, "").replace(/```$/i, "").trim();
+      const parsed = JSON.parse(jsonStr);
+
+      // Guard against a hallucinated category name that isn't one of ours.
+      if (!categoryNames.includes(parsed.category)) {
+        console.warn(`[B1] Category LLM returned an unrecognised category ${JSON.stringify(parsed.category)} — falling back`);
+        return null;
+      }
+      return parsed.category;
+    } catch (err) {
+      clearTimeout(timeout);
+      console.warn("[B1] Category LLM classifier failed:", err.message, "— falling back");
+      return null;
+    }
   }
+  return null;
 }
 
 /**

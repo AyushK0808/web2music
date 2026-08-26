@@ -183,6 +183,41 @@ assert.equal(await callCategoryLLMClassifier(categoryLLMStub, "fake-key"), null,
 global.fetch = async () => { throw new Error("network error"); };
 assert.equal(await callCategoryLLMClassifier(categoryLLMStub, "fake-key"), null, "a network/abort error must fall back to null");
 
+console.log("B1: callCategoryLLMClassifier — a 429 falls back to null immediately when retry isn't configured (default, live-extension behaviour)");
+let b1RetryCallCount = 0;
+global.fetch = async () => { b1RetryCallCount++; return { ok: false, status: 429, json: async () => ({}) }; };
+assert.equal(await callCategoryLLMClassifier(categoryLLMStub, "fake-key"), null);
+assert.equal(b1RetryCallCount, 1, "no retry config means exactly one attempt, same as any other error");
+
+console.log("B1: callCategoryLLMClassifier — retry.maxRetries retries a 429 and succeeds once the rate limit clears");
+b1RetryCallCount = 0;
+global.fetch = async () => {
+  b1RetryCallCount++;
+  if (b1RetryCallCount < 3) return { ok: false, status: 429, json: async () => ({}) };
+  return { ok: true, json: async () => ({ choices: [{ message: { content: JSON.stringify({ category: "Educational" }) } }] }) };
+};
+const b1RetryResult = await callCategoryLLMClassifier(categoryLLMStub, { apiKey: "fake-key", retry: { maxRetries: 3, baseDelayMs: 1 } });
+assert.equal(b1RetryResult, "Educational");
+assert.equal(b1RetryCallCount, 3, "must retry exactly until success, not more");
+
+console.log("B1: callCategoryLLMClassifier — retry gives up after maxRetries and still returns null, never throws");
+b1RetryCallCount = 0;
+global.fetch = async () => { b1RetryCallCount++; return { ok: false, status: 429, json: async () => ({}) }; };
+assert.equal(
+  await callCategoryLLMClassifier(categoryLLMStub, { apiKey: "fake-key", retry: { maxRetries: 2, baseDelayMs: 1 } }),
+  null,
+);
+assert.equal(b1RetryCallCount, 3, "1 initial attempt + 2 retries = 3 total calls");
+
+console.log("B1: callCategoryLLMClassifier — retry is never applied to a non-429 error (no point retrying a 500 or bad JSON)");
+b1RetryCallCount = 0;
+global.fetch = async () => { b1RetryCallCount++; return { ok: false, status: 500, json: async () => ({}) }; };
+assert.equal(
+  await callCategoryLLMClassifier(categoryLLMStub, { apiKey: "fake-key", retry: { maxRetries: 5, baseDelayMs: 1 } }),
+  null,
+);
+assert.equal(b1RetryCallCount, 1, "a 500 must fail fast, not burn through retries meant for rate limiting");
+
 global.fetch = originalCategoryFetch;
 
 console.log("B1: resolveContentCategory — escalates to LLM only below threshold, defaults only if the LLM is unavailable");

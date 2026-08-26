@@ -956,6 +956,29 @@ one, it also cannot hallucinate a category outside its candidate set, which is
 a robustness property and not merely a cost property. A generative middle tier
 would not have it.
 
+\textbf{Ground-truth sensitivity.} Table \ref{tab:tiers} scores against
+curation-time, single-source category labels for all 254 pages. Section
+\ref{sec:res-agreement} reports that this same corpus's three-annotator
+majority vote reaches only $\alpha=0.635$ for category -- itself short of the
+0.667 threshold this paper treats as usable -- which raises the question of
+how much the accuracy figures above depend on whose labelling is scored
+against, not only on the classifier. Re-scoring A1, A3 and A4 against the 208
+pages with a resolved three-annotator majority category (46 of 254 have no
+such majority and are excluded rather than guessed at) gives keyword-only
+.197/.297 accuracy/macro-F1, materially unchanged; LLM-only .774/.739, up from
+.685/.678; and keyword-to-LLM .764/.712, up from .669/.677. A5 and the A7
+sweep are not re-scored here, since the zero-shot proxy this pass used was not
+available in the configuration this re-scoring ran under, so this comparison
+speaks to labelling, not to the disclosure argument above. Accuracy rises by
+roughly 9 points for both configurations that reach the LLM tier when scored
+against the stronger label, with a smaller but consistent macro-F1 gain. That
+the correction runs the same direction and a similar size across every tier
+re-scored is more consistent with curation-time labelling noise than with any
+one tier being specifically miscalibrated, and it argues for reading Table
+\ref{tab:tiers} as a conservative floor rather than a precise estimate until
+the full cascade, including the zero-shot tier, is re-run against the
+majority-vote labels.
+
 \subsection{Loop quality}
 \label{sec:res-loop}
 
@@ -1262,11 +1285,16 @@ Fig.~\ref{fig:f5} covers a full twelve-cell grid rather than none. What is
 still preliminary is narrower than before: the ground-truth label is a
 single, curation-time source, not the three-annotator, agreement-checked
 label \S\ref{sec:limitations} otherwise requires, so accuracy and macro-F1
-specifically should still be read as indicative rather than final. Exposure,
-total off-device rate, and the sweep's shape do not depend on that label and
+specifically should still be read as indicative rather than final. The
+ground-truth-sensitivity re-scoring in \S\ref{sec:res-classification} confirms
+this is not a hypothetical concern: against the three-annotator majority
+label, LLM-involving accuracy rises by roughly 9 points over the single-source
+figures in Table \ref{tab:tiers}, though that re-scoring itself omits the
+zero-shot tier and so cannot yet replace the table above. Exposure, total
+off-device rate, and the sweep's shape do not depend on the category label and
 are not preliminary in this sense. Separately, A6/A6b (the local zero-shot
 backend, the one configuration that could reduce total disclosure rather than
-redistribute it) has not been run at this scale, which is now the more
+redistribute it) has not been run at this scale, which remains the more
 consequential of the two gaps.
 
 \textbf{English-only.} Tier 1 is skipped by construction on non-English pages,
