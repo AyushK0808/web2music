@@ -555,8 +555,11 @@ matches the page.
 S1, the objective half of S3, the retrieval baseline and the restraint audit
 have been executed and are reported here. S4 and S5 require institutional
 ethics approval that has not been obtained, and no human-subjects data has been
-collected. S2 requires an annotated corpus that does not yet exist; what we
-report for it is explicitly preliminary and is labelled as such.
+collected. S2's tier-ablation table still rests on an 18-page single-annotator
+development subset pending a rebuild against the now-annotated 255-page
+corpus, so what we report for it remains explicitly preliminary. The corpus
+itself has since been annotated by three independent annotators, and the
+resulting inter-annotator agreement is reported below.
 
 Every metric the evaluation may print is declared in a machine-readable
 registry with its definition, units, producing script and output field. Each
@@ -580,11 +583,64 @@ recorded. Coverage across the thirteen content categories is uneven by
 construction rather than a flat approximately 20 pages each: counts range from
 14 (Mythological) to 35 (Health), since curated availability differs by
 category and the original 600-page target (approximately 45 per category) was
-not reached. The corpus is not yet annotated.
+not reached. The corpus has since been annotated by three independent
+annotators; the resulting agreement is reported below.
 
 \textbf{Hardware.} All timings are from a single CPU laptop running Windows 11
 with the generation service in a local container alongside a PostgreSQL cache.
 No GPU configuration was measured.
+
+\subsection{Annotation agreement and human ceiling}
+\label{sec:res-agreement}
+
+Three independent annotators labelled all 255 captured pages for content
+category (13-way), mood (11-way, framed as a preference rather than a fact),
+and sensitivity (binary), without conferring, using the annotation tool at
+\texttt{analysis/annotate/} and analysed with \texttt{analysis/krippendorff.py}
+(nominal Krippendorff's $\alpha$, bootstrap 95\% CI over 2000 resamples of
+units, and leave-one-annotator-out human ceiling). Table \ref{tab:agreement}
+reports the result for each label set.
+
+\begin{table}[t]
+\caption{Inter-annotator agreement, three annotators, 255 units.}
+\label{tab:agreement}
+\begin{center}
+\scriptsize
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Label} & \textbf{$\alpha$} & \textbf{95\% CI} & \textbf{Ceiling} & \textbf{Gate} \\
+\midrule
+Category  & 0.635 & [0.578, 0.689] & 0.621 & below 0.667 \\
+Mood      & 0.195 & [0.149, 0.238] & 0.174 & below 0.667 \\
+Sensitive & 0.419 & [0.301, 0.530] & 0.775 & below 0.667 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+
+All three label sets fall below the 0.667 minimum the plan sets for drawing
+conclusions, and none reach the 0.80 threshold for good agreement. Per that
+same policy, we report this as a finding rather than treat it as a defect to
+fix by re-annotating. Mood, at $\alpha=0.195$, is close to chance-level
+agreement, consistent with framing mood as a genuinely underdetermined
+preference rather than an objective fact, but it means no mood-classifier
+accuracy in this paper can be read against a meaningful ceiling. Category
+agreement (0.635) is closer to usable but still short of it.
+
+Sensitivity is the most consequential label for the system's abstention
+policy, and its two statistics diverge: $\alpha=0.419$ is below threshold,
+while the leave-one-out human ceiling is the highest of the three (0.775).
+This is consistent with the label's skew — 219 of 250 resolved units (87.6\%)
+are majority-labelled not-sensitive — since chance-corrected agreement
+statistics are depressed by a lopsided marginal distribution even when raw
+annotator agreement is substantial, precisely because chance agreement is
+already high under that skew. The two numbers should be read together rather
+than either alone: annotators mostly agree on individual pages, but that
+agreement is not distinguishable enough from chance under $\alpha$'s
+definition to clear the plan's own bar. Any classifier-accuracy claim drawn
+from this corpus, including the tier-ablation rebuild in Section
+\ref{sec:res-classification}, must be interpreted against these ceilings
+rather than against a naively perfect one.
 
 \subsection{Extraction cost}
 \label{sec:res-extraction}
