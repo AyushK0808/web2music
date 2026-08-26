@@ -751,8 +751,8 @@ same.
 
 The server-side numbers above cover navigation to a running service; they say
 nothing about extraction, mood decision, or the swap itself inside the
-browser. \texttt{ui/e2e/latency.e2e.mjs} drives the built extension with
-Playwright against eleven synthetic fixture pages, deliberately constructed to
+browser. An end-to-end harness drives the built extension with Playwright
+against eleven synthetic fixture pages, deliberately constructed to
 exercise specific code paths rather than sampled from the real web -- this is
 a different corpus from the 105-site extraction benchmark in
 Table~\ref{tab:extraction}, and the two should not be conflated. Feature D was
@@ -771,8 +771,8 @@ than silently including it.
 percentiles.}
 \label{tab:e2e-latency}
 \begin{center}
-\small
-\begin{tabular}{lrrr}
+\scriptsize
+\begin{tabular}{p{3.3cm}rrr}
 \toprule
 \textbf{Stage} & \textbf{p50 (ms)} & \textbf{p95 (ms)} & \textbf{max (ms)} \\
 \midrule
@@ -940,9 +940,8 @@ reduce total disclosure below the keyword-to-LLM baseline. The one
 configuration that would change that -- A6/A6b, the local quantised ONNX
 zero-shot backend, which the 18-page preliminary run suggested could match
 A4's accuracy at half its exposure -- has not yet been run against the full
-260-page corpus (\texttt{s2\_tier\_ablation.js --with-a6}); the zero-exposure
-operating point this section's future scope depends on remains unverified at
-scale.
+260-page corpus; the zero-exposure operating point this section's future
+scope depends on remains unverified at scale.
 
 \textbf{Discussion.} The generalisable pattern is a free heuristic, a local
 model permitted to abstain, and a remote model as a last resort, with the
@@ -1142,8 +1141,8 @@ domestic violence without ever naming the thing directly. Four are non-English,
 missed entirely by the same language gate that skips tier 1. The remaining four
 are a failure mode the smaller seed slice could not surface at all: genuinely
 sensitive pages that mention exactly one term from the ambiguous list, one
-short of the two-distinct-term threshold \texttt{checkSensitiveContent}
-requires before it will act on ambiguous vocabulary alone. The false positives
+short of the two-distinct-term threshold the detector requires before it will
+act on ambiguous vocabulary alone. The false positives
 did not grow with the slice: the same three near-misses the original 20-page
 seed found, a page on grief-counselling degree programmes, a psychology
 textbook, and an engineering article using the word ``trauma'', are still the
