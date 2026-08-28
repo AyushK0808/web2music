@@ -1,0 +1,5501 @@
+{
+  "corpus": "C:\\Users\\Sneha Jakhotiya\\Documents\\web2music\\analysis\\corpus\\s2_corpus_annotated.json",
+  "per_page": [
+    {
+      "id": "com-knowyourmeme",
+      "true_category": "Entertainment",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Comedy",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Comedy",
+        "score": 0.7180509567260742,
+        "margin": 0.5572657138109207,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1987,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Entertainment",
+      "llmError": null,
+      "llmMs": 612
+    },
+    {
+      "id": "r-com-xkcd-archive",
+      "true_category": "Entertainment",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Comedy",
+        "score": 0.6674395203590393,
+        "margin": 0.5049608498811722,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 3957,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Entertainment",
+      "llmError": null,
+      "llmMs": 447
+    },
+    {
+      "id": "d-com-theonion-politics",
+      "true_category": "News",
+      "lang": "en-us",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "News",
+        "score": 0.49511393904685974,
+        "margin": 0.1689724624156952,
+        "runnerUp": "Comedy",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2473,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Entertainment",
+      "llmError": null,
+      "llmMs": 279
+    },
+    {
+      "id": "com-mcsweeneys",
+      "true_category": "Comedy",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": null,
+      "zeroShotError": null,
+      "zeroShotMs": 6045,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Entertainment",
+      "llmError": null,
+      "llmMs": 652
+    },
+    {
+      "id": "r-com-wiki-seinfeld",
+      "true_category": "Comedy",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Comedy",
+        "score": 0.665164053440094,
+        "margin": 0.4273475110530853,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 4540,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Entertainment",
+      "llmError": null,
+      "llmMs": 305
+    },
+    {
+      "id": "com-onion-home",
+      "true_category": "Comedy",
+      "lang": "en-us",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Comedy",
+        "score": 0.6124192476272583,
+        "margin": 0.4823198765516281,
+        "runnerUp": "News",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2708,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Entertainment",
+      "llmError": null,
+      "llmMs": 593
+    },
+    {
+      "id": "com-wiki-theoffice",
+      "true_category": "Entertainment",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Comedy",
+        "score": 0.45521116256713867,
+        "margin": 0.051149189472198486,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1332,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Entertainment",
+      "llmError": null,
+      "llmMs": 409
+    },
+    {
+      "id": "com-wiki-snl",
+      "true_category": "Comedy",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Comedy",
+        "score": 0.657706081867218,
+        "margin": 0.3611585795879364,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1709,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Comedy",
+      "llmError": null,
+      "llmMs": 893
+    },
+    {
+      "id": "com-wiki-standup",
+      "true_category": "Entertainment",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Comedy",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Comedy",
+        "score": 0.7732829451560974,
+        "margin": 0.5956558883190155,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1179,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Entertainment",
+      "llmError": null,
+      "llmMs": 424
+    },
+    {
+      "id": "com-wiki-improv",
+      "true_category": "Entertainment",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Comedy",
+        "score": 0.49391424655914307,
+        "margin": 0.07326969504356384,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2549,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Entertainment",
+      "llmError": null,
+      "llmMs": 904
+    },
+    {
+      "id": "edu-arxiv-attention",
+      "true_category": "Educational",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.653388500213623,
+        "margin": 0.58702702075243,
+        "runnerUp": "Comedy",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2576,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 524
+    },
+    {
+      "id": "edu-simple-computer",
+      "true_category": "Educational",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.8519247174263,
+        "margin": 0.8233944568783045,
+        "runnerUp": "Comedy",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1448,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 420
+    },
+    {
+      "id": "edu-nasa-science-sun",
+      "true_category": "Educational",
+      "lang": "en-us",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.9288951754570007,
+        "margin": 0.9198230057954788,
+        "runnerUp": "Comedy",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1379,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 524
+    },
+    {
+      "id": "edu-hyperphysics-thermo",
+      "true_category": "Educational",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.7115284204483032,
+        "margin": 0.6339647248387337,
+        "runnerUp": "Legal",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1754,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 565
+    },
+    {
+      "id": "edu-britannica-blackhole",
+      "true_category": "Educational",
+      "lang": "en-us",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.2570479214191437,
+        "margin": 0.06741556525230408,
+        "runnerUp": "Legal",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1641,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "News",
+      "llmError": null,
+      "llmMs": 873
+    },
+    {
+      "id": "edu-sep-consciousness",
+      "true_category": "Educational",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.9296436309814453,
+        "margin": 0.9188542384654284,
+        "runnerUp": "Comedy",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1458,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 767
+    },
+    {
+      "id": "edu-mdn-eventloop",
+      "true_category": "Educational",
+      "lang": "en-us",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.5555140972137451,
+        "margin": 0.48434164375066757,
+        "runnerUp": "Comedy",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 5039,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 2755
+    },
+    {
+      "id": "edu-wiki-photosynthesis",
+      "true_category": "Educational",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": null,
+      "zeroShotError": null,
+      "zeroShotMs": 6019,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 461
+    },
+    {
+      "id": "edu-sep-epistemology",
+      "true_category": "Educational",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": null,
+      "zeroShotError": null,
+      "zeroShotMs": 6028,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 529
+    },
+    {
+      "id": "edu-mdn-cascade",
+      "true_category": "Educational",
+      "lang": "en-us",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.92657470703125,
+        "margin": 0.9151587886735797,
+        "runnerUp": "Comedy",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1847,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 469
+    },
+    {
+      "id": "r-edu-wiki-relativity",
+      "true_category": "Educational",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Educational",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.7164962291717529,
+        "margin": 0.6822695471346378,
+        "runnerUp": "Horror",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1416,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 484
+    },
+    {
+      "id": "r-edu-sep-ethics",
+      "true_category": "Educational",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.8356500267982483,
+        "margin": 0.8020362444221973,
+        "runnerUp": "Legal",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 4331,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 885
+    },
+    {
+      "id": "edu-mdn-http-caching",
+      "true_category": "Educational",
+      "lang": "en-us",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.40704086422920227,
+        "margin": 0.3334569036960602,
+        "runnerUp": "Comedy",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1719,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 419
+    },
+    {
+      "id": "r-edu-wiki-evolution",
+      "true_category": "Educational",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.8134784698486328,
+        "margin": 0.7946754861623049,
+        "runnerUp": "Legal",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1441,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 391
+    },
+    {
+      "id": "emo-captainawkward",
+      "true_category": "Emotional",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Comedy",
+        "score": 0.3259759247303009,
+        "margin": 0.12587839365005493,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2685,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Entertainment",
+      "llmError": null,
+      "llmMs": 517
+    },
+    {
+      "id": "emo-psychtoday-relationships",
+      "true_category": "Emotional",
+      "lang": "en-us",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Emotional",
+        "score": 0.5978918075561523,
+        "margin": 0.2214837372303009,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 5679,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 505
+    },
+    {
+      "id": "d-emo-captainawkward-arch",
+      "true_category": "Emotional",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.33089128136634827,
+        "margin": 0.007144927978515625,
+        "runnerUp": "Emotional",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2232,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Entertainment",
+      "llmError": null,
+      "llmMs": 425
+    },
+    {
+      "id": "d-emo-gutenberg-wuthering",
+      "true_category": "Entertainment",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.42469102144241333,
+        "margin": 0.1932193785905838,
+        "runnerUp": "Horror",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 4721,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Entertainment",
+      "llmError": null,
+      "llmMs": 382
+    },
+    {
+      "id": "emo-psychtoday-grief",
+      "true_category": "Emotional",
+      "lang": "en-us",
+      "isSensitive": true,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.7047681212425232,
+        "margin": 0.5758146196603775,
+        "runnerUp": "Emotional",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1906,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Emotional",
+      "llmError": null,
+      "llmMs": 581
+    },
+    {
+      "id": "ent-metacritic-movies",
+      "true_category": "Entertainment",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Horror",
+        "score": 0.5087488889694214,
+        "margin": 0.4131547510623932,
+        "runnerUp": "Entertainment",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2909,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Entertainment",
+      "llmError": null,
+      "llmMs": 717
+    },
+    {
+      "id": "ent-pitchfork-reviews",
+      "true_category": "Entertainment",
+      "lang": "en-us",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": null,
+      "zeroShotError": null,
+      "zeroShotMs": 6027,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Entertainment",
+      "llmError": null,
+      "llmMs": 505
+    },
+    {
+      "id": "ent-ign",
+      "true_category": "Entertainment",
+      "lang": "en-in",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": null,
+      "zeroShotError": null,
+      "zeroShotMs": 6017,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Entertainment",
+      "llmError": null,
+      "llmMs": 523
+    },
+    {
+      "id": "ent-rollingstone-music",
+      "true_category": "Entertainment",
+      "lang": "en-us",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": "Entertainment",
+        "secondary": null
+      },
+      "zeroShot": null,
+      "zeroShotError": null,
+      "zeroShotMs": 6026,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Entertainment",
+      "llmError": null,
+      "llmMs": 484
+    },
+    {
+      "id": "ent-variety-film",
+      "true_category": "Entertainment",
+      "lang": "en-us",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": "Entertainment",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Entertainment",
+        "score": 0.277397096157074,
+        "margin": 0.06229552626609802,
+        "runnerUp": "News",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1482,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Entertainment",
+      "llmError": null,
+      "llmMs": 310
+    },
+    {
+      "id": "ent-polygon",
+      "true_category": "Entertainment",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Entertainment",
+        "score": 0.68915194272995,
+        "margin": 0.5877518951892853,
+        "runnerUp": "Sports",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2413,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Entertainment",
+      "llmError": null,
+      "llmMs": 504
+    },
+    {
+      "id": "r-ent-nme",
+      "true_category": "Entertainment",
+      "lang": "en-gb",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Entertainment",
+        "score": 0.39901238679885864,
+        "margin": 0.09647238254547119,
+        "runnerUp": "Horror",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1217,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Entertainment",
+      "llmError": null,
+      "llmMs": 411
+    },
+    {
+      "id": "ent-avclub",
+      "true_category": "Entertainment",
+      "lang": "en-us",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.2862464189529419,
+        "margin": 0.16695404052734375,
+        "runnerUp": "Horror",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1270,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Entertainment",
+      "llmError": null,
+      "llmMs": 618
+    },
+    {
+      "id": "ent-wiki-hiphop",
+      "true_category": "Entertainment",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.8097575902938843,
+        "margin": 0.7780069075524807,
+        "runnerUp": "Entertainment",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 4495,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Entertainment",
+      "llmError": null,
+      "llmMs": 299
+    },
+    {
+      "id": "ent-wiki-studioghibli",
+      "true_category": "Entertainment",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.33228594064712524,
+        "margin": 0.12524691224098206,
+        "runnerUp": "Entertainment",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 5844,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Entertainment",
+      "llmError": null,
+      "llmMs": 487
+    },
+    {
+      "id": "r-ent-wiki-netflix",
+      "true_category": "Entertainment",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.7811837196350098,
+        "margin": 0.7503495085984468,
+        "runnerUp": "Comedy",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1443,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Entertainment",
+      "llmError": null,
+      "llmMs": 1123
+    },
+    {
+      "id": "r-ent-wiki-minecraft",
+      "true_category": "Entertainment",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.3844236731529236,
+        "margin": 0.14566417038440704,
+        "runnerUp": "Entertainment",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1574,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Entertainment",
+      "llmError": null,
+      "llmMs": 515
+    },
+    {
+      "id": "ent-wiki-inception",
+      "true_category": "Entertainment",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.8110870122909546,
+        "margin": 0.7616246715188026,
+        "runnerUp": "Entertainment",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1498,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Entertainment",
+      "llmError": null,
+      "llmMs": 472
+    },
+    {
+      "id": "ent-wiki-breakingbad",
+      "true_category": "Entertainment",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.7250723838806152,
+        "margin": 0.6818588599562645,
+        "runnerUp": "Horror",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1558,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Entertainment",
+      "llmError": null,
+      "llmMs": 407
+    },
+    {
+      "id": "d-fin-worldbank-econ",
+      "true_category": "Educational",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "News",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.5815818309783936,
+        "margin": 0.3844738155603409,
+        "runnerUp": "News",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1568,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Finance",
+      "llmError": null,
+      "llmMs": 498
+    },
+    {
+      "id": "fin-irs-credits",
+      "true_category": "Finance",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.5179888010025024,
+        "margin": 0.3984875828027725,
+        "runnerUp": "Legal",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2177,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Finance",
+      "llmError": null,
+      "llmMs": 272
+    },
+    {
+      "id": "fin-federalreserve-monetary",
+      "true_category": "Finance",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "News",
+        "score": 0.2951676547527313,
+        "margin": 0.014154404401779175,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2117,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Finance",
+      "llmError": null,
+      "llmMs": 520
+    },
+    {
+      "id": "fin-consumerfinance-mortgages",
+      "true_category": "Finance",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.7377968430519104,
+        "margin": 0.6836274825036526,
+        "runnerUp": "Legal",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1902,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Finance",
+      "llmError": null,
+      "llmMs": 415
+    },
+    {
+      "id": "r-fin-treasurydirect",
+      "true_category": "Finance",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Finance",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Finance",
+        "score": 0.5442601442337036,
+        "margin": 0.2523464560508728,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1404,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Finance",
+      "llmError": null,
+      "llmMs": 449
+    },
+    {
+      "id": "fin-wiki-bitcoin",
+      "true_category": "Finance",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.61236572265625,
+        "margin": 0.4637521654367447,
+        "runnerUp": "Finance",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1111,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Finance",
+      "llmError": null,
+      "llmMs": 434
+    },
+    {
+      "id": "r-fin-wiki-centralbank",
+      "true_category": "Finance",
+      "lang": "en",
+      "isSensitive": true,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.7144514322280884,
+        "margin": 0.61324393004179,
+        "runnerUp": "Finance",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1606,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Finance",
+      "llmError": null,
+      "llmMs": 457
+    },
+    {
+      "id": "r-fin-wiki-inflation",
+      "true_category": "Finance",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "News",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.6994568705558777,
+        "margin": 0.631541907787323,
+        "runnerUp": "Finance",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2070,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 562
+    },
+    {
+      "id": "r-fin-wiki-compound",
+      "true_category": "Finance",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.7571479678153992,
+        "margin": 0.6021853089332581,
+        "runnerUp": "Finance",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1399,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Finance",
+      "llmError": null,
+      "llmMs": 420
+    },
+    {
+      "id": "fin-wiki-2008crisis",
+      "true_category": "Finance",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.6985756158828735,
+        "margin": 0.5760949701070786,
+        "runnerUp": "Finance",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1662,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Finance",
+      "llmError": null,
+      "llmMs": 513
+    },
+    {
+      "id": "r-fin-wiki-hedgefund",
+      "true_category": "Finance",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Finance",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.4923524856567383,
+        "margin": 0.05479279160499573,
+        "runnerUp": "Finance",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1459,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Finance",
+      "llmError": null,
+      "llmMs": 511
+    },
+    {
+      "id": "r-fin-wiki-etf",
+      "true_category": "Finance",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Finance",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Finance",
+        "score": 0.5663881301879883,
+        "margin": 0.2719530463218689,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1454,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Finance",
+      "llmError": null,
+      "llmMs": 443
+    },
+    {
+      "id": "fin-wiki-stockmarket",
+      "true_category": "Finance",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Finance",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.509188711643219,
+        "margin": 0.09247329831123352,
+        "runnerUp": "Finance",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1426,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Finance",
+      "llmError": null,
+      "llmMs": 446
+    },
+    {
+      "id": "fin-wiki-mortgage",
+      "true_category": "Finance",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.702752947807312,
+        "margin": 0.5462052077054977,
+        "runnerUp": "Legal",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1335,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Finance",
+      "llmError": null,
+      "llmMs": 514
+    },
+    {
+      "id": "r-food-budgetbytes-index",
+      "true_category": "Food",
+      "lang": "en-us",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Food",
+        "score": 0.9103569984436035,
+        "margin": 0.8868119213730097,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1263,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Food",
+      "llmError": null,
+      "llmMs": 302
+    },
+    {
+      "id": "food-kingarthur-sourdough",
+      "true_category": "Food",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Food",
+        "score": 0.8789852261543274,
+        "margin": 0.8245120197534561,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1414,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Food",
+      "llmError": null,
+      "llmMs": 486
+    },
+    {
+      "id": "r-food-bbcgf-risotto",
+      "true_category": "Food",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Food",
+        "score": 0.8946205377578735,
+        "margin": 0.8732129912823439,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1298,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Food",
+      "llmError": null,
+      "llmMs": 504
+    },
+    {
+      "id": "r-food-wiki-kimchi",
+      "true_category": "Food",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Food",
+        "score": 0.6349565982818604,
+        "margin": 0.3193362057209015,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1654,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Food",
+      "llmError": null,
+      "llmMs": 463
+    },
+    {
+      "id": "food-budgetbytes-fried-rice",
+      "true_category": "Food",
+      "lang": "en-us",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Food",
+        "score": 0.7479915022850037,
+        "margin": 0.6758964732289314,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1963,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Food",
+      "llmError": null,
+      "llmMs": 409
+    },
+    {
+      "id": "r-food-ka-banana",
+      "true_category": "Food",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Food",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Food",
+        "score": 0.8977558612823486,
+        "margin": 0.863616555929184,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1285,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Food",
+      "llmError": null,
+      "llmMs": 416
+    },
+    {
+      "id": "r-food-bbcgf-curry",
+      "true_category": "Food",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Food",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Food",
+        "score": 0.9315111041069031,
+        "margin": 0.9135882165282965,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1565,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Food",
+      "llmError": null,
+      "llmMs": 474
+    },
+    {
+      "id": "food-wiki-maillard",
+      "true_category": "Food",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Food",
+        "score": 0.5725690126419067,
+        "margin": 0.2214072048664093,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1558,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 409
+    },
+    {
+      "id": "r-food-ka-pizza",
+      "true_category": "Food",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Food",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Food",
+        "score": 0.8662217259407043,
+        "margin": 0.7939990684390068,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 4878,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Food",
+      "llmError": null,
+      "llmMs": 580
+    },
+    {
+      "id": "food-bbcgoodfood-lasagne",
+      "true_category": "Food",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Food",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Food",
+        "score": 0.9539151787757874,
+        "margin": 0.940996608696878,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1809,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Food",
+      "llmError": null,
+      "llmMs": 465
+    },
+    {
+      "id": "food-wiki-fermentation",
+      "true_category": "Educational",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.5104634761810303,
+        "margin": 0.04996824264526367,
+        "runnerUp": "Food",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2076,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Food",
+      "llmError": null,
+      "llmMs": 407
+    },
+    {
+      "id": "food-kingarthur-choc-chip",
+      "true_category": "Food",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Food",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Food",
+        "score": 0.9110948443412781,
+        "margin": 0.8862985223531723,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1260,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Food",
+      "llmError": null,
+      "llmMs": 373
+    },
+    {
+      "id": "r-food-bbcgf-brownies",
+      "true_category": "Food",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Food",
+        "score": 0.9116451740264893,
+        "margin": 0.8838062938302755,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1473,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Food",
+      "llmError": null,
+      "llmMs": 407
+    },
+    {
+      "id": "food-wiki-coffee-prep",
+      "true_category": "Food",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.7532629370689392,
+        "margin": 0.655855156481266,
+        "runnerUp": "Food",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 3093,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 535
+    },
+    {
+      "id": "hea-harvard-nutrition-plate",
+      "true_category": "Food",
+      "lang": "en-us",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": null,
+      "zeroShotError": null,
+      "zeroShotMs": 6009,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Health",
+      "llmError": null,
+      "llmMs": 928
+    },
+    {
+      "id": "hea-wiki-immune-system",
+      "true_category": "Health",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.6992188096046448,
+        "margin": 0.5344609618186951,
+        "runnerUp": "Health",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1914,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 399
+    },
+    {
+      "id": "hea-medlineplus-cholesterol",
+      "true_category": "Health",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.7356091737747192,
+        "margin": 0.4854916036128998,
+        "runnerUp": "Health",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1463,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 515
+    },
+    {
+      "id": "hea-cdc-physical-activity",
+      "true_category": "Health",
+      "lang": "en-us",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.44894132018089294,
+        "margin": 0.10843563079833984,
+        "runnerUp": "Health",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1401,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Health",
+      "llmError": null,
+      "llmMs": 449
+    },
+    {
+      "id": "hea-nhs-physio",
+      "true_category": "Health",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Health",
+        "score": 0.7204886674880981,
+        "margin": 0.6120762154459953,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2005,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Health",
+      "llmError": null,
+      "llmMs": 631
+    },
+    {
+      "id": "hea-wiki-vaccination",
+      "true_category": "Health",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Health",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Health",
+        "score": 0.5421129465103149,
+        "margin": 0.12240538001060486,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1435,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Health",
+      "llmError": null,
+      "llmMs": 409
+    },
+    {
+      "id": "hea-who-physical-activity",
+      "true_category": "Health",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Health",
+        "score": 0.6715167164802551,
+        "margin": 0.4234759658575058,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1296,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Health",
+      "llmError": null,
+      "llmMs": 462
+    },
+    {
+      "id": "hea-medlineplus-hypertension",
+      "true_category": "Health",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.7183365821838379,
+        "margin": 0.45221394300460815,
+        "runnerUp": "Health",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1869,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Health",
+      "llmError": null,
+      "llmMs": 478
+    },
+    {
+      "id": "hea-cdc-flu",
+      "true_category": "Health",
+      "lang": "en-us",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.7900235056877136,
+        "margin": 0.6440496444702148,
+        "runnerUp": "Health",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1624,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Health",
+      "llmError": null,
+      "llmMs": 256
+    },
+    {
+      "id": "r-hea-nhs-anaemia",
+      "true_category": "Health",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Health",
+        "score": 0.5281984806060791,
+        "margin": 0.36256706714630127,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1476,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Health",
+      "llmError": null,
+      "llmMs": 423
+    },
+    {
+      "id": "hea-who-nutrition",
+      "true_category": "Health",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Health",
+        "score": 0.5935046672821045,
+        "margin": 0.31273674964904785,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1477,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Health",
+      "llmError": null,
+      "llmMs": 265
+    },
+    {
+      "id": "r-hea-medlineplus-diabetes",
+      "true_category": "Health",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.7067722082138062,
+        "margin": 0.42749226093292236,
+        "runnerUp": "Health",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1941,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Health",
+      "llmError": null,
+      "llmMs": 469
+    },
+    {
+      "id": "r-hea-cdc-handwashing",
+      "true_category": "Health",
+      "lang": "en-us",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.49684572219848633,
+        "margin": 0.07474365830421448,
+        "runnerUp": "Health",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1609,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Health",
+      "llmError": null,
+      "llmMs": 461
+    },
+    {
+      "id": "d-hor-nightmare",
+      "true_category": "Entertainment",
+      "lang": "en-us",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": "Horror",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Horror",
+        "score": 0.9390661120414734,
+        "margin": 0.9092741385102272,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1338,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Horror",
+      "llmError": null,
+      "llmMs": 565
+    },
+    {
+      "id": "hor-gutenberg-dracula",
+      "true_category": "Horror",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Horror",
+        "score": 0.7373702526092529,
+        "margin": 0.6178561821579933,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2243,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Horror",
+      "llmError": null,
+      "llmMs": 940
+    },
+    {
+      "id": "r-hor-wiki-psycho",
+      "true_category": "Entertainment",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Horror",
+        "score": 0.5759583115577698,
+        "margin": 0.3521687835454941,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 3276,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Entertainment",
+      "llmError": null,
+      "llmMs": 1053
+    },
+    {
+      "id": "hor-scp-173",
+      "true_category": "Horror",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Comedy",
+        "score": 0.48300525546073914,
+        "margin": 0.06899702548980713,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2759,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Horror",
+      "llmError": null,
+      "llmMs": 518
+    },
+    {
+      "id": "hor-gutenberg-poe",
+      "true_category": "Entertainment",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Horror",
+        "score": 0.36751797795295715,
+        "margin": 0.08302024006843567,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1761,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Entertainment",
+      "llmError": null,
+      "llmMs": 820
+    },
+    {
+      "id": "hor-wiki-alien",
+      "true_category": "Entertainment",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.45957455039024353,
+        "margin": 0.08481130003929138,
+        "runnerUp": "Horror",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1761,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Entertainment",
+      "llmError": null,
+      "llmMs": 624
+    },
+    {
+      "id": "hor-wiki-hereditary",
+      "true_category": "Horror",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Horror",
+        "score": 0.42888233065605164,
+        "margin": 0.057180970907211304,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2197,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Entertainment",
+      "llmError": null,
+      "llmMs": 483
+    },
+    {
+      "id": "hor-wiki-gothic",
+      "true_category": "Horror",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Horror",
+        "score": 0.8742808103561401,
+        "margin": 0.7912958860397339,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1474,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Horror",
+      "llmError": null,
+      "llmMs": 492
+    },
+    {
+      "id": "leg-eff-privacy",
+      "true_category": "Educational",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Legal",
+        "score": 0.5041805505752563,
+        "margin": 0.3617499768733978,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1456,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Legal",
+      "llmError": null,
+      "llmMs": 450
+    },
+    {
+      "id": "leg-gdpr-info",
+      "true_category": "Legal",
+      "lang": "en-us",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": "Legal",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Legal",
+        "score": 0.587028980255127,
+        "margin": 0.3456546664237976,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1222,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Legal",
+      "llmError": null,
+      "llmMs": 501
+    },
+    {
+      "id": "leg-wipo-patents",
+      "true_category": "Educational",
+      "lang": "en-us",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Legal",
+        "score": 0.529392659664154,
+        "margin": 0.2193717658519745,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1559,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Legal",
+      "llmError": null,
+      "llmMs": 414
+    },
+    {
+      "id": "leg-uscourts-about",
+      "true_category": "Legal",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Legal",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Legal",
+        "score": 0.6927133202552795,
+        "margin": 0.40493518114089966,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2182,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Legal",
+      "llmError": null,
+      "llmMs": 415
+    },
+    {
+      "id": "r-leg-govuk-consumer",
+      "true_category": "Legal",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Legal",
+        "score": 0.4399743676185608,
+        "margin": 0.31510262936353683,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 5231,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Legal",
+      "llmError": null,
+      "llmMs": 923
+    },
+    {
+      "id": "leg-cornell-wex-contract",
+      "true_category": "Legal",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Legal",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Legal",
+        "score": 0.709183394908905,
+        "margin": 0.5089129060506821,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 3887,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Legal",
+      "llmError": null,
+      "llmMs": 573
+    },
+    {
+      "id": "r-leg-wiki-roe",
+      "true_category": "Legal",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Legal",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Legal",
+        "score": 0.7740514278411865,
+        "margin": 0.6479739844799042,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 3199,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Legal",
+      "llmError": null,
+      "llmMs": 601
+    },
+    {
+      "id": "r-leg-cornell-wex-jurisdiction",
+      "true_category": "Legal",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Legal",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Legal",
+        "score": 0.9298394322395325,
+        "margin": 0.8762631714344025,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2063,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Legal",
+      "llmError": null,
+      "llmMs": 170
+    },
+    {
+      "id": "leg-cornell-wex-tort",
+      "true_category": "Legal",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Legal",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Legal",
+        "score": 0.9339199066162109,
+        "margin": 0.8848705515265465,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2102,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Legal",
+      "llmError": null,
+      "llmMs": 424
+    },
+    {
+      "id": "leg-wiki-mirandav",
+      "true_category": "Legal",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Legal",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Legal",
+        "score": 0.8725358247756958,
+        "margin": 0.8024479001760483,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1243,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Legal",
+      "llmError": null,
+      "llmMs": 425
+    },
+    {
+      "id": "r-leg-cornell-wex-negligence",
+      "true_category": "Educational",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Legal",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Legal",
+        "score": 0.8079147338867188,
+        "margin": 0.6741082668304443,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1341,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Legal",
+      "llmError": null,
+      "llmMs": 620
+    },
+    {
+      "id": "leg-wiki-common-law",
+      "true_category": "Legal",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Legal",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Legal",
+        "score": 0.8569298386573792,
+        "margin": 0.7391809448599815,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1314,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Legal",
+      "llmError": null,
+      "llmMs": 458
+    },
+    {
+      "id": "r-leg-cornell-wex-defamation",
+      "true_category": "Legal",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Legal",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Legal",
+        "score": 0.9352807998657227,
+        "margin": 0.8982110433280468,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1564,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Legal",
+      "llmError": null,
+      "llmMs": 511
+    },
+    {
+      "id": "d-myth-mythopedia-greek",
+      "true_category": "Mythological",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": null,
+      "zeroShotError": null,
+      "zeroShotMs": 6025,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Mythological",
+      "llmError": null,
+      "llmMs": 547
+    },
+    {
+      "id": "r-myth-worldhistory-greek",
+      "true_category": "Mythological",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Mythological",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.5212604403495789,
+        "margin": 0.09674960374832153,
+        "runnerUp": "Mythological",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1373,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Mythological",
+      "llmError": null,
+      "llmMs": 602
+    },
+    {
+      "id": "r-myth-theoi-apollo",
+      "true_category": "Mythological",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Mythological",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Mythological",
+        "score": 0.4904688596725464,
+        "margin": 0.1738281548023224,
+        "runnerUp": "Health",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1320,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Mythological",
+      "llmError": null,
+      "llmMs": 445
+    },
+    {
+      "id": "r-myth-wiki-norsegods",
+      "true_category": "Mythological",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Mythological",
+        "score": 0.37569892406463623,
+        "margin": 0.01084396243095398,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2817,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Mythological",
+      "llmError": null,
+      "llmMs": 1704
+    },
+    {
+      "id": "myth-worldhistory-norse",
+      "true_category": "Mythological",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Mythological",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Mythological",
+        "score": 0.680083692073822,
+        "margin": 0.41363802552223206,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1261,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Mythological",
+      "llmError": null,
+      "llmMs": 195
+    },
+    {
+      "id": "d-myth-theoi-artemis",
+      "true_category": "Mythological",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Mythological",
+        "score": 0.6956307291984558,
+        "margin": 0.524962306022644,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1506,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Mythological",
+      "llmError": null,
+      "llmMs": 424
+    },
+    {
+      "id": "myth-worldhistory-egypt",
+      "true_category": "Mythological",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Mythological",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.4873441159725189,
+        "margin": 0.04738232493400574,
+        "runnerUp": "Mythological",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1332,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 171
+    },
+    {
+      "id": "myth-theoi-athena",
+      "true_category": "Mythological",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Mythological",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Mythological",
+        "score": 0.5984391570091248,
+        "margin": 0.30807968974113464,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 3602,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Mythological",
+      "llmError": null,
+      "llmMs": 938
+    },
+    {
+      "id": "d-myth-wh-odin",
+      "true_category": "Mythological",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Mythological",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.4656185805797577,
+        "margin": 0.029809027910232544,
+        "runnerUp": "Mythological",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1851,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Mythological",
+      "llmError": null,
+      "llmMs": 443
+    },
+    {
+      "id": "myth-theoi-hades",
+      "true_category": "Mythological",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Mythological",
+        "score": 0.6574946641921997,
+        "margin": 0.4555864781141281,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 4137,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Mythological",
+      "llmError": null,
+      "llmMs": 579
+    },
+    {
+      "id": "myth-wiki-druid",
+      "true_category": "Mythological",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.8020660877227783,
+        "margin": 0.6387907713651657,
+        "runnerUp": "Mythological",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2968,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 695
+    },
+    {
+      "id": "myth-worldhistory-rome",
+      "true_category": "Educational",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.7411792278289795,
+        "margin": 0.6904343999922276,
+        "runnerUp": "Mythological",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 4115,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 471
+    },
+    {
+      "id": "news-dw-topstories",
+      "true_category": "News",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "News",
+        "score": 0.9135531783103943,
+        "margin": 0.8894052114337683,
+        "runnerUp": "Legal",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2266,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "News",
+      "llmError": null,
+      "llmMs": 531
+    },
+    {
+      "id": "news-guardian-world",
+      "true_category": "News",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "News",
+        "score": 0.5724434852600098,
+        "margin": 0.4057663828134537,
+        "runnerUp": "Legal",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 3387,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "News",
+      "llmError": null,
+      "llmMs": 542
+    },
+    {
+      "id": "news-un",
+      "true_category": "News",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "News",
+        "score": 0.701418399810791,
+        "margin": 0.6359154134988785,
+        "runnerUp": "Health",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1306,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "News",
+      "llmError": null,
+      "llmMs": 406
+    },
+    {
+      "id": "news-wiki-current",
+      "true_category": "News",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "News",
+        "score": 0.556518018245697,
+        "margin": 0.2158205211162567,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2081,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "News",
+      "llmError": null,
+      "llmMs": 480
+    },
+    {
+      "id": "news-cnn-world",
+      "true_category": "News",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "News",
+        "score": 0.8770349621772766,
+        "margin": 0.8114968538284302,
+        "runnerUp": "Horror",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2640,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "News",
+      "llmError": null,
+      "llmMs": 486
+    },
+    {
+      "id": "news-aljazeera",
+      "true_category": "News",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "News",
+        "score": 0.43568935990333557,
+        "margin": 0.10268628597259521,
+        "runnerUp": "Sports",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1946,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Sports",
+      "llmError": null,
+      "llmMs": 405
+    },
+    {
+      "id": "news-propublica",
+      "true_category": "News",
+      "lang": "en-us",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "News",
+        "score": 0.48209550976753235,
+        "margin": 0.32021012902259827,
+        "runnerUp": "Horror",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1160,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "News",
+      "llmError": null,
+      "llmMs": 514
+    },
+    {
+      "id": "news-abc",
+      "true_category": "News",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "News",
+        "score": 0.5198357105255127,
+        "margin": 0.40746863186359406,
+        "runnerUp": "Travel",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2992,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "News",
+      "llmError": null,
+      "llmMs": 717
+    },
+    {
+      "id": "news-textnpr",
+      "true_category": "News",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.5227741003036499,
+        "margin": 0.15627917647361755,
+        "runnerUp": "News",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 4014,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "News",
+      "llmError": null,
+      "llmMs": 456
+    },
+    {
+      "id": "news-euronews",
+      "true_category": "News",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Sports",
+        "score": 0.27088114619255066,
+        "margin": 0.027563586831092834,
+        "runnerUp": "News",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 3568,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "News",
+      "llmError": null,
+      "llmMs": 516
+    },
+    {
+      "id": "news-france24",
+      "true_category": "News",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "News",
+        "score": 0.4274161458015442,
+        "margin": 0.03684443235397339,
+        "runnerUp": "Horror",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2242,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "News",
+      "llmError": null,
+      "llmMs": 452
+    },
+    {
+      "id": "news-npr-politics",
+      "true_category": "News",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "News",
+        "score": 0.9273894429206848,
+        "margin": 0.8968432638794184,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1539,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "News",
+      "llmError": null,
+      "llmMs": 432
+    },
+    {
+      "id": "r-news-bbc-uk",
+      "true_category": "News",
+      "lang": "en-gb",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "News",
+        "score": 0.6833292841911316,
+        "margin": 0.6055459007620811,
+        "runnerUp": "Horror",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2421,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "News",
+      "llmError": null,
+      "llmMs": 472
+    },
+    {
+      "id": "spo-guardian-sport",
+      "true_category": "Sports",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Sports",
+        "score": 0.929227888584137,
+        "margin": 0.8973034434020519,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1964,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Sports",
+      "llmError": null,
+      "llmMs": 158
+    },
+    {
+      "id": "spo-espn",
+      "true_category": "Sports",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Sports",
+        "score": 0.882556676864624,
+        "margin": 0.8642343152314425,
+        "runnerUp": "News",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1799,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Sports",
+      "llmError": null,
+      "llmMs": 413
+    },
+    {
+      "id": "spo-skysports-football",
+      "true_category": "Sports",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Sports",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Sports",
+        "score": 0.9629217982292175,
+        "margin": 0.9540288168936968,
+        "runnerUp": "News",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1129,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Sports",
+      "llmError": null,
+      "llmMs": 445
+    },
+    {
+      "id": "spo-bbc-football",
+      "true_category": "Sports",
+      "lang": "en-gb",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": "Sports",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Sports",
+        "score": 0.8421590328216553,
+        "margin": 0.7872346229851246,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2786,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Sports",
+      "llmError": null,
+      "llmMs": 509
+    },
+    {
+      "id": "spo-wiki-olympics-history",
+      "true_category": "Sports",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Sports",
+        "score": 0.9255826473236084,
+        "margin": 0.8652243688702583,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1375,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Sports",
+      "llmError": null,
+      "llmMs": 249
+    },
+    {
+      "id": "spo-bbc-sport",
+      "true_category": "Sports",
+      "lang": "en-gb",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Sports",
+        "score": 0.8507105112075806,
+        "margin": 0.7963131032884121,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2555,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Sports",
+      "llmError": null,
+      "llmMs": 970
+    },
+    {
+      "id": "spo-wiki-swimming",
+      "true_category": "Sports",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Sports",
+        "score": 0.8285053968429565,
+        "margin": 0.6671934127807617,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 3729,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Sports",
+      "llmError": null,
+      "llmMs": 838
+    },
+    {
+      "id": "d-spo-bbc-athletics",
+      "true_category": "Sports",
+      "lang": "en-gb",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Sports",
+        "score": 0.9017455577850342,
+        "margin": 0.8636423274874687,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 5744,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Sports",
+      "llmError": null,
+      "llmMs": 892
+    },
+    {
+      "id": "spo-wiki-formula1",
+      "true_category": "Sports",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Sports",
+        "score": 0.8217587471008301,
+        "margin": 0.7021721601486206,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1383,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Sports",
+      "llmError": null,
+      "llmMs": 438
+    },
+    {
+      "id": "d-spo-bbc-cricket",
+      "true_category": "Sports",
+      "lang": "en-gb",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Sports",
+        "score": 0.7122777104377747,
+        "margin": 0.6314890086650848,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 3848,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Sports",
+      "llmError": null,
+      "llmMs": 1261
+    },
+    {
+      "id": "r-spo-wiki-athletics",
+      "true_category": "Sports",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Sports",
+        "score": 0.8742244839668274,
+        "margin": 0.7822841331362724,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 3347,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Sports",
+      "llmError": null,
+      "llmMs": 485
+    },
+    {
+      "id": "spo-wiki-basketball",
+      "true_category": "Sports",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Sports",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Sports",
+        "score": 0.9599733352661133,
+        "margin": 0.9363637771457434,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1302,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Sports",
+      "llmError": null,
+      "llmMs": 539
+    },
+    {
+      "id": "spo-wiki-worldcup",
+      "true_category": "Sports",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Sports",
+        "score": 0.778343141078949,
+        "margin": 0.5994204878807068,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1386,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Sports",
+      "llmError": null,
+      "llmMs": 411
+    },
+    {
+      "id": "r-spo-wiki-rugby",
+      "true_category": "Sports",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Sports",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Sports",
+        "score": 0.7148526310920715,
+        "margin": 0.5009696036577225,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1245,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Sports",
+      "llmError": null,
+      "llmMs": 428
+    },
+    {
+      "id": "tra-roughguides-portugal",
+      "true_category": "Travel",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Travel",
+        "score": 0.7111451625823975,
+        "margin": 0.5870814844965935,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1395,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Travel",
+      "llmError": null,
+      "llmMs": 252
+    },
+    {
+      "id": "tra-seat61-europe",
+      "true_category": "Travel",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.5111690163612366,
+        "margin": 0.27101173996925354,
+        "runnerUp": "Travel",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1869,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Travel",
+      "llmError": null,
+      "llmMs": 209
+    },
+    {
+      "id": "tra-lonelyplanet-italy",
+      "true_category": "Travel",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Travel",
+        "score": 0.7183540463447571,
+        "margin": 0.6248022392392159,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 4283,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Travel",
+      "llmError": null,
+      "llmMs": 559
+    },
+    {
+      "id": "r-tra-wiki-kyoto",
+      "true_category": "Travel",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.8347494006156921,
+        "margin": 0.8106910157948732,
+        "runnerUp": "Comedy",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1698,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 156
+    },
+    {
+      "id": "tra-wikivoyage-iceland",
+      "true_category": "Travel",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Travel",
+        "score": 0.832522988319397,
+        "margin": 0.7887817621231079,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2501,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Travel",
+      "llmError": null,
+      "llmMs": 441
+    },
+    {
+      "id": "tra-lonelyplanet-japan",
+      "true_category": "Travel",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Travel",
+        "score": 0.7871184945106506,
+        "margin": 0.6829141229391098,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1942,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Travel",
+      "llmError": null,
+      "llmMs": 411
+    },
+    {
+      "id": "tra-atlasobscura-places",
+      "true_category": "Travel",
+      "lang": "en-us",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.3701516091823578,
+        "margin": 0.25895097106695175,
+        "runnerUp": "Horror",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1536,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "News",
+      "llmError": null,
+      "llmMs": 461
+    },
+    {
+      "id": "r-tra-wiki-angkorwat",
+      "true_category": "Travel",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.6387262940406799,
+        "margin": 0.42321981489658356,
+        "runnerUp": "Mythological",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1490,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 459
+    },
+    {
+      "id": "tra-nps-yosemite",
+      "true_category": "Travel",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Travel",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Travel",
+        "score": 0.5395976901054382,
+        "margin": 0.19980475306510925,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 3985,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Travel",
+      "llmError": null,
+      "llmMs": 580
+    },
+    {
+      "id": "tra-wikivoyage-kyoto",
+      "true_category": "Travel",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": null,
+      "zeroShotError": null,
+      "zeroShotMs": 6014,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Travel",
+      "llmError": null,
+      "llmMs": 498
+    },
+    {
+      "id": "tra-wiki-machu-picchu",
+      "true_category": "Travel",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": null,
+      "zeroShotError": null,
+      "zeroShotMs": 6028,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Travel",
+      "llmError": null,
+      "llmMs": 267
+    },
+    {
+      "id": "tra-nps-yellowstone",
+      "true_category": "Travel",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Travel",
+        "secondary": null
+      },
+      "zeroShot": null,
+      "zeroShotError": null,
+      "zeroShotMs": 6022,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Travel",
+      "llmError": null,
+      "llmMs": 308
+    },
+    {
+      "id": "d-mis-nautilus",
+      "true_category": "Educational",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.7738778591156006,
+        "margin": 0.7297237403690815,
+        "runnerUp": "Travel",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 4281,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "News",
+      "llmError": null,
+      "llmMs": 612
+    },
+    {
+      "id": "r-mis-pg-persistence",
+      "true_category": "Educational",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.4636315405368805,
+        "margin": 0.4046163111925125,
+        "runnerUp": "Finance",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2644,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 611
+    },
+    {
+      "id": "mis-pg-good",
+      "true_category": "Educational",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.3812762498855591,
+        "margin": 0.2678362876176834,
+        "runnerUp": "Health",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 3752,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 643
+    },
+    {
+      "id": "r-mis-wiki-umami",
+      "true_category": "Food",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.7651744484901428,
+        "margin": 0.6760626286268234,
+        "runnerUp": "Food",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1436,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 292
+    },
+    {
+      "id": "mis-pg-greatwork",
+      "true_category": "Educational",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.8691348433494568,
+        "margin": 0.8462540544569492,
+        "runnerUp": "Comedy",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1389,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 502
+    },
+    {
+      "id": "mis-wiki-telomere",
+      "true_category": "Health",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.7683447599411011,
+        "margin": 0.7228739447891712,
+        "runnerUp": "Health",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1223,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 839
+    },
+    {
+      "id": "d-mis-pg-hs",
+      "true_category": "Educational",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.652535080909729,
+        "margin": 0.5874559506773949,
+        "runnerUp": "Comedy",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1184,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 459
+    },
+    {
+      "id": "r-mis-wiki-placebo",
+      "true_category": "Health",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.5306277871131897,
+        "margin": 0.3563920855522156,
+        "runnerUp": "Health",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1168,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 426
+    },
+    {
+      "id": "r-nen-wiki-zh-lishi",
+      "true_category": "Educational",
+      "lang": "zh",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.4561566710472107,
+        "margin": 0.36280500888824463,
+        "runnerUp": "Horror",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2512,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 586
+    },
+    {
+      "id": "nen-asahi",
+      "true_category": "News",
+      "lang": "ja",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": null,
+      "zeroShotError": null,
+      "zeroShotMs": 6016,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "News",
+      "llmError": null,
+      "llmMs": 1433
+    },
+    {
+      "id": "r-nen-wiki-ru-istoriya",
+      "true_category": "Educational",
+      "lang": "ru",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.3560403287410736,
+        "margin": 0.2599150463938713,
+        "runnerUp": "Sports",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1205,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 390
+    },
+    {
+      "id": "r-nen-tagesschau",
+      "true_category": "News",
+      "lang": "de",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "News",
+        "score": 0.33134815096855164,
+        "margin": 0.11617638170719147,
+        "runnerUp": "Horror",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 4065,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "News",
+      "llmError": null,
+      "llmMs": 632
+    },
+    {
+      "id": "nen-wiki-es-medicina",
+      "true_category": "Health",
+      "lang": "es",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Health",
+        "score": 0.6523411870002747,
+        "margin": 0.37470364570617676,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 3154,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Health",
+      "llmError": null,
+      "llmMs": 523
+    },
+    {
+      "id": "nen-wiki-hi-bharat",
+      "true_category": "Educational",
+      "lang": "hi",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.30799344182014465,
+        "margin": 0.20743069797754288,
+        "runnerUp": "News",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 4689,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 446
+    },
+    {
+      "id": "nen-spiegel",
+      "true_category": "News",
+      "lang": "de",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "News",
+        "score": 0.6836794018745422,
+        "margin": 0.604887843132019,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1676,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "News",
+      "llmError": null,
+      "llmMs": 397
+    },
+    {
+      "id": "nen-lemonde",
+      "true_category": "News",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "News",
+        "score": 0.5858494639396667,
+        "margin": 0.48008670657873154,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1976,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "News",
+      "llmError": null,
+      "llmMs": 414
+    },
+    {
+      "id": "nen-lefigaro",
+      "true_category": "News",
+      "lang": "fr",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "News",
+        "score": 0.4872879385948181,
+        "margin": 0.3540348410606384,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2797,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "News",
+      "llmError": null,
+      "llmMs": 506
+    },
+    {
+      "id": "nen-corriere",
+      "true_category": "News",
+      "lang": "it-it",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "News",
+        "score": 0.4143061339855194,
+        "margin": 0.22851400077342987,
+        "runnerUp": "Sports",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2684,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "News",
+      "llmError": null,
+      "llmMs": 738
+    },
+    {
+      "id": "nen-wiki-ar-tarikh",
+      "true_category": "Educational",
+      "lang": "ar",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Mythological",
+        "score": 0.14497585594654083,
+        "margin": 0.01492542028427124,
+        "runnerUp": "Horror",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1226,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 432
+    },
+    {
+      "id": "nen-folha",
+      "true_category": "News",
+      "lang": "pt-br",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "News",
+        "score": 0.4940144419670105,
+        "margin": 0.4084029346704483,
+        "runnerUp": "Legal",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 3008,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "News",
+      "llmError": null,
+      "llmMs": 426
+    },
+    {
+      "id": "d-mix-nps-gettysburg",
+      "true_category": "Travel",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Travel",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Travel",
+        "score": 0.37161126732826233,
+        "margin": 0.0621354877948761,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1752,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 313
+    },
+    {
+      "id": "d-mix-harvard-whattoeat",
+      "true_category": "Health",
+      "lang": "en-us",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Health",
+        "score": 0.6008821725845337,
+        "margin": 0.37887872755527496,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1359,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Food",
+      "llmError": null,
+      "llmMs": 428
+    },
+    {
+      "id": "mix-wiki-crypto-regulation",
+      "true_category": "Finance",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Finance",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.6028023362159729,
+        "margin": 0.3862145394086838,
+        "runnerUp": "Finance",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1798,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 324
+    },
+    {
+      "id": "d-mix-atlas-articles",
+      "true_category": "Educational",
+      "lang": "en-us",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.3701516091823578,
+        "margin": 0.25895097106695175,
+        "runnerUp": "Horror",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1225,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "News",
+      "llmError": null,
+      "llmMs": 383
+    },
+    {
+      "id": "r-mix-wiki-esports",
+      "true_category": "Sports",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Sports",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Sports",
+        "score": 0.8915601372718811,
+        "margin": 0.8063958510756493,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1120,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Entertainment",
+      "llmError": null,
+      "llmMs": 633
+    },
+    {
+      "id": "r-mix-wiki-foodnetwork",
+      "true_category": "Food",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Food",
+        "score": 0.5221505165100098,
+        "margin": 0.08455899357795715,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2075,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Food",
+      "llmError": null,
+      "llmMs": 539
+    },
+    {
+      "id": "mix-wiki-hamilton",
+      "true_category": "Entertainment",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.7293826341629028,
+        "margin": 0.6490087062120438,
+        "runnerUp": "Entertainment",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1135,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Entertainment",
+      "llmError": null,
+      "llmMs": 504
+    },
+    {
+      "id": "mix-wiki-mediterranean-diet",
+      "true_category": "Food",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Food",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.6085407733917236,
+        "margin": 0.3586539179086685,
+        "runnerUp": "Food",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1561,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Health",
+      "llmError": null,
+      "llmMs": 409
+    },
+    {
+      "id": "r-mix-wiki-chernobyl",
+      "true_category": "News",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.4720575213432312,
+        "margin": 0.04648149013519287,
+        "runnerUp": "Horror",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2266,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 511
+    },
+    {
+      "id": "r-mix-wiki-titanic",
+      "true_category": "Entertainment",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.3538993000984192,
+        "margin": 0.19495554268360138,
+        "runnerUp": "Entertainment",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2499,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Entertainment",
+      "llmError": null,
+      "llmMs": 489
+    },
+    {
+      "id": "mix-wiki-jaws",
+      "true_category": "Entertainment",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.503433108329773,
+        "margin": 0.19999152421951294,
+        "runnerUp": "Horror",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1965,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Entertainment",
+      "llmError": null,
+      "llmMs": 411
+    },
+    {
+      "id": "mix-wiki-opioid-litigation",
+      "true_category": "Health",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Health",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.724843442440033,
+        "margin": 0.6020575910806656,
+        "runnerUp": "Health",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1129,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Health",
+      "llmError": null,
+      "llmMs": 563
+    },
+    {
+      "id": "mix-wiki-get-out",
+      "true_category": "Horror",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.6338571310043335,
+        "margin": 0.41707468032836914,
+        "runnerUp": "Horror",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1374,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Horror",
+      "llmError": null,
+      "llmMs": 604
+    },
+    {
+      "id": "mix-wiki-thanksgiving",
+      "true_category": "Entertainment",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.6475929617881775,
+        "margin": 0.5874063856899738,
+        "runnerUp": "Comedy",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1240,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 437
+    },
+    {
+      "id": "sen-beat-eatingdisorder",
+      "true_category": "Health",
+      "lang": "en-gb",
+      "isSensitive": true,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.6562922596931458,
+        "margin": 0.49789708852767944,
+        "runnerUp": "Health",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2201,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 427
+    },
+    {
+      "id": "s2-sane",
+      "true_category": "Health",
+      "lang": "en-gb",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.24191154539585114,
+        "margin": 0.091009721159935,
+        "runnerUp": "Health",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1600,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Legal",
+      "llmError": null,
+      "llmMs": 432
+    },
+    {
+      "id": "s2-helpguide-suicide",
+      "true_category": "Health",
+      "lang": "en-us",
+      "isSensitive": true,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Health",
+        "score": 0.884506344795227,
+        "margin": 0.8208994716405869,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1331,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Health",
+      "llmError": null,
+      "llmMs": 513
+    },
+    {
+      "id": "sen-988-lifeline",
+      "true_category": "Health",
+      "lang": "en-us",
+      "isSensitive": true,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Health",
+        "score": 0.25326019525527954,
+        "margin": 0.11812157928943634,
+        "runnerUp": "Emotional",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1666,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Emotional",
+      "llmError": null,
+      "llmMs": 460
+    },
+    {
+      "id": "s2-rainn",
+      "true_category": "Health",
+      "lang": "en-us",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.2824332118034363,
+        "margin": 0.16978292167186737,
+        "runnerUp": "Horror",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2189,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Entertainment",
+      "llmError": null,
+      "llmMs": 480
+    },
+    {
+      "id": "sen-nhs-ptsd",
+      "true_category": "Health",
+      "lang": "en",
+      "isSensitive": true,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Horror",
+        "score": 0.43178752064704895,
+        "margin": 0.12904641032218933,
+        "runnerUp": "Health",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 5126,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Health",
+      "llmError": null,
+      "llmMs": 504
+    },
+    {
+      "id": "nea-ncbi-eatingdisorder",
+      "true_category": "Health",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.6498342752456665,
+        "margin": 0.43578898906707764,
+        "runnerUp": "Health",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2909,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 475
+    },
+    {
+      "id": "d-nea-cdc-injury-stats",
+      "true_category": "Emotional",
+      "lang": "en-us",
+      "isSensitive": true,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.6448603272438049,
+        "margin": 0.46371378004550934,
+        "runnerUp": "Health",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1255,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Health",
+      "llmError": null,
+      "llmMs": 458
+    },
+    {
+      "id": "d-nea-nps-deathvalley",
+      "true_category": "Travel",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Travel",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Travel",
+        "score": 0.6602872610092163,
+        "margin": 0.488188773393631,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1223,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Travel",
+      "llmError": null,
+      "llmMs": 530
+    },
+    {
+      "id": "nea-wiki-palliative",
+      "true_category": "Health",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": "Health",
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Health",
+        "score": 0.806136429309845,
+        "margin": 0.6457126438617706,
+        "runnerUp": "Educational",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1555,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Health",
+      "llmError": null,
+      "llmMs": 478
+    },
+    {
+      "id": "r-nea-wiki-suicide-bridge-eng",
+      "true_category": "Travel",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.5896884799003601,
+        "margin": 0.4525694251060486,
+        "runnerUp": "Travel",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1193,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 447
+    },
+    {
+      "id": "nea-wiki-killer-whale",
+      "true_category": "Educational",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.5099708437919617,
+        "margin": 0.40035588294267654,
+        "runnerUp": "Horror",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1412,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 418
+    },
+    {
+      "id": "nea-wiki-suicide-squad",
+      "true_category": "Entertainment",
+      "lang": "en",
+      "isSensitive": true,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.6314104795455933,
+        "margin": 0.5690953843295574,
+        "runnerUp": "Horror",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2264,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Entertainment",
+      "llmError": null,
+      "llmMs": 416
+    },
+    {
+      "id": "nea-wiki-terminator",
+      "true_category": "Entertainment",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.5839967727661133,
+        "margin": 0.4691885858774185,
+        "runnerUp": "Horror",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1123,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Entertainment",
+      "llmError": null,
+      "llmMs": 548
+    },
+    {
+      "id": "r-nea-wiki-depression-econ",
+      "true_category": "Finance",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.6624184250831604,
+        "margin": 0.6182654425501823,
+        "runnerUp": "Finance",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1190,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Finance",
+      "llmError": null,
+      "llmMs": 430
+    },
+    {
+      "id": "nea-wiki-great-depression",
+      "true_category": "Finance",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.7199296355247498,
+        "margin": 0.6440045386552811,
+        "runnerUp": "Horror",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1484,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 589
+    },
+    {
+      "id": "byp-wikimedia-donate",
+      "true_category": "Finance",
+      "lang": "en-us",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.4715575575828552,
+        "margin": 0.4030238762497902,
+        "runnerUp": "Comedy",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1510,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 534
+    },
+    {
+      "id": "r-byp-mozilla-donate",
+      "true_category": "Legal",
+      "lang": "en-us",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.3660273253917694,
+        "margin": 0.27318812906742096,
+        "runnerUp": "Finance",
+        "model": "facebook/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1107,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": null,
+      "llm": "News",
+      "llmError": null,
+      "llmMs": 427
+    }
+  ],
+  "configs": [
+    {
+      "name": "A1 keyword-only",
+      "n": 208,
+      "accuracy": 0.197,
+      "macro_f1": 0.297,
+      "escalation": {
+        "keyword": 47,
+        "none": 161
+      },
+      "exposure_rate": 0,
+      "zero_shot_proxy_rate": 0,
+      "zero_shot_local_rate": 0,
+      "total_offdevice_rate": 0
+    },
+    {
+      "name": "A2 zero-shot-only (ungated)",
+      "n": 208,
+      "accuracy": 0.558,
+      "macro_f1": 0.574,
+      "escalation": {
+        "zero-shot": 196,
+        "none": 12
+      },
+      "exposure_rate": 0,
+      "zero_shot_proxy_rate": 0.942,
+      "zero_shot_local_rate": 0,
+      "total_offdevice_rate": 0.942
+    },
+    {
+      "name": "A3 LLM-only",
+      "n": 208,
+      "accuracy": 0.764,
+      "macro_f1": 0.731,
+      "escalation": {
+        "llm": 208
+      },
+      "exposure_rate": 1,
+      "zero_shot_proxy_rate": 0,
+      "zero_shot_local_rate": 0,
+      "total_offdevice_rate": 1
+    },
+    {
+      "name": "A4 keyword->LLM",
+      "n": 208,
+      "accuracy": 0.76,
+      "macro_f1": 0.705,
+      "escalation": {
+        "keyword": 42,
+        "llm": 158,
+        "skipped-sensitive": 8
+      },
+      "exposure_rate": 0.76,
+      "zero_shot_proxy_rate": 0,
+      "zero_shot_local_rate": 0,
+      "total_offdevice_rate": 0.76
+    },
+    {
+      "name": "A5 keyword->zero-shot->LLM",
+      "n": 208,
+      "accuracy": 0.683,
+      "macro_f1": 0.683,
+      "escalation": {
+        "keyword": 42,
+        "zero-shot": 108,
+        "llm": 50,
+        "skipped-sensitive": 8
+      },
+      "exposure_rate": 0.24,
+      "zero_shot_proxy_rate": 0.519,
+      "zero_shot_local_rate": 0,
+      "total_offdevice_rate": 0.76
+    }
+  ],
+  "a7_sweep": [
+    {
+      "minScore": 0.3,
+      "minMargin": 0.05,
+      "macro_f1": 0.65,
+      "exposure_rate": 0.115,
+      "zero_shot_proxy_rate": 0.644
+    },
+    {
+      "minScore": 0.3,
+      "minMargin": 0.1,
+      "macro_f1": 0.675,
+      "exposure_rate": 0.159,
+      "zero_shot_proxy_rate": 0.601
+    },
+    {
+      "minScore": 0.3,
+      "minMargin": 0.2,
+      "macro_f1": 0.69,
+      "exposure_rate": 0.212,
+      "zero_shot_proxy_rate": 0.548
+    },
+    {
+      "minScore": 0.45,
+      "minMargin": 0.05,
+      "macro_f1": 0.652,
+      "exposure_rate": 0.212,
+      "zero_shot_proxy_rate": 0.548
+    },
+    {
+      "minScore": 0.45,
+      "minMargin": 0.1,
+      "macro_f1": 0.683,
+      "exposure_rate": 0.24,
+      "zero_shot_proxy_rate": 0.519
+    },
+    {
+      "minScore": 0.45,
+      "minMargin": 0.2,
+      "macro_f1": 0.685,
+      "exposure_rate": 0.255,
+      "zero_shot_proxy_rate": 0.505
+    },
+    {
+      "minScore": 0.6,
+      "minMargin": 0.05,
+      "macro_f1": 0.68,
+      "exposure_rate": 0.38,
+      "zero_shot_proxy_rate": 0.38
+    },
+    {
+      "minScore": 0.6,
+      "minMargin": 0.1,
+      "macro_f1": 0.68,
+      "exposure_rate": 0.38,
+      "zero_shot_proxy_rate": 0.38
+    },
+    {
+      "minScore": 0.6,
+      "minMargin": 0.2,
+      "macro_f1": 0.68,
+      "exposure_rate": 0.38,
+      "zero_shot_proxy_rate": 0.38
+    },
+    {
+      "minScore": 0.75,
+      "minMargin": 0.05,
+      "macro_f1": 0.695,
+      "exposure_rate": 0.572,
+      "zero_shot_proxy_rate": 0.188
+    },
+    {
+      "minScore": 0.75,
+      "minMargin": 0.1,
+      "macro_f1": 0.695,
+      "exposure_rate": 0.572,
+      "zero_shot_proxy_rate": 0.188
+    },
+    {
+      "minScore": 0.75,
+      "minMargin": 0.2,
+      "macro_f1": 0.695,
+      "exposure_rate": 0.572,
+      "zero_shot_proxy_rate": 0.188
+    }
+  ]
+}
