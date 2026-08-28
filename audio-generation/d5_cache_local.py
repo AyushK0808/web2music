@@ -46,6 +46,18 @@ def _pooled_connection():
     conn = pool.getconn()
     try:
         yield conn
+    except Exception:
+        # Roll back before the connection goes back to the pool. Without
+        # this, a connection returned mid-transaction (any exception raised
+        # inside the `with` block above -- a bad query, a constraint
+        # violation, a dropped connection) sits in Postgres's aborted-
+        # transaction state. The pool doesn't know that; it just hands the
+        # same connection to the next caller, whose first query then fails
+        # with "current transaction is aborted, commands ignored until end
+        # of transaction block" -- a second, unrelated-looking failure
+        # caused entirely by the first one's cleanup being incomplete.
+        conn.rollback()
+        raise
     finally:
         # Always returned, even on error -- a leaked connection would
         # eventually exhaust maxconn and turn every request into a cache

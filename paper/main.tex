@@ -80,7 +80,7 @@ while bar-snapped loop-point detection and a 50 ms equal-power crossfade turn
 a one-shot generator's output into loopable material. We report a systems
 evaluation over 105 websites, 144 generation requests and 141 generated clips,
 an adversarial audit of the system's refusal behaviour, and a cost model
-showing the cascade classifies a thousand pages for 0.004 USD. We also report
+showing the cascade classifies a thousand pages for 0.0132 USD. We also report
 three negative results: the crossfade removes a median of only 0.93 dB of seam
 energy discontinuity, the delivered clip retains a median of 50.3 percent of
 its requested duration, and the sensitive-content detector misses 65.5 percent
@@ -555,8 +555,12 @@ matches the page.
 S1, the objective half of S3, the retrieval baseline and the restraint audit
 have been executed and are reported here. S4 and S5 require institutional
 ethics approval that has not been obtained, and no human-subjects data has been
-collected. S2 requires an annotated corpus that does not yet exist; what we
-report for it is explicitly preliminary and is labelled as such.
+collected. S2's tier-ablation table now rests on 254 curation-time-labelled
+pages rather than 18, but that label is still a single source rather than the
+three-annotator, agreement-checked one this paper otherwise requires, so what
+we report for it remains explicitly preliminary. The corpus itself has since
+been annotated by three independent annotators, and the resulting
+inter-annotator agreement is reported below.
 
 Every metric the evaluation may print is declared in a machine-readable
 registry with its definition, units, producing script and output field. Each
@@ -576,11 +580,68 @@ deliberately adversarial slices: 182 general, 15 vocabulary-mismatch pages
 whose words do not match their category, 15 non-English, 15 mixed-genre, 12
 sensitive, 15 sensitive near-miss pages that must \emph{not} trigger silence,
 and 6 bypass. No bypass violations and no duplicate content hashes were
-recorded. The corpus is not yet annotated.
+recorded. Coverage across the thirteen content categories is uneven by
+construction rather than a flat approximately 20 pages each: counts range from
+14 (Mythological) to 35 (Health), since curated availability differs by
+category and the original 600-page target (approximately 45 per category) was
+not reached. The corpus has since been annotated by three independent
+annotators; the resulting agreement is reported below.
 
 \textbf{Hardware.} All timings are from a single CPU laptop running Windows 11
 with the generation service in a local container alongside a PostgreSQL cache.
 No GPU configuration was measured.
+
+\subsection{Annotation agreement and human ceiling}
+\label{sec:res-agreement}
+
+Three independent annotators labelled all 255 captured pages for content
+category (13-way), mood (11-way, framed as a preference rather than a fact),
+and sensitivity (binary), without conferring, using a purpose-built annotation
+tool and analysed with a bootstrap Krippendorff's-alpha procedure (nominal
+$\alpha$, 95\% CI over 2000 resamples of units, and leave-one-annotator-out
+human ceiling). Table \ref{tab:agreement} reports the result for each label
+set.
+
+\begin{table}[t]
+\caption{Inter-annotator agreement, three annotators, 255 units.}
+\label{tab:agreement}
+\begin{center}
+\scriptsize
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Label} & \textbf{$\alpha$} & \textbf{95\% CI} & \textbf{Ceiling} & \textbf{Gate} \\
+\midrule
+Category  & 0.635 & [0.578, 0.689] & 0.621 & below 0.667 \\
+Mood      & 0.195 & [0.149, 0.238] & 0.174 & below 0.667 \\
+Sensitive & 0.419 & [0.301, 0.530] & 0.775 & below 0.667 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+
+All three label sets fall below the 0.667 minimum the plan sets for drawing
+conclusions, and none reach the 0.80 threshold for good agreement. Per that
+same policy, we report this as a finding rather than treat it as a defect to
+fix by re-annotating. Mood, at $\alpha=0.195$, is close to chance-level
+agreement, consistent with framing mood as a genuinely underdetermined
+preference rather than an objective fact, but it means no mood-classifier
+accuracy in this paper can be read against a meaningful ceiling. Category
+agreement (0.635) is closer to usable but still short of it.
+
+Sensitivity is the most consequential label for the system's abstention
+policy, and its two statistics diverge: $\alpha=0.419$ is below threshold,
+while the leave-one-out human ceiling is the highest of the three (0.775).
+This is consistent with the label's skew — 219 of 250 resolved units (87.6\%)
+are majority-labelled not-sensitive — since chance-corrected agreement
+statistics are depressed by a lopsided marginal distribution even when raw
+annotator agreement is substantial, precisely because chance agreement is
+already high under that skew. The two numbers should be read together rather
+than either alone: annotators mostly agree on individual pages, but that
+agreement is not distinguishable enough from chance under $\alpha$'s
+definition to clear the plan's own bar. Any classifier-accuracy claim drawn
+from this corpus, including the tier-ablation rebuild in Section
+\ref{sec:res-classification}, must be interpreted against these ceilings
+rather than against a naively perfect one.
 
 \subsection{Extraction cost}
 \label{sec:res-extraction}
@@ -729,10 +790,9 @@ clip duration, and Fig.~\ref{fig:f3} the request path under concurrency.
 \centerline{\includegraphics[width=0.98\textwidth]{figures/f1.pdf}}
 \caption{Server-side timeline: navigation to first sound to generated swap,
 with the five-second confidence window shaded as a design interval rather than
-a cost. Client-side extraction, classification and decode segments are absent
-because the end-to-end browser latency harness has not been run; the shape of
-the argument is unchanged, but navigation-to-audible is not yet measured end to
-end.}
+a cost. This figure still shows the server-side generation path only; the
+client-side extraction, decision and decode segments have since been measured
+separately (Section~\ref{sec:res-e2e-latency}) and are not yet overlaid here.}
 \label{fig:f1}
 \end{figure*}
 
@@ -818,19 +878,100 @@ for this system would therefore be actively misleading, attributing a design
 decision about stability to an implementation limitation about speed. We report
 the two separately and suggest that any always-on adaptive-media system do the
 same.
+\subsection{Client-side (in-browser) latency}
+\label{sec:res-e2e-latency}
 
+The server-side numbers above cover navigation to a running service; they say
+nothing about extraction, mood decision, or the swap itself inside the
+browser. An end-to-end harness drives the built extension with Playwright
+against eleven synthetic fixture pages, deliberately constructed to
+exercise specific code paths rather than sampled from the real web -- this is
+a different corpus from the 105-site extraction benchmark in
+Table~\ref{tab:extraction}, and the two should not be conflated. Feature D was
+stubbed at 139{,}894 ms, the mean of the three real cache-miss generation
+times in Table~\ref{tab:d-latency}, so the run isolates the client-side
+critical path from the generator itself. The classify-proxy was stubbed to
+force local tier-1 heuristics only; no real network escalation call was
+exercised. 54 of 55 page loads (11 sites $\times$ 5 repeats) reached audible
+playback; one, on the first site, produced no audio within the wait window at
+all -- distinct from a slow swap, since even the near-instant fallback never
+registered. We were not able to determine a cause and report $n=54$ rather
+than silently including it.
+
+\begin{table}[t]
+\caption{End-to-end client-side latency, $n=54$ page loads, nearest-rank
+percentiles.}
+\label{tab:e2e-latency}
+\begin{center}
+\scriptsize
+\begin{tabular}{p{3.3cm}rrr}
+\toprule
+\textbf{Stage} & \textbf{p50 (ms)} & \textbf{p95 (ms)} & \textbf{max (ms)} \\
+\midrule
+Nav $\to$ page data (Feature A + idle/debounce) & 856 & 1{,}217 & 1{,}272 \\
+\quad of which Feature A extraction itself & 464 & 833 & 865 \\
+Feature B decision, per call & 16 & 28 & 32 \\
+Feature D round trip (stubbed) & 139{,}920 & 139{,}933 & 139{,}951 \\
+Fetch + decode + crossfade start & 38 & 74 & 86 \\
+Nav $\to$ audible (wall clock, incl. window) & 6{,}859 & 11{,}279 & 11{,}291 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+
+Nav-to-audible tracks the confidence window and fallback path almost
+exactly, and is essentially unaffected by the 139.9 s stubbed generation
+delay -- direct, in-browser confirmation of the claim in
+Section~\ref{sec:res-latency}: the fallback-then-swap design hides the
+generator's latency from what a user actually hears, not just on the server's
+own clock but end to end in a real browser. Summing every stage in
+Table~\ref{tab:e2e-latency} gives 140.8 s of real work per page load; the
+user perceives 6.9 s of it. The fetch-decode-crossfade stage,
+measured here for the first time, adds a median of 38 ms once the swap
+arrives -- small against the confidence window, and not the bottleneck
+anywhere in this pipeline.
+
+One site, \texttt{neutral\_recycling\_notice}, is a reproducible outlier: all
+five repeats landed at 11.2--11.3 s against $\sim$6.8 s for every other site,
+which is why the p95 and max above are close to its value specifically rather
+than reflecting the typical page. This is deliberate in the fixture: the page
+is built so tier-1's colour and keyword heuristics match nothing, and it
+consistently required more extraction cycles before a mood committed (max 5
+vs.\ a median of 3 elsewhere). Ambiguous pages cost real, measurable latency
+in the browser, distinct from -- and additional to -- the classification
+cascade's escalation cost already quantified in Section~\ref{sec:res-cost}.
+
+Two limitations on this measurement. First, both Feature D and the
+classify-proxy were stubbed, so the 75.7 percent real-corpus escalation rate
+found in Section~\ref{sec:res-cost} is not reflected here at all; the true
+network cost of escalation on a real page remains unmeasured end to end.
+Second, the harness reuses one persistent browser context across every site
+and repeat, so the extension's service worker persists between navigations;
+a real generation response arriving later than its site's wait deadline
+could in principle be attributed to a subsequent site's telemetry window.
+We found no evidence of this in the data -- all 54 Feature D round-trip times
+cluster tightly around the configured 139.9 s delay, with no anomalously
+short values that contamination would produce -- but the harness does not
+positively rule it out, and a request-scoped identifier would close the gap
+for future runs.
 \subsection{Cost and cache behaviour}
 \label{sec:res-cost}
 
-Cost accounting was computed over per-page token and byte counts from the
-preliminary corpus, but the unit costs are properties of the models and their
-pricing rather than of the corpus, so the per-page figures scale with whatever
-escalation rate a larger corpus produces. At the observed escalation rate the
-cascade sends a mean of 73.3 LLM tokens per page, 330 on the pages that
-actually escalate, performs thirteen NLI forward passes per zero-shot
-invocation and 2.89 per page on average, and transmits 501 bytes per page. At
-the tier-2 provider's published price this is 0.004 USD per thousand pages,
-rising to 0.018 USD if every page escalated.
+Cost accounting was recomputed over the full S2 corpus (255 of 260 pages; the
+two failed captures and three deliberately bypassed internal pages have no
+extracted content and are excluded rather than imputed), superseding the
+earlier 18-page smoke-set figures. Unit costs are properties of the models and
+their pricing rather than of the corpus, so the per-page figures scale with
+escalation rate -- and the real corpus escalates far more than the smoke set
+implied: 75.7 percent of pages reach the keyword tier's ceiling, against 22.2
+percent on the 18-page subset that Table \ref{tab:tiers} still reports pending
+the 600-page annotation (D-01/D-02). At the observed rate the cascade sends a
+mean of 241.5 LLM tokens per page, 319.1 on the pages that actually escalate,
+performs thirteen NLI forward passes per zero-shot invocation and 9.84 per
+page on average, and transmits 1642 bytes per page (979 from the LLM tier, 663
+from the zero-shot proxy). At the tier-2 provider's published price
+(re-verified 2026-08-17, unchanged) this is 0.0132 USD per thousand pages,
+rising to 0.0174 USD if every page escalated. 
 
 That figure changes what the cascade contribution claims. Even the pessimistic
 number is negligible, so nobody needs a cascade here to save money. The cascade
@@ -946,6 +1087,30 @@ user. Because the middle tier is an entailment model rather than a generative
 one, it also cannot hallucinate a category outside its candidate set, which is
 a robustness property and not merely a cost property. A generative middle tier
 would not have it.
+
+\textbf{Ground-truth sensitivity.} Table \ref{tab:tiers} scores against
+curation-time, single-source category labels for all 254 pages. Three
+independent annotators have since labelled this same corpus; their
+majority vote reaches only $\alpha=0.635$ for category -- itself short of the
+0.667 threshold this paper treats as usable -- which raises the question of
+how much the accuracy figures above depend on whose labelling is scored
+against, not only on the classifier. Re-scoring A1, A3 and A4 against the 208
+pages with a resolved three-annotator majority category (47 of the 255
+captured pages have no such majority and are excluded rather than guessed at)
+gives keyword-only
+.197/.297 accuracy/macro-F1, materially unchanged; LLM-only .774/.739, up from
+.685/.678; and keyword-to-LLM .764/.712, up from .669/.677. A5 and the A7
+sweep are not re-scored here, since the zero-shot proxy this pass used was not
+available in the configuration this re-scoring ran under, so this comparison
+speaks to labelling, not to the disclosure argument above. Accuracy rises by
+roughly 9 points for both configurations that reach the LLM tier when scored
+against the stronger label, with a smaller but consistent macro-F1 gain. That
+the correction runs the same direction and a similar size across every tier
+re-scored is more consistent with curation-time labelling noise than with any
+one tier being specifically miscalibrated, and it argues for reading Table
+\ref{tab:tiers} as a conservative floor rather than a precise estimate until
+the full cascade, including the zero-shot tier, is re-run against the
+majority-vote labels.
 
 \subsection{Loop quality}
 \label{sec:res-loop}
@@ -1133,8 +1298,8 @@ domestic violence without ever naming the thing directly. Four are non-English,
 missed entirely by the same language gate that skips tier 1. The remaining four
 are a failure mode the smaller seed slice could not surface at all: genuinely
 sensitive pages that mention exactly one term from the ambiguous list, one
-short of the two-distinct-term threshold \texttt{checkSensitiveContent}
-requires before it will act on ambiguous vocabulary alone. The false positives
+short of the two-distinct-term threshold the detector requires before it will
+act on ambiguous vocabulary alone. The false positives
 did not grow with the slice: the same three near-misses the original 20-page
 seed found, a page on grief-counselling degree programmes, a psychology
 textbook, and an engineering article using the word ``trauma'', are still the
@@ -1151,12 +1316,30 @@ remedy is a classifier rather than more keywords. The entailment tier already
 loaded for category classification can score a sensitivity hypothesis at near
 zero marginal cost.
 
+The fix has since been built: \texttt{resolveSensitivity} cascades the
+existing keyword check into an entailment call framed as crisis-vs-reference
+sides, demoting the eating-disorder terms specifically (the source of two of
+the three false positives above) to a class the entailment tier can override,
+while never demoting the remaining hard-severe terms regardless of what the
+entailment side returns. Given an entailment backend that reads that framing
+correctly, this resolves every documented case: run against a scripted ideal
+backend, confident and correct on every page, the cascade produces the right
+verdict on all forty-seven pages of the slice above, zero false negatives and
+zero false positives, including the specific euphemism, non-English and
+single-ambiguous-term cases the term list could not reach and the three
+psychology-textbook-style near-misses it could not avoid. This is a design
+verification, not a field measurement: it shows the cascade's decision rule is
+correct when its input is, not what accuracy a real entailment call achieves
+against these forty-seven pages. That live number -- \texttt{t5\_audit.mjs
+--with-zero-shot} against a running classification service -- has not yet
+been run.
+
 More generally, this is the substance of gap G1/G5. For an always-on generative
 system, the quality of the abstention policy is as much part of the design as
 the quality of the generation, and unlike aesthetic quality it is directly
 measurable. Measuring it is what produced the most uncomfortable result in this
 paper: every mechanism passes its test, while the predicate feeding the most
-important mechanism fails on nearly half of an adversarial slice. That gap
+important mechanism fails on nearly two-thirds of an adversarial slice. That gap
 between ``the architecture is correct'' and ``the policy is delivered'' is
 invisible to any evaluation that tests only the mechanism.
 
@@ -1210,7 +1393,7 @@ We presented Web2Music, a browser extension that conditions generative ambient
 music on the page being read, and reported a systems evaluation of it: a
 four-signal page descriptor costing 86 ms at the median across 105 real sites;
 a three-tier abstaining classifier that turns confidence thresholds into a
-disclosure control and classifies a thousand pages for less than half a cent; a
+disclosure control and classifies a thousand pages for about 1.3 cents; a
 fallback-then-swap playback design that hides a 139 s generator behind a 7 ms
 placeholder; and loop synthesis that makes a one-shot generator's output repeat
 without a container gap.
@@ -1221,8 +1404,9 @@ discontinuity and worsens the measured seam on 41 percent of clips. Half the
 generated audio is discarded to find a loop point, so a 28 s request yields
 about 14 s of delivered material. And the sensitive-content detector, whose
 refusal mechanism is architecturally correct and fully covered by passing
-tests, misses 45 percent of an adversarial crisis slice because its predicate
-is a keyword list rather than a classifier.
+tests, misses 65.5 percent of an adversarial crisis slice because its
+predicate is a keyword list rather than a classifier -- a fix has since been
+designed and verified correct in principle, but not yet measured live.
 
 The claim that page-conditioned music is perceived as fitting the page better
 than page-agnostic music remains untested. The study that would test it,
@@ -1253,11 +1437,16 @@ Fig.~\ref{fig:f5} covers a full twelve-cell grid rather than none. What is
 still preliminary is narrower than before: the ground-truth label is a
 single, curation-time source, not the three-annotator, agreement-checked
 label \S\ref{sec:limitations} otherwise requires, so accuracy and macro-F1
-specifically should still be read as indicative rather than final. Exposure,
-total off-device rate, and the sweep's shape do not depend on that label and
+specifically should still be read as indicative rather than final. The
+ground-truth-sensitivity re-scoring in \S\ref{sec:res-classification} confirms
+this is not a hypothetical concern: against the three-annotator majority
+label, LLM-involving accuracy rises by roughly 9 points over the single-source
+figures in Table \ref{tab:tiers}, though that re-scoring itself omits the
+zero-shot tier and so cannot yet replace the table above. Exposure, total
+off-device rate, and the sweep's shape do not depend on the category label and
 are not preliminary in this sense. Separately, A6/A6b (the local zero-shot
 backend, the one configuration that could reduce total disclosure rather than
-redistribute it) has not been run at this scale, which is now the more
+redistribute it) has not been run at this scale, which remains the more
 consequential of the two gaps.
 
 \textbf{English-only.} Tier 1 is skipped by construction on non-English pages,
@@ -1306,7 +1495,10 @@ explicit user action; and crisis content produces silence rather than music. We
 regard the 65.5 percent false-negative rate on that last policy, measured now
 on a slice more than double the size that first surfaced it, as a defect to be
 fixed before any deployment to participants, not a limitation to be noted in
-passing. Separately, uninstall rate is not measurable in this build, because
+passing -- a fix has since been designed and verified correct in principle
+(\S\ref{sec:res-audit}), but not yet measured against a live classification
+service, so the defect stands until that number exists. Separately,
+uninstall rate is not measurable in this build, because
 the browser deletes extension-local storage on uninstall and the only surviving
 hook would require a network call that the local-only guarantee forbids;
 voluntary toggle-off is a proxy and not a substitute.
@@ -1343,9 +1535,13 @@ point exists at all, not just how precisely the current one is measured.
 been expanded from twenty to forty-seven pages and rebalanced across
 euphemism, non-English, outside-vocabulary and single-ambiguous-term cases
 (\S\ref{sec:res-audit}); the false-negative rate went up, not down, once the
-easier categories stopped diluting it. What remains is the fix: a model-based
-detector, plausibly the entailment tier already resident in the extension,
-scoring sensitivity hypotheses directly against this same slice.
+easier categories stopped diluting it. The fix itself has also been built and
+verified correct against an idealised entailment backend, zero false
+negatives and zero false positives on the full slice (\S\ref{sec:res-audit}).
+What remains is the live number: running \texttt{t5\_audit.mjs
+--with-zero-shot} against a real classification service, since a real
+entailment call will not be perfectly confident and correct the way the
+design verification's scripted backend was.
 
 \textbf{Improve loop synthesis.} The crossfade-window sweep and seam-minimising
 loop-point selection proposed here have now been run (\S\ref{sec:res-loop},
@@ -1356,30 +1552,41 @@ is a clip-length study asking whether a shorter clip that loops sooner beats a
 longer one that arrives later. The larger opportunity is conditioning the
 generator to produce loop-closed material directly.
 
-\textbf{Close the remaining measurement gaps.} The cold-cache re-run, a
-batching measurement, and a GPU configuration have now been run
-(\S\ref{sec:res-latency}), on Apple Silicon rather than the original CPU
-laptop; what remains here is a same-machine CPU-vs-GPU comparison rather than
-two different laptops. Still open: an end-to-end in-browser latency run to
-supply the client-side segments of Fig.~\ref{fig:f1}. The extraction re-run
-with the real in-browser embedding has been run (\S\ref{sec:res-extraction});
-what it found -- roughly 30 percent of real sites' CSP blocks the Hugging
-Face fetch outright, and per-page latency on the rest is dominated by a
-cross-origin cache-cold artefact of this benchmark's own methodology rather
-than by inference -- is itself now the open item: a same-origin measurement
-(loading the model from the extension's own persistent origin, the way
-production actually does it) to get the number this run's methodology
-couldn't. The 2 s
-cache-check anomaly (\S\ref{sec:res-latency}) is diagnosed and fixed; what
-remains is a same-hardware re-run to replace Table \ref{tab:d-stages}'s
-figure with a number from the same CPU laptop the rest of the table reports
-from.
+\textbf{Close the remaining measurement gaps.} All four items previously
+listed here have now been run, each with its own caveat. The end-to-end
+in-browser latency run is done (\S\ref{sec:res-e2e-latency}, Table
+\ref{tab:e2e-latency}); its extraction/decision/decode segments still need to
+be plotted onto Fig.~\ref{fig:f1} itself; that overlay is the remaining work,
+not the measurement. The cold-cache re-run, a batching measurement, and a GPU
+configuration have been run (\S\ref{sec:res-latency}), on Apple Silicon rather
+than the original CPU laptop; what remains there is a same-machine
+CPU-vs-GPU comparison rather than two different laptops. The extraction
+re-run with the real in-browser embedding has been run
+(\S\ref{sec:res-extraction}); what it found -- roughly 30 percent of real
+sites' CSP blocks the Hugging Face fetch outright, and per-page latency on the
+rest is dominated by a cross-origin cache-cold artefact of this benchmark's
+own methodology rather than by inference -- is itself now the open item: a
+same-origin measurement (loading the model from the extension's own
+persistent origin, the way production actually does it) to get the number
+this run's methodology couldn't. The 2 s cache-check anomaly
+(\S\ref{sec:res-latency}) is diagnosed and fixed; what remains is a
+same-hardware re-run to replace Table \ref{tab:d-stages}'s figure with a
+number from the same CPU laptop the rest of the table reports from.
 
 \textbf{Ablate the signals.} The descriptor claims four signals. A
 per-signal ablation, removing colour, behaviour and the embedding in turn,
-would establish whether the multimodal input earns its complexity. The
-instrumentation accepts partial descriptors already, so this is a matter of
-running it.
+establishes whether the multimodal input earns its complexity. Run offline
+against the full 255-page corpus, the predicted category never changes under
+any of the four conditions, so category is decided by text alone regardless
+of what else is present. Mood is more textured: removing the behaviour
+profile or the embedding changes nothing, removing colour shifts mood on 7.5
+percent of pages, and stripping down to text alone shifts it on 10.2 percent,
+meaning colour accounts for most of what little the non-text signals
+contribute and behaviour and the embedding currently contribute nothing
+measurable. Offline conditions decide every page by keyword or default
+rather than by either model tier, so this bounds what colour can be
+contributing rather than measuring its contribution under the shipped
+cascade, and that live-tier run has not yet been done.
 
 \textbf{Extend beyond English and beyond the page.} The language gate is the
 common cause of two separate failures and deserves a dedicated treatment.
@@ -1406,7 +1613,7 @@ recur unchanged.
 
 \bibitem{audiocraft} Meta AI, ``AudioCraft: A library for audio processing and generation with deep learning.'' [Online]. Available: \url{https://github.com/facebookresearch/audiocraft}
 
-\bibitem{affectmachine} ``AffectMachine-Pop: A controllable expert system for real-time pop music generation,'' arXiv:2506.08200, 2025.
+\bibitem{affectmachine} K. R. Agres, A. Dash, P. Chua, and S. K. Ehrlich, ``AffectMachine-Pop: A controllable expert system for real-time pop music generation,'' arXiv:2506.08200, 2025.
 
 \bibitem{musicsense} R. Cai, C. Zhang, C. Wang, L. Zhang, and W.-Y. Ma, ``MusicSense: Contextual music recommendation using emotional allocation modeling,'' in \emph{Proc. ACM Int. Conf. Multimedia}, 2007, pp. 553--556.
 
@@ -1420,7 +1627,7 @@ recur unchanged.
 
 \bibitem{hu2007} X. Hu and J. S. Downie, ``Exploring mood metadata: Relationships with genre, artist and usage metadata,'' in \emph{Proc. Int. Society for Music Information Retrieval Conf.}, 2007, pp. 67--72.
 
-\bibitem{multimodalmood} ``Multi-modal song mood detection with deep learning,'' Proc. Workshop on Computer Simulation of Musical Creativity, 2020.
+\bibitem{multimodalmood} K. Pyrovolakis, P. Tzouveli, and G. Stamou, ``Multi-modal song mood detection with deep learning,'' \emph{Sensors}, vol. 22, no. 3, p. 1065, 2022.
 
 \bibitem{zeroshotnli} W. Yin, J. Hay, and D. Roth, ``Benchmarking zero-shot text classification: Datasets, evaluation and entailment approach,'' in \emph{Proc. EMNLP-IJCNLP}, 2019, pp. 3914--3923.
 
@@ -1442,13 +1649,13 @@ recur unchanged.
 
 \bibitem{violajones} P. Viola and M. Jones, ``Rapid object detection using a boosted cascade of simple features,'' in \emph{Proc. IEEE Conf. Computer Vision and Pattern Recognition}, 2001, pp. 511--518.
 
-\bibitem{boilerplate} C. Kohlsch\"utter, P. Fankhauser, and W. Nejdl, ``Boilerplate detection using shallow text features,'' in \emph{Proc. ACM Int. Conf. Web Search and Data Mining}, 2010, pp. 441--450.
+\bibitem{boilerplate} C. Kohlsch\"utter, P. Fankhauser, and W. Nejdl, ``Boilerplate detection using shallow text features,'' in \emph{Proc. ACM Int. Conf. Web Search and Data Mining}, 2010, pp. 441--450, doi: 10.1145/1718487.1718542.
 
 \bibitem{arapakis} I. Arapakis and L. A. Leiva, ``Predicting user engagement with direct displays using mouse cursor information,'' in \emph{Proc. ACM SIGIR}, 2016, pp. 599--608.
 
 \bibitem{cursorcikm} I. Arapakis, M. Lalmas, and G. Valkanas, ``Understanding within-content engagement through pattern analysis of mouse gestures,'' in \emph{Proc. ACM Int. Conf. Information and Knowledge Management}, 2014, pp. 1439--1448.
 
-\bibitem{dominantcolour} ``Dominant colour extraction from web content,'' \emph{IEEE Xplore}, document 9869653, 2022.
+\bibitem{dominantcolour} Y. Chang and N. Mukai, ``Color feature based dominant color extraction,'' \emph{IEEE Access}, vol. 10, pp. 93055--93061, 2022.
 
 \bibitem{flesch} R. Flesch, ``A new readability yardstick,'' \emph{Journal of Applied Psychology}, vol. 32, no. 3, pp. 221--233, 1948.
 
@@ -1458,7 +1665,7 @@ recur unchanged.
 
 \bibitem{librosa} B. McFee, C. Raffel, D. Liang, D. P. W. Ellis, M. McVicar, E. Battenberg, and O. Nieto, ``librosa: Audio and music signal analysis in Python,'' in \emph{Proc. Python in Science Conf.}, 2015, pp. 18--25.
 
-\bibitem{ebu128} European Broadcasting Union, ``Loudness normalisation and permitted maximum level of audio signals,'' EBU Recommendation R 128, 2020.
+\bibitem{ebu128} European Broadcasting Union, ``Loudness normalisation and permitted maximum level of audio signals,'' EBU Recommendation R 128, version 5.0, 2023.
 
 \bibitem{opus} J.-M. Valin, K. Vos, and T. Terriberry, ``Definition of the Opus audio codec,'' IETF RFC 6716, 2012.
 
