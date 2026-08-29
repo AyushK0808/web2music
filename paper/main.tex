@@ -153,9 +153,11 @@ interaction has to be designed so that the gap is not visible.
 \begin{itemize}
 \item A four-signal page descriptor and its measured cost, characterised over
 105 real websites in an instrumented Chromium with per-stage latency and forced
-layout counts. An ablation against the full corpus finds three of the four
-signals do not earn their cost: category is decided by text alone, and
-behaviour and the embedding move mood on zero pages.
+layout counts. An ablation against the full corpus finds category is decided
+by text alone regardless of what else is present, behaviour and the
+embedding move mood on zero pages, and colour moves it weakly, on 7.5 percent
+of pages: two of the four signals earn nothing measurable, and a third earns
+little.
 
 \item An abstaining three-tier classifier that functions as a privacy dial: a
 zero-shot NLI tier between a free keyword heuristic and a remote LLM declines
@@ -205,9 +207,13 @@ such as AudioLDM \cite{audioldm} and timing-conditioned latent diffusion
 \cite{stableaudio} have since improved both quality and speed. AudioGen
 \cite{audiogen} applies the same conditioning idea to environmental audio.
 AudioCraft \cite{audiocraft} provides the reference implementation for MusicGen
-and EnCodec. We use the smallest MusicGen variant because it is the only one in
-the family that produces a 28 s clip on a consumer CPU in a time that a
-fallback path can plausibly hide.
+and EnCodec. More recently, SongGen \cite{songgen} extends the same
+single-stage autoregressive approach to full song generation with lyrics and
+vocals produced in one pass, evidence that this model family is still the
+active frontier rather than a closed 2023 snapshot. We use the smallest
+MusicGen variant because it is the only one in the family that produces a
+28 s clip on a consumer CPU in a time that a fallback path can plausibly
+hide.
 
 \subsection{Affective and context-aware music selection}
 
@@ -590,7 +596,7 @@ build driver rejects any generator naming an undeclared metric and reports
 generators whose input data is absent as blocked, rather than allowing them to
 produce an empty or imputed plot. At the time of writing the driver builds
 seven of thirteen declared artefacts and blocks six. This apparatus is worth
-describing because it is the mechanism that surfaced two of the three negative
+describing because it is the mechanism that surfaced two of the four negative
 results below: a generator refused to print a number its input did not support.
 
 \textbf{Corpus.} The classification corpus is stored as extracted page
@@ -654,34 +660,65 @@ agreement (0.635) is closer to usable but still short of it.
 
 To ask whether that disagreement is a fine-grained labelling problem rather
 than a disagreement about the underlying affect, we collapsed the eleven mood
-labels onto Russell's valence-arousal circumplex using the NRC Valence-Arousal-
-Dominance lexicon's published word-level norms~\cite{nrcvad} rather than any
-encoding internal to this system, so the test is of Russell's geometry and not
-of our own taxonomy's. Each axis is split at the lexicon's own 0--1 scale
-midpoint, 0.5, not a median fit to these eleven words specifically. One mood
-word, ``focused,'' has no direct entry; we substitute its lemma, ``focus.''
-The resulting quadrants are excited (joyful, energetic, curious, uplifting),
-sad (sad, dark, nostalgic, tense, neutral), and calm (calm, focused); no mood
-word in the taxonomy falls in the fourth quadrant, tense (negative valence,
-high arousal), at all, even though the annotation scheme has a mood literally
-named ``tense'' -- the published norms rate it as low-arousal, which is itself
-a finding about a coverage gap in an eleven-word taxonomy built without
-reference to a circumplex. Recomputing $\alpha$ on the same three annotators'
-raw labels under this mapping gives $\alpha=0.300$, 95\% CI [0.231, 0.365] --
-not the eleven-way figure of 0.195 recomputed as a sanity check on the same
-data, which returns exactly 0.195, confirming the collapse itself is what
-moves the number. Coarsening very nearly doubles agreement, consistent with
-annotators agreeing more about a page's broad affective register than about
-which of eleven specific words best names it. But 0.300 is still well short of
-the 0.667 bar this paper's own policy requires for a conclusion, so the
-recovery is real and directionally consistent with the hypothesis, not a
-rescue of the eleven-way task. Read together with the empty tense quadrant,
-the more defensible conclusion has two parts: the eleven-word taxonomy is
-over-specified relative to what annotators can agree on, and it is also
-missing coverage of at least one region Russell's circumplex predicts,
-so widening it is not simply a matter of merging existing words into fewer
-buckets. Mood should continue to be reported as a stylistic preference the
-system offers, not a label with a defensible ground truth at either
+labels onto Russell's valence-arousal circumplex two different ways and
+recomputed $\alpha$ on the same three annotators' raw labels under each. We
+name the four quadrants by axis sign throughout -- positive-valence/
+high-arousal, negative-valence/high-arousal, negative-valence/low-arousal,
+positive-valence/low-arousal -- rather than by an exemplar mood word, because
+an exemplar can end up outside its own quadrant and read as an error rather
+than as the finding it is.
+
+The first mapping uses this system's own per-mood valence hint and BPM-range
+midpoint, the same encoding used elsewhere in the pipeline, with a median
+split. It gives $\alpha=0.121$, 95\% CI [0.057, 0.186] -- lower than the
+eleven-way figure, not higher -- under heavily skewed membership: the
+positive-valence/high-arousal quadrant alone accounts for 466 of 697
+annotator judgements (66.9 percent).
+
+Because that mapping tests this system's own taxonomy's geometry rather than
+Russell's, we repeated the collapse using the NRC Valence-Arousal-Dominance
+lexicon's published word-level norms~\cite{nrcvad}, splitting each axis at
+the lexicon's own 0--1 scale midpoint, 0.5, not a median fit to these eleven
+words specifically. (One mood word, ``focused,'' has no direct entry; we
+substitute its lemma, ``focus.'') Under these norms, no mood word falls in
+the negative-valence/high-arousal quadrant at all, including the word
+``tense'' itself, which the norms rate as low-arousal -- a coverage gap in an
+eleven-word taxonomy built without reference to a circumplex, not an
+artefact of the mapping. Membership across the three occupied quadrants is
+289, 222 and 186 of 697 judgements: less skewed than the first mapping, but
+the largest quadrant still holds 41.5 percent. This mapping gives
+$\alpha=0.300$, 95\% CI [0.231, 0.365].
+
+As a sanity check on the recomputation itself, we re-ran the identical
+procedure on the original eleven-way labels, with no quadrant collapse. It
+returns exactly 0.195, matching the raw figure reported above. This confirms
+the collapse step, not a bug in the recomputation, is what moves the number
+under either mapping.
+
+The two mappings disagree about which way coarsening moves agreement: the
+system's own geometry makes it worse, published norms make it nearly double.
+Both start from the same three annotators' raw labels; only the placement of
+eleven words on two axes differs. That the answer flips with the mapping is
+itself informative, not a nuisance to resolve before reporting a number -- it
+means quadrant-level agreement for this taxonomy is sensitive to exactly
+where the words sit, a second and independent argument that the affective
+target is underdetermined, on top of whichever $\alpha$ is closer to correct.
+A boundary check on the NRC-VAD placements sharpens this: five of the eleven
+words -- nostalgic, curious, tense, uplifting and neutral -- sit within 0.1
+of a 0.5 split on at least one axis, so nearly half the taxonomy's quadrant
+memberships are close calls rather than clear regions, and a different norm
+source could plausibly move several of them to a different quadrant.
+
+Read together, the more defensible conclusion has three parts. The
+eleven-word taxonomy is over-specified relative to what annotators agree on
+at the fine grain. It is also missing coverage of at least one region
+Russell's circumplex predicts, a gap the NRC mapping surfaces and the
+system's own mapping does not. And the coarse-grained agreement figure itself
+depends on which valence-arousal source supplies the collapse, so neither
+0.121 nor 0.300 should be read as \emph{the} answer to how well quadrant-level
+affect is agreed upon -- only as two bounds on a target that moves with the
+measurement. Mood should continue to be reported as a stylistic preference
+the system offers, not a label with a defensible ground truth at any
 resolution tested here.
 
 Sensitivity is the most consequential label for the system's abstention
@@ -994,12 +1031,14 @@ The 260-page S2 corpus (\S\ref{sec:results}) has now been run through the full
 tier ablation and the A7 threshold sweep end to end, in place of the 18-page
 single-annotator subset used in earlier drafts of this section. Six bypass
 pages (donation pages, \texttt{chrome://} settings pages) have no content
-category and are excluded from scoring; the 254 remaining pages are still
-labelled by a single, curation-time source rather than the three independent
-annotators \S\ref{sec:limitations} commits to before a final accuracy figure
-is reported, so accuracy and macro-F1 below remain preliminary in that
-specific sense. Escalation counts and exposure, by contrast, do not depend on
-that label at all and are not preliminary.
+category and are excluded from scoring; the 254 remaining pages are labelled
+by a single, curation-time source. Table \ref{tab:tiers} below reports
+accuracy and macro-F1 against that single-source label. The corrected scoring
+against the three-annotator majority label \S\ref{sec:limitations} commits to
+follows later in this section, once the single-source figures are on the
+table for comparison. Escalation counts and exposure do not depend on the
+category label at all and are unaffected by which label the table below
+uses.
 
 \begin{table}[t]
 \caption{Tier configurations over the full 260-page S2 corpus (254 scored).
@@ -1026,11 +1065,12 @@ Two things follow from a real sample that a preliminary 18-page one could not
 show. First, the direction reported earlier holds under the single-source
 label this table uses: the full cascade (A5) trails the keyword-to-LLM design
 it replaces (A4) by 4.7 points of accuracy and 2.1 of macro-F1. Re-scored
-against the stronger, three-annotator label later in this section, that gap
-widens to 7.7 points of accuracy and 2.2 of macro-F1, which is the paper's
-settled estimate of the cascade's accuracy cost, not the figure above. Second,
-and this changes what the escalation counts alone suggest, is the shape of
-what A5 actually buys.
+against the stronger, three-annotator label later in this section, that point
+estimate widens to 7.7 points, with a 95\% paired-bootstrap interval reported
+below wide enough to matter; it should replace the figure above as the
+cascade's accuracy cost, but as an estimate with real uncertainty, not a
+settled number. Second, and this changes what the escalation counts alone
+suggest, is the shape of what A5 actually buys.
 Read narrowly, A5's LLM-only exposure (.250) looks like a large reduction from
 A4's .762. But the zero-shot tier evaluated here uses the hosted proxy
 backend, not the local ONNX export, so it is itself an off-device call: every
@@ -1101,26 +1141,32 @@ against, not only on the classifier. Re-scoring every configuration, including
 A5 and the twelve-cell A7 sweep, against the 208 pages with a resolved
 three-annotator majority category (47 of the 255 captured pages have no such
 majority and are excluded rather than guessed at) gives keyword-only
-.197/.297 accuracy/macro-F1, materially unchanged; LLM-only .764/.731, up from
-.685/.678; keyword-to-LLM .760/.705, up from .669/.677; and the full cascade
-(A5) .683/.683, up from .622/.656. Accuracy rises by roughly 8--9 points for
-every configuration that reaches the LLM tier when scored against the
-stronger label, with a smaller but consistent macro-F1 gain. That the
-correction runs the same direction and a similar size across every tier is
-more consistent with curation-time labelling noise than with any one tier
-being specifically miscalibrated, and it argues for reading Table
-\ref{tab:tiers} as a conservative floor on accuracy rather than a precise
-estimate. Under this corrected label, A4 moves further than A5 does, so the
-full cascade trails the keyword-to-LLM design by 7.7 points of accuracy and
-2.2 of macro-F1 -- wider than the 4.7-point gap Table \ref{tab:tiers} reports,
-not narrower. This is the paper's settled accuracy cost of the cascade. The
-re-scored A7 sweep confirms the disclosure finding above is not an artefact
-of the single-source label: macro-F1 ranges from .650 to .695 across the
-twelve cells, LLM-only exposure ranges from .115 to .572, and total
-off-device rate holds at .76 throughout, reproducing the pattern in
-Fig.~\ref{fig:f5} exactly under the stronger label. Table \ref{tab:tiers}
-underestimates accuracy at every LLM-involving tier by a consistent margin,
-but it gets the disclosure story right.
+.197/.297 accuracy/macro-F1, materially unchanged; LLM-only .764/.731, up 7.9
+points from .685/.678; keyword-to-LLM .760/.705, up 9.1 points from
+.669/.677; and the full cascade (A5) .683/.683, up only 6.1 points from
+.622/.656. The correction moves every LLM-involving tier in the same
+direction, which argues for curation-time labelling noise over one tier being
+specifically miscalibrated. It does not move them by the same amount, though:
+A5 gains distinctly less than A3 or A4 do, and that differential, not the
+noise itself, is what widens the accuracy gap this section reports rather
+than narrowing it. Under the corrected label the full cascade trails the
+keyword-to-LLM design by 7.7 points of accuracy and 2.2 of macro-F1, wider
+than Table \ref{tab:tiers}'s 4.7-point figure precisely because A4 gained
+more from the correction than A5 did. A paired bootstrap over the 208
+per-page correctness vectors (10{,}000 resamples) puts that 7.7-point gap at
+a 95\% interval of [2.9, 12.5] points. McNemar's test on the same pairing --
+23 pages A4 gets right that A5 misses, against 7 where the reverse holds --
+gives $\chi^2(1)=7.50$, $p<0.01$. The gap is real and asymmetric in the
+predicted direction, but the interval is wide enough that a different
+208-page draw could move the point estimate meaningfully; it is reported here
+as an estimate with uncertainty attached, not a settled number. The re-scored
+A7 sweep confirms the disclosure finding above is not an artefact of the
+single-source label: macro-F1 ranges from .650 to .695 across the twelve
+cells, LLM-only exposure ranges from .115 to .572, and total off-device rate
+holds at .76 throughout, reproducing the pattern in Fig.~\ref{fig:f5} exactly
+under the stronger label. Table \ref{tab:tiers} underestimates accuracy at
+every LLM-involving tier, understates the cascade's specific accuracy cost,
+and gets the disclosure story right regardless.
 
 \subsection{Loop quality}
 \label{sec:res-loop}
@@ -1470,8 +1516,8 @@ laptop. A GPU configuration, on which the fallback-then-swap design plausibly
 stops being necessary, and a cache-cold comparison, are both unmeasured.
 
 \textbf{Small samples inside the systems results.} Generation percentiles rest
-on three requests, and the classification ablation on 254. These are
-stated at each point of use rather than aggregated away. The restraint audit
+on three requests. This is stated at the point of use rather than aggregated
+away. The restraint audit
 now rests on forty-seven pages rather than the original twenty, but that is
 still small next to the 141-clip and 105-website samples elsewhere in the
 paper, and the false-negative categories with the fewest examples (four pages
@@ -1523,11 +1569,10 @@ more than that subset size suggests: the real 255-page corpus escalates at
 in four pages leave the device under the shipped configuration. Absent A6 at
 scale, that 75.7 percent figure, not the LLM-specific exposure the cascade
 does verifiably reduce, is the number a reader takes away from a paper whose
-second contribution is a disclosure control. This is the more load-bearing gap
-than the annotation work above: it determines whether a genuinely
-lower-disclosure operating point exists at all, not just how precisely the
-current one is measured, and it should be treated as the single highest
-priority item remaining in this list.
+second contribution is a disclosure control. It determines whether a
+genuinely lower-disclosure operating point exists at all, not just how
+precisely the current one is measured, and it should be treated as the
+single highest priority item remaining in this list.
 
 \textbf{Replace the sensitive-content predicate.} The adversarial slice has now
 been expanded from twenty to forty-seven pages and rebalanced across
@@ -1600,6 +1645,8 @@ recur unchanged.
 \bibitem{stableaudio} Z. Evans, C. J. Carr, J. Taylor, S. H. Hawley, and J. Pons, ``Fast timing-conditioned latent audio diffusion,'' in \emph{Proc. Int. Conf. Machine Learning}, 2024.
 
 \bibitem{audiocraft} Meta AI, ``AudioCraft: A library for audio processing and generation with deep learning.'' [Online]. Available: \url{https://github.com/facebookresearch/audiocraft}
+
+\bibitem{songgen} Z. Liu, S. Ding, Z. Zhang, X. Dong, P. Zhang, Y. Zang, Y. Cao, D. Lin, and J. Wang, ``SongGen: a single-stage auto-regressive transformer for text-to-song generation,'' arXiv:2502.13128, 2025.
 
 \bibitem{affectmachine} K. R. Agres, A. Dash, P. Chua, and S. K. Ehrlich, ``AffectMachine-Pop: A controllable expert system for real-time pop music generation,'' arXiv:2506.08200, 2025.
 
