@@ -81,7 +81,9 @@ app = FastAPI(lifespan=lifespan)
 # hosted-prod path (a page origin without host_permissions) and makes
 # Swagger/curl testing from a browser possible without a proxy.
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
-
+@app.get("/health")
+async def health():
+    return {"status": "ok", "is_prod": IS_PROD}
 if not IS_PROD:
     from fastapi.staticfiles import StaticFiles
     app.mount("/audio-cache", StaticFiles(directory=AUDIO_CACHE_DIR), name="audio-cache")
@@ -232,7 +234,8 @@ async def generate(payload: HandoffPayload):
 
     print(f"[MAIN] Profile: mood={profile['mood']} style={profile.get('style')} bpm={profile['bpm']} "
           f"key={profile['key']} energy={profile['energy']} duration={profile.get('duration_seconds')}s"
-          + (" nonce=<set>" if profile.get("nonce") else ""))
+          + (" nonce=<set>" if profile.get("nonce") else "")
+          + f" seed_override={profile.get('seed_override')}")
 
     # Cache check
     t1 = time.time()
@@ -285,7 +288,7 @@ async def generate(payload: HandoffPayload):
 
     # D2 — Use Sneha's prompt if available, else build our own
     t2 = time.time()
-    prompt = build_prompt(profile, prompt_from_b)
+    prompt = build_prompt(profile, prompt_from_b, force=payload.force_prompt)
     timings["d2_prompt_ms"] = int((time.time() - t2) * 1000)
     print(f"[D2] Prompt source: {'Feature B' if prompt_from_b else 'D2 fallback'}")
     print(f"[D2] Prompt: {prompt}")
@@ -295,7 +298,7 @@ async def generate(payload: HandoffPayload):
     generation_seed = None
     try:
         audio_bytes, generation_seed = await generate_audio(
-            prompt, profile["duration_seconds"]
+            prompt, profile["duration_seconds"], seed_override=profile.get("seed_override")
         )
     except GenerationError as e:
         print(f"[MAIN] Generation failed after all retries: {e}")

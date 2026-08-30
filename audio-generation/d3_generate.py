@@ -272,6 +272,7 @@ async def generate_audio(
     prompt: str,
     duration_seconds: int = 28,
     priority: int = PRIORITY_REALTIME,
+    seed_override: int = None,
 ) -> tuple:
     """
     Generate audio from prompt using MusicGen. Concurrent calls to this
@@ -302,7 +303,7 @@ async def generate_audio(
     label = "realtime" if priority <= PRIORITY_REALTIME else "prewarm"
 
     for attempt in range(1, MAX_RETRIES + 1):
-        seed = 42 + attempt
+        seed = seed_override if (seed_override is not None and attempt == 1) else 42 + attempt
         loop = asyncio.get_running_loop()
         future = loop.create_future()
         ahead = _queue.qsize()
