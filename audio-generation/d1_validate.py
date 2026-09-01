@@ -38,6 +38,8 @@ def validate_profile(payload: HandoffPayload) -> tuple:
             time_of_day=       p.get("time_of_day")        or "day",
             sensitive_override=p.get("sensitive_override") or False,
             duration_seconds=  p.get("duration_seconds")   if p.get("duration_seconds") is not None else 28,
+            nonce=             payload.nonce,
+            seed_override=     payload.seed_override,
         ).model_dump()
     elif payload.musicProfile is not None:
         # Sneha's nested shape — already validated by Pydantic
@@ -64,6 +66,8 @@ def validate_profile(payload: HandoffPayload) -> tuple:
             time_of_day=       payload.time_of_day      or "day",
             sensitive_override=payload.sensitive_override or False,
             duration_seconds=  payload.duration_seconds if payload.duration_seconds is not None else 28,
+            nonce=             payload.nonce,
+            seed_override=     payload.seed_override,
         ).model_dump()
 
     return profile, prompt_from_b
