@@ -35,12 +35,21 @@ def build(ctx):
     for c in data.get("direct_assertions", []):
         rows.append([c["name"], "direct assertion", "t5_audit.mjs", c["status"]])
 
-    s = data["sensitive"]
+    # "sensitive" nests {keyword, zero_shot?} since the §5.1/§5.5 fix — keyword
+    # is the tier-1-only baseline (always present), zero_shot is the post-fix
+    # resolveSensitivity() pass, present only when t5_audit.mjs was run with
+    # --with-zero-shot against a live entailment service.
+    sensitive_block = data["sensitive"]
+    s = sensitive_block["keyword"]
     note = (f"Sensitive-content detector on the adversarial slice (n={s['n']}: "
-            f"{s['n_sensitive']} sensitive, {s['n_benign']} benign): "
+            f"{s['n_sensitive']} sensitive, {s['n_benign']} benign), keyword tier only: "
             f"false-negative rate {s['false_negative_rate']:.3f}, "
-            f"false-positive rate {s['false_positive_rate']:.3f}. "
-            f"Generated {data['generated_at']} at {data.get('git_sha') or 'unknown SHA'}.")
+            f"false-positive rate {s['false_positive_rate']:.3f}.")
+    zs = sensitive_block.get("zero_shot")
+    if zs:
+        note += (f" With the §5.1/§5.5 zero-shot fix: false-negative rate "
+                 f"{zs['false_negative_rate']:.3f}, false-positive rate {zs['false_positive_rate']:.3f}.")
+    note += f" Generated {data['generated_at']} at {data.get('git_sha') or 'unknown SHA'}."
 
     p = ctx.path("")
     C.booktabs(p, caption="Responsible-behaviour policies and the tests that cover them, with "

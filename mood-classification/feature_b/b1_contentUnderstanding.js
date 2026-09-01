@@ -15,7 +15,7 @@
 "use strict";
 
 import { DEFAULT_MODEL } from "./llmConfig.js";
-import { classifyCategoryZeroShot } from "./b1_zeroShotCategory.js";
+import { classifyCategoryZeroShot, classifySensitivityZeroShot } from "./b1_zeroShotCategory.js";
 
 // ─── Handoff-1 version compatibility ─────────────────────────────────────────
 // Feature A (data-extraction/pageData.js) stamps every pageData object with
@@ -63,11 +63,20 @@ const STOPWORDS = new Set([
 // "genocide" (history discussed at a distance, not a live event) — so one
 // incidental mention isn't treated as a real signal; checkSensitiveContent
 // below requires ≥2 distinct ambiguous terms before it counts.
-const SEVERE_SENSITIVE_TERMS = [
-  "suicide", "self.harm", "self-harm", "eating disorder", "anorexia", "bulimia",
+// Split further into HARD (never overridden — see resolveSensitivity below)
+// and the remaining DEMOTABLE severe terms: eating-disorder vocabulary is
+// specific enough to trust as severe, but unlike "suicide" or "mass
+// shooting" it also shows up constantly in ordinary clinical/academic
+// writing (a psychology textbook chapter, a nurse's reference material) —
+// exactly the false positive the checklist calls out — so it's the one
+// severe category allowed to be reconsidered by the zero-shot tier.
+const HARD_SEVERE_TERMS = [
+  "suicide", "self.harm", "self-harm",
   "rape", "sexual assault", "domestic violence",
   "terrorism", "mass shooting",
 ];
+const DEMOTABLE_SEVERE_TERMS = ["eating disorder", "anorexia", "bulimia"];
+const SEVERE_SENSITIVE_TERMS = [...HARD_SEVERE_TERMS, ...DEMOTABLE_SEVERE_TERMS];
 const AMBIGUOUS_SENSITIVE_TERMS = [
   "mental health crisis", "grief", "bereavement", "depression", "trauma",
   "abuse",
@@ -288,20 +297,36 @@ function normalizeLLMConfig(config) {
     backend:    config?.backend ?? "direct",
     serviceUrl: config?.serviceUrl ?? "http://localhost:8078/v1/chat/completions",
     model:      config?.model ?? DEFAULT_MODEL,
+    retry:      config?.retry ?? null,
   };
 }
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
  * callCategoryLLMClassifier — tier-2 escalation for content category when the
  * keyword heuristic doesn't clear MIN_CATEGORY_HITS on its own. Same
  * graceful-fallback contract as B2's callLLMClassifier: null on any failure,
  * timeout, or hallucinated category name — never throws.
- * @param {string|Object} llmConfig  API key string, or { apiKey?, backend?, serviceUrl?, model? }
+ *
+ * Retries on HTTP 429 (rate limited) are opt-in via llmConfig.retry —
+ * { maxRetries, baseDelayMs } — and off by default, so the live extension's
+ * single-page classification keeps degrading immediately exactly as before
+ * (a user waiting on one page load should never sit through a multi-second
+ * backoff). Batch/offline callers processing many pages back-to-back against
+ * a shared rate limit (e.g. s2_tier_ablation.js) are the case this exists
+ * for: without it, a free-tier Groq key fires 429 on the large majority of a
+ * corpus run in seconds, and every rate-limited page silently reads as "the
+ * LLM tier has nothing to say" rather than "the request was never actually
+ * attempted at a rate the API would accept."
+ * @param {string|Object} llmConfig  API key string, or { apiKey?, backend?, serviceUrl?, model?, retry? }
  * @returns {Promise<string|null>}
  */
 export async function callCategoryLLMClassifier({ keywords, title, summary }, llmConfig) {
-  const { apiKey, backend, serviceUrl, model } = normalizeLLMConfig(llmConfig);
+  const { apiKey, backend, serviceUrl, model, retry } = normalizeLLMConfig(llmConfig);
   if (backend === "direct" && !apiKey) return null;
+  const maxAttempts = 1 + Math.max(0, retry?.maxRetries ?? 0);
+  const baseDelayMs = retry?.baseDelayMs ?? 1000;
 
   const categoryNames = Object.keys(CATEGORY_KEYWORDS);
   const prompt = `You are a content category classifier for a music-ambient browser extension.
@@ -322,54 +347,78 @@ Top keywords: ${keywords.slice(0, 10).map(escapePromptDelimiters).join(", ")}
 
 Return ONLY a valid JSON object, no explanation: { "category": "<one of the categories above>" }`;
 
-  const controller = new AbortController();
-  const timeout    = setTimeout(() => controller.abort(), 8000); // 8s timeout, mirrors B2
-
   const requestBody = JSON.stringify({
     model,
-    max_completion_tokens: 50,
+    max_completion_tokens: 300,
+    // openai/gpt-oss-20b (Groq's replacement for the now-deprecated
+    // llama-3.1-8b-instant, see llmConfig.js) defaults reasoning_effort to
+    // "medium" and its hidden reasoning tokens count against
+    // max_completion_tokens. At the old budget of 50 tokens, reasoning alone
+    // exhausted it before any visible content was emitted, so every call
+    // returned an empty string that crashed JSON.parse. "low" keeps this a
+    // fast, cheap, single-label classification the way it was designed —
+    // set explicitly rather than relying on Groq's per-model default, which
+    // has already changed once and can again. Non-gpt-oss models on Groq
+    // ignore this field, so it's safe to send unconditionally.
+    reasoning_effort: "low",
     temperature: 0, // deterministic classification — reproducibility over variety
     messages:    [{ role: "user", content: prompt }],
   });
 
-  try {
-    // "proxy": local container injects the real key server-side.
-    // "direct": ships the key client-side. GroqCloud's docs don't document a
-    // browser-CORS opt-in the way Anthropic's API did — whether a direct
-    // browser call CORS-succeeds here is unconfirmed. If it fails in the
-    // actual extension, switch to "proxy", which sidesteps the question
-    // entirely (the container calls Groq server-to-server, no CORS involved).
-    const res = backend === "proxy"
-      ? await fetch(serviceUrl, {
-          method:  "POST",
-          signal:  controller.signal,
-          headers: { "Content-Type": "application/json" },
-          body:    requestBody,
-        })
-      : await fetch("https://api.groq.com/openai/v1/chat/completions", {
-          method:  "POST",
-          signal:  controller.signal,
-          headers: {
-            "Content-Type":  "application/json",
-            "Authorization": `Bearer ${apiKey}`,
-          },
-          body: requestBody,
-        });
-    clearTimeout(timeout);
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const controller = new AbortController();
+    const timeout    = setTimeout(() => controller.abort(), 8000); // 8s timeout, mirrors B2
+    try {
+      // "proxy": local container injects the real key server-side.
+      // "direct": ships the key client-side. GroqCloud's docs don't document a
+      // browser-CORS opt-in the way Anthropic's API did — whether a direct
+      // browser call CORS-succeeds here is unconfirmed. If it fails in the
+      // actual extension, switch to "proxy", which sidesteps the question
+      // entirely (the container calls Groq server-to-server, no CORS involved).
+      const res = backend === "proxy"
+        ? await fetch(serviceUrl, {
+            method:  "POST",
+            signal:  controller.signal,
+            headers: { "Content-Type": "application/json" },
+            body:    requestBody,
+          })
+        : await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method:  "POST",
+            signal:  controller.signal,
+            headers: {
+              "Content-Type":  "application/json",
+              "Authorization": `Bearer ${apiKey}`,
+            },
+            body: requestBody,
+          });
+      clearTimeout(timeout);
 
-    if (!res.ok) throw new Error(`Category LLM API ${res.status}`);
-    const data = await res.json();
-    const raw  = data?.choices?.[0]?.message?.content?.trim() ?? "";
-    const jsonStr = raw.replace(/^```json\s*/i, "").replace(/```$/i, "").trim();
-    const parsed = JSON.parse(jsonStr);
+      if (res.status === 429 && attempt < maxAttempts) {
+        const waitMs = baseDelayMs * 2 ** (attempt - 1);
+        console.warn(`[B1] Category LLM rate-limited (429) — retrying in ${waitMs}ms (attempt ${attempt}/${maxAttempts})`);
+        await sleep(waitMs);
+        continue;
+      }
+      if (!res.ok) throw new Error(`Category LLM API ${res.status}`);
 
-    // Guard against a hallucinated category name that isn't one of ours.
-    return categoryNames.includes(parsed.category) ? parsed.category : null;
-  } catch (err) {
-    clearTimeout(timeout);
-    console.warn("[B1] Category LLM classifier failed:", err.message, "— falling back");
-    return null;
+      const data = await res.json();
+      const raw  = data?.choices?.[0]?.message?.content?.trim() ?? "";
+      const jsonStr = raw.replace(/^```json\s*/i, "").replace(/```$/i, "").trim();
+      const parsed = JSON.parse(jsonStr);
+
+      // Guard against a hallucinated category name that isn't one of ours.
+      if (!categoryNames.includes(parsed.category)) {
+        console.warn(`[B1] Category LLM returned an unrecognised category ${JSON.stringify(parsed.category)} — falling back`);
+        return null;
+      }
+      return parsed.category;
+    } catch (err) {
+      clearTimeout(timeout);
+      console.warn("[B1] Category LLM classifier failed:", err.message, "— falling back");
+      return null;
+    }
   }
+  return null;
 }
 
 /**
@@ -446,6 +495,83 @@ export function checkSensitiveContent(text) {
   if (!text) return false;
   if (countDistinctTermHits(text, SEVERE_SENSITIVE_TERMS) > 0) return true;
   return countDistinctTermHits(text, AMBIGUOUS_SENSITIVE_TERMS) >= 2;
+}
+
+/**
+ * resolveSensitivity — orchestrates sensitive-content detection as a
+ * two-tier cascade, mirroring resolveContentCategory above. This is the
+ * §5.1/§5.5 fix: checkSensitiveContent() alone has no escalation path, so a
+ * page it can't match via keywords just silently reads as "not sensitive"
+ * forever, and a page that trips it on a clinical/academic term or an
+ * incidental word pair has no way to be reconsidered either.
+ *
+ * The keyword tier's two failure directions get different treatment:
+ *
+ *   - it found NOTHING (0 severe hits, <2 ambiguous hits) — every false
+ *     negative in the checklist lives here: euphemism ("ending it all"),
+ *     vocabulary the list never anticipated (addiction, miscarriage, a
+ *     terminal diagnosis), and anything non-English, since the term lists
+ *     are English words. Zero-shot gets one chance to catch what grepping
+ *     cannot; if it confidently reads the page as a personal crisis, that
+ *     PROMOTES the verdict to sensitive.
+ *
+ *   - it found a HARD severe term (suicide, self-harm, sexual assault,
+ *     domestic violence, terrorism, mass shooting) — trusted outright, no
+ *     escalation. These terms are specific enough that a false negative
+ *     (failing to protect someone in genuine crisis) is a worse outcome
+ *     than the false positive risk of trusting them, so zero-shot is never
+ *     asked to weaken this verdict.
+ *
+ *   - it found a DEMOTABLE severe term (eating-disorder vocabulary) or 2+
+ *     ambiguous terms — this is where the false positives live (a
+ *     psychology textbook's "anorexia nervosa", "grief" + "bereavement" in
+ *     a degree-programme listing). Zero-shot gets a chance to recognise the
+ *     academic/reference framing and DEMOTE the verdict to not-sensitive.
+ *
+ * Either direction requires the zero-shot tier to actually be confident (its
+ * own score/margin gates in classifySensitivityZeroShot) — an abstention
+ * (null) always keeps the keyword verdict, so this is strictly additive
+ * when the tier is unavailable or disabled, exactly like the category
+ * cascade. Never reaches the Groq tier-2 LLM.
+ *
+ * @param {string} text  cleaned body text + title — same input checkSensitiveContent takes
+ * @param {{title?: string, summary?: string, keywords?: string[]}} zsContent  zero-shot premise inputs
+ * @param {Object} [opts]
+ * @param {Object} [opts.zeroShot]  same config classifyCategoryZeroShot takes, reused as-is
+ * @returns {Promise<{isSensitive: boolean, source: string, keyword: {severe: number, ambiguous: number, hard: boolean}, zeroShot: Object|null}>}
+ */
+export async function resolveSensitivity(text, zsContent, opts = {}) {
+  const hard = countDistinctTermHits(text, HARD_SEVERE_TERMS) > 0;
+  const severe = countDistinctTermHits(text, SEVERE_SENSITIVE_TERMS);
+  const ambiguous = countDistinctTermHits(text, AMBIGUOUS_SENSITIVE_TERMS);
+  const keywordSensitive = severe > 0 || ambiguous >= 2;
+  const keyword = { severe, ambiguous, hard };
+
+  if (hard) {
+    // Never escalate away from a hard-severe hit — see rationale above.
+    return { isSensitive: true, source: "keyword-hard-severe", keyword, zeroShot: null };
+  }
+
+  const zs = await classifySensitivityZeroShot(zsContent, opts.zeroShot);
+  if (!zs) {
+    return { isSensitive: keywordSensitive, source: keywordSensitive ? "keyword" : "keyword-declined", keyword, zeroShot: null };
+  }
+
+  const zeroShot = { side: zs.side, score: zs.score, margin: zs.margin, ms: zs.ms, model: zs.model, backend: zs.backend };
+
+  if (!keywordSensitive) {
+    // Promotion path: keyword tier found nothing, zero-shot may catch what
+    // it missed (euphemism, outside-vocabulary, non-English).
+    return zs.side === "crisis"
+      ? { isSensitive: true, source: "zero-shot-promoted", keyword, zeroShot }
+      : { isSensitive: false, source: "keyword", keyword, zeroShot };
+  }
+
+  // Demotion path: keyword tier found a demotable-severe or ambiguous
+  // signal, zero-shot may recognise reference/academic framing.
+  return zs.side === "reference"
+    ? { isSensitive: false, source: "zero-shot-demoted", keyword, zeroShot }
+    : { isSensitive: true, source: "keyword", keyword, zeroShot };
 }
 
 /**
@@ -559,10 +685,21 @@ export async function runB1(pageData, apiKey = "", opts = {}) {
     };
   }
 
-  const cleaned     = cleanText(pageData.rawText || "");
-  const isSensitive = checkSensitiveContent(cleaned + " " + meta.title);
-  const keywords    = extractKeywords(cleaned);
-  const summary     = summariseContent(cleaned);
+  const cleaned  = cleanText(pageData.rawText || "");
+  const keywords = extractKeywords(cleaned);
+  const summary  = summariseContent(cleaned);
+
+  // Zero-shot premise uses the fuller cleaned text (not the 2-sentence
+  // extractive `summary` used for category) — a crisis signal is as likely
+  // to be in sentence 3 as sentence 1, and buildZeroShotInput truncates to
+  // its own budget anyway, so there's no cost to handing it more to work
+  // with. See resolveSensitivity for the §5.1/§5.5 fix this implements.
+  const sensitivity = await resolveSensitivity(
+    cleaned + " " + meta.title,
+    { title: meta.title, summary: cleaned, keywords },
+    opts,
+  );
+  const isSensitive = sensitivity.isSensitive;
 
   // Sensitive/crisis pages never reach the category LLM — mirrors B2's own
   // sensitive-override, which never sends this content to the mood LLM either.
@@ -607,7 +744,8 @@ export async function runB1(pageData, apiKey = "", opts = {}) {
     category,          // { primary, secondary, scores }
     summary,           // short extractive summary for LLM
     readingComplexity: complexity,    // [0..1], higher = harder — prefers Feature A's value when present
-    isSensitive,       // boolean — triggers override in B2
+    isSensitive,           // boolean — triggers override in B2
+    sensitivitySource: sensitivity.source, // "keyword" | "keyword-hard-severe" | "keyword-declined" | "zero-shot-promoted" | "zero-shot-demoted"
 
     // Image-only flag — B2 will skip LLM text call if true
     isImageOnly,

@@ -100,7 +100,7 @@ def build(ctx):
         ax.annotate(tag, (x, y), textcoords="offset points", xytext=(4, 3), fontsize=6,
                     color=colour)
 
-    ax.set_xlabel("share of pages whose text left the device (LLM + zero-shot proxy)")
+    ax.set_xlabel("total off-device rate\n(LLM + zero-shot proxy)")
     ax.set_ylabel("macro-F1 (13 categories)")
     ax.set_xlim(-0.03, max([p[0] for p in pts] + [r[0] for r in ref] + [0.3]) * 1.15)
     ax.legend(frameon=False, loc="lower right", fontsize=6.2)

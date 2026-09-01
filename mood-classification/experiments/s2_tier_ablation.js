@@ -53,8 +53,21 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const CATEGORIES = Object.keys(CATEGORY_KEYWORDS);
 const CLASSIFY_SERVICE_URL = process.env.CLASSIFY_SERVICE_URL || 'http://localhost:8078';
-const LLM_CONFIG = { backend: 'proxy', serviceUrl: `${CLASSIFY_SERVICE_URL}/v1/chat/completions` };
+// retry: this script fires one LLM call per page, back-to-back, for every page
+// in the corpus -- a free-tier Groq key rate-limits (429) most of a 200+ page
+// run in seconds without this. maxRetries/baseDelayMs are opt-in on
+// callCategoryLLMClassifier specifically so the live extension (one page at a
+// time, real user waiting) never inherits a multi-second backoff.
+const LLM_CONFIG = {
+  backend: 'proxy',
+  serviceUrl: `${CLASSIFY_SERVICE_URL}/v1/chat/completions`,
+  retry: { maxRetries: 6, baseDelayMs: 2000 },
+};
 const ZS_SERVICE_URL = `${CLASSIFY_SERVICE_URL}/v1/zero-shot`;
+// Proactive pacing between pages, on top of the reactive retry above --
+// staying under the rate limit from the start means fewer 429s to retry out
+// of in the first place, so the run finishes faster overall, not slower.
+const PAGE_PACING_MS = Number(process.env.S2_PAGE_PACING_MS ?? 1500);
 
 // Production defaults (b1_zeroShotCategory.js DEFAULT_MIN_SCORE/DEFAULT_MIN_MARGIN).
 const PROD_MIN_SCORE = 0.45;
@@ -272,6 +285,10 @@ function round(v, d) {
   return v === null || v === undefined ? null : Number(v.toFixed(d));
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 // ── Entry point ─────────────────────────────────────────────────────────
 
 const args = process.argv.slice(2);
@@ -329,6 +346,7 @@ async function main() {
 
   const results = [];
   for (let i = 0; i < pages.length; i++) {
+    if (i > 0 && PAGE_PACING_MS > 0) await sleep(PAGE_PACING_MS);
     const r = await collectRawResults(pages[i]);
     results.push(r);
     const fmtZs = (z, err) => (z ? `${z.category} (${z.score.toFixed(2)}/${z.margin.toFixed(2)})` : (err || 'null'));

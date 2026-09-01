@@ -8,14 +8,23 @@
  *
  * Provider: GroqCloud (api.groq.com) — an OpenAI-compatible chat completions
  * API with a genuinely free developer tier (rate-limited, not trial-credit).
- * llama-3.1-8b-instant is the default: it's fast, free-tier limits are
- * generous (14,400 requests/day as of when this was set), and the
- * classification tasks here are simple JSON-shape outputs that don't need a
- * bigger model. llama-3.3-70b-versatile is the higher-quality alternative if
- * classification accuracy matters more than request headroom — its free
- * tier is capped much lower (1,000 requests/day). Groq's free-tier limits
- * change over time; check https://console.groq.com/docs/rate-limits for the
- * current numbers before relying on either.
+ *
+ * Migration note (2026-08): Groq announced on 2026-06-17 that both
+ * llama-3.1-8b-instant (this file's previous default) and
+ * llama-3.3-70b-versatile (the higher-quality alternative this file used to
+ * suggest) are deprecated. api.groq.com now 404s on llama-3.1-8b-instant
+ * rather than returning the usual `400 model_decommissioned`, i.e. it has
+ * been fully pulled, not just soft-deprecated with a warning. Groq's stated
+ * replacement for llama-3.1-8b-instant is openai/gpt-oss-20b, set below.
+ * See https://console.groq.com/docs/deprecations for the current list —
+ * check it before relying on any model ID here, since Groq's deprecation
+ * cadence has been roughly monthly through 2026.
+ *
+ * Every golden fixture recorded against the old model
+ * (mood-classification/fixtures/groq_*_response.json) needs re-recording
+ * against the new one — Table VI's restraint-audit claim that "a silent
+ * tier-2 model change is detectable" depends on that re-recording actually
+ * happening, not just on this constant being updated.
  *
  * Override per-call via the `model` field on the config object passed to
  * runB1/runB2 (threaded from feature_b/index.js's `_config.llmModel`), or
@@ -24,4 +33,5 @@
 
 "use strict";
 
-export const DEFAULT_MODEL = "llama-3.1-8b-instant";
+export const DEFAULT_MODEL = "openai/gpt-oss-20b";
+

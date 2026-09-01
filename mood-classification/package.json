@@ -8,7 +8,7 @@
     "node": ">=18"
   },
   "scripts": {
-    "test": "node feature_b_test.js && node b1_zeroShot_test.js"
+    "test": "node feature_b_test.js && node b1_zeroShot_test.js && node b1_sensitivity_test.js"
   },
   "devDependencies": {
     "jsdom": "^24.0.0"
