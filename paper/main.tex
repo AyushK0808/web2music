@@ -408,6 +408,7 @@ the browser's idle callback, and re-run on single-page-application navigation
 and throttled DOM mutation.
 
 \subsection{Feature B: the tiered classifier}
+\label{sec:featureB}
 
 Feature B maps the descriptor onto a thirteen-way content category and an
 eleven-way mood, then onto a music profile and a text prompt. The cascade is
@@ -537,6 +538,7 @@ explicitly exports it.
 % ===========================================================================
 
 \subsection{Evaluation design and provenance}
+\label{sec:res-provenance}
 
 The evaluation is organised as five studies. S1 is a systems benchmark covering
 extraction cost on real sites, generation latency by request class and server
@@ -1289,6 +1291,71 @@ seamlessly loopable and the retrieval design is not obviously cheaper than
 generation. This supports C4. The bucket granularity is stated deliberately:
 coarser buckets would flatter the generation argument, so we chose defensible
 ones and publish them alongside the number.
+
+\subsection{Prompt engineering ablation}
+\label{sec:res-promptablation}
+
+Feature B constructs a long, structured prompt for the generator (Section
+\ref{sec:featureB}); Feature D falls back to a shorter template of its own
+when no such prompt is supplied. Whether the engineered prompt earns its
+extra complexity over that fallback, or over no engineering at all, has not
+previously been tested. We compare three conditions holding mood, duration
+and generation seed policy fixed: \textbf{P1}, a bare mood word with no
+engineering; \textbf{P2}, Feature D's own fallback template
+(\texttt{d2\_prompt.build\_prompt}); and \textbf{P3}, Feature B's engineered
+production prompt. Each condition was run for five representative moods
+(calm, focused, tense, energetic, sad) at three repeats each, for 45
+generations with no cache hits, since every request carries a unique nonce.
+All 45 completed with no fallbacks and no request errors.
+
+\begin{table}[t]
+\caption{Prompt ablation, $n=15$ generations per condition (5 moods
+$\times$ 3 repeats). All figures are medians (p50).}
+\label{tab:promptablation}
+\begin{center}
+\small
+\begin{tabular}{lrrr}
+\toprule
+\textbf{Condition} & \textbf{Prompt (chars)} & \textbf{|Seam| (dB)} & \textbf{Dur. retention} \\
+\midrule
+P1 bare mood word & 5 & 3.75 & \textbf{0.527} \\
+P2 fallback template & 175 & \textbf{2.63} & 0.444 \\
+P3 engineered (production) & 312 & 4.35 & 0.393 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+
+\textbf{The engineered prompt does not win.} P3, the longer production
+prompt Feature B actually sends in the deployed system, has the worst
+median seam discontinuity of the three conditions, and this is not an
+artefact of one outlier: its best individual result (1.98 dB) is still
+worse than the best result either P1 or P2 achieved. On duration retention
+the picture is noisier -- all three conditions range from roughly 0.2 to
+0.9 across individual clips, and the median difference is small against
+that spread. This runs against the implicit assumption behind building an
+engineered template in the first place, though at $n=15$ per condition the
+seam result is the more defensible of the two and the duration-retention
+gap should be read cautiously.
+
+\textbf{What this does not show.} As with the loop-quality results in
+Section \ref{sec:res-loop}, an objective measure is not a perceptual one.
+Prompt specificity plausibly affects genre adherence, musical coherence, or
+perceived quality in ways seam discontinuity and duration retention cannot
+capture, and no listening test accompanies this ablation. Whether P3 is
+worth keeping in production, on grounds this ablation cannot see, is not
+answered here.
+
+\textbf{A hardware caveat.} This ablation ran on a Tesla T4 GPU rather than
+the single CPU laptop used for every other latency and generation figure in
+this paper (Section \ref{sec:res-provenance}, ``Hardware''). Median
+generation time here was approximately 18 s per clip across all three
+conditions, against a median of 139 s on CPU in Table \ref{tab:d-latency}.
+That gap is expected and is not itself a finding: it should not be read as
+a GPU-configuration result in the sense discussed in Section
+\ref{sec:res-latency}, since sample size, moods and harness differ between
+the two runs. A controlled CPU-vs-GPU comparison holding those fixed remains
+future work.
 
 % ===========================================================================
 \section{Conclusion}
