@@ -146,6 +146,20 @@ async def _fallback_response(profile: dict, timings: dict) -> JSONResponse:
     )
 
 
+@app.get("/health")
+async def health():
+    """
+    Liveness check for the D-side ablation scripts (_dcommon.health(), used by
+    d1_prompt_ablation.py and d3_clip_length.py). Nothing in the request path
+    checks the model or the cache DB -- if uvicorn is up this returns 200. That
+    matches what the callers actually gate on: "is there a server to send
+    /generate requests to", not "is generation currently healthy". A prewarm
+    still in progress, or a dead cache DB (see lifespan()'s ensure_schema
+    handling), are not failures here.
+    """
+    return {"status": "ok"}
+
+
 @app.get("/fallback/{mood}")
 async def fallback(mood: str):
     """
