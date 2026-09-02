@@ -30,7 +30,7 @@ class MusicProfile(BaseModel):
     # integration plan, 6.1) -- unset means "normal caching applies"; any
     # value forces a cache-key miss so a fresh seed gets drawn.
     nonce:             Optional[str] = Field(default=None, description="Cache-buster for an explicit regenerate request")
-
+    seed_override:     Optional[int] = Field(default=None, description="Explicit generation seed, bypasses the retry-based default")
     # Duration parameter
     duration_seconds:  int   = Field(
         default=28,
@@ -73,7 +73,9 @@ class HandoffPayload(BaseModel):
     profile:      Optional[dict]         = None
     musicProfile: Optional[MusicProfile] = None
     prompt:       Optional[str]          = None
-
+    nonce:        Optional[str]          = None
+    seed_override: Optional[int]         = None
+    force_prompt:  Optional[bool]        = False
     # B's sensitive-content silence signal (fix 16) -- top-level on the
     # Handoff-2 envelope, sibling to profile/musicProfile rather than a
     # field on either. Without declaring these, pydantic silently drops

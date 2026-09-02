@@ -1,0 +1,1158 @@
+{
+  "started_at": "2026-08-30T09:02:40",
+  "elapsed_s": 5910.9,
+  "config": {
+    "base_url": "http://127.0.0.1:8000",
+    "moods": [
+      "calm",
+      "focused",
+      "tense",
+      "energetic",
+      "sad"
+    ],
+    "repeats": 3,
+    "duration_seconds": 15
+  },
+  "b4_template": "{mood} {style} instrumental for {context}, {bpm} bpm in {key}, {energy_words}, featuring {instruments}, {timbre} timbre with {reverb_words} reverb, evolving gently, no vocals, no percussion hits at the loop point, seamless and loopable, high quality studio recording",
+  "summary": {
+    "P1_bare": {
+      "n_requests": 15,
+      "n_generated": 8,
+      "fallback_rate": 0.0,
+      "error_rate": 0.467,
+      "prompt_chars": {
+        "n": 15,
+        "min": 3,
+        "p50": 5,
+        "p95": 9,
+        "max": 9,
+        "mean": 5.6,
+        "stdev": 2.23
+      },
+      "seam_energy_delta_db": {
+        "n": 8,
+        "min": 0.42,
+        "p50": 1.49,
+        "p95": 6.85,
+        "max": 6.85,
+        "mean": 2.716,
+        "stdev": 2.32
+      },
+      "seam_centroid_delta_hz": {
+        "n": 8,
+        "min": 294.5,
+        "p50": 596.0,
+        "p95": 1352.1,
+        "max": 1352.1,
+        "mean": 713.7,
+        "stdev": 358.93
+      },
+      "lufs": {
+        "n": 8,
+        "min": -24.798,
+        "p50": -18.842,
+        "p95": -16.367,
+        "max": -16.367,
+        "mean": -19.649,
+        "stdev": 2.878
+      },
+      "duration_retention": {
+        "n": 8,
+        "min": 0.21,
+        "p50": 0.255,
+        "p95": 0.72,
+        "max": 0.72,
+        "mean": 0.379,
+        "stdev": 0.21
+      },
+      "wall_ms": {
+        "n": 15,
+        "min": 101745.3,
+        "p50": 128368.0,
+        "p95": 235518.8,
+        "max": 235518.8,
+        "mean": 144456.207,
+        "stdev": 42891.761
+      },
+      "d3_generate_ms": {
+        "n": 8,
+        "min": 119830,
+        "p50": 140309,
+        "p95": 213810,
+        "max": 213810,
+        "mean": 165106.0,
+        "stdev": 41008.05
+      }
+    },
+    "P2_d2_fallback": {
+      "n_requests": 15,
+      "n_generated": 9,
+      "fallback_rate": 0.0,
+      "error_rate": 0.4,
+      "prompt_chars": {
+        "n": 15,
+        "min": 167,
+        "p50": 175,
+        "p95": 179,
+        "max": 179,
+        "mean": 174.2,
+        "stdev": 4.263
+      },
+      "seam_energy_delta_db": {
+        "n": 9,
+        "min": 0.55,
+        "p50": 1.69,
+        "p95": 5.68,
+        "max": 5.68,
+        "mean": 2.398,
+        "stdev": 1.898
+      },
+      "seam_centroid_delta_hz": {
+        "n": 9,
+        "min": 180.1,
+        "p50": 390.2,
+        "p95": 926.2,
+        "max": 926.2,
+        "mean": 462.133,
+        "stdev": 242.048
+      },
+      "lufs": {
+        "n": 9,
+        "min": -18.598,
+        "p50": -18.022,
+        "p95": -16.734,
+        "max": -16.734,
+        "mean": -17.939,
+        "stdev": 0.606
+      },
+      "duration_retention": {
+        "n": 9,
+        "min": 0.199,
+        "p50": 0.66,
+        "p95": 0.822,
+        "max": 0.822,
+        "mean": 0.577,
+        "stdev": 0.231
+      },
+      "wall_ms": {
+        "n": 15,
+        "min": 92182.2,
+        "p50": 120622.5,
+        "p95": 160344.9,
+        "max": 160344.9,
+        "mean": 121174.04,
+        "stdev": 22303.575
+      },
+      "d3_generate_ms": {
+        "n": 9,
+        "min": 90786,
+        "p50": 119170,
+        "p95": 158827,
+        "max": 158827,
+        "mean": 117456.556,
+        "stdev": 25566.441
+      }
+    },
+    "P3_b4_engineered": {
+      "n_requests": 15,
+      "n_generated": 8,
+      "fallback_rate": 0.0,
+      "error_rate": 0.467,
+      "prompt_chars": {
+        "n": 15,
+        "min": 297,
+        "p50": 312,
+        "p95": 317,
+        "max": 317,
+        "mean": 309.6,
+        "stdev": 7.651
+      },
+      "seam_energy_delta_db": {
+        "n": 8,
+        "min": 0.57,
+        "p50": 2.4,
+        "p95": 14.11,
+        "max": 14.11,
+        "mean": 6.23,
+        "stdev": 5.6
+      },
+      "seam_centroid_delta_hz": {
+        "n": 8,
+        "min": 174.6,
+        "p50": 391.1,
+        "p95": 1128.0,
+        "max": 1128.0,
+        "mean": 585.95,
+        "stdev": 378.937
+      },
+      "lufs": {
+        "n": 8,
+        "min": -32.961,
+        "p50": -20.16,
+        "p95": -17.43,
+        "max": -17.43,
+        "mean": -22.116,
+        "stdev": 5.676
+      },
+      "duration_retention": {
+        "n": 8,
+        "min": 0.22,
+        "p50": 0.344,
+        "p95": 0.866,
+        "max": 0.866,
+        "mean": 0.478,
+        "stdev": 0.25
+      },
+      "wall_ms": {
+        "n": 15,
+        "min": 93128.9,
+        "p50": 118711.0,
+        "p95": 169612.9,
+        "max": 169612.9,
+        "mean": 126835.393,
+        "stdev": 22623.114
+      },
+      "d3_generate_ms": {
+        "n": 8,
+        "min": 91997,
+        "p50": 127917,
+        "p95": 167768,
+        "max": 167768,
+        "mean": 133010.125,
+        "stdev": 27803.335
+      }
+    }
+  },
+  "rows": [
+    {
+      "mood": "calm",
+      "condition": "P1_bare",
+      "iteration": 0,
+      "prompt": "calm",
+      "prompt_chars": 4,
+      "wall_ms": 235518.8,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1000,
+      "prompt_used": null,
+      "timings": {
+        "d1_validate_ms": 1,
+        "d5_cache_check_ms": 877,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 213810,
+        "d4_process_ms": 18764,
+        "d5_save_ms": 2051
+      },
+      "audio_url": "https://jarfwvvbbqsgpfcmsbii.supabase.co/storage/v1/object/public/audio-cache/7c233f933dc769e0c2af907f4100a15d64d5004eff6bc61a64bcf61a271e7727.ogg",
+      "quality": {
+        "duration_ms": 6526,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.42,
+        "post_spectral_centroid_delta_hz": 735.7,
+        "lufs": -18.19385326738772,
+        "rms_dbfs": -16.510092713892178
+      }
+    },
+    {
+      "mood": "calm",
+      "condition": "P1_bare",
+      "iteration": 1,
+      "prompt": "calm",
+      "prompt_chars": 4,
+      "wall_ms": 199915.1,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1001,
+      "prompt_used": null,
+      "timings": {
+        "d1_validate_ms": 4,
+        "d5_cache_check_ms": 228,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 197263,
+        "d4_process_ms": 977,
+        "d5_save_ms": 1423
+      },
+      "audio_url": "https://jarfwvvbbqsgpfcmsbii.supabase.co/storage/v1/object/public/audio-cache/05c8a11daedcbe6a7e33d0c1927703f90382cd9a65b715d72e8607613e61a070.ogg",
+      "quality": {
+        "duration_ms": 10798,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -1.37,
+        "post_spectral_centroid_delta_hz": 294.5,
+        "lufs": -18.14512831435995,
+        "rms_dbfs": -17.382647465313926
+      }
+    },
+    {
+      "mood": "calm",
+      "condition": "P1_bare",
+      "iteration": 2,
+      "prompt": "calm",
+      "prompt_chars": 4,
+      "wall_ms": 209292.0,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1002,
+      "prompt_used": null,
+      "timings": {
+        "d1_validate_ms": 1,
+        "d5_cache_check_ms": 70,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 207591,
+        "d4_process_ms": 879,
+        "d5_save_ms": 734
+      },
+      "audio_url": "https://jarfwvvbbqsgpfcmsbii.supabase.co/storage/v1/object/public/audio-cache/f868b818faf1839940b26511dd629ecfb2be1472f5951934c8910d9fe64cdbe0.ogg",
+      "quality": {
+        "duration_ms": 3150,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 1.49,
+        "post_spectral_centroid_delta_hz": 1352.1,
+        "lufs": -20.943098612916003,
+        "rms_dbfs": -19.807969192499847
+      }
+    },
+    {
+      "mood": "calm",
+      "condition": "P2_d2_fallback",
+      "iteration": 0,
+      "prompt": "calm ambient music, 65 bpm, C major, very low energy, minimal, soft piano and ambient pads, no vocals, loopable, suitable for background listening, high quality, atmospheric",
+      "prompt_chars": 173,
+      "wall_ms": 120622.5,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1000,
+      "prompt_used": null,
+      "timings": {
+        "d1_validate_ms": 5,
+        "d5_cache_check_ms": 68,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 119170,
+        "d4_process_ms": 571,
+        "d5_save_ms": 784
+      },
+      "audio_url": "https://jarfwvvbbqsgpfcmsbii.supabase.co/storage/v1/object/public/audio-cache/1208807b78baebe100257d49b293ddc0c002dd0a9fb75cfa821a756b44f2b1a7.ogg",
+      "quality": {
+        "duration_ms": 10862,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -4.29,
+        "post_spectral_centroid_delta_hz": 441.7,
+        "lufs": -18.598041174391135,
+        "rms_dbfs": -17.918605214043573
+      }
+    },
+    {
+      "mood": "calm",
+      "condition": "P2_d2_fallback",
+      "iteration": 1,
+      "prompt": "calm ambient music, 65 bpm, C major, very low energy, minimal, soft piano and ambient pads, no vocals, loopable, suitable for background listening, high quality, atmospheric",
+      "prompt_chars": 173,
+      "wall_ms": 95344.7,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1001,
+      "prompt_used": null,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 59,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 94338,
+        "d4_process_ms": 523,
+        "d5_save_ms": 397
+      },
+      "audio_url": "https://jarfwvvbbqsgpfcmsbii.supabase.co/storage/v1/object/public/audio-cache/7a5efa347f991b86781884940dfa981afc16609b294f53135a5c896461fce195.ogg",
+      "quality": {
+        "duration_ms": 2990,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -2.12,
+        "post_spectral_centroid_delta_hz": 375.5,
+        "lufs": -16.733911095750525,
+        "rms_dbfs": -15.74990314581253
+      }
+    },
+    {
+      "mood": "calm",
+      "condition": "P2_d2_fallback",
+      "iteration": 2,
+      "prompt": "calm ambient music, 65 bpm, C major, very low energy, minimal, soft piano and ambient pads, no vocals, loopable, suitable for background listening, high quality, atmospheric",
+      "prompt_chars": 173,
+      "wall_ms": 92182.2,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1002,
+      "prompt_used": null,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 62,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 90786,
+        "d4_process_ms": 596,
+        "d5_save_ms": 711
+      },
+      "audio_url": "https://jarfwvvbbqsgpfcmsbii.supabase.co/storage/v1/object/public/audio-cache/1eaa530539a45c16fed3fd862dd6187b1e084f8a5398f2b68d7ac77e3089ca8e.ogg",
+      "quality": {
+        "duration_ms": 12334,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.8,
+        "post_spectral_centroid_delta_hz": 926.2,
+        "lufs": -18.022360365349197,
+        "rms_dbfs": -15.186592601566588
+      }
+    },
+    {
+      "mood": "calm",
+      "condition": "P3_b4_engineered",
+      "iteration": 0,
+      "prompt": "calm ambient instrumental for quiet focused reading, 65 bpm in C major, very low energy and minimal, featuring soft piano, warm pads and distant strings, warm timbre with generous reverb, evolving gently, no vocals, no percussion hits at the loop point, seamless and loopable, high quality studio recording",
+      "prompt_chars": 306,
+      "wall_ms": 108812.2,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1000,
+      "prompt_used": null,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 58,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 107653,
+        "d4_process_ms": 642,
+        "d5_save_ms": 427
+      },
+      "audio_url": "https://jarfwvvbbqsgpfcmsbii.supabase.co/storage/v1/object/public/audio-cache/ac769a737f4d92a54d458b646fc62b42b54814765e9fcbf9e1c5614d5212a150.ogg",
+      "quality": {
+        "duration_ms": 9486,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -11.53,
+        "post_spectral_centroid_delta_hz": 767.1,
+        "lufs": -17.43030527844753,
+        "rms_dbfs": -16.777669815394734
+      }
+    },
+    {
+      "mood": "calm",
+      "condition": "P3_b4_engineered",
+      "iteration": 1,
+      "prompt": "calm ambient instrumental for quiet focused reading, 65 bpm in C major, very low energy and minimal, featuring soft piano, warm pads and distant strings, warm timbre with generous reverb, evolving gently, no vocals, no percussion hits at the loop point, seamless and loopable, high quality studio recording",
+      "prompt_chars": 306,
+      "wall_ms": 154985.7,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1001,
+      "prompt_used": null,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 72,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 153248,
+        "d4_process_ms": 792,
+        "d5_save_ms": 867
+      },
+      "audio_url": "https://jarfwvvbbqsgpfcmsbii.supabase.co/storage/v1/object/public/audio-cache/d3b63c66650e58ff4a04017b41456ad677a4c4ed228872ef827019cf1336dbd2.ogg",
+      "quality": {
+        "duration_ms": 12990,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 2.4,
+        "post_spectral_centroid_delta_hz": 391.1,
+        "lufs": -18.167859307287546,
+        "rms_dbfs": -17.259427212289488
+      }
+    },
+    {
+      "mood": "calm",
+      "condition": "P3_b4_engineered",
+      "iteration": 2,
+      "prompt": "calm ambient instrumental for quiet focused reading, 65 bpm in C major, very low energy and minimal, featuring soft piano, warm pads and distant strings, warm timbre with generous reverb, evolving gently, no vocals, no percussion hits at the loop point, seamless and loopable, high quality studio recording",
+      "prompt_chars": 306,
+      "wall_ms": 117447.8,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1002,
+      "prompt_used": null,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 68,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 116211,
+        "d4_process_ms": 642,
+        "d5_save_ms": 519
+      },
+      "audio_url": "https://jarfwvvbbqsgpfcmsbii.supabase.co/storage/v1/object/public/audio-cache/2e11ebb3d67f6a623f42144952ec4127e88aef2df97107652c4ecda20833167c.ogg",
+      "quality": {
+        "duration_ms": 6190,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -7.15,
+        "post_spectral_centroid_delta_hz": 174.6,
+        "lufs": -21.81223352725169,
+        "rms_dbfs": -20.42476037176426
+      }
+    },
+    {
+      "mood": "focused",
+      "condition": "P1_bare",
+      "iteration": 0,
+      "prompt": "focused",
+      "prompt_chars": 7,
+      "wall_ms": 131000.5,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1000,
+      "prompt_used": null,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 111,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 129576,
+        "d4_process_ms": 699,
+        "d5_save_ms": 587
+      },
+      "audio_url": "https://jarfwvvbbqsgpfcmsbii.supabase.co/storage/v1/object/public/audio-cache/16e5daae689cb6079aaf61466e1473d31c45c5d1beeae2354cc9913a39bccf8e.ogg",
+      "quality": {
+        "duration_ms": 3230,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.74,
+        "post_spectral_centroid_delta_hz": 596.0,
+        "lufs": -24.79826837025377,
+        "rms_dbfs": -21.195293260594966
+      }
+    },
+    {
+      "mood": "focused",
+      "condition": "P1_bare",
+      "iteration": 1,
+      "prompt": "focused",
+      "prompt_chars": 7,
+      "wall_ms": 141877.2,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1001,
+      "prompt_used": null,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 64,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 140309,
+        "d4_process_ms": 654,
+        "d5_save_ms": 823
+      },
+      "audio_url": "https://jarfwvvbbqsgpfcmsbii.supabase.co/storage/v1/object/public/audio-cache/ea4e4bc04b493a2e1a5eeabc3c596abf8711745939d3cbc8ea3f6134d813d12e.ogg",
+      "quality": {
+        "duration_ms": 3742,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -6.85,
+        "post_spectral_centroid_delta_hz": 446.6,
+        "lufs": -17.321617991743263,
+        "rms_dbfs": -17.53938689475107
+      }
+    },
+    {
+      "mood": "focused",
+      "condition": "P1_bare",
+      "iteration": 2,
+      "prompt": "focused",
+      "prompt_chars": 7,
+      "wall_ms": 121169.2,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1002,
+      "prompt_used": null,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 79,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 119830,
+        "d4_process_ms": 693,
+        "d5_save_ms": 562
+      },
+      "audio_url": "https://jarfwvvbbqsgpfcmsbii.supabase.co/storage/v1/object/public/audio-cache/a72b8bd057d02d33abde6bb449c7085cfe76ba1f6dbc3350eb30447f8ab93c0a.ogg",
+      "quality": {
+        "duration_ms": 4078,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -2.67,
+        "post_spectral_centroid_delta_hz": 1094.7,
+        "lufs": -16.367105875327052,
+        "rms_dbfs": -14.500804718845357
+      }
+    },
+    {
+      "mood": "focused",
+      "condition": "P2_d2_fallback",
+      "iteration": 0,
+      "prompt": "focused minimal music, 85 bpm, A minor, moderate energy, flowing, piano and minimalist synth, no vocals, loopable, suitable for background listening, high quality, atmospheric",
+      "prompt_chars": 175,
+      "wall_ms": 133365.9,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1000,
+      "prompt_used": null,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 57,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 132084,
+        "d4_process_ms": 689,
+        "d5_save_ms": 529
+      },
+      "audio_url": "https://jarfwvvbbqsgpfcmsbii.supabase.co/storage/v1/object/public/audio-cache/e92f7b3b79051b54551200a6f610a3675cce3f3c8ef43baa67d189290b26d3b8.ogg",
+      "quality": {
+        "duration_ms": 6670,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.55,
+        "post_spectral_centroid_delta_hz": 390.2,
+        "lufs": -17.49884947671412,
+        "rms_dbfs": -16.66708532493457
+      }
+    },
+    {
+      "mood": "focused",
+      "condition": "P2_d2_fallback",
+      "iteration": 1,
+      "prompt": "focused minimal music, 85 bpm, A minor, moderate energy, flowing, piano and minimalist synth, no vocals, loopable, suitable for background listening, high quality, atmospheric",
+      "prompt_chars": 175,
+      "wall_ms": 160344.9,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1001,
+      "prompt_used": null,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 64,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 158827,
+        "d4_process_ms": 632,
+        "d5_save_ms": 814
+      },
+      "audio_url": "https://jarfwvvbbqsgpfcmsbii.supabase.co/storage/v1/object/public/audio-cache/dc71e2321157fbecfecd9115bb037860e6546f0130cb5cf41833615fd0372eb2.ogg",
+      "quality": {
+        "duration_ms": 9902,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -5.68,
+        "post_spectral_centroid_delta_hz": 180.1,
+        "lufs": -18.49577593339711,
+        "rms_dbfs": -16.600314716399687
+      }
+    },
+    {
+      "mood": "focused",
+      "condition": "P2_d2_fallback",
+      "iteration": 2,
+      "prompt": "focused minimal music, 85 bpm, A minor, moderate energy, flowing, piano and minimalist synth, no vocals, loopable, suitable for background listening, high quality, atmospheric",
+      "prompt_chars": 175,
+      "wall_ms": 138041.6,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1002,
+      "prompt_used": null,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 59,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 136205,
+        "d4_process_ms": 869,
+        "d5_save_ms": 899
+      },
+      "audio_url": "https://jarfwvvbbqsgpfcmsbii.supabase.co/storage/v1/object/public/audio-cache/68c862fca8699ee3664c458329af72308887ddd961068394cd2f402824e2526b.ogg",
+      "quality": {
+        "duration_ms": 11470,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.62,
+        "post_spectral_centroid_delta_hz": 226.3,
+        "lufs": -17.765455637364656,
+        "rms_dbfs": -16.904259288955508
+      }
+    },
+    {
+      "mood": "focused",
+      "condition": "P3_b4_engineered",
+      "iteration": 0,
+      "prompt": "focused minimal instrumental for deep work at a desk, 85 bpm in A minor, moderate energy and flowing, featuring muted piano, minimal synth and light texture, warm timbre with restrained reverb, evolving gently, no vocals, no percussion hits at the loop point, seamless and loopable, high quality studio recording",
+      "prompt_chars": 312,
+      "wall_ms": 129575.0,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1000,
+      "prompt_used": null,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 121,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 127917,
+        "d4_process_ms": 840,
+        "d5_save_ms": 689
+      },
+      "audio_url": "https://jarfwvvbbqsgpfcmsbii.supabase.co/storage/v1/object/public/audio-cache/996ec216f5c954b362405da962e0b6325a1a52cfa1255f1e1c10270f7062f74b.ogg",
+      "quality": {
+        "duration_ms": 11790,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.87,
+        "post_spectral_centroid_delta_hz": 224.5,
+        "lufs": -18.057831258595396,
+        "rms_dbfs": -16.916588996376298
+      }
+    },
+    {
+      "mood": "focused",
+      "condition": "P3_b4_engineered",
+      "iteration": 1,
+      "prompt": "focused minimal instrumental for deep work at a desk, 85 bpm in A minor, moderate energy and flowing, featuring muted piano, minimal synth and light texture, warm timbre with restrained reverb, evolving gently, no vocals, no percussion hits at the loop point, seamless and loopable, high quality studio recording",
+      "prompt_chars": 312,
+      "wall_ms": 169612.9,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1001,
+      "prompt_used": null,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 65,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 167768,
+        "d4_process_ms": 904,
+        "d5_save_ms": 867
+      },
+      "audio_url": "https://jarfwvvbbqsgpfcmsbii.supabase.co/storage/v1/object/public/audio-cache/6644d56fbe42f3a1b689fc00b5eea6392e67867bf62a1a0c6217144008c129a0.ogg",
+      "quality": {
+        "duration_ms": 3294,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 1.47,
+        "post_spectral_centroid_delta_hz": 1128.0,
+        "lufs": -19.611428326666214,
+        "rms_dbfs": -18.804094099243464
+      }
+    },
+    {
+      "mood": "focused",
+      "condition": "P3_b4_engineered",
+      "iteration": 2,
+      "prompt": "focused minimal instrumental for deep work at a desk, 85 bpm in A minor, moderate energy and flowing, featuring muted piano, minimal synth and light texture, warm timbre with restrained reverb, evolving gently, no vocals, no percussion hits at the loop point, seamless and loopable, high quality studio recording",
+      "prompt_chars": 312,
+      "wall_ms": 125460.9,
+      "error": "HTTP 500: Internal Server Error"
+    },
+    {
+      "mood": "tense",
+      "condition": "P1_bare",
+      "iteration": 0,
+      "prompt": "tense",
+      "prompt_chars": 5,
+      "wall_ms": 101745.3,
+      "error": "HTTP 500: Internal Server Error"
+    },
+    {
+      "mood": "tense",
+      "condition": "P1_bare",
+      "iteration": 1,
+      "prompt": "tense",
+      "prompt_chars": 5,
+      "wall_ms": 128368.0,
+      "error": "HTTP 500: Internal Server Error"
+    },
+    {
+      "mood": "tense",
+      "condition": "P1_bare",
+      "iteration": 2,
+      "prompt": "tense",
+      "prompt_chars": 5,
+      "wall_ms": 108525.8,
+      "error": "HTTP 500: Internal Server Error"
+    },
+    {
+      "mood": "tense",
+      "condition": "P2_d2_fallback",
+      "iteration": 0,
+      "prompt": "tense cinematic music, 100 bpm, C minor, high energy, dynamic, strings tremolo and pulse synth, no vocals, loopable, suitable for background listening, high quality, atmospheric",
+      "prompt_chars": 177,
+      "wall_ms": 158049.3,
+      "error": "HTTP 500: Internal Server Error"
+    },
+    {
+      "mood": "tense",
+      "condition": "P2_d2_fallback",
+      "iteration": 1,
+      "prompt": "tense cinematic music, 100 bpm, C minor, high energy, dynamic, strings tremolo and pulse synth, no vocals, loopable, suitable for background listening, high quality, atmospheric",
+      "prompt_chars": 177,
+      "wall_ms": 111877.9,
+      "error": "HTTP 500: Internal Server Error"
+    },
+    {
+      "mood": "tense",
+      "condition": "P2_d2_fallback",
+      "iteration": 2,
+      "prompt": "tense cinematic music, 100 bpm, C minor, high energy, dynamic, strings tremolo and pulse synth, no vocals, loopable, suitable for background listening, high quality, atmospheric",
+      "prompt_chars": 177,
+      "wall_ms": 112738.9,
+      "error": "HTTP 500: Internal Server Error"
+    },
+    {
+      "mood": "tense",
+      "condition": "P3_b4_engineered",
+      "iteration": 0,
+      "prompt": "tense cinematic instrumental for a suspenseful passage, 100 bpm in C minor, high energy and dynamic, featuring tremolo strings, pulse synth and low percussion, bright timbre with restrained reverb, evolving gently, no vocals, no percussion hits at the loop point, seamless and loopable, high quality studio recording",
+      "prompt_chars": 316,
+      "wall_ms": 109513.3,
+      "error": "HTTP 500: Internal Server Error"
+    },
+    {
+      "mood": "tense",
+      "condition": "P3_b4_engineered",
+      "iteration": 1,
+      "prompt": "tense cinematic instrumental for a suspenseful passage, 100 bpm in C minor, high energy and dynamic, featuring tremolo strings, pulse synth and low percussion, bright timbre with restrained reverb, evolving gently, no vocals, no percussion hits at the loop point, seamless and loopable, high quality studio recording",
+      "prompt_chars": 316,
+      "wall_ms": 109249.1,
+      "error": "HTTP 500: Internal Server Error"
+    },
+    {
+      "mood": "tense",
+      "condition": "P3_b4_engineered",
+      "iteration": 2,
+      "prompt": "tense cinematic instrumental for a suspenseful passage, 100 bpm in C minor, high energy and dynamic, featuring tremolo strings, pulse synth and low percussion, bright timbre with restrained reverb, evolving gently, no vocals, no percussion hits at the loop point, seamless and loopable, high quality studio recording",
+      "prompt_chars": 316,
+      "wall_ms": 110819.6,
+      "error": "HTTP 500: Internal Server Error"
+    },
+    {
+      "mood": "energetic",
+      "condition": "P1_bare",
+      "iteration": 0,
+      "prompt": "energetic",
+      "prompt_chars": 9,
+      "wall_ms": 130313.5,
+      "error": "HTTP 500: Internal Server Error"
+    },
+    {
+      "mood": "energetic",
+      "condition": "P1_bare",
+      "iteration": 1,
+      "prompt": "energetic",
+      "prompt_chars": 9,
+      "wall_ms": 110352.7,
+      "error": "HTTP 500: Internal Server Error"
+    },
+    {
+      "mood": "energetic",
+      "condition": "P1_bare",
+      "iteration": 2,
+      "prompt": "energetic",
+      "prompt_chars": 9,
+      "wall_ms": 125307.3,
+      "error": "HTTP 500: Internal Server Error"
+    },
+    {
+      "mood": "energetic",
+      "condition": "P2_d2_fallback",
+      "iteration": 0,
+      "prompt": "energetic electronic music, 128 bpm, E major, high energy, dynamic, synth and driving percussion, no vocals, loopable, suitable for background listening, high quality, atmospheric",
+      "prompt_chars": 179,
+      "wall_ms": 126757.8,
+      "error": "HTTP 500: Internal Server Error"
+    },
+    {
+      "mood": "energetic",
+      "condition": "P2_d2_fallback",
+      "iteration": 1,
+      "prompt": "energetic electronic music, 128 bpm, E major, high energy, dynamic, synth and driving percussion, no vocals, loopable, suitable for background listening, high quality, atmospheric",
+      "prompt_chars": 179,
+      "wall_ms": 114142.3,
+      "error": "HTTP 500: Internal Server Error"
+    },
+    {
+      "mood": "energetic",
+      "condition": "P2_d2_fallback",
+      "iteration": 2,
+      "prompt": "energetic electronic music, 128 bpm, E major, high energy, dynamic, synth and driving percussion, no vocals, loopable, suitable for background listening, high quality, atmospheric",
+      "prompt_chars": 179,
+      "wall_ms": 123084.6,
+      "error": "HTTP 500: Internal Server Error"
+    },
+    {
+      "mood": "energetic",
+      "condition": "P3_b4_engineered",
+      "iteration": 0,
+      "prompt": "energetic electronic instrumental for an active session, 128 bpm in E major, high energy and dynamic, featuring analog synth, driving bass and crisp percussion, bright timbre with restrained reverb, evolving gently, no vocals, no percussion hits at the loop point, seamless and loopable, high quality studio recording",
+      "prompt_chars": 317,
+      "wall_ms": 137659.7,
+      "error": "HTTP 500: Internal Server Error"
+    },
+    {
+      "mood": "energetic",
+      "condition": "P3_b4_engineered",
+      "iteration": 1,
+      "prompt": "energetic electronic instrumental for an active session, 128 bpm in E major, high energy and dynamic, featuring analog synth, driving bass and crisp percussion, bright timbre with restrained reverb, evolving gently, no vocals, no percussion hits at the loop point, seamless and loopable, high quality studio recording",
+      "prompt_chars": 317,
+      "wall_ms": 118711.0,
+      "error": "HTTP 500: Internal Server Error"
+    },
+    {
+      "mood": "energetic",
+      "condition": "P3_b4_engineered",
+      "iteration": 2,
+      "prompt": "energetic electronic instrumental for an active session, 128 bpm in E major, high energy and dynamic, featuring analog synth, driving bass and crisp percussion, bright timbre with restrained reverb, evolving gently, no vocals, no percussion hits at the loop point, seamless and loopable, high quality studio recording",
+      "prompt_chars": 317,
+      "wall_ms": 115180.2,
+      "error": "HTTP 500: Internal Server Error"
+    },
+    {
+      "mood": "sad",
+      "condition": "P1_bare",
+      "iteration": 0,
+      "prompt": "sad",
+      "prompt_chars": 3,
+      "wall_ms": 104574.3,
+      "error": "HTTP 500: Internal Server Error"
+    },
+    {
+      "mood": "sad",
+      "condition": "P1_bare",
+      "iteration": 1,
+      "prompt": "sad",
+      "prompt_chars": 3,
+      "wall_ms": 125452.0,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1001,
+      "prompt_used": null,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 30,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 121050,
+        "d4_process_ms": 2768,
+        "d5_save_ms": 1586
+      },
+      "audio_url": "https://jarfwvvbbqsgpfcmsbii.supabase.co/storage/v1/object/public/audio-cache/02318881973ce2df8b1a5520bf535074648cf944bb93ea51b5520bf62ddfe02a.ogg",
+      "quality": {
+        "duration_ms": 10158,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 5.56,
+        "post_spectral_centroid_delta_hz": 767.5,
+        "lufs": -18.841715569611132,
+        "rms_dbfs": -17.98421587977125
+      }
+    },
+    {
+      "mood": "sad",
+      "condition": "P1_bare",
+      "iteration": 2,
+      "prompt": "sad",
+      "prompt_chars": 3,
+      "wall_ms": 193431.4,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1002,
+      "prompt_used": null,
+      "timings": {
+        "d1_validate_ms": 1,
+        "d5_cache_check_ms": 61,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 191419,
+        "d4_process_ms": 1256,
+        "d5_save_ms": 649
+      },
+      "audio_url": "https://jarfwvvbbqsgpfcmsbii.supabase.co/storage/v1/object/public/audio-cache/e1f14eb6673c4db3db40bcc42ff04dc718a069b374c8b9a86c12404929f259c9.ogg",
+      "quality": {
+        "duration_ms": 3822,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 2.63,
+        "post_spectral_centroid_delta_hz": 422.5,
+        "lufs": -22.577564913904695,
+        "rms_dbfs": -21.445458747065295
+      }
+    },
+    {
+      "mood": "sad",
+      "condition": "P2_d2_fallback",
+      "iteration": 0,
+      "prompt": "sad cinematic music, 60 bpm, D minor, very low energy, minimal, solo piano and cello, no vocals, loopable, suitable for background listening, high quality, atmospheric",
+      "prompt_chars": 167,
+      "wall_ms": 142279.1,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1000,
+      "prompt_used": null,
+      "timings": {
+        "d1_validate_ms": 1,
+        "d5_cache_check_ms": 61,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 139768,
+        "d4_process_ms": 650,
+        "d5_save_ms": 1766
+      },
+      "audio_url": "https://jarfwvvbbqsgpfcmsbii.supabase.co/storage/v1/object/public/audio-cache/b14eab855dd509fa847ca9277ce8e60bdc916f59eaf7ae9622f64dfb1e95fc92.ogg",
+      "quality": {
+        "duration_ms": 5470,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -4.37,
+        "post_spectral_centroid_delta_hz": 632.9,
+        "lufs": -17.593808370006816,
+        "rms_dbfs": -16.802411328528713
+      }
+    },
+    {
+      "mood": "sad",
+      "condition": "P2_d2_fallback",
+      "iteration": 1,
+      "prompt": "sad cinematic music, 60 bpm, D minor, very low energy, minimal, solo piano and cello, no vocals, loopable, suitable for background listening, high quality, atmospheric",
+      "prompt_chars": 167,
+      "wall_ms": 92530.2,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1001,
+      "prompt_used": null,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 99,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 91231,
+        "d4_process_ms": 630,
+        "d5_save_ms": 540
+      },
+      "audio_url": "https://jarfwvvbbqsgpfcmsbii.supabase.co/storage/v1/object/public/audio-cache/a8a972ecb37ab4a23beb6dd1b0b3ba0f877698766f9555bc8c25c9579857941e.ogg",
+      "quality": {
+        "duration_ms": 5806,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -1.69,
+        "post_spectral_centroid_delta_hz": 300.8,
+        "lufs": -18.450944965940344,
+        "rms_dbfs": -17.59274114362804
+      }
+    },
+    {
+      "mood": "sad",
+      "condition": "P2_d2_fallback",
+      "iteration": 2,
+      "prompt": "sad cinematic music, 60 bpm, D minor, very low energy, minimal, solo piano and cello, no vocals, loopable, suitable for background listening, high quality, atmospheric",
+      "prompt_chars": 167,
+      "wall_ms": 96248.7,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1002,
+      "prompt_used": null,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 74,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 94700,
+        "d4_process_ms": 723,
+        "d5_save_ms": 717
+      },
+      "audio_url": "https://jarfwvvbbqsgpfcmsbii.supabase.co/storage/v1/object/public/audio-cache/af8542210ae81f92af77f5e297ad8735f9ff0475ddbe12dc1c2cbfbe48653a37.ogg",
+      "quality": {
+        "duration_ms": 12334,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 1.46,
+        "post_spectral_centroid_delta_hz": 685.5,
+        "lufs": -18.291744082661584,
+        "rms_dbfs": -17.27788633738313
+      }
+    },
+    {
+      "mood": "sad",
+      "condition": "P3_b4_engineered",
+      "iteration": 0,
+      "prompt": "sad cinematic instrumental for a reflective moment, 60 bpm in D minor, very low energy and minimal, featuring solo piano, cello and low strings, warm timbre with generous reverb, evolving gently, no vocals, no percussion hits at the loop point, seamless and loopable, high quality studio recording",
+      "prompt_chars": 297,
+      "wall_ms": 168702.3,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1000,
+      "prompt_used": null,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 62,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 167064,
+        "d4_process_ms": 764,
+        "d5_save_ms": 802
+      },
+      "audio_url": "https://jarfwvvbbqsgpfcmsbii.supabase.co/storage/v1/object/public/audio-cache/42ea0462e30e7efa4be26d2317debd469617b3e4575f5c5c37d586fe480169f8.ogg",
+      "quality": {
+        "duration_ms": 4702,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.57,
+        "post_spectral_centroid_delta_hz": 496.0,
+        "lufs": -20.160073278727406,
+        "rms_dbfs": -19.03889089414815
+      }
+    },
+    {
+      "mood": "sad",
+      "condition": "P3_b4_engineered",
+      "iteration": 1,
+      "prompt": "sad cinematic instrumental for a reflective moment, 60 bpm in D minor, very low energy and minimal, featuring solo piano, cello and low strings, warm timbre with generous reverb, evolving gently, no vocals, no percussion hits at the loop point, seamless and loopable, high quality studio recording",
+      "prompt_chars": 297,
+      "wall_ms": 133672.3,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1001,
+      "prompt_used": null,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 61,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 132223,
+        "d4_process_ms": 765,
+        "d5_save_ms": 612
+      },
+      "audio_url": "https://jarfwvvbbqsgpfcmsbii.supabase.co/storage/v1/object/public/audio-cache/57cb09db47f637f4318b07a3170030c749e723f719ea799c3fcecb15d4ef181d.ogg",
+      "quality": {
+        "duration_ms": 5166,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -11.74,
+        "post_spectral_centroid_delta_hz": 381.2,
+        "lufs": -32.96126500609524,
+        "rms_dbfs": -31.55883767574118
+      }
+    },
+    {
+      "mood": "sad",
+      "condition": "P3_b4_engineered",
+      "iteration": 2,
+      "prompt": "sad cinematic instrumental for a reflective moment, 60 bpm in D minor, very low energy and minimal, featuring solo piano, cello and low strings, warm timbre with generous reverb, evolving gently, no vocals, no percussion hits at the loop point, seamless and loopable, high quality studio recording",
+      "prompt_chars": 297,
+      "wall_ms": 93128.9,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1002,
+      "prompt_used": null,
+      "timings": {
+        "d1_validate_ms": 1,
+        "d5_cache_check_ms": 54,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 91997,
+        "d4_process_ms": 619,
+        "d5_save_ms": 448
+      },
+      "audio_url": "https://jarfwvvbbqsgpfcmsbii.supabase.co/storage/v1/object/public/audio-cache/cbe7c57004ed9b074b89004356695e7535e9bd572d41cc6176fea54ca032fb0f.ogg",
+      "quality": {
+        "duration_ms": 3758,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -14.11,
+        "post_spectral_centroid_delta_hz": 1125.1,
+        "lufs": -28.72713971706582,
+        "rms_dbfs": -27.273614008409446
+      }
+    }
+  ]
+}

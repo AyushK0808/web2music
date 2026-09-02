@@ -1,6 +1,6 @@
-def build_prompt(profile: dict, prompt_from_b: str = None) -> str:
-    # Prefer Sneha's B4 engineered prompt — it's richer
-    if prompt_from_b and len(prompt_from_b) > 20:
+def build_prompt(profile: dict, prompt_from_b: str = None, force: bool = False) -> str:
+    # Prefer B4 engineered prompt — it's richer
+    if prompt_from_b and (force or len(prompt_from_b) > 20):
         return prompt_from_b
 
     # Fallback: build our own if B didn't send one

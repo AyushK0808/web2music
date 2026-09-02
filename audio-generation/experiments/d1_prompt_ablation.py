@@ -131,7 +131,8 @@ def run(base_url, moods, repeats, duration, timeout, dry_run):
                     continue
 
                 nonce = f"pa-{cond_name}-{mood}-{i}-{int(time.time()*1000)}"
-                payload = payload_for(mood, duration_seconds=duration, nonce=nonce, prompt=prompt)
+                payload = payload_for(mood, duration_seconds=duration, nonce=nonce, prompt=prompt,
+                                      seed_override=1000 + i,force_prompt=True)
                 wall_ms, body, err = request(f"{base_url}/generate", payload, timeout=timeout)
 
                 row = {

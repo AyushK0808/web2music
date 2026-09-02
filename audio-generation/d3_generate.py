@@ -286,6 +286,7 @@ async def generate_audio(
     prompt: str,
     duration_seconds: int = 28,
     priority: int = PRIORITY_REALTIME,
+    seed_override: int = None,
 ) -> tuple:
     """
     Generate audio from prompt using MusicGen. Concurrent calls to this
@@ -326,7 +327,18 @@ async def generate_audio(
     seed_base = random.randint(0, 2**31 - 1)
 
     for attempt in range(1, MAX_RETRIES + 1):
-        seed = seed_base + attempt
+        # seed_override lets a controlled experiment (e.g. the prompt
+        # ablation, which needs the same seed across different prompts to
+        # compare them fairly) pin attempt 1's seed explicitly. Absent an
+        # override, fall through to a random base rather than the old
+        # `42 + attempt` -- that was a pure function of retry count,
+        # identical across every call regardless of prompt/nonce/anything
+        # else, so any two ordinary requests that both succeeded on attempt
+        # 1 got bit-identical seed 43 and therefore bit-identical audio,
+        # silently. attempt still increments off of whichever base is used,
+        # so retries within a single request stay diversified from each
+        # other either way.
+        seed = seed_override if (seed_override is not None and attempt == 1) else seed_base + attempt
         loop = asyncio.get_running_loop()
         future = loop.create_future()
         ahead = _queue.qsize()
