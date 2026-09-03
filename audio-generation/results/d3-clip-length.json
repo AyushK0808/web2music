@@ -1,7 +1,7 @@
 {
-  "started_at": "2026-08-10T23:27:09",
-  "elapsed_s": 0.0,
-  "offline_source": "results/d2-loop.json",
+  "started_at": "2026-09-01T04:26:49",
+  "elapsed_s": 4941.7,
+  "offline_source": null,
   "config": {
     "durations": [
       5,
@@ -19,2460 +19,1615 @@
   },
   "summary": {
     "per_duration": {
-      "10": {
-        "n": 2,
+      "5": {
+        "n": 9,
         "delivered_ms": {
-          "n": 2,
-          "min": 3246,
-          "p50": 6382,
-          "p95": 6382,
-          "max": 6382,
-          "mean": 4814.0,
-          "stdev": 2217.487
+          "n": 9,
+          "min": 2942,
+          "p50": 3774,
+          "p95": 4334,
+          "max": 4334,
+          "mean": 3660.222,
+          "stdev": 580.562
         },
         "duration_retention": {
-          "n": 2,
-          "min": 0.325,
-          "p50": 0.638,
-          "p95": 0.638,
-          "max": 0.638,
-          "mean": 0.482,
-          "stdev": 0.221
+          "n": 9,
+          "min": 0.588,
+          "p50": 0.755,
+          "p95": 0.867,
+          "max": 0.867,
+          "mean": 0.732,
+          "stdev": 0.116
         },
         "seam_energy_delta_db": {
-          "n": 2,
-          "min": 1.16,
-          "p50": 5.62,
-          "p95": 5.62,
-          "max": 5.62,
-          "mean": 3.39,
-          "stdev": 3.154
+          "n": 9,
+          "min": 0.13,
+          "p50": 1.24,
+          "p95": 5.43,
+          "max": 5.43,
+          "mean": 1.512,
+          "stdev": 1.601
         },
         "loop_cost": {
-          "n": 2,
-          "min": 21.442,
-          "p50": 52.836,
-          "p95": 52.836,
-          "max": 52.836,
-          "mean": 37.139,
-          "stdev": 22.199
+          "n": 9,
+          "min": 1.862,
+          "p50": 21.824,
+          "p95": 75.173,
+          "max": 75.173,
+          "mean": 23.83,
+          "stdev": 21.855
         },
-        "loops_per_minute": 9.4,
+        "loops_per_minute": 15.9,
         "wall_ms": {
-          "n": 0
+          "n": 9,
+          "min": 184148.7,
+          "p50": 189365.9,
+          "p95": 299403.8,
+          "max": 299403.8,
+          "mean": 206864.256,
+          "stdev": 36767.639
         },
         "d3_generate_ms": {
-          "n": 0
+          "n": 9,
+          "min": 183611,
+          "p50": 189158,
+          "p95": 298915,
+          "max": 298915,
+          "mean": 206563.889,
+          "stdev": 36702.345
+        }
+      },
+      "10": {
+        "n": 9,
+        "delivered_ms": {
+          "n": 9,
+          "min": 3086,
+          "p50": 5422,
+          "p95": 9518,
+          "max": 9518,
+          "mean": 5878.889,
+          "stdev": 2319.27
+        },
+        "duration_retention": {
+          "n": 9,
+          "min": 0.309,
+          "p50": 0.542,
+          "p95": 0.952,
+          "max": 0.952,
+          "mean": 0.588,
+          "stdev": 0.232
+        },
+        "seam_energy_delta_db": {
+          "n": 9,
+          "min": 0.35,
+          "p50": 2.49,
+          "p95": 8.68,
+          "max": 8.68,
+          "mean": 3.401,
+          "stdev": 2.951
+        },
+        "loop_cost": {
+          "n": 9,
+          "min": 4.602,
+          "p50": 31.666,
+          "p95": 116.636,
+          "max": 116.636,
+          "mean": 37.455,
+          "stdev": 35.592
+        },
+        "loops_per_minute": 11.07,
+        "wall_ms": {
+          "n": 9,
+          "min": 186275.4,
+          "p50": 188512.6,
+          "p95": 219295.4,
+          "max": 219295.4,
+          "mean": 193480.211,
+          "stdev": 11695.235
+        },
+        "d3_generate_ms": {
+          "n": 9,
+          "min": 186045,
+          "p50": 188264,
+          "p95": 218990,
+          "max": 218990,
+          "mean": 193209.222,
+          "stdev": 11687.559
         }
       },
       "15": {
-        "n": 1,
+        "n": 9,
         "delivered_ms": {
-          "n": 1,
-          "min": 6382,
-          "p50": 6382,
-          "p95": 6382,
-          "max": 6382,
-          "mean": 6382.0,
-          "stdev": 0.0
+          "n": 9,
+          "min": 4062,
+          "p50": 5278,
+          "p95": 10862,
+          "max": 10862,
+          "mean": 6838.889,
+          "stdev": 2889.286
         },
         "duration_retention": {
-          "n": 1,
-          "min": 0.425,
-          "p50": 0.425,
-          "p95": 0.425,
-          "max": 0.425,
-          "mean": 0.425,
-          "stdev": 0.0
+          "n": 9,
+          "min": 0.271,
+          "p50": 0.352,
+          "p95": 0.724,
+          "max": 0.724,
+          "mean": 0.456,
+          "stdev": 0.193
         },
         "seam_energy_delta_db": {
-          "n": 1,
-          "min": 5.61,
-          "p50": 5.61,
-          "p95": 5.61,
-          "max": 5.61,
-          "mean": 5.61,
-          "stdev": 0.0
+          "n": 9,
+          "min": 0.22,
+          "p50": 1.73,
+          "p95": 3.26,
+          "max": 3.26,
+          "mean": 1.683,
+          "stdev": 1.066
         },
         "loop_cost": {
-          "n": 1,
-          "min": 52.742,
-          "p50": 52.742,
-          "p95": 52.742,
-          "max": 52.742,
-          "mean": 52.742,
-          "stdev": 0.0
+          "n": 9,
+          "min": 1.88,
+          "p50": 14.448,
+          "p95": 27.883,
+          "max": 27.883,
+          "mean": 15.16,
+          "stdev": 8.458
         },
-        "loops_per_minute": 9.4,
+        "loops_per_minute": 11.37,
         "wall_ms": {
-          "n": 0
+          "n": 9,
+          "min": 20036.1,
+          "p50": 20212.7,
+          "p95": 196382.5,
+          "max": 196382.5,
+          "mean": 73863.978,
+          "stdev": 81269.393
         },
         "d3_generate_ms": {
-          "n": 0
+          "n": 9,
+          "min": 19811,
+          "p50": 19979,
+          "p95": 196099,
+          "max": 196099,
+          "mean": 73616.556,
+          "stdev": 81254.379
         }
       },
       "20": {
-        "n": 1,
+        "n": 9,
         "delivered_ms": {
-          "n": 1,
-          "min": 10366,
-          "p50": 10366,
-          "p95": 10366,
-          "max": 10366,
-          "mean": 10366.0,
-          "stdev": 0.0
+          "n": 9,
+          "min": 6142,
+          "p50": 13198,
+          "p95": 18302,
+          "max": 18302,
+          "mean": 12074.444,
+          "stdev": 4659.592
         },
         "duration_retention": {
-          "n": 1,
-          "min": 0.518,
-          "p50": 0.518,
-          "p95": 0.518,
-          "max": 0.518,
-          "mean": 0.518,
-          "stdev": 0.0
+          "n": 9,
+          "min": 0.307,
+          "p50": 0.66,
+          "p95": 0.915,
+          "max": 0.915,
+          "mean": 0.604,
+          "stdev": 0.233
         },
         "seam_energy_delta_db": {
-          "n": 1,
-          "min": 10.6,
-          "p50": 10.6,
-          "p95": 10.6,
-          "max": 10.6,
-          "mean": 10.6,
-          "stdev": 0.0
+          "n": 9,
+          "min": 0.31,
+          "p50": 2.73,
+          "p95": 13.86,
+          "max": 13.86,
+          "mean": 4.967,
+          "stdev": 4.568
         },
         "loop_cost": {
-          "n": 1,
-          "min": 61.354,
-          "p50": 61.354,
-          "p95": 61.354,
-          "max": 61.354,
-          "mean": 61.354,
-          "stdev": 0.0
+          "n": 9,
+          "min": 1.267,
+          "p50": 23.313,
+          "p95": 48.993,
+          "max": 48.993,
+          "mean": 22.709,
+          "stdev": 15.836
         },
-        "loops_per_minute": 5.79,
+        "loops_per_minute": 4.55,
         "wall_ms": {
-          "n": 0
+          "n": 9,
+          "min": 28337.0,
+          "p50": 28699.9,
+          "p95": 30500.5,
+          "max": 30500.5,
+          "mean": 28943.944,
+          "stdev": 640.435
         },
         "d3_generate_ms": {
-          "n": 0
+          "n": 9,
+          "min": 28036,
+          "p50": 28416,
+          "p95": 30147,
+          "max": 30147,
+          "mean": 28640.889,
+          "stdev": 625.865
         }
       },
       "28": {
-        "n": 126,
+        "n": 9,
         "delivered_ms": {
-          "n": 126,
-          "min": 2958,
-          "p50": 13902,
-          "p95": 25934,
-          "max": 26894,
-          "mean": 13496.024,
-          "stdev": 7089.126
+          "n": 9,
+          "min": 5710,
+          "p50": 13646,
+          "p95": 22222,
+          "max": 22222,
+          "mean": 13230.0,
+          "stdev": 6804.083
         },
         "duration_retention": {
-          "n": 126,
-          "min": 0.106,
-          "p50": 0.496,
-          "p95": 0.926,
-          "max": 0.961,
-          "mean": 0.482,
-          "stdev": 0.253
+          "n": 9,
+          "min": 0.204,
+          "p50": 0.487,
+          "p95": 0.794,
+          "max": 0.794,
+          "mean": 0.473,
+          "stdev": 0.243
         },
         "seam_energy_delta_db": {
-          "n": 126,
-          "min": 0.09,
-          "p50": 2.64,
-          "p95": 10.57,
-          "max": 12.84,
-          "mean": 3.51,
-          "stdev": 3.116
+          "n": 9,
+          "min": 0.06,
+          "p50": 2.52,
+          "p95": 5.72,
+          "max": 5.72,
+          "mean": 2.976,
+          "stdev": 2.096
         },
         "loop_cost": {
-          "n": 126,
-          "min": 0.225,
-          "p50": 12.471,
-          "p95": 73.186,
-          "max": 218.458,
-          "mean": 23.203,
-          "stdev": 31.443
+          "n": 9,
+          "min": 0.63,
+          "p50": 11.564,
+          "p95": 51.827,
+          "max": 51.827,
+          "mean": 17.688,
+          "stdev": 18.729
         },
-        "loops_per_minute": 4.32,
+        "loops_per_minute": 4.4,
         "wall_ms": {
-          "n": 0
+          "n": 9,
+          "min": 44340.1,
+          "p50": 44777.2,
+          "p95": 45276.9,
+          "max": 45276.9,
+          "mean": 44755.911,
+          "stdev": 320.08
         },
         "d3_generate_ms": {
-          "n": 0
+          "n": 9,
+          "min": 43960,
+          "p50": 44407,
+          "p95": 44965,
+          "max": 44965,
+          "mean": 44396.222,
+          "stdev": 330.149
         }
       }
     },
     "retention_fit": {
-      "n": 130,
-      "slope": 0.0005363988461642142,
-      "intercept": 0.46700833026302785,
-      "r": 0.005526049954111456
+      "n": 45,
+      "slope": -0.008858841249824856,
+      "intercept": 0.7086134790528233,
+      "r": -0.31957641629089084
     },
     "delivered_fit": {
-      "n": 130,
-      "slope": 0.4882786369640819,
-      "intercept": -0.17405658647927247,
-      "r": 0.17730104652901094
+      "n": 45,
+      "slope": 0.44563710242398763,
+      "intercept": 1.384550091074682,
+      "r": 0.6683527766177287
     },
-    "verdict": "retention is roughly flat in requested length \u2014 the detector keeps a constant fraction, so the choice is a straight latency/loop-frequency trade and the loop-cost column decides it."
+    "verdict": "no clean relationship; report the per-duration table and do not fit a line."
   },
   "rows": [
     {
-      "duration_seconds": 15,
+      "duration_seconds": 5,
       "mood": "calm",
       "iteration": 0,
-      "wall_ms": null,
+      "wall_ms": 299403.8,
       "error": null,
-      "is_fallback": true,
-      "quality": {
-        "duration_ms": 10670,
-        "duration_ratio": 0.711,
-        "post_energy_delta_db": -4.98,
-        "post_spectral_centroid_delta_hz": 191.7,
-        "lufs": -19.44,
-        "loop_cost": 28.0037488284911
-      }
-    },
-    {
-      "duration_seconds": 15,
-      "mood": "curious",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": true,
-      "quality": {
-        "duration_ms": 8766,
-        "duration_ratio": 0.584,
-        "post_energy_delta_db": -0.43,
-        "post_spectral_centroid_delta_hz": 999.9,
-        "lufs": -18.16,
-        "loop_cost": 2.943189596167009
-      }
-    },
-    {
-      "duration_seconds": 15,
-      "mood": "dark",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": true,
-      "quality": {
-        "duration_ms": 5294,
-        "duration_ratio": 0.353,
-        "post_energy_delta_db": -3.11,
-        "post_spectral_centroid_delta_hz": 113.2,
-        "lufs": -18.05,
-        "loop_cost": 35.24744994333207
-      }
-    },
-    {
-      "duration_seconds": 15,
-      "mood": "energetic",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": true,
-      "quality": {
-        "duration_ms": 8654,
-        "duration_ratio": 0.577,
-        "post_energy_delta_db": -0.63,
-        "post_spectral_centroid_delta_hz": 276.6,
-        "lufs": -20.63,
-        "loop_cost": 4.367922348047146
-      }
-    },
-    {
-      "duration_seconds": 15,
-      "mood": "focused",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": true,
-      "quality": {
-        "duration_ms": 10350,
-        "duration_ratio": 0.69,
-        "post_energy_delta_db": 2.31,
-        "post_spectral_centroid_delta_hz": 618.1,
-        "lufs": -18.28,
-        "loop_cost": 13.391304347826088
-      }
-    },
-    {
-      "duration_seconds": 15,
-      "mood": "joyful",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": true,
-      "quality": {
-        "duration_ms": 3198,
-        "duration_ratio": 0.213,
-        "post_energy_delta_db": -40.41,
-        "post_spectral_centroid_delta_hz": 1004.1,
-        "lufs": -20.97,
-        "loop_cost": 758.1613508442776
-      }
-    },
-    {
-      "duration_seconds": 15,
-      "mood": "neutral",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": true,
-      "quality": {
-        "duration_ms": 10542,
-        "duration_ratio": 0.703,
-        "post_energy_delta_db": 1.87,
-        "post_spectral_centroid_delta_hz": 561.5,
-        "lufs": -17.9,
-        "loop_cost": 10.643141718838931
-      }
-    },
-    {
-      "duration_seconds": 15,
-      "mood": "nostalgic",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": true,
-      "quality": {
-        "duration_ms": 11742,
-        "duration_ratio": 0.783,
-        "post_energy_delta_db": 0.43,
-        "post_spectral_centroid_delta_hz": 205.3,
-        "lufs": -17.94,
-        "loop_cost": 2.197240674501788
-      }
-    },
-    {
-      "duration_seconds": 15,
-      "mood": "sad",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": true,
-      "quality": {
-        "duration_ms": 5230,
-        "duration_ratio": 0.349,
-        "post_energy_delta_db": -4.27,
-        "post_spectral_centroid_delta_hz": 557.4,
-        "lufs": -18.97,
-        "loop_cost": 48.98661567877628
-      }
-    },
-    {
-      "duration_seconds": 15,
-      "mood": "tense",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": true,
-      "quality": {
-        "duration_ms": 6270,
-        "duration_ratio": 0.418,
-        "post_energy_delta_db": -17.09,
-        "post_spectral_centroid_delta_hz": 689.8,
-        "lufs": -17.32,
-        "loop_cost": 163.54066985645935
-      }
-    },
-    {
-      "duration_seconds": 15,
-      "mood": "uplifting",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": true,
-      "quality": {
-        "duration_ms": 8734,
-        "duration_ratio": 0.582,
-        "post_energy_delta_db": 2.15,
-        "post_spectral_centroid_delta_hz": 437.2,
-        "lufs": -18.1,
-        "loop_cost": 14.769864895809478
-      }
-    },
-    {
-      "duration_seconds": 10,
-      "mood": "focused",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
+      "cache": "miss",
       "is_fallback": false,
+      "generation_seed": 1895185847,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 75,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 298915,
+        "d4_process_ms": 315,
+        "d5_save_ms": 25
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/d3e0c3fbc975059a567df31660e8889ffe1c0d5e9c9b38acb7892130d7324241.ogg",
       "quality": {
-        "duration_ms": 3246,
-        "duration_ratio": 0.325,
-        "post_energy_delta_db": -1.16,
-        "post_spectral_centroid_delta_hz": 762.9,
-        "lufs": -18.85,
-        "loop_cost": 21.441774491682068
+        "duration_ms": 4334,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -5.43,
+        "post_spectral_centroid_delta_hz": 253.5,
+        "lufs": -20.15242967961659,
+        "rms_dbfs": -18.294186539735627,
+        "duration_ratio": 0.8668,
+        "loop_cost": 75.17305029995386
       }
     },
     {
-      "duration_seconds": 28,
+      "duration_seconds": 5,
       "mood": "calm",
-      "iteration": 0,
-      "wall_ms": null,
+      "iteration": 1,
+      "wall_ms": 188494.3,
       "error": null,
+      "cache": "miss",
       "is_fallback": false,
+      "generation_seed": 1344401583,
+      "timings": {
+        "d1_validate_ms": 2,
+        "d5_cache_check_ms": 98,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 188294,
+        "d4_process_ms": 122,
+        "d5_save_ms": 26
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/525aaa9f97dd27d4e4a94c3623d6daa251eacac0073eee41fcf5607750378853.ogg",
       "quality": {
-        "duration_ms": 6750,
-        "duration_ratio": 0.241,
-        "post_energy_delta_db": -2.52,
-        "post_spectral_centroid_delta_hz": 1027.5,
-        "lufs": -18.34,
-        "loop_cost": 22.400000000000002
+        "duration_ms": 2942,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -1.24,
+        "post_spectral_centroid_delta_hz": 894.5,
+        "lufs": -19.664503413612408,
+        "rms_dbfs": -18.28396781721829,
+        "duration_ratio": 0.5884,
+        "loop_cost": 25.28891910265126
       }
     },
     {
-      "duration_seconds": 28,
+      "duration_seconds": 5,
       "mood": "calm",
-      "iteration": 0,
-      "wall_ms": null,
+      "iteration": 2,
+      "wall_ms": 210187.1,
       "error": null,
+      "cache": "miss",
       "is_fallback": false,
-      "quality": {
-        "duration_ms": 18606,
-        "duration_ratio": 0.664,
-        "post_energy_delta_db": -0.93,
-        "post_spectral_centroid_delta_hz": 230.4,
-        "lufs": -17.31,
-        "loop_cost": 2.9990325701386653
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "calm",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 19854,
-        "duration_ratio": 0.709,
-        "post_energy_delta_db": -2.16,
-        "post_spectral_centroid_delta_hz": 1485.6,
-        "lufs": -17.63,
-        "loop_cost": 6.527651858567543
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "calm",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 18062,
-        "duration_ratio": 0.645,
-        "post_energy_delta_db": -0.44,
-        "post_spectral_centroid_delta_hz": 118.5,
-        "lufs": -18.09,
-        "loop_cost": 1.4616321559074301
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "calm",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 9374,
-        "duration_ratio": 0.335,
-        "post_energy_delta_db": -0.33,
-        "post_spectral_centroid_delta_hz": 695.5,
-        "lufs": -18.8,
-        "loop_cost": 2.11222530403243
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "calm",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 10350,
-        "duration_ratio": 0.37,
-        "post_energy_delta_db": -5.85,
-        "post_spectral_centroid_delta_hz": 893.9,
-        "lufs": -20.06,
-        "loop_cost": 33.91304347826087
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "calm",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 19822,
-        "duration_ratio": 0.708,
-        "post_energy_delta_db": 0.76,
-        "post_spectral_centroid_delta_hz": 326.7,
-        "lufs": -17.78,
-        "loop_cost": 2.300474220563011
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "calm",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 17662,
-        "duration_ratio": 0.631,
-        "post_energy_delta_db": 0.87,
-        "post_spectral_centroid_delta_hz": 967.2,
-        "lufs": -18.93,
-        "loop_cost": 2.9554976786320917
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "curious",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 4254,
-        "duration_ratio": 0.152,
-        "post_energy_delta_db": -1.39,
-        "post_spectral_centroid_delta_hz": 492.8,
-        "lufs": -22.29,
-        "loop_cost": 19.605077574047954
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "uplifting",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 12446,
-        "duration_ratio": 0.445,
-        "post_energy_delta_db": -2.14,
-        "post_spectral_centroid_delta_hz": 644.7,
-        "lufs": -18.1,
-        "loop_cost": 10.316567571910655
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "neutral",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 7902,
-        "duration_ratio": 0.282,
-        "post_energy_delta_db": -7.42,
-        "post_spectral_centroid_delta_hz": 317.9,
-        "lufs": -20.62,
-        "loop_cost": 56.34016704631739
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "energetic",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 4878,
-        "duration_ratio": 0.174,
-        "post_energy_delta_db": -5.95,
-        "post_spectral_centroid_delta_hz": 789.2,
-        "lufs": -21.88,
-        "loop_cost": 73.18573185731857
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "calm",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 16462,
-        "duration_ratio": 0.588,
-        "post_energy_delta_db": -2.45,
-        "post_spectral_centroid_delta_hz": 1173.9,
-        "lufs": -17.4,
-        "loop_cost": 8.929656177864173
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "energetic",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 16110,
-        "duration_ratio": 0.575,
-        "post_energy_delta_db": -4.93,
-        "post_spectral_centroid_delta_hz": 554.5,
-        "lufs": -18.5,
-        "loop_cost": 18.36126629422719
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "energetic",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 16334,
-        "duration_ratio": 0.583,
-        "post_energy_delta_db": -1.56,
-        "post_spectral_centroid_delta_hz": 276.3,
-        "lufs": -17.95,
-        "loop_cost": 5.730378351904004
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "focused",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 10830,
-        "duration_ratio": 0.387,
-        "post_energy_delta_db": -2.7,
-        "post_spectral_centroid_delta_hz": 1322.0,
-        "lufs": -17.8,
-        "loop_cost": 14.958448753462607
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "energetic",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 6174,
-        "duration_ratio": 0.221,
-        "post_energy_delta_db": 2.63,
-        "post_spectral_centroid_delta_hz": 130.1,
-        "lufs": -20.39,
-        "loop_cost": 25.558794946550044
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "energetic",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 5614,
-        "duration_ratio": 0.201,
-        "post_energy_delta_db": -5.01,
-        "post_spectral_centroid_delta_hz": 381.0,
-        "lufs": -14.25,
-        "loop_cost": 53.54470965443534
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "energetic",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 26142,
-        "duration_ratio": 0.934,
-        "post_energy_delta_db": -8.69,
-        "post_spectral_centroid_delta_hz": 50.2,
-        "lufs": -18.03,
-        "loop_cost": 19.94491622676153
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "energetic",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 25934,
-        "duration_ratio": 0.926,
-        "post_energy_delta_db": -2.56,
-        "post_spectral_centroid_delta_hz": 963.6,
-        "lufs": -19.13,
-        "loop_cost": 5.92272692218709
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "energetic",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 5614,
-        "duration_ratio": 0.201,
-        "post_energy_delta_db": 0.95,
-        "post_spectral_centroid_delta_hz": 95.5,
-        "lufs": -20.38,
-        "loop_cost": 10.15318845742786
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "energetic",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 6462,
-        "duration_ratio": 0.231,
-        "post_energy_delta_db": -9.13,
-        "post_spectral_centroid_delta_hz": 344.4,
-        "lufs": -14.32,
-        "loop_cost": 84.77251624883938
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "focused",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 11310,
-        "duration_ratio": 0.404,
-        "post_energy_delta_db": -12.09,
-        "post_spectral_centroid_delta_hz": 83.3,
-        "lufs": -18.39,
-        "loop_cost": 64.13793103448276
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "focused",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 23694,
-        "duration_ratio": 0.846,
-        "post_energy_delta_db": 3.66,
-        "post_spectral_centroid_delta_hz": 170.9,
-        "lufs": -18.02,
-        "loop_cost": 9.268169156748545
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "focused",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 6622,
-        "duration_ratio": 0.236,
-        "post_energy_delta_db": -5.57,
-        "post_spectral_centroid_delta_hz": 268.7,
-        "lufs": -17.78,
-        "loop_cost": 50.468136514648144
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "focused",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 9326,
-        "duration_ratio": 0.333,
-        "post_energy_delta_db": -2.81,
-        "post_spectral_centroid_delta_hz": 68.0,
-        "lufs": -14.86,
-        "loop_cost": 18.078490242333263
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "focused",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 10222,
-        "duration_ratio": 0.365,
-        "post_energy_delta_db": -12.21,
-        "post_spectral_centroid_delta_hz": 261.7,
-        "lufs": -16.11,
-        "loop_cost": 71.66894932498533
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "focused",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 14846,
-        "duration_ratio": 0.53,
-        "post_energy_delta_db": 3.63,
-        "post_spectral_centroid_delta_hz": 1013.4,
-        "lufs": -18.09,
-        "loop_cost": 14.670618348376667
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "focused",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 7950,
-        "duration_ratio": 0.284,
-        "post_energy_delta_db": -4.24,
-        "post_spectral_centroid_delta_hz": 177.7,
-        "lufs": -17.4,
-        "loop_cost": 32.0
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "focused",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 17982,
-        "duration_ratio": 0.642,
-        "post_energy_delta_db": -3.88,
-        "post_spectral_centroid_delta_hz": 244.3,
-        "lufs": -17.28,
-        "loop_cost": 12.94627961294628
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "focused",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
+      "generation_seed": 1276391614,
+      "timings": {
+        "d1_validate_ms": 1,
+        "d5_cache_check_ms": 14,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 209980,
+        "d4_process_ms": 150,
+        "d5_save_ms": 18
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/514bc9114b97fad79a71da7c2e3a52e7fa1ba88fcb5b629166c7cca99cace50c.ogg",
       "quality": {
         "duration_ms": 4318,
-        "duration_ratio": 0.154,
-        "post_energy_delta_db": -2.4,
-        "post_spectral_centroid_delta_hz": 807.3,
-        "lufs": -19.12,
-        "loop_cost": 33.348772579898096
+        "sample_rate": 48000,
+        "post_energy_delta_db": 2.04,
+        "post_spectral_centroid_delta_hz": 782.8,
+        "lufs": -18.039126131761776,
+        "rms_dbfs": -15.149913777697538,
+        "duration_ratio": 0.8636,
+        "loop_cost": 28.346456692913385
       }
     },
     {
-      "duration_seconds": 28,
-      "mood": "joyful",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 12190,
-        "duration_ratio": 0.435,
-        "post_energy_delta_db": -1.9,
-        "post_spectral_centroid_delta_hz": 1655.5,
-        "lufs": -18.06,
-        "loop_cost": 9.351927809680065
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "joyful",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 6718,
-        "duration_ratio": 0.24,
-        "post_energy_delta_db": -4.15,
-        "post_spectral_centroid_delta_hz": 769.5,
-        "lufs": -16.38,
-        "loop_cost": 37.0646025602858
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "joyful",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 6318,
-        "duration_ratio": 0.226,
-        "post_energy_delta_db": -1.31,
-        "post_spectral_centroid_delta_hz": 457.0,
-        "lufs": -18.62,
-        "loop_cost": 12.440645773979108
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "joyful",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 5758,
-        "duration_ratio": 0.206,
-        "post_energy_delta_db": -10.13,
-        "post_spectral_centroid_delta_hz": 1075.4,
-        "lufs": -23.91,
-        "loop_cost": 105.55748523792984
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "joyful",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 24014,
-        "duration_ratio": 0.858,
-        "post_energy_delta_db": -8.43,
-        "post_spectral_centroid_delta_hz": 1021.2,
-        "lufs": -18.12,
-        "loop_cost": 21.062713417173313
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "joyful",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 13406,
-        "duration_ratio": 0.479,
-        "post_energy_delta_db": 1.83,
-        "post_spectral_centroid_delta_hz": 771.4,
-        "lufs": -18.54,
-        "loop_cost": 8.190362524242877
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "joyful",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 23998,
-        "duration_ratio": 0.857,
-        "post_energy_delta_db": 3.55,
-        "post_spectral_centroid_delta_hz": 909.7,
-        "lufs": -17.95,
-        "loop_cost": 8.875739644970412
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "joyful",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 4494,
-        "duration_ratio": 0.161,
-        "post_energy_delta_db": 0.66,
-        "post_spectral_centroid_delta_hz": 1415.8,
-        "lufs": -23.51,
-        "loop_cost": 8.811748998664887
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "joyful",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 8270,
-        "duration_ratio": 0.295,
-        "post_energy_delta_db": 0.75,
-        "post_spectral_centroid_delta_hz": 751.9,
-        "lufs": -21.98,
-        "loop_cost": 5.441354292623942
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "sad",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 5742,
-        "duration_ratio": 0.205,
-        "post_energy_delta_db": -2.93,
-        "post_spectral_centroid_delta_hz": 689.1,
-        "lufs": -18.12,
-        "loop_cost": 30.616509926854757
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "sad",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 17230,
-        "duration_ratio": 0.615,
-        "post_energy_delta_db": -1.56,
-        "post_spectral_centroid_delta_hz": 1326.6,
-        "lufs": -18.22,
-        "loop_cost": 5.43238537434707
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "sad",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 4958,
-        "duration_ratio": 0.177,
-        "post_energy_delta_db": -0.52,
-        "post_spectral_centroid_delta_hz": 336.5,
-        "lufs": -18.27,
-        "loop_cost": 6.292860024203308
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "sad",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 17742,
-        "duration_ratio": 0.634,
-        "post_energy_delta_db": 0.39,
-        "post_spectral_centroid_delta_hz": 887.5,
-        "lufs": -17.75,
-        "loop_cost": 1.3189042948934733
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "sad",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 24030,
-        "duration_ratio": 0.858,
-        "post_energy_delta_db": -0.09,
-        "post_spectral_centroid_delta_hz": 1310.8,
-        "lufs": -18.2,
-        "loop_cost": 0.2247191011235955
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "sad",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 26574,
-        "duration_ratio": 0.949,
-        "post_energy_delta_db": -3.51,
-        "post_spectral_centroid_delta_hz": 648.5,
-        "lufs": -17.85,
-        "loop_cost": 7.92503951230526
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "sad",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 5838,
-        "duration_ratio": 0.208,
-        "post_energy_delta_db": 1.99,
-        "post_spectral_centroid_delta_hz": 172.9,
-        "lufs": -18.47,
-        "loop_cost": 20.452209660842755
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "sad",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 13902,
-        "duration_ratio": 0.496,
-        "post_energy_delta_db": 0.5,
-        "post_spectral_centroid_delta_hz": 699.5,
-        "lufs": -18.43,
-        "loop_cost": 2.1579628830384117
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "dark",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 17774,
-        "duration_ratio": 0.635,
-        "post_energy_delta_db": 4.01,
-        "post_spectral_centroid_delta_hz": 964.5,
-        "lufs": -17.88,
-        "loop_cost": 13.536626533138291
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "sad",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 21166,
-        "duration_ratio": 0.756,
-        "post_energy_delta_db": -2.83,
-        "post_spectral_centroid_delta_hz": 839.1,
-        "lufs": -18.22,
-        "loop_cost": 8.022299914957951
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "dark",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 8382,
-        "duration_ratio": 0.299,
-        "post_energy_delta_db": -0.23,
-        "post_spectral_centroid_delta_hz": 716.2,
-        "lufs": -15.65,
-        "loop_cost": 1.6463851109520402
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "dark",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 20318,
-        "duration_ratio": 0.726,
-        "post_energy_delta_db": 1.61,
-        "post_spectral_centroid_delta_hz": 15.3,
-        "lufs": -18.13,
-        "loop_cost": 4.754404961118221
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "dark",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 6958,
-        "duration_ratio": 0.248,
-        "post_energy_delta_db": -12.84,
-        "post_spectral_centroid_delta_hz": 671.9,
-        "lufs": -21.88,
-        "loop_cost": 110.72147168726644
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "dark",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 5614,
-        "duration_ratio": 0.201,
-        "post_energy_delta_db": 2.07,
-        "post_spectral_centroid_delta_hz": 161.0,
-        "lufs": -18.01,
-        "loop_cost": 22.123263270395437
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "dark",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 5022,
-        "duration_ratio": 0.179,
-        "post_energy_delta_db": -0.49,
-        "post_spectral_centroid_delta_hz": 507.5,
-        "lufs": -22.54,
-        "loop_cost": 5.854241338112305
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "dark",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 6382,
-        "duration_ratio": 0.228,
-        "post_energy_delta_db": -1.58,
-        "post_spectral_centroid_delta_hz": 160.2,
-        "lufs": -15.56,
-        "loop_cost": 14.85427765590724
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "dark",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 19934,
-        "duration_ratio": 0.712,
-        "post_energy_delta_db": 3.25,
-        "post_spectral_centroid_delta_hz": 375.7,
-        "lufs": -17.99,
-        "loop_cost": 9.78228152904585
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "dark",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 25966,
-        "duration_ratio": 0.927,
-        "post_energy_delta_db": -9.43,
-        "post_spectral_centroid_delta_hz": 292.2,
-        "lufs": -17.86,
-        "loop_cost": 21.790033120234153
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "nostalgic",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 3470,
-        "duration_ratio": 0.124,
-        "post_energy_delta_db": -9.9,
-        "post_spectral_centroid_delta_hz": 458.5,
-        "lufs": -23.22,
-        "loop_cost": 171.18155619596544
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "nostalgic",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 17310,
-        "duration_ratio": 0.618,
-        "post_energy_delta_db": -4.72,
-        "post_spectral_centroid_delta_hz": 536.8,
-        "lufs": -16.59,
-        "loop_cost": 16.36048526863085
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "nostalgic",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 17358,
-        "duration_ratio": 0.62,
-        "post_energy_delta_db": -1.48,
-        "post_spectral_centroid_delta_hz": 215.1,
-        "lufs": -17.06,
-        "loop_cost": 5.115796750777739
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "nostalgic",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 25854,
-        "duration_ratio": 0.923,
-        "post_energy_delta_db": 1.72,
-        "post_spectral_centroid_delta_hz": 319.0,
-        "lufs": -18.19,
-        "loop_cost": 3.9916453933627287
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "nostalgic",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 4686,
-        "duration_ratio": 0.167,
-        "post_energy_delta_db": -0.98,
-        "post_spectral_centroid_delta_hz": 209.2,
-        "lufs": -16.07,
-        "loop_cost": 12.548015364916774
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "nostalgic",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 3870,
-        "duration_ratio": 0.138,
-        "post_energy_delta_db": -6.39,
-        "post_spectral_centroid_delta_hz": 919.3,
-        "lufs": -15.3,
-        "loop_cost": 99.06976744186045
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "nostalgic",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 4638,
-        "duration_ratio": 0.166,
-        "post_energy_delta_db": -4.94,
-        "post_spectral_centroid_delta_hz": 780.0,
-        "lufs": -18.3,
-        "loop_cost": 63.90685640362226
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "nostalgic",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 26894,
-        "duration_ratio": 0.961,
-        "post_energy_delta_db": 0.34,
-        "post_spectral_centroid_delta_hz": 697.0,
-        "lufs": -18.04,
-        "loop_cost": 0.7585335018963338
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "nostalgic",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 16334,
-        "duration_ratio": 0.583,
-        "post_energy_delta_db": -1.91,
-        "post_spectral_centroid_delta_hz": 109.9,
-        "lufs": -17.93,
-        "loop_cost": 7.016040161626056
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "curious",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 23998,
-        "duration_ratio": 0.857,
-        "post_energy_delta_db": -0.35,
-        "post_spectral_centroid_delta_hz": 485.1,
-        "lufs": -18.0,
-        "loop_cost": 0.8750729227435619
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "curious",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 8350,
-        "duration_ratio": 0.298,
-        "post_energy_delta_db": 0.43,
-        "post_spectral_centroid_delta_hz": 35.8,
-        "lufs": -20.51,
-        "loop_cost": 3.089820359281437
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "curious",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 21534,
-        "duration_ratio": 0.769,
-        "post_energy_delta_db": 2.64,
-        "post_spectral_centroid_delta_hz": 427.2,
-        "lufs": -18.21,
-        "loop_cost": 7.355809417665088
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "curious",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 2958,
-        "duration_ratio": 0.106,
-        "post_energy_delta_db": -10.77,
-        "post_spectral_centroid_delta_hz": 522.0,
-        "lufs": -14.73,
-        "loop_cost": 218.45841784989858
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "curious",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 13902,
-        "duration_ratio": 0.496,
-        "post_energy_delta_db": 3.56,
-        "post_spectral_centroid_delta_hz": 329.5,
-        "lufs": -17.68,
-        "loop_cost": 15.36469572723349
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "curious",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 6478,
-        "duration_ratio": 0.231,
-        "post_energy_delta_db": 2.69,
-        "post_spectral_centroid_delta_hz": 866.5,
-        "lufs": -20.77,
-        "loop_cost": 24.915097252238343
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "curious",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 15822,
-        "duration_ratio": 0.565,
-        "post_energy_delta_db": 1.5,
-        "post_spectral_centroid_delta_hz": 102.1,
-        "lufs": -18.59,
-        "loop_cost": 5.688282138794084
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "curious",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 4510,
-        "duration_ratio": 0.161,
-        "post_energy_delta_db": 2.08,
-        "post_spectral_centroid_delta_hz": 1116.7,
-        "lufs": -20.63,
-        "loop_cost": 27.671840354767188
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "curious",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 14350,
-        "duration_ratio": 0.512,
-        "post_energy_delta_db": -1.42,
-        "post_spectral_centroid_delta_hz": 976.6,
-        "lufs": -18.17,
-        "loop_cost": 5.937282229965157
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "tense",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 23790,
-        "duration_ratio": 0.85,
-        "post_energy_delta_db": 1.22,
-        "post_spectral_centroid_delta_hz": 320.4,
-        "lufs": -18.03,
-        "loop_cost": 3.076923076923077
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "tense",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 22510,
-        "duration_ratio": 0.804,
-        "post_energy_delta_db": 0.52,
-        "post_spectral_centroid_delta_hz": 466.0,
-        "lufs": -19.76,
-        "loop_cost": 1.386050644158152
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "tense",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 16670,
-        "duration_ratio": 0.595,
-        "post_energy_delta_db": -3.35,
-        "post_spectral_centroid_delta_hz": 197.4,
-        "lufs": -20.78,
-        "loop_cost": 12.05758848230354
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "tense",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 22046,
-        "duration_ratio": 0.787,
-        "post_energy_delta_db": 0.76,
-        "post_spectral_centroid_delta_hz": 28.9,
-        "lufs": -18.32,
-        "loop_cost": 2.0684024312800506
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "tense",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 4990,
-        "duration_ratio": 0.178,
-        "post_energy_delta_db": -3.23,
-        "post_spectral_centroid_delta_hz": 712.1,
-        "lufs": -27.68,
-        "loop_cost": 38.8376753507014
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "tense",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 8574,
-        "duration_ratio": 0.306,
-        "post_energy_delta_db": 2.26,
-        "post_spectral_centroid_delta_hz": 233.0,
-        "lufs": -18.04,
-        "loop_cost": 15.815255423372987
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "tense",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 4478,
-        "duration_ratio": 0.16,
-        "post_energy_delta_db": -4.3,
-        "post_spectral_centroid_delta_hz": 315.7,
-        "lufs": -13.32,
-        "loop_cost": 57.615006699419375
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "tense",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 10350,
-        "duration_ratio": 0.37,
-        "post_energy_delta_db": -3.72,
-        "post_spectral_centroid_delta_hz": 138.0,
-        "lufs": -17.29,
-        "loop_cost": 21.565217391304348
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "uplifting",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 4126,
-        "duration_ratio": 0.147,
-        "post_energy_delta_db": -1.57,
-        "post_spectral_centroid_delta_hz": 485.2,
-        "lufs": -13.33,
-        "loop_cost": 22.830828889966067
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "tense",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 21950,
-        "duration_ratio": 0.784,
-        "post_energy_delta_db": 0.73,
-        "post_spectral_centroid_delta_hz": 5.7,
-        "lufs": -18.46,
-        "loop_cost": 1.9954441913439636
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "uplifting",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 9582,
-        "duration_ratio": 0.342,
-        "post_energy_delta_db": -6.73,
-        "post_spectral_centroid_delta_hz": 1131.9,
-        "lufs": -21.16,
-        "loop_cost": 42.14151534126487
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "uplifting",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 16350,
-        "duration_ratio": 0.584,
-        "post_energy_delta_db": -2.93,
-        "post_spectral_centroid_delta_hz": 250.8,
-        "lufs": -17.11,
-        "loop_cost": 10.752293577981652
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "uplifting",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 9294,
-        "duration_ratio": 0.332,
-        "post_energy_delta_db": -11.01,
-        "post_spectral_centroid_delta_hz": 410.8,
-        "lufs": -16.73,
-        "loop_cost": 71.078114912847
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "uplifting",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 17166,
-        "duration_ratio": 0.613,
-        "post_energy_delta_db": 0.18,
-        "post_spectral_centroid_delta_hz": 422.9,
-        "lufs": -18.43,
-        "loop_cost": 0.6291506466270534
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "uplifting",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 6654,
-        "duration_ratio": 0.238,
-        "post_energy_delta_db": 0.42,
-        "post_spectral_centroid_delta_hz": 760.3,
-        "lufs": -17.91,
-        "loop_cost": 3.787195671776375
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "uplifting",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 19262,
-        "duration_ratio": 0.688,
-        "post_energy_delta_db": -7.86,
-        "post_spectral_centroid_delta_hz": 942.2,
-        "lufs": -19.15,
-        "loop_cost": 24.48343889523414
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "uplifting",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 25182,
-        "duration_ratio": 0.899,
-        "post_energy_delta_db": -2.59,
-        "post_spectral_centroid_delta_hz": 209.8,
-        "lufs": -17.98,
-        "loop_cost": 6.1710745770788655
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "uplifting",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 25358,
-        "duration_ratio": 0.906,
-        "post_energy_delta_db": -8.79,
-        "post_spectral_centroid_delta_hz": 442.5,
-        "lufs": -17.72,
-        "loop_cost": 20.79817020269737
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "neutral",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 15774,
-        "duration_ratio": 0.563,
-        "post_energy_delta_db": -3.92,
-        "post_spectral_centroid_delta_hz": 1363.6,
-        "lufs": -17.57,
-        "loop_cost": 14.910612400152148
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "neutral",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 23614,
-        "duration_ratio": 0.843,
-        "post_energy_delta_db": 2.2,
-        "post_spectral_centroid_delta_hz": 1179.0,
-        "lufs": -17.79,
-        "loop_cost": 5.589904294062845
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "neutral",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 7934,
-        "duration_ratio": 0.283,
-        "post_energy_delta_db": -2.77,
-        "post_spectral_centroid_delta_hz": 884.5,
-        "lufs": -17.55,
-        "loop_cost": 20.947819510965466
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "neutral",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 7998,
-        "duration_ratio": 0.286,
-        "post_energy_delta_db": -3.72,
-        "post_spectral_centroid_delta_hz": 202.3,
-        "lufs": -17.95,
-        "loop_cost": 27.90697674418605
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "neutral",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 18510,
-        "duration_ratio": 0.661,
-        "post_energy_delta_db": -0.72,
-        "post_spectral_centroid_delta_hz": 609.0,
-        "lufs": -17.71,
-        "loop_cost": 2.3338735818476497
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "neutral",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 19326,
-        "duration_ratio": 0.69,
-        "post_energy_delta_db": 1.71,
-        "post_spectral_centroid_delta_hz": 558.4,
-        "lufs": -17.68,
-        "loop_cost": 5.308910276311704
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "neutral",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 8910,
-        "duration_ratio": 0.318,
-        "post_energy_delta_db": -3.03,
-        "post_spectral_centroid_delta_hz": 789.2,
-        "lufs": -18.3,
-        "loop_cost": 20.404040404040405
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "neutral",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 11998,
-        "duration_ratio": 0.428,
-        "post_energy_delta_db": -4.11,
-        "post_spectral_centroid_delta_hz": 306.6,
-        "lufs": -16.67,
-        "loop_cost": 20.55342557092849
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "neutral",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 14766,
-        "duration_ratio": 0.527,
-        "post_energy_delta_db": -2.49,
-        "post_spectral_centroid_delta_hz": 538.8,
-        "lufs": -18.77,
-        "loop_cost": 10.117838277123122
-      }
-    },
-    {
-      "duration_seconds": 28,
+      "duration_seconds": 5,
       "mood": "focused",
       "iteration": 0,
-      "wall_ms": null,
+      "wall_ms": 189365.9,
       "error": null,
+      "cache": "miss",
       "is_fallback": false,
+      "generation_seed": 1659318796,
+      "timings": {
+        "d1_validate_ms": 1,
+        "d5_cache_check_ms": 16,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 189158,
+        "d4_process_ms": 154,
+        "d5_save_ms": 15
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/e44774d3546ae162e4e4e254615c5c89b87445da59d876fe5fa54931a56cfe95.ogg",
       "quality": {
-        "duration_ms": 20014,
-        "duration_ratio": 0.715,
-        "post_energy_delta_db": 2.73,
-        "post_spectral_centroid_delta_hz": 395.8,
-        "lufs": -18.27,
-        "loop_cost": 8.184271010292795
+        "duration_ms": 3198,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.83,
+        "post_spectral_centroid_delta_hz": 1959.2,
+        "lufs": -18.003813090173672,
+        "rms_dbfs": -16.90444946165755,
+        "duration_ratio": 0.6396,
+        "loop_cost": 15.572232645403377
       }
     },
     {
-      "duration_seconds": 28,
-      "mood": "calm",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 10366,
-        "duration_ratio": 0.37,
-        "post_energy_delta_db": -10.57,
-        "post_spectral_centroid_delta_hz": 758.8,
-        "lufs": -17.16,
-        "loop_cost": 61.1807833301177
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "energetic",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 20030,
-        "duration_ratio": 0.715,
-        "post_energy_delta_db": 0.15,
-        "post_spectral_centroid_delta_hz": 652.4,
-        "lufs": -18.08,
-        "loop_cost": 0.4493260109835247
-      }
-    },
-    {
-      "duration_seconds": 28,
+      "duration_seconds": 5,
       "mood": "focused",
-      "iteration": 0,
-      "wall_ms": null,
+      "iteration": 1,
+      "wall_ms": 184148.7,
       "error": null,
+      "cache": "miss",
       "is_fallback": false,
+      "generation_seed": 1485880853,
+      "timings": {
+        "d1_validate_ms": 1,
+        "d5_cache_check_ms": 18,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 183611,
+        "d4_process_ms": 410,
+        "d5_save_ms": 74
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/95738a04606a6396fdd69e30294947eda6055f82a268a5511b569c51532ee5c8.ogg",
       "quality": {
-        "duration_ms": 15422,
-        "duration_ratio": 0.551,
-        "post_energy_delta_db": -2.64,
-        "post_spectral_centroid_delta_hz": 925.7,
-        "lufs": -18.81,
-        "loop_cost": 10.271041369472183
+        "duration_ms": 4190,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.13,
+        "post_spectral_centroid_delta_hz": 983.7,
+        "lufs": -17.604347399749148,
+        "rms_dbfs": -17.47057532564124,
+        "duration_ratio": 0.838,
+        "loop_cost": 1.8615751789976136
       }
     },
     {
-      "duration_seconds": 28,
+      "duration_seconds": 5,
       "mood": "focused",
-      "iteration": 0,
-      "wall_ms": null,
+      "iteration": 2,
+      "wall_ms": 185187.8,
       "error": null,
+      "cache": "miss",
       "is_fallback": false,
+      "generation_seed": 1563510266,
+      "timings": {
+        "d1_validate_ms": 1,
+        "d5_cache_check_ms": 9,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 184958,
+        "d4_process_ms": 177,
+        "d5_save_ms": 22
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/b2b5ef840cb557f8207067093e8c65667e2ad99f5bbbee0026f878f860033bb3.ogg",
       "quality": {
-        "duration_ms": 3246,
-        "duration_ratio": 0.116,
-        "post_energy_delta_db": -1.21,
-        "post_spectral_centroid_delta_hz": 764.4,
-        "lufs": -19.09,
-        "loop_cost": 22.365988909426985
+        "duration_ms": 3774,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.44,
+        "post_spectral_centroid_delta_hz": 371.0,
+        "lufs": -18.18159181227126,
+        "rms_dbfs": -17.480140732639367,
+        "duration_ratio": 0.7548,
+        "loop_cost": 6.995230524642289
       }
     },
     {
-      "duration_seconds": 28,
-      "mood": "joyful",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 10782,
-        "duration_ratio": 0.385,
-        "post_energy_delta_db": 2.28,
-        "post_spectral_centroid_delta_hz": 417.0,
-        "lufs": -18.41,
-        "loop_cost": 12.687813021702837
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "sad",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 17918,
-        "duration_ratio": 0.64,
-        "post_energy_delta_db": 3.72,
-        "post_spectral_centroid_delta_hz": 168.0,
-        "lufs": -19.02,
-        "loop_cost": 12.456747404844291
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "dark",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 14654,
-        "duration_ratio": 0.523,
-        "post_energy_delta_db": -6.98,
-        "post_spectral_centroid_delta_hz": 1645.4,
-        "lufs": -17.18,
-        "loop_cost": 28.579227514671768
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "nostalgic",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 9918,
-        "duration_ratio": 0.354,
-        "post_energy_delta_db": -0.92,
-        "post_spectral_centroid_delta_hz": 806.4,
-        "lufs": -18.52,
-        "loop_cost": 5.565638233514822
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "curious",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 6046,
-        "duration_ratio": 0.216,
-        "post_energy_delta_db": 0.99,
-        "post_spectral_centroid_delta_hz": 1151.6,
-        "lufs": -19.48,
-        "loop_cost": 9.824677472709228
-      }
-    },
-    {
-      "duration_seconds": 28,
+      "duration_seconds": 5,
       "mood": "tense",
       "iteration": 0,
-      "wall_ms": null,
+      "wall_ms": 184699.4,
       "error": null,
+      "cache": "miss",
       "is_fallback": false,
+      "generation_seed": 551654533,
+      "timings": {
+        "d1_validate_ms": 1,
+        "d5_cache_check_ms": 16,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 184559,
+        "d4_process_ms": 129,
+        "d5_save_ms": 9
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/16e6d410fb2980c796c02f33d8cf282aa0ad1d566a94ee4102ca213f9b4a8519.ogg",
       "quality": {
-        "duration_ms": 15646,
-        "duration_ratio": 0.559,
-        "post_energy_delta_db": -7.92,
-        "post_spectral_centroid_delta_hz": 569.0,
-        "lufs": -18.63,
-        "loop_cost": 30.371980058800972
+        "duration_ms": 4014,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 1.46,
+        "post_spectral_centroid_delta_hz": 460.5,
+        "lufs": -18.20627614227133,
+        "rms_dbfs": -17.194859659126504,
+        "duration_ratio": 0.8028,
+        "loop_cost": 21.823617339312406
       }
     },
     {
-      "duration_seconds": 28,
-      "mood": "uplifting",
-      "iteration": 0,
-      "wall_ms": null,
+      "duration_seconds": 5,
+      "mood": "tense",
+      "iteration": 1,
+      "wall_ms": 217143.4,
       "error": null,
+      "cache": "miss",
       "is_fallback": false,
+      "generation_seed": 798757354,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 13,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 216890,
+        "d4_process_ms": 202,
+        "d5_save_ms": 17
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/dffe5f66ffe0d7e2efc7ce20ac7c31cef4e8ad1179734870751b8cabe0d58ef1.ogg",
       "quality": {
-        "duration_ms": 16317,
-        "duration_ratio": 0.583,
-        "post_energy_delta_db": 3.22,
-        "post_spectral_centroid_delta_hz": 681.7,
-        "lufs": -17.7,
-        "loop_cost": 11.840411840411841
+        "duration_ms": 3054,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.39,
+        "post_spectral_centroid_delta_hz": 997.7,
+        "lufs": -18.565684493138185,
+        "rms_dbfs": -13.117162558498215,
+        "duration_ratio": 0.6108,
+        "loop_cost": 7.662082514734775
+      }
+    },
+    {
+      "duration_seconds": 5,
+      "mood": "tense",
+      "iteration": 2,
+      "wall_ms": 203147.9,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 712027144,
+      "timings": {
+        "d1_validate_ms": 1,
+        "d5_cache_check_ms": 26,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 202710,
+        "d4_process_ms": 366,
+        "d5_save_ms": 21
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/b16577ea5fc427fe2e4a642179540cf97993b24b883382cf6611fab914403dd9.ogg",
+      "quality": {
+        "duration_ms": 3118,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 1.65,
+        "post_spectral_centroid_delta_hz": 64.3,
+        "lufs": -18.1358851855251,
+        "rms_dbfs": -17.20120223899987,
+        "duration_ratio": 0.6236,
+        "loop_cost": 31.75112251443233
       }
     },
     {
       "duration_seconds": 10,
       "mood": "calm",
       "iteration": 0,
-      "wall_ms": null,
+      "wall_ms": 219295.4,
       "error": null,
+      "cache": "miss",
       "is_fallback": false,
+      "generation_seed": 311136973,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 21,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 218990,
+        "d4_process_ms": 260,
+        "d5_save_ms": 23
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/392fb0786a7b04191706d9aa2abd12baf38bc96d849bec2f1b6a869848faca0e.ogg",
       "quality": {
-        "duration_ms": 6382,
-        "duration_ratio": 0.638,
-        "post_energy_delta_db": -5.62,
-        "post_spectral_centroid_delta_hz": 74.5,
-        "lufs": -16.79,
-        "loop_cost": 52.83610153556879
+        "duration_ms": 3086,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.35,
+        "post_spectral_centroid_delta_hz": 669.1,
+        "lufs": -15.099246619369781,
+        "rms_dbfs": -12.637821655583117,
+        "duration_ratio": 0.3086,
+        "loop_cost": 6.8049254698639015
+      }
+    },
+    {
+      "duration_seconds": 10,
+      "mood": "calm",
+      "iteration": 1,
+      "wall_ms": 207360.5,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1304426552,
+      "timings": {
+        "d1_validate_ms": 1,
+        "d5_cache_check_ms": 17,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 207109,
+        "d4_process_ms": 191,
+        "d5_save_ms": 20
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/c82e619f990fb95c3752c23aac92df05518e91061d2b5ec777d423e788f53495.ogg",
+      "quality": {
+        "duration_ms": 8910,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -8.68,
+        "post_spectral_centroid_delta_hz": 284.7,
+        "lufs": -18.4420588904476,
+        "rms_dbfs": -18.56625536116559,
+        "duration_ratio": 0.891,
+        "loop_cost": 58.45117845117845
+      }
+    },
+    {
+      "duration_seconds": 10,
+      "mood": "calm",
+      "iteration": 2,
+      "wall_ms": 187052.3,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 542783862,
+      "timings": {
+        "d1_validate_ms": 1,
+        "d5_cache_check_ms": 21,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 186818,
+        "d4_process_ms": 179,
+        "d5_save_ms": 16
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/36b2af9702dee3f8f2b7e6636b100a3f66f040ffac9ffcfd971cf2476d2629f8.ogg",
+      "quality": {
+        "duration_ms": 5438,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 1.44,
+        "post_spectral_centroid_delta_hz": 351.6,
+        "lufs": -17.726163596690398,
+        "rms_dbfs": -13.24128075849216,
+        "duration_ratio": 0.5438,
+        "loop_cost": 15.888194189040087
+      }
+    },
+    {
+      "duration_seconds": 10,
+      "mood": "focused",
+      "iteration": 0,
+      "wall_ms": 187079.5,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1636092984,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 17,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 186651,
+        "d4_process_ms": 355,
+        "d5_save_ms": 27
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/6d5b689dd846e743fed0bbc29e12aee5b4e2748911bedcc74542379aeb62df00.ogg",
+      "quality": {
+        "duration_ms": 4910,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 3.87,
+        "post_spectral_centroid_delta_hz": 864.2,
+        "lufs": -18.279618339877324,
+        "rms_dbfs": -15.150950204461147,
+        "duration_ratio": 0.491,
+        "loop_cost": 47.29124236252546
+      }
+    },
+    {
+      "duration_seconds": 10,
+      "mood": "focused",
+      "iteration": 1,
+      "wall_ms": 186993.7,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1107957612,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 19,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 186795,
+        "d4_process_ms": 162,
+        "d5_save_ms": 12
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/3529d22dd41713be75e4eb9b62e2192a22c8ce602251ff5efba708b691363628.ogg",
+      "quality": {
+        "duration_ms": 4718,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -2.49,
+        "post_spectral_centroid_delta_hz": 513.7,
+        "lufs": -18.51458767416189,
+        "rms_dbfs": -15.039258627932004,
+        "duration_ratio": 0.4718,
+        "loop_cost": 31.665960152607042
+      }
+    },
+    {
+      "duration_seconds": 10,
+      "mood": "focused",
+      "iteration": 2,
+      "wall_ms": 186275.4,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1019864284,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 14,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 186045,
+        "d4_process_ms": 183,
+        "d5_save_ms": 18
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/41aa8e3c7bb157330b7bd6b213a986cdba8fca811aff9dac286d1603c7b35dca.ogg",
+      "quality": {
+        "duration_ms": 7662,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -5.82,
+        "post_spectral_centroid_delta_hz": 74.9,
+        "lufs": -18.320394275087935,
+        "rms_dbfs": -17.464298941554922,
+        "duration_ratio": 0.7662,
+        "loop_cost": 45.57556773688332
+      }
+    },
+    {
+      "duration_seconds": 10,
+      "mood": "tense",
+      "iteration": 0,
+      "wall_ms": 189880.4,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1709561087,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 9,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 189594,
+        "d4_process_ms": 230,
+        "d5_save_ms": 16
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/b38052e66e3cae748ec5b6c3c854f6270ba93ed6ae37d5b54fef2b17ef85f9c3.ogg",
+      "quality": {
+        "duration_ms": 3246,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -6.31,
+        "post_spectral_centroid_delta_hz": 127.8,
+        "lufs": -19.46151299535764,
+        "rms_dbfs": -16.708896557132316,
+        "duration_ratio": 0.3246,
+        "loop_cost": 116.6358595194085
+      }
+    },
+    {
+      "duration_seconds": 10,
+      "mood": "tense",
+      "iteration": 1,
+      "wall_ms": 188512.6,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1934086451,
+      "timings": {
+        "d1_validate_ms": 3,
+        "d5_cache_check_ms": 14,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 188264,
+        "d4_process_ms": 197,
+        "d5_save_ms": 18
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/8e9f1a6b6755fc961ed90172c2201d01b8e1cf2662361a240ded489188ff4af9.ogg",
+      "quality": {
+        "duration_ms": 5422,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.92,
+        "post_spectral_centroid_delta_hz": 1329.4,
+        "lufs": -18.84002294991403,
+        "rms_dbfs": -15.833564957457133,
+        "duration_ratio": 0.5422,
+        "loop_cost": 10.180745112504612
+      }
+    },
+    {
+      "duration_seconds": 10,
+      "mood": "tense",
+      "iteration": 2,
+      "wall_ms": 188872.1,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 506768031,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 17,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 188617,
+        "d4_process_ms": 206,
+        "d5_save_ms": 19
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/555e6c6a127ef15b733f4b262fcd3ece0f6d642dedf3dea424dc1c1a3d816417.ogg",
+      "quality": {
+        "duration_ms": 9518,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.73,
+        "post_spectral_centroid_delta_hz": 1462.7,
+        "lufs": -18.155357410696222,
+        "rms_dbfs": -12.534783659096359,
+        "duration_ratio": 0.9518,
+        "loop_cost": 4.6018071023324225
       }
     },
     {
       "duration_seconds": 15,
       "mood": "calm",
       "iteration": 0,
-      "wall_ms": null,
+      "wall_ms": 196382.5,
       "error": null,
+      "cache": "miss",
       "is_fallback": false,
+      "generation_seed": 1006445191,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 16,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 196099,
+        "d4_process_ms": 225,
+        "d5_save_ms": 17
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/20a13432267117e1c022bcfdbe134367f788f9576ff2f4aecbe436ad826908e3.ogg",
       "quality": {
-        "duration_ms": 6382,
-        "duration_ratio": 0.425,
-        "post_energy_delta_db": -5.61,
-        "post_spectral_centroid_delta_hz": 72.6,
-        "lufs": -16.1,
-        "loop_cost": 52.742087120025076
+        "duration_ms": 10718,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -3.26,
+        "post_spectral_centroid_delta_hz": 740.7,
+        "lufs": -17.458329078797643,
+        "rms_dbfs": -16.623642056491803,
+        "duration_ratio": 0.7145,
+        "loop_cost": 18.249673446538534
+      }
+    },
+    {
+      "duration_seconds": 15,
+      "mood": "calm",
+      "iteration": 1,
+      "wall_ms": 194780.7,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1300837734,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 12,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 194503,
+        "d4_process_ms": 247,
+        "d5_save_ms": 17
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/f8fa3258e24bbf4fa7679cd582230b7372911d6d5948a1102049dc36b4f9e4c5.ogg",
+      "quality": {
+        "duration_ms": 10862,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 2.49,
+        "post_spectral_centroid_delta_hz": 822.6,
+        "lufs": -18.368097397623778,
+        "rms_dbfs": -17.549971583186977,
+        "duration_ratio": 0.7241,
+        "loop_cost": 13.754373043638374
+      }
+    },
+    {
+      "duration_seconds": 15,
+      "mood": "calm",
+      "iteration": 2,
+      "wall_ms": 151483.8,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 997745664,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 14,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 151251,
+        "d4_process_ms": 189,
+        "d5_save_ms": 23
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/ebc66002d8140fdd6e4a7b177ab1fbd2ca6c1811e0a4f8e8fdbd94f6e0ca9069.ogg",
+      "quality": {
+        "duration_ms": 5278,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 1.04,
+        "post_spectral_centroid_delta_hz": 1243.7,
+        "lufs": -17.62669799600783,
+        "rms_dbfs": -16.286766864970094,
+        "duration_ratio": 0.3519,
+        "loop_cost": 11.822660098522167
+      }
+    },
+    {
+      "duration_seconds": 15,
+      "mood": "focused",
+      "iteration": 0,
+      "wall_ms": 20081.0,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1874702961,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 17,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 19846,
+        "d4_process_ms": 188,
+        "d5_save_ms": 31
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/da9a0e9b602fd66904c7f1b4358a727214cd6f3a11e2e2f15004f0e3fae6949f.ogg",
+      "quality": {
+        "duration_ms": 4942,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 1.19,
+        "post_spectral_centroid_delta_hz": 12.4,
+        "lufs": -19.435803800849396,
+        "rms_dbfs": -18.91698191863002,
+        "duration_ratio": 0.3295,
+        "loop_cost": 14.447592067988667
+      }
+    },
+    {
+      "duration_seconds": 15,
+      "mood": "focused",
+      "iteration": 1,
+      "wall_ms": 20212.7,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1735686547,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 14,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 19979,
+        "d4_process_ms": 183,
+        "d5_save_ms": 34
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/7353577b6106b5d750bd1bdd3164c045a9f2043b85ab70dbb58e20c79e6c1404.ogg",
+      "quality": {
+        "duration_ms": 4062,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 1.73,
+        "post_spectral_centroid_delta_hz": 79.4,
+        "lufs": -18.163307479851685,
+        "rms_dbfs": -15.084281401575772,
+        "duration_ratio": 0.2708,
+        "loop_cost": 25.55391432791728
+      }
+    },
+    {
+      "duration_seconds": 15,
+      "mood": "focused",
+      "iteration": 2,
+      "wall_ms": 21586.5,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 157819241,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 11,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 21315,
+        "d4_process_ms": 223,
+        "d5_save_ms": 33
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/dc66c457a89e9db59b9ceef105c21107e685e5bd1f48dde51385378173d764ce.ogg",
+      "quality": {
+        "duration_ms": 7022,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.22,
+        "post_spectral_centroid_delta_hz": 194.5,
+        "lufs": -18.75227525611125,
+        "rms_dbfs": -17.763521670442522,
+        "duration_ratio": 0.4681,
+        "loop_cost": 1.8798063229849047
+      }
+    },
+    {
+      "duration_seconds": 15,
+      "mood": "tense",
+      "iteration": 0,
+      "wall_ms": 20156.0,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 2138354422,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 14,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 19931,
+        "d4_process_ms": 181,
+        "d5_save_ms": 26
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/0ceb6c0e8200d7e444f6c1fa6871f4469dd820bebf6c985cabfa642d064ff7c6.ogg",
+      "quality": {
+        "duration_ms": 4110,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 1.91,
+        "post_spectral_centroid_delta_hz": 55.3,
+        "lufs": -19.212386445024038,
+        "rms_dbfs": -16.78616680653328,
+        "duration_ratio": 0.274,
+        "loop_cost": 27.883211678832115
+      }
+    },
+    {
+      "duration_seconds": 15,
+      "mood": "tense",
+      "iteration": 1,
+      "wall_ms": 20036.1,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1773880049,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 18,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 19814,
+        "d4_process_ms": 171,
+        "d5_save_ms": 28
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/0341405fa2ef1464e987d1e683932d6008ad34e9b4ff1ac417f4d7e8efeca5bd.ogg",
+      "quality": {
+        "duration_ms": 4638,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.41,
+        "post_spectral_centroid_delta_hz": 263.5,
+        "lufs": -19.407813286166004,
+        "rms_dbfs": -15.739616170750715,
+        "duration_ratio": 0.3092,
+        "loop_cost": 5.304010349288486
+      }
+    },
+    {
+      "duration_seconds": 15,
+      "mood": "tense",
+      "iteration": 2,
+      "wall_ms": 20056.5,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 539650224,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 13,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 19811,
+        "d4_process_ms": 202,
+        "d5_save_ms": 23
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/e8db7c2756178a7551d1c869fd79f1f63e86cc4665e9116ba8c40eb213e393f5.ogg",
+      "quality": {
+        "duration_ms": 9918,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -2.9,
+        "post_spectral_centroid_delta_hz": 901.9,
+        "lufs": -21.56917261493331,
+        "rms_dbfs": -15.95275163540336,
+        "duration_ratio": 0.6612,
+        "loop_cost": 17.54385964912281
       }
     },
     {
       "duration_seconds": 20,
       "mood": "calm",
       "iteration": 0,
-      "wall_ms": null,
+      "wall_ms": 28337.0,
       "error": null,
+      "cache": "miss",
       "is_fallback": false,
+      "generation_seed": 660660392,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 20,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 28036,
+        "d4_process_ms": 253,
+        "d5_save_ms": 23
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/b313d429e7afbcef129ec447edb86b715744fe0878bd526c3fcd08acc98dd7f9.ogg",
       "quality": {
-        "duration_ms": 10366,
-        "duration_ratio": 0.518,
-        "post_energy_delta_db": -10.6,
-        "post_spectral_centroid_delta_hz": 760.9,
-        "lufs": -16.98,
-        "loop_cost": 61.35442793748794
+        "duration_ms": 6142,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.63,
+        "post_spectral_centroid_delta_hz": 1070.6,
+        "lufs": -17.551608761227318,
+        "rms_dbfs": -16.7228829087191,
+        "duration_ratio": 0.3071,
+        "loop_cost": 6.15434711820254
       }
     },
     {
-      "duration_seconds": 28,
+      "duration_seconds": 20,
+      "mood": "calm",
+      "iteration": 1,
+      "wall_ms": 28963.2,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 302753082,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 12,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 28669,
+        "d4_process_ms": 258,
+        "d5_save_ms": 21
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/be9d44c09851b37e2e0516190ce684eb5c99497ea0c342f2023094315a87233c.ogg",
+      "quality": {
+        "duration_ms": 18302,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -8.79,
+        "post_spectral_centroid_delta_hz": 469.4,
+        "lufs": -17.994179244326713,
+        "rms_dbfs": -16.978628605178514,
+        "duration_ratio": 0.9151,
+        "loop_cost": 28.816522784395147
+      }
+    },
+    {
+      "duration_seconds": 20,
+      "mood": "calm",
+      "iteration": 2,
+      "wall_ms": 28644.0,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 893896514,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 13,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 28335,
+        "d4_process_ms": 269,
+        "d5_save_ms": 22
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/85970af17afe74d5d8ff2733b5cc7feb9685de02471890ebcfea12bd7424a1b7.ogg",
+      "quality": {
+        "duration_ms": 16974,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -13.86,
+        "post_spectral_centroid_delta_hz": 240.4,
+        "lufs": -17.585321673660157,
+        "rms_dbfs": -14.313332477970576,
+        "duration_ratio": 0.8487,
+        "loop_cost": 48.99257688229056
+      }
+    },
+    {
+      "duration_seconds": 20,
       "mood": "focused",
       "iteration": 0,
-      "wall_ms": null,
+      "wall_ms": 28699.9,
       "error": null,
+      "cache": "miss",
       "is_fallback": false,
+      "generation_seed": 335607548,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 11,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 28416,
+        "d4_process_ms": 251,
+        "d5_save_ms": 17
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/95460b80c088fe02d2159c112478936eba2044af4366ee765a476c68bcb738db.ogg",
       "quality": {
-        "duration_ms": 3134,
-        "duration_ratio": 0.112,
-        "post_energy_delta_db": 3.3,
-        "post_spectral_centroid_delta_hz": 334.7,
-        "lufs": -17.58,
-        "loop_cost": 63.178047223994895
+        "duration_ms": 11870,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -8.21,
+        "post_spectral_centroid_delta_hz": 561.9,
+        "lufs": -17.00359439260434,
+        "rms_dbfs": -16.20343413782575,
+        "duration_ratio": 0.5935,
+        "loop_cost": 41.499578770008426
       }
     },
     {
-      "duration_seconds": 28,
-      "mood": "sad",
-      "iteration": 0,
-      "wall_ms": null,
+      "duration_seconds": 20,
+      "mood": "focused",
+      "iteration": 1,
+      "wall_ms": 28510.7,
       "error": null,
+      "cache": "miss",
       "is_fallback": false,
+      "generation_seed": 1138438018,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 11,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 28265,
+        "d4_process_ms": 209,
+        "d5_save_ms": 19
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/95fa79ff2d23516e9eca7eb9f02e97af8dbfce6e6e7895a8a8b74a49af0b8165.ogg",
       "quality": {
-        "duration_ms": 5150,
-        "duration_ratio": 0.184,
-        "post_energy_delta_db": 0.77,
-        "post_spectral_centroid_delta_hz": 945.8,
-        "lufs": -21.06,
-        "loop_cost": 8.970873786407767
+        "duration_ms": 6254,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 2.43,
+        "post_spectral_centroid_delta_hz": 181.3,
+        "lufs": -17.386883589396028,
+        "rms_dbfs": -16.242397527538305,
+        "duration_ratio": 0.3127,
+        "loop_cost": 23.313079629037418
       }
     },
     {
-      "duration_seconds": 28,
-      "mood": "neutral",
-      "iteration": 0,
-      "wall_ms": null,
+      "duration_seconds": 20,
+      "mood": "focused",
+      "iteration": 2,
+      "wall_ms": 29041.5,
       "error": null,
+      "cache": "miss",
       "is_fallback": false,
+      "generation_seed": 2056819799,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 15,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 28792,
+        "d4_process_ms": 213,
+        "d5_save_ms": 15
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/c3e9e46b023e78309ad494f3b963e486a57d77a78285df128f6abfb693cdb710.ogg",
       "quality": {
-        "duration_ms": 9806,
-        "duration_ratio": 0.35,
-        "post_energy_delta_db": -6.14,
-        "post_spectral_centroid_delta_hz": 588.3,
-        "lufs": -18.31,
-        "loop_cost": 37.56883540689373
+        "duration_ms": 6782,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -1.82,
+        "post_spectral_centroid_delta_hz": 382.4,
+        "lufs": -14.92866594536399,
+        "rms_dbfs": -14.113235823109466,
+        "duration_ratio": 0.3391,
+        "loop_cost": 16.10144500147449
+      }
+    },
+    {
+      "duration_seconds": 20,
+      "mood": "tense",
+      "iteration": 0,
+      "wall_ms": 28635.8,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 26955525,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 10,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 28258,
+        "d4_process_ms": 344,
+        "d5_save_ms": 19
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/b53030efb78ec893314438b5ff064d10f49baa22d7b762ed159fe61f78e6a470.ogg",
+      "quality": {
+        "duration_ms": 13198,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -5.92,
+        "post_spectral_centroid_delta_hz": 139.8,
+        "lufs": -18.332481153801506,
+        "rms_dbfs": -12.996142658524775,
+        "duration_ratio": 0.6599,
+        "loop_cost": 26.913168661918473
+      }
+    },
+    {
+      "duration_seconds": 20,
+      "mood": "tense",
+      "iteration": 1,
+      "wall_ms": 30500.5,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1056790519,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 17,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 30147,
+        "d4_process_ms": 304,
+        "d5_save_ms": 27
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/9c7cb224c09f561eb03a52cd2bc5541278b6d70ac73e27ca8e2a204d3559b652.ogg",
+      "quality": {
+        "duration_ms": 14462,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 2.73,
+        "post_spectral_centroid_delta_hz": 818.1,
+        "lufs": -18.565095411070015,
+        "rms_dbfs": -13.899331675428714,
+        "duration_ratio": 0.7231,
+        "loop_cost": 11.326234269119071
+      }
+    },
+    {
+      "duration_seconds": 20,
+      "mood": "tense",
+      "iteration": 2,
+      "wall_ms": 29162.9,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 2116801602,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 20,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 28850,
+        "d4_process_ms": 250,
+        "d5_save_ms": 39
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/e34b1aab70bd5a22350c5ec9ba6ae0336ef350107dc3651eefe6e8d6efcea79e.ogg",
+      "quality": {
+        "duration_ms": 14686,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.31,
+        "post_spectral_centroid_delta_hz": 212.1,
+        "lufs": -18.59758844512616,
+        "rms_dbfs": -14.23032551557739,
+        "duration_ratio": 0.7343,
+        "loop_cost": 1.2665123246629444
       }
     },
     {
       "duration_seconds": 28,
       "mood": "calm",
       "iteration": 0,
-      "wall_ms": null,
+      "wall_ms": 45145.2,
       "error": null,
+      "cache": "miss",
       "is_fallback": false,
+      "generation_seed": 489846846,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 16,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 44759,
+        "d4_process_ms": 341,
+        "d5_save_ms": 25
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/dd4d71ec8dbb148ff41105b87881e2df30fa92a846eefd49a3f4ac330ddc5661.ogg",
       "quality": {
-        "duration_ms": 18990,
-        "duration_ratio": 0.678,
-        "post_energy_delta_db": -2.06,
-        "post_spectral_centroid_delta_hz": 208.6,
-        "lufs": -17.76,
-        "loop_cost": 6.5086887835703005
+        "duration_ms": 6382,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -4.92,
+        "post_spectral_centroid_delta_hz": 44.5,
+        "lufs": -18.067977341519093,
+        "rms_dbfs": -17.312603392521847,
+        "duration_ratio": 0.2279,
+        "loop_cost": 46.255092447508616
       }
     },
     {
       "duration_seconds": 28,
-      "mood": "neutral",
-      "iteration": 0,
-      "wall_ms": null,
+      "mood": "calm",
+      "iteration": 1,
+      "wall_ms": 44777.2,
       "error": null,
+      "cache": "miss",
       "is_fallback": false,
+      "generation_seed": 1689927790,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 12,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 44407,
+        "d4_process_ms": 332,
+        "d5_save_ms": 21
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/ab368a68442f50688d16d3e9b501f3fc89438ce9c4e48f1f543111c65da07ea5.ogg",
       "quality": {
-        "duration_ms": 14078,
-        "duration_ratio": 0.503,
-        "post_energy_delta_db": -2.66,
-        "post_spectral_centroid_delta_hz": 1305.2,
-        "lufs": -18.45,
-        "loop_cost": 11.336837618979969
+        "duration_ms": 7806,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -2.52,
+        "post_spectral_centroid_delta_hz": 645.3,
+        "lufs": -15.45604168044,
+        "rms_dbfs": -11.921984476886013,
+        "duration_ratio": 0.2788,
+        "loop_cost": 19.369715603382016
       }
     },
     {
       "duration_seconds": 28,
-      "mood": "dark",
-      "iteration": 0,
-      "wall_ms": null,
+      "mood": "calm",
+      "iteration": 2,
+      "wall_ms": 44340.1,
       "error": null,
+      "cache": "miss",
       "is_fallback": false,
+      "generation_seed": 1443083857,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 14,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 43960,
+        "d4_process_ms": 340,
+        "d5_save_ms": 23
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/6a35257350974d3721333219498dad51d8432641c9c53e67373e7ebc01776b58.ogg",
       "quality": {
-        "duration_ms": 19582,
-        "duration_ratio": 0.699,
-        "post_energy_delta_db": -4.07,
-        "post_spectral_centroid_delta_hz": 634.6,
-        "lufs": -17.51,
-        "loop_cost": 12.47063629864161
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "focused",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 26094,
-        "duration_ratio": 0.932,
-        "post_energy_delta_db": 2.74,
-        "post_spectral_centroid_delta_hz": 954.3,
-        "lufs": -18.37,
-        "loop_cost": 6.300298919291792
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "focused",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 6078,
-        "duration_ratio": 0.217,
-        "post_energy_delta_db": -1.16,
-        "post_spectral_centroid_delta_hz": 406.6,
-        "lufs": -14.54,
-        "loop_cost": 11.451135241855873
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "energetic",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 15358,
-        "duration_ratio": 0.548,
-        "post_energy_delta_db": -9.86,
-        "post_spectral_centroid_delta_hz": 812.9,
-        "lufs": -17.91,
-        "loop_cost": 38.520640708425574
-      }
-    },
-    {
-      "duration_seconds": 28,
-      "mood": "nostalgic",
-      "iteration": 0,
-      "wall_ms": null,
-      "error": null,
-      "is_fallback": false,
-      "quality": {
-        "duration_ms": 26510,
-        "duration_ratio": 0.947,
-        "post_energy_delta_db": -12.71,
-        "post_spectral_centroid_delta_hz": 682.4,
-        "lufs": -17.89,
-        "loop_cost": 28.766503206337234
+        "duration_ms": 17006,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.74,
+        "post_spectral_centroid_delta_hz": 868.1,
+        "lufs": -17.518970550322415,
+        "rms_dbfs": -15.54027197942454,
+        "duration_ratio": 0.6074,
+        "loop_cost": 2.610843231800541
       }
     },
     {
       "duration_seconds": 28,
       "mood": "focused",
       "iteration": 0,
-      "wall_ms": null,
+      "wall_ms": 44876.8,
       "error": null,
+      "cache": "miss",
       "is_fallback": false,
+      "generation_seed": 60564943,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 14,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 44533,
+        "d4_process_ms": 300,
+        "d5_save_ms": 21
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/011c297a28feb3fd849a7c3d8a8e5cbf74f82693447683f49751675901228adb.ogg",
       "quality": {
-        "duration_ms": 15278,
-        "duration_ratio": 0.546,
-        "post_energy_delta_db": -4.41,
-        "post_spectral_centroid_delta_hz": 1361.1,
-        "lufs": -17.9,
-        "loop_cost": 17.319020814242702
+        "duration_ms": 22206,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -4.28,
+        "post_spectral_centroid_delta_hz": 110.7,
+        "lufs": -17.72886170608276,
+        "rms_dbfs": -16.528697972832205,
+        "duration_ratio": 0.7931,
+        "loop_cost": 11.564442042691166
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "focused",
+      "iteration": 1,
+      "wall_ms": 44851.2,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1735288972,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 14,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 44497,
+        "d4_process_ms": 303,
+        "d5_save_ms": 30
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/006a65168855a8b5b20a58f4359514623d5502528f50e8ff63956f006eae534f.ogg",
+      "quality": {
+        "duration_ms": 13646,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -1.48,
+        "post_spectral_centroid_delta_hz": 244.6,
+        "lufs": -17.318226220904183,
+        "rms_dbfs": -14.412830868142885,
+        "duration_ratio": 0.4874,
+        "loop_cost": 6.507401436318335
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "focused",
+      "iteration": 2,
+      "wall_ms": 45276.9,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1497322461,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 17,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 44965,
+        "d4_process_ms": 269,
+        "d5_save_ms": 23
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/b8f44402acd4230ca361ceeb57261ce48b4978e861f1fb1ab02e357d0ce560d7.ogg",
+      "quality": {
+        "duration_ms": 6622,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -5.72,
+        "post_spectral_centroid_delta_hz": 1304.9,
+        "lufs": -18.075862097040616,
+        "rms_dbfs": -17.260062272405705,
+        "duration_ratio": 0.2365,
+        "loop_cost": 51.82724252491694
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "tense",
+      "iteration": 0,
+      "wall_ms": 44400.2,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 2085576335,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 15,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 44058,
+        "d4_process_ms": 297,
+        "d5_save_ms": 24
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/958634657811681dc329a6f53be33a8390c9e96068deb8d586ed2add85cac6dc.ogg",
+      "quality": {
+        "duration_ms": 17470,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 1.86,
+        "post_spectral_centroid_delta_hz": 1088.7,
+        "lufs": -21.958471540110413,
+        "rms_dbfs": -18.07734444575332,
+        "duration_ratio": 0.6239,
+        "loop_cost": 6.388093875214654
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "tense",
+      "iteration": 1,
+      "wall_ms": 44601.6,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1113618763,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 12,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 44216,
+        "d4_process_ms": 339,
+        "d5_save_ms": 28
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/8d23b4badf6e637b016e28a2103b185cd6650cc8ec65ff041486f0d2bb538c5b.ogg",
+      "quality": {
+        "duration_ms": 5710,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.06,
+        "post_spectral_centroid_delta_hz": 587.7,
+        "lufs": -18.108299895788083,
+        "rms_dbfs": -16.246419772450302,
+        "duration_ratio": 0.2039,
+        "loop_cost": 0.6304728546409807
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "tense",
+      "iteration": 2,
+      "wall_ms": 44534.0,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 233685747,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 18,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 44171,
+        "d4_process_ms": 311,
+        "d5_save_ms": 29
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/3b394ec832c1f48673d54df460589ee1609101ea1a2bae04fc277de98e061abd.ogg",
+      "quality": {
+        "duration_ms": 22222,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 5.2,
+        "post_spectral_centroid_delta_hz": 623.5,
+        "lufs": -18.14968536647181,
+        "rms_dbfs": -16.11299992490076,
+        "duration_ratio": 0.7936,
+        "loop_cost": 14.040140401404015
       }
     }
   ]

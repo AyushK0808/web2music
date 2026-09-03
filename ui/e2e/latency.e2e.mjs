@@ -174,8 +174,17 @@ function buildTimeline({ navAt, telemetry, dRequests, sessionStartAt }) {
   const extracts = events.filter((e) => e.stage === "A_extract");
   const decisions = events.filter((e) => e.stage === "B_decision" && e.event === "runFeatureB");
   const generates = events.filter((e) => e.stage === "D_generate");
-  const playing = events.find((e) => e.stage === "playback" && e.meta?.state === "playing");
-
+  // "playing" fires once for the fallback clip and again for the swap
+  // crossfade (offscreen.entry.js's deck-start path is shared by both). The
+  // first occurrence is what a user actually hears first — correct for
+  // nav_to_first_audio_ms. But decode_to_audio_ms is specifically about the
+  // swap (fetch + decode + crossfade of the REAL clip), so it needs the
+  // "playing" event that follows D's response, not whichever came first.
+  const playingEvents = events.filter((e) => e.stage === "playback" && e.meta?.state === "playing");
+  const playing = playingEvents[0] ?? null;
+  const swapPlaying = generates.length
+    ? playingEvents.find((e) => e.ts >= generates[0].ts) ?? null
+    : null;
   const firstExtract = extracts[0] ?? null;
   const firstGenerateReq = dRequests.find((r) => r.kind === "generate") ?? null;
   const firstFallbackReq = dRequests.find((r) => r.kind === "fallback") ?? null;
@@ -215,13 +224,12 @@ function buildTimeline({ navAt, telemetry, dRequests, sessionStartAt }) {
   // the moment the offscreen document reported the deck running. This is the
   // one stage nothing else in the project measures, and on a cold audio
   // context it is not small.
-  if (playing && generates.length) {
+    if (swapPlaying && generates.length) {
     const generateDoneAt = generates[0].ts;
-    timeline.decode_to_audio_ms = Math.round(playing.ts - generateDoneAt);
+    timeline.decode_to_audio_ms = Math.round(swapPlaying.ts - generateDoneAt);
   } else {
     timeline.decode_to_audio_ms = null;
   }
-
   // compute_ms — everything except the deliberate wait. Built additively from
   // the stages rather than by subtracting the window from the wall clock, so
   // it stays meaningful even when the window constant is wrong (and so the
@@ -265,7 +273,7 @@ async function measureSite(context, server, site, iteration) {
     await page.goto(server.siteUrl(site.name), { waitUntil: "domcontentloaded", timeout: 20_000 });
     const driver = driveBehaviour(page, control);
 
-    // Wait for audio, not just for the D call — the whole point is to include
+        // Wait for audio, not just for the D call — the whole point is to include
     // fetch + decode + the crossfade start.
     const deadline = Date.now() + SITE_TIMEOUT_MS;
     let heardAudio = false;
@@ -276,6 +284,25 @@ async function measureSite(context, server, site, iteration) {
         break;
       }
       await sleep(250);
+    }
+
+    // Fallback-then-swap means "heard audio" above is almost always the
+    // fallback clip, not the real generation — it fires in ~7ms regardless of
+    // D_DELAY_MS. If a delay was configured, the swap (D's response,
+    // decode, crossfade) hasn't happened yet at this point, and reading
+    // telemetry now would silently produce d_roundtrip_ms/decode_to_audio_ms
+    // = null for every run, not because nothing happened but because we
+    // stopped watching too early. So: if we're simulating a real generation
+    // delay, keep polling — past the point where audio was first heard —
+    // for the D_generate event specifically, up to a deadline sized to the
+    // delay rather than the fixed 60s used for "did we hear anything at all".
+    if (D_DELAY_MS > 0) {
+      const swapDeadline = Date.now() + D_DELAY_MS + 15_000; // delay + buffer for fetch/decode/crossfade
+      while (Date.now() < swapDeadline) {
+        const t = await readTelemetry(context);
+        if (t.some((e) => e.ts >= sessionStartAt && e.stage === "D_generate")) break;
+        await sleep(500);
+      }
     }
 
     const telemetry = await readTelemetry(context);

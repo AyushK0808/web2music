@@ -1,0 +1,469 @@
+{
+  "n_clips": 11,
+  "n_usable": 10,
+  "skipped": [
+    "joyful"
+  ],
+  "experiment_a_crossfade_sweep": {
+    "50": {
+      "n": 10,
+      "energy_delta_db_median": 3.46,
+      "energy_delta_db_mean": 4.694,
+      "spectral_centroid_delta_hz_median": 577.4
+    },
+    "100": {
+      "n": 10,
+      "energy_delta_db_median": 3.095,
+      "energy_delta_db_mean": 4.130000000000001,
+      "spectral_centroid_delta_hz_median": 343.4
+    },
+    "250": {
+      "n": 10,
+      "energy_delta_db_median": 2.94,
+      "energy_delta_db_mean": 3.6399999999999997,
+      "spectral_centroid_delta_hz_median": 124.60000000000001
+    },
+    "500": {
+      "n": 10,
+      "energy_delta_db_median": 2.895,
+      "energy_delta_db_mean": 3.4,
+      "spectral_centroid_delta_hz_median": 195.14999999999998
+    }
+  },
+  "experiment_b_seam_minimising": {
+    "n_changed_point": 9,
+    "n_usable": 10,
+    "changed_fraction": 0.9,
+    "score_improvement_median": 2.90585,
+    "baseline_energy_db_median": 3.46,
+    "chosen_energy_db_median": 0.33
+  },
+  "clips": [
+    {
+      "mood": "calm",
+      "duration_ms": 10670,
+      "production_loop_point_ms": 4800,
+      "n_similarity_peaks": 25,
+      "n_bar_candidates": 2,
+      "n_candidates_evaluated": 27,
+      "crossfade_sweep": {
+        "50": {
+          "energy_delta_db": -4.48,
+          "spectral_centroid_delta_hz": 620.0
+        },
+        "100": {
+          "energy_delta_db": -1.37,
+          "spectral_centroid_delta_hz": 165.3
+        },
+        "250": {
+          "energy_delta_db": -2.83,
+          "spectral_centroid_delta_hz": 20.7
+        },
+        "500": {
+          "energy_delta_db": -2.1,
+          "spectral_centroid_delta_hz": 97.4
+        }
+      },
+      "seam_minimising": {
+        "baseline_loop_point_ms": 4800,
+        "baseline_seam": {
+          "energy_delta_db": -4.48,
+          "spectral_centroid_delta_hz": 620.0
+        },
+        "baseline_score": 4.604,
+        "chosen_loop_point_ms": 9642,
+        "chosen_seam": {
+          "energy_delta_db": -1.01,
+          "spectral_centroid_delta_hz": 106.6
+        },
+        "chosen_score": 1.0313,
+        "changed_point": true,
+        "score_improvement": 3.5727
+      }
+    },
+    {
+      "mood": "curious",
+      "duration_ms": 8766,
+      "production_loop_point_ms": 6282,
+      "n_similarity_peaks": 22,
+      "n_bar_candidates": 2,
+      "n_candidates_evaluated": 24,
+      "crossfade_sweep": {
+        "50": {
+          "energy_delta_db": 1.57,
+          "spectral_centroid_delta_hz": 168.3
+        },
+        "100": {
+          "energy_delta_db": 7.4,
+          "spectral_centroid_delta_hz": 670.6
+        },
+        "250": {
+          "energy_delta_db": 0.63,
+          "spectral_centroid_delta_hz": 57.4
+        },
+        "500": {
+          "energy_delta_db": 2.41,
+          "spectral_centroid_delta_hz": 287.3
+        }
+      },
+      "seam_minimising": {
+        "baseline_loop_point_ms": 6282,
+        "baseline_seam": {
+          "energy_delta_db": 1.57,
+          "spectral_centroid_delta_hz": 168.3
+        },
+        "baseline_score": 1.6037,
+        "chosen_loop_point_ms": 5941,
+        "chosen_seam": {
+          "energy_delta_db": 0.05,
+          "spectral_centroid_delta_hz": 253.2
+        },
+        "chosen_score": 0.1006,
+        "changed_point": true,
+        "score_improvement": 1.503
+      }
+    },
+    {
+      "mood": "dark",
+      "duration_ms": 5294,
+      "production_loop_point_ms": 3093,
+      "n_similarity_peaks": 5,
+      "n_bar_candidates": 0,
+      "n_candidates_evaluated": 5,
+      "crossfade_sweep": {
+        "50": {
+          "energy_delta_db": -0.5,
+          "spectral_centroid_delta_hz": 425.4
+        },
+        "100": {
+          "energy_delta_db": -2.01,
+          "spectral_centroid_delta_hz": 339.8
+        },
+        "250": {
+          "energy_delta_db": -2.41,
+          "spectral_centroid_delta_hz": 190.3
+        },
+        "500": {
+          "energy_delta_db": -0.96,
+          "spectral_centroid_delta_hz": 57.3
+        }
+      },
+      "seam_minimising": {
+        "baseline_loop_point_ms": 3093,
+        "baseline_seam": {
+          "energy_delta_db": -0.5,
+          "spectral_centroid_delta_hz": 425.4
+        },
+        "baseline_score": 0.5851,
+        "chosen_loop_point_ms": 3093,
+        "chosen_seam": {
+          "energy_delta_db": -0.5,
+          "spectral_centroid_delta_hz": 425.4
+        },
+        "chosen_score": 0.5851,
+        "changed_point": false,
+        "score_improvement": 0.0
+      }
+    },
+    {
+      "mood": "energetic",
+      "duration_ms": 8654,
+      "production_loop_point_ms": 5258,
+      "n_similarity_peaks": 23,
+      "n_bar_candidates": 2,
+      "n_candidates_evaluated": 24,
+      "crossfade_sweep": {
+        "50": {
+          "energy_delta_db": -9.04,
+          "spectral_centroid_delta_hz": 110.5
+        },
+        "100": {
+          "energy_delta_db": 2.31,
+          "spectral_centroid_delta_hz": 135.2
+        },
+        "250": {
+          "energy_delta_db": -3.98,
+          "spectral_centroid_delta_hz": 687.8
+        },
+        "500": {
+          "energy_delta_db": -9.46,
+          "spectral_centroid_delta_hz": 798.1
+        }
+      },
+      "seam_minimising": {
+        "baseline_loop_point_ms": 5258,
+        "baseline_seam": {
+          "energy_delta_db": -9.04,
+          "spectral_centroid_delta_hz": 110.5
+        },
+        "baseline_score": 9.0621,
+        "chosen_loop_point_ms": 8544,
+        "chosen_seam": {
+          "energy_delta_db": -0.32,
+          "spectral_centroid_delta_hz": 944.0
+        },
+        "chosen_score": 0.5088,
+        "changed_point": true,
+        "score_improvement": 8.5533
+      }
+    },
+    {
+      "mood": "focused",
+      "duration_ms": 10350,
+      "production_loop_point_ms": 4768,
+      "n_similarity_peaks": 32,
+      "n_bar_candidates": 3,
+      "n_candidates_evaluated": 34,
+      "crossfade_sweep": {
+        "50": {
+          "energy_delta_db": -1.95,
+          "spectral_centroid_delta_hz": 753.7
+        },
+        "100": {
+          "energy_delta_db": 7.87,
+          "spectral_centroid_delta_hz": 1399.2
+        },
+        "250": {
+          "energy_delta_db": 8.0,
+          "spectral_centroid_delta_hz": 1069.2
+        },
+        "500": {
+          "energy_delta_db": -0.8,
+          "spectral_centroid_delta_hz": 397.4
+        }
+      },
+      "seam_minimising": {
+        "baseline_loop_point_ms": 4768,
+        "baseline_seam": {
+          "energy_delta_db": -1.95,
+          "spectral_centroid_delta_hz": 753.7
+        },
+        "baseline_score": 2.1007,
+        "chosen_loop_point_ms": 5120,
+        "chosen_seam": {
+          "energy_delta_db": -0.34,
+          "spectral_centroid_delta_hz": 1077.4
+        },
+        "chosen_score": 0.5555,
+        "changed_point": true,
+        "score_improvement": 1.5453
+      }
+    },
+    {
+      "mood": "joyful",
+      "skipped": "clip too short for the full sweep",
+      "duration_ms": 3198
+    },
+    {
+      "mood": "neutral",
+      "duration_ms": 10542,
+      "production_loop_point_ms": 6069,
+      "n_similarity_peaks": 16,
+      "n_bar_candidates": 2,
+      "n_candidates_evaluated": 18,
+      "crossfade_sweep": {
+        "50": {
+          "energy_delta_db": 0.86,
+          "spectral_centroid_delta_hz": 534.0
+        },
+        "100": {
+          "energy_delta_db": 0.66,
+          "spectral_centroid_delta_hz": 743.7
+        },
+        "250": {
+          "energy_delta_db": -2.54,
+          "spectral_centroid_delta_hz": 27.9
+        },
+        "500": {
+          "energy_delta_db": -0.97,
+          "spectral_centroid_delta_hz": 117.5
+        }
+      },
+      "seam_minimising": {
+        "baseline_loop_point_ms": 6069,
+        "baseline_seam": {
+          "energy_delta_db": 0.86,
+          "spectral_centroid_delta_hz": 534.0
+        },
+        "baseline_score": 0.9668,
+        "chosen_loop_point_ms": 6688,
+        "chosen_seam": {
+          "energy_delta_db": -0.17,
+          "spectral_centroid_delta_hz": 812.7
+        },
+        "chosen_score": 0.3325,
+        "changed_point": true,
+        "score_improvement": 0.6343
+      }
+    },
+    {
+      "mood": "nostalgic",
+      "duration_ms": 11742,
+      "production_loop_point_ms": 5194,
+      "n_similarity_peaks": 38,
+      "n_bar_candidates": 0,
+      "n_candidates_evaluated": 37,
+      "crossfade_sweep": {
+        "50": {
+          "energy_delta_db": -10.29,
+          "spectral_centroid_delta_hz": 804.3
+        },
+        "100": {
+          "energy_delta_db": 2.45,
+          "spectral_centroid_delta_hz": 276.7
+        },
+        "250": {
+          "energy_delta_db": -3.05,
+          "spectral_centroid_delta_hz": 58.9
+        },
+        "500": {
+          "energy_delta_db": 3.83,
+          "spectral_centroid_delta_hz": 23.6
+        }
+      },
+      "seam_minimising": {
+        "baseline_loop_point_ms": 5194,
+        "baseline_seam": {
+          "energy_delta_db": -10.29,
+          "spectral_centroid_delta_hz": 804.3
+        },
+        "baseline_score": 10.4509,
+        "chosen_loop_point_ms": 4192,
+        "chosen_seam": {
+          "energy_delta_db": 0.07,
+          "spectral_centroid_delta_hz": 111.8
+        },
+        "chosen_score": 0.0924,
+        "changed_point": true,
+        "score_improvement": 10.3585
+      }
+    },
+    {
+      "mood": "sad",
+      "duration_ms": 5230,
+      "production_loop_point_ms": 3360,
+      "n_similarity_peaks": 8,
+      "n_bar_candidates": 1,
+      "n_candidates_evaluated": 8,
+      "crossfade_sweep": {
+        "50": {
+          "energy_delta_db": -5.48,
+          "spectral_centroid_delta_hz": 706.5
+        },
+        "100": {
+          "energy_delta_db": 5.28,
+          "spectral_centroid_delta_hz": 347.0
+        },
+        "250": {
+          "energy_delta_db": 2.68,
+          "spectral_centroid_delta_hz": 47.3
+        },
+        "500": {
+          "energy_delta_db": -4.4,
+          "spectral_centroid_delta_hz": 227.1
+        }
+      },
+      "seam_minimising": {
+        "baseline_loop_point_ms": 3360,
+        "baseline_seam": {
+          "energy_delta_db": -5.48,
+          "spectral_centroid_delta_hz": 706.5
+        },
+        "baseline_score": 5.6213,
+        "chosen_loop_point_ms": 3264,
+        "chosen_seam": {
+          "energy_delta_db": -0.24,
+          "spectral_centroid_delta_hz": 333.5
+        },
+        "chosen_score": 0.3067,
+        "changed_point": true,
+        "score_improvement": 5.3146
+      }
+    },
+    {
+      "mood": "tense",
+      "duration_ms": 6270,
+      "production_loop_point_ms": 4672,
+      "n_similarity_peaks": 10,
+      "n_bar_candidates": 1,
+      "n_candidates_evaluated": 11,
+      "crossfade_sweep": {
+        "50": {
+          "energy_delta_db": -10.33,
+          "spectral_centroid_delta_hz": 534.8
+        },
+        "100": {
+          "energy_delta_db": -8.21,
+          "spectral_centroid_delta_hz": 385.4
+        },
+        "250": {
+          "energy_delta_db": -6.43,
+          "spectral_centroid_delta_hz": 349.1
+        },
+        "500": {
+          "energy_delta_db": -5.69,
+          "spectral_centroid_delta_hz": 451.3
+        }
+      },
+      "seam_minimising": {
+        "baseline_loop_point_ms": 4672,
+        "baseline_seam": {
+          "energy_delta_db": -10.33,
+          "spectral_centroid_delta_hz": 534.8
+        },
+        "baseline_score": 10.437,
+        "chosen_loop_point_ms": 3946,
+        "chosen_seam": {
+          "energy_delta_db": -5.25,
+          "spectral_centroid_delta_hz": 726.1
+        },
+        "chosen_score": 5.3952,
+        "changed_point": true,
+        "score_improvement": 5.0417
+      }
+    },
+    {
+      "mood": "uplifting",
+      "duration_ms": 8734,
+      "production_loop_point_ms": 6837,
+      "n_similarity_peaks": 13,
+      "n_bar_candidates": 2,
+      "n_candidates_evaluated": 15,
+      "crossfade_sweep": {
+        "50": {
+          "energy_delta_db": 2.44,
+          "spectral_centroid_delta_hz": 1055.5
+        },
+        "100": {
+          "energy_delta_db": -3.74,
+          "spectral_centroid_delta_hz": 22.4
+        },
+        "250": {
+          "energy_delta_db": -3.85,
+          "spectral_centroid_delta_hz": 338.9
+        },
+        "500": {
+          "energy_delta_db": 3.38,
+          "spectral_centroid_delta_hz": 163.2
+        }
+      },
+      "seam_minimising": {
+        "baseline_loop_point_ms": 6837,
+        "baseline_seam": {
+          "energy_delta_db": 2.44,
+          "spectral_centroid_delta_hz": 1055.5
+        },
+        "baseline_score": 2.6511,
+        "chosen_loop_point_ms": 5482,
+        "chosen_seam": {
+          "energy_delta_db": -0.37,
+          "spectral_centroid_delta_hz": 210.3
+        },
+        "chosen_score": 0.4121,
+        "changed_point": true,
+        "score_improvement": 2.239
+      }
+    }
+  ],
+  "caveat": "n=11: the repo's persisted fallback clips, re-cut at a fresh internal loop point by this script's own call into the production detector. NOT a re-run over the 141-clip Table V population -- raw pre-loop audio for that run is not retained on disk (see d4_process.py's RETAIN_PRETRIM_EVERY / C-09 note)."
+}

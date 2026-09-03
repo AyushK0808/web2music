@@ -1,5 +1,6 @@
 import asyncio
 import itertools
+import random
 import time
 import numpy as np
 import io
@@ -249,8 +250,21 @@ def _run_batch(batch):
 
                 duration = audio_data.shape[-1] / sample_rate
                 print(f"[D3] Raw generated duration: {duration:.2f}s (trimmed to this item's requested length)")
-                if duration < 5.0:
-                    raise ValueError(f"Generated clip too short: {duration:.2f}s")
+                # Was a flat 5.0s floor, which a short-duration request can
+                # never clear: the codec's frame quantization trims a 5s
+                # (250-token) request down to ~4.94s on every single seed,
+                # deterministically, so `duration_seconds=5` failed all 3
+                # retries and fell back every time regardless of hardware or
+                # prompt. The floor should scale with what was actually
+                # requested -- 5.0s as an absolute cap still rules out a
+                # degenerate near-empty clip for anything requested at 10s+,
+                # matching d4_process.py's MIN_LOOP_SECONDS=3.0 as the true
+                # floor for anything shorter.
+                requested = item.max_tokens / TOKENS_PER_SEC
+                min_acceptable = min(5.0, requested * 0.9)
+                if duration < min_acceptable:
+                    raise ValueError(f"Generated clip too short: {duration:.2f}s "
+                                      f"(requested {requested:.2f}s, min acceptable {min_acceptable:.2f}s)")
 
                 out_buffer = io.BytesIO()
                 sf.write(out_buffer, audio_data, sample_rate, format='WAV')
@@ -272,6 +286,7 @@ async def generate_audio(
     prompt: str,
     duration_seconds: int = 28,
     priority: int = PRIORITY_REALTIME,
+    seed_override: int = None,
 ) -> tuple:
     """
     Generate audio from prompt using MusicGen. Concurrent calls to this
@@ -301,8 +316,29 @@ async def generate_audio(
     last_error = None
     label = "realtime" if priority <= PRIORITY_REALTIME else "prewarm"
 
+    # Was `seed = 42 + attempt`: a pure function of retry count, identical
+    # across every call regardless of prompt/nonce/anything else. Any two
+    # requests that both succeed on attempt 1 -- the common case -- got
+    # bit-identical seed 43 and therefore bit-identical audio, silently.
+    # d3_clip_length.py's repeats=3 was paying for 3x the compute to
+    # generate the same clip three times. Draw one random base per call
+    # instead; attempt still increments off of it, so retries within a
+    # single request stay diversified from each other exactly as before.
+    seed_base = random.randint(0, 2**31 - 1)
+
     for attempt in range(1, MAX_RETRIES + 1):
-        seed = 42 + attempt
+        # seed_override lets a controlled experiment (e.g. the prompt
+        # ablation, which needs the same seed across different prompts to
+        # compare them fairly) pin attempt 1's seed explicitly. Absent an
+        # override, fall through to a random base rather than the old
+        # `42 + attempt` -- that was a pure function of retry count,
+        # identical across every call regardless of prompt/nonce/anything
+        # else, so any two ordinary requests that both succeeded on attempt
+        # 1 got bit-identical seed 43 and therefore bit-identical audio,
+        # silently. attempt still increments off of whichever base is used,
+        # so retries within a single request stay diversified from each
+        # other either way.
+        seed = seed_override if (seed_override is not None and attempt == 1) else seed_base + attempt
         loop = asyncio.get_running_loop()
         future = loop.create_future()
         ahead = _queue.qsize()

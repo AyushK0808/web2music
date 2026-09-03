@@ -47,9 +47,9 @@ const PRICING = {
   usd_per_1m_output_tokens: 0.08,
   source: 'Groq published pricing for llama-3.1-8b-instant',
   as_of: '2026-08-10',
-  _note: 'Re-check before submission. If it has moved, the per-1k-pages figure moves linearly.',
+  reverified_at: '2026-08-17',
+  _note: 'Re-checked 2026-08-17 against Groq\'s current published rate card: unchanged at $0.05/$0.08 per 1M in/out tokens. If it moves before submission, the per-1k-pages figure moves linearly.',
 };
-
 // Llama-family BPE averages roughly 4 characters per token on English prose.
 // Prompts here are English prose plus a fixed scaffold, so the ratio is
 // reasonable; it will *under*-count on keyword lists, which are token-dense.
@@ -172,9 +172,47 @@ function simulateCache(nPages, gridSize, { skew = 0 } = {}) {
   };
 }
 
+// ── Corpus shape normalisation ─────────────────────────────────────────────
+// Two corpus shapes exist in this repo. The 18-page dev/smoke corpus
+// (mood-classification/experiments/s2_smoke_corpus.json) has flat pages:
+// {id, lang, title, rawText, ...}. The frozen S2 corpus (C-04,
+// analysis/corpus/s2_corpus.json, n=260) nests the extracted fields under
+// pageData, and pageData is null for the 2 navigation-failed and 3
+// deliberately-bypassed pages -- those were never extracted and are excluded
+// here rather than imputed with empty text, which would silently understate
+// the real escalation rate instead of just omitting the pages that have none.
+function normalisePages(rawPages) {
+  const skipped = { no_pagedata: 0 };
+  const pages = [];
+  for (const p of rawPages) {
+    if (p.pageData === undefined) {
+      // Already flat (smoke corpus shape).
+      pages.push(p);
+      continue;
+    }
+    if (p.pageData === null) {
+      skipped.no_pagedata += 1;
+      continue;
+    }
+    pages.push({
+      id: p.id,
+      lang: p.pageData.lang || 'en',
+      title: p.pageData.title || '',
+      rawText: p.pageData.rawText || '',
+      true_category: p.true_category,
+    });
+  }
+  return { pages, skipped };
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────
 const corpus = JSON.parse(fs.readFileSync(corpusPath, 'utf8'));
-const pages = corpus.pages.map(accountPage);
+const { pages: normalisedRaw, skipped } = normalisePages(corpus.pages);
+if (skipped.no_pagedata > 0) {
+  console.error(`note: excluded ${skipped.no_pagedata} page(s) with no captured content `
+    + `(navigation failures / deliberately bypassed pages) from ${corpusPath}`);
+}
+const pages = normalisedRaw.map(accountPage);
 
 const escalating = pages.filter((p) => p.tier === 'escalates');
 const escalationRate = escalating.length / pages.length;
@@ -205,7 +243,8 @@ const outputPerPage = escalationRate * MAX_COMPLETION_TOKENS;
 const report = {
   generated_at: new Date().toISOString(),
   corpus: path.relative(REPO, corpusPath),
-  n_pages: pages.length,
+    n_pages: pages.length,
+    n_pages_excluded_no_content: skipped.no_pagedata,
   assumptions: {
     chars_per_token: CHARS_PER_TOKEN,
     chars_per_token_note: 'Estimate. Under-counts on keyword lists, which are token-dense; treat the USD figure as a lower bound.',
