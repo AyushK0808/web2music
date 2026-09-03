@@ -105,4 +105,3 @@ class HandoffPayload(BaseModel):
     time_of_day:       Optional[str]   = None
     sensitive_override: Optional[bool] = None
     duration_seconds:  Optional[int]   = None
-    nonce:             Optional[str]   = None
