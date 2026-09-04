@@ -966,6 +966,15 @@ A5 keyword to ZS to LLM (this work) & .622 & .656 & \textbf{.250} & .512 \\
 \end{center}
 \end{table}
 
+A2's zero-shot usage of .938 rather than 1.00, despite that tier running
+ungated, is not a rounding artefact: sixteen of 260 pages recorded no
+zero-shot result. Three are browser-internal bypass pages the system never
+classifies by design, and one is a sensitive page correctly short-circuited
+before either model tier. The remaining twelve, eleven of them English pages
+with no sensitivity flag, have no error or skip condition recorded in this
+run's logs; we were not able to determine why they did not receive a
+zero-shot call and report the rate as measured rather than adjusting it.
+
 Two things follow from a real sample that a preliminary 18-page one could not
 show. First, the direction reported earlier holds: the full cascade (A5) is
 still less accurate than the keyword-to-LLM design it replaces (A4), by 4.7
