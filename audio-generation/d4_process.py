@@ -25,7 +25,15 @@ HOP_LENGTH = 512
 CHROMA_WINDOW = 10          # chroma frames compared against the track start (~same as before)
 MIN_LOOP_SECONDS = 3.0      # never propose a loop point earlier than this
 BEATS_PER_BAR = 4           # assume 4/4; librosa doesn't give true downbeats
-CROSSFADE_MS = 50           # length of the equal-power crossfade at the loop seam
+CROSSFADE_MS = 250          # length of the equal-power crossfade at the loop seam.
+                            # Was 50ms; the crossfade-window sweep in the paper
+                            # (Table crossfade-sweep, sec:res-loop) showed 250ms
+                            # strictly better than 50ms on both measured seam
+                            # energy (3.46 -> 2.94 dB) and spectral centroid
+                            # discontinuity (577 -> 125 Hz), with 500ms giving a
+                            # smaller further energy gain but a worse centroid
+                            # number -- consistent with a wider window starting
+                            # to re-admit a second musical event into the blend.
 
 # MP3 pads audio to fixed-size encoder frames (LAME adds ~576 samples of
 # priming silence at the start plus padding to fill the last frame), which

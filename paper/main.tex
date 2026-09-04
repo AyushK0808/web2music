@@ -76,7 +76,7 @@ guesses, its two confidence thresholds form a continuous dial between accuracy
 and the fraction of pages whose text leaves the device. Third, a
 fallback-then-swap playback design hides a generator whose median cold
 generation takes 139 s behind a pre-generated per-mood clip served in 7 ms,
-while bar-snapped loop-point detection and a 50 ms equal-power crossfade turn
+while bar-snapped loop-point detection and a 250 ms equal-power crossfade turn
 a one-shot generator's output into loopable material. We report a systems
 evaluation over 105 websites, 144 generation requests and 141 generated clips,
 an adversarial audit of the system's refusal behaviour, and a cost model
@@ -153,7 +153,7 @@ instant fallback followed by an abort-on-stale crossfaded swap, reported with
 its full latency distribution including failure modes.
 
 \item Loop synthesis from a non-loop model: bar-snapped chroma self-similarity,
-a 50 ms equal-power crossfade, and a gapless Ogg/Opus container, evaluated
+a tuned equal-power crossfade, and a gapless Ogg/Opus container, evaluated
 objectively over 141 generated clips.
 
 \item An evaluation apparatus that constrains overclaiming. Every number is
@@ -485,8 +485,10 @@ Chroma features are computed and a vectorised self-similarity curve
 shorter than three seconds. The best candidate is snapped to a bar boundary
 inferred from beat times \cite{ellis, librosa} under a 4/4 assumption, since
 true downbeats are not available. The clip is truncated at the loop point, and
-its head and tail are blended with a 50 ms equal-power crossfade so that the
-loop is continuous in energy across the seam. Loudness is normalised to
+its head and tail are blended with a 250 ms equal-power crossfade (Section
+\ref{sec:res-loop} justifies this width against the 50 ms default used to
+produce this paper's other seam measurements) so that the loop is continuous
+in energy across the seam. Loudness is normalised to
 $-18$ LUFS \cite{ebu128} and the clip is exported as Ogg/Opus \cite{opus}
 rather than MP3. That last choice is not aesthetic: an MP3 encoder pads the
 stream, and the padding is audible as a gap on every loop iteration. The
@@ -1140,6 +1142,14 @@ absolute differences at the loop seam, post-crossfade.}
 \end{tabular}
 \end{center}
 \end{table}
+
+Based on this sweep we now ship a 250 ms crossfade as the default, in place
+of the 50 ms window used to produce every other seam measurement in this
+paper. The 0.93 dB paired improvement and the 41.1 percent of clips the
+crossfade worsens (Table \ref{tab:seam}, Fig.~\ref{fig:f6}, 141 clips) were
+both measured under that earlier 50 ms default; re-running that
+population-level comparison under the new 250 ms setting, rather than only
+the ten-clip production-loop-point sample above, remains future work.
 
 \textbf{Half the requested audio is discarded.} The delivered clip retains a
 median of 50.3 percent of its requested duration, because the loop point is
