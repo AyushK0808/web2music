@@ -397,6 +397,13 @@ a similar page has been seen before, so that a revisit can reuse a mood rather
 than re-run the pipeline; cosine thresholds are 0.95 for a duplicate, 0.85 for
 the same topic and 0.70 for a related page.
 
+Four of these six extractors -- text, the embedding, colour and behaviour --
+feed the mood and category decision and are the ``four signals'' this
+paper's other claims and the signal ablation (Section \ref{sec:future})
+refer to. The remaining two are not classification inputs: readability is
+computed and stored in the descriptor but is not consumed by either tier and
+is not ablated here; the vector store is a caching mechanism, not a signal.
+
 Two invariants matter. Vectors from different embedding models are never
 compared, because a 384-dimension MiniLM vector and a 1536-dimension
 alternative describe different spaces, and comparing them returns confident
