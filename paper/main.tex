@@ -332,8 +332,10 @@ that is perceived as appropriate to $p$, subject to four constraints:
 committed decision about $p$, despite a generator with a service time of tens
 to hundreds of seconds.
 \item \textbf{Disclosure.} The fraction of pages whose text is transmitted off
-the device must be minimised and must be measurable, and must be zero for
-pages classified as sensitive.
+the device must be minimised and must be measurable, and the design intends
+it to be zero for pages classified as sensitive -- a target Section
+\ref{sec:res-audit} tests directly and finds unmet, given a 0.655
+false-negative rate on an adversarial slice.
 \item \textbf{Continuity.} A clip of bounded length must repeat without an
 audible seam or container gap for as long as the user remains on $p$.
 \item \textbf{Restraint.} For identifiable classes of page, the correct output
