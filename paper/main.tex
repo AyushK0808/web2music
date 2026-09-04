@@ -793,7 +793,13 @@ Four qualifications belong with these tables. First, only three of 144 requests
 actually invoked the generator, because the pre-warm grid was already populated
 when the run executed; the generation percentiles therefore rest on $n=3$ and
 their confidence intervals are correspondingly wide, with a 95 percent interval
-on the median of 86.8 s to 207.5 s. Second, there is no cold-cache column: the
+on the median of 86.8 s to 207.5 s. Table \ref{tab:d-stages}'s D2 prompt-build
+count of six, not three, is not a discrepancy: the server builds a prompt on
+every cache miss before attempting generation, but only records a D3 timing
+on success. The other three cache misses are the three ``Generation to
+fallback'' events in Table \ref{tab:d-latency} -- MusicGen's own retry budget
+was exhausted on those calls and the server fell back to a pre-generated clip,
+so a prompt was built (D2) but no D3 timing exists to report. Second, there is no cold-cache column: the
 run's cold section produced 33 cache hits and no misses, and measuring
 cold-cache behaviour requires flushing the cache before the section. Third,
 8.3 percent of requests, twelve of 144, hit the client's 300 s timeout; these
