@@ -1141,7 +1141,12 @@ escalation cost already quantified in Section~\ref{sec:res-cost}.
 Two limitations bound this measurement. Feature D and the classify-proxy were
 both stubbed, so the 75.7 percent real-corpus escalation rate from
 Section~\ref{sec:res-cost} is not reflected here, and the true network cost
-of escalation on a real page remains unmeasured end to end. The harness also
+of escalation on a real page remains unmeasured end to end. The 6.9 s
+user-perceived figure above is therefore a lower bound, not a typical-case
+estimate: it describes a run in which no page actually escalated to either
+remote tier, while three in four pages do on the real corpus, and what
+nav-to-audible looks like when escalation's own network latency is added
+to the client-side path measured here remains unmeasured. The harness also
 reuses one persistent browser context across every site and repeat, so a
 generation response arriving after its site's wait deadline could in
 principle be attributed to a later site's telemetry window; all 54 Feature D
