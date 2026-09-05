@@ -687,6 +687,23 @@ classifier's accuracy; it is evidence about the task itself, and it says the
 task, as specified, may not have a single defensible answer per page. Category
 agreement (0.635) is closer to usable but still short of it.
 
+Both ceilings in Table \ref{tab:agreement} sit below their own label's
+$\alpha$ -- 0.621 against 0.635 for category, 0.174 against 0.195 for
+mood -- which looks like an error but follows from what the two statistics
+actually measure. The ceiling is a strict, conservative hit rate: does the
+held-out annotator's label exactly match the majority of the other two,
+with any tie between those two others counted as a miss rather than a
+partial credit, by deliberate design so the ceiling is never inflated. With
+only three annotators, ``majority of the other two'' is frequently a tie,
+and every tie is a guaranteed miss regardless of how close the three labels
+actually were. $\alpha$, by contrast, is a chance-corrected coefficient
+averaged continuously across all pairwise comparisons, with no majority
+requirement and no all-or-nothing penalty for a near-miss. A ceiling built
+from strict, tie-punished binary hits has no guaranteed ordering against a
+smoother, chance-corrected coefficient, and sensitivity's ceiling sitting
+\emph{above} its own $\alpha$ later in this table is the same asymmetry
+running the other way.
+
 To ask whether that disagreement is a fine-grained labelling problem rather
 than a disagreement about the underlying affect, we collapsed the eleven mood
 labels onto Russell's valence-arousal circumplex two different ways and
