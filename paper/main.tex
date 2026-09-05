@@ -535,7 +535,16 @@ in energy across the seam. Loudness is normalised to
 $-18$ LUFS \cite{ebu128} and the clip is exported as Ogg/Opus \cite{opus}
 rather than MP3. That last choice is not aesthetic: an MP3 encoder pads the
 stream, and the padding is audible as a gap on every loop iteration. The
-container, not the crossfade, is what makes the loop gapless. The service also
+container, not the crossfade, is what makes the loop gapless. The $-18$
+LUFS target is not a departure from \cite{ebu128} by oversight: the
+citation is for R128's integrated-loudness measurement algorithm, which
+this pipeline implements to compute every LUFS figure reported in Section
+\ref{sec:res-loop}, not for its $-23$ LUFS broadcast target, which is
+calibrated for dialogue-forward television content rather than background
+music in an interactive application. $-18$ LUFS sits closer to targets
+common for streaming and ambient background audio; no further
+target-selection rationale beyond this is recorded in the implementation.
+The service also
 computes a diagnostic seam discontinuity, the RMS energy and spectral-centroid
 differences across the seam, both before and after the crossfade; this is the
 objective measure reported in Section \ref{sec:res-loop}.
