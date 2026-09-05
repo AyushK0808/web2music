@@ -572,7 +572,13 @@ bypassed entirely.
 
 \textbf{Telemetry} is a local-only ring buffer. Every URL is hashed with
 SHA-256 before storage and nothing leaves the machine unless the user
-explicitly exports it.
+explicitly exports it. This bound is thinner than it sounds: URLs are
+public, so a bare SHA-256 hash is dictionary-recoverable against a modest
+precomputed table of common ones -- the guarantee is that plaintext never
+leaves the device, not that a stored hash cannot be reversed to the URL it
+came from. An HMAC keyed with a per-install local secret, rather than a
+bare hash, would close this gap without changing what leaves the device;
+it has not been implemented here.
 
 % ===========================================================================
 \section{Results and Discussion}
