@@ -1593,7 +1593,18 @@ The mechanisms pass; the predicate does not. Against a 47-page adversarial
 slice, 29 sensitive and 18 benign, more than doubled from an original 20-page
 seed specifically to rebalance toward the detector's own admitted failure
 modes, the sensitive-content detector records a false-negative rate of 0.655
-and a false-positive rate of 0.167. The failures are systematic rather than
+and a false-positive rate of 0.167. This slice is hand-written test content
+rather than pages captured from the live web the way the main 260-page
+corpus is: each page is a short synthetic paragraph constructed from the
+term lists and documented failure modes already present in the detector's
+own code, not sampled independently of it, and the underlying data file's
+own provenance record marks it explicitly as a placeholder pending a
+captured replacement that has not yet been produced. This is closer to
+targeted white-box testing of an already-suspected weakness than to a
+naturalistic sample of sensitive web content -- a defensible way to
+characterise that specific weakness, but it means the 0.655 rate below
+should not be read as an estimate of how often the detector would miss
+sensitive content drawn from the wild. The failures are systematic rather than
 noise. Seven of the nineteen false negatives are vocabulary outside the term
 list entirely: pages on addiction, miscarriage, terminal illness, overdose,
 workplace harassment, homelessness and post-incarceration reentry are not
