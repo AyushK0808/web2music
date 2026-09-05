@@ -421,15 +421,20 @@ the meta description and document language. A 384-dimension MiniLM sentence
 embedding \cite{minilm} is computed in-browser through ONNX in a Web Worker
 hosted by the offscreen document, with remote model loading disabled outright.
 Colour extraction builds an area-weighted HSL histogram over the computed
-background colours of up to 800 sampled elements, yielding dominant hues, a
+background colours of up to 800 sampled elements -- a cap on
+forced-layout-risk DOM calls (\texttt{getComputedStyle},
+\texttt{getBoundingClientRect}), not a sampling-representativeness choice
+-- yielding dominant hues, a
 scalar colour-energy term, and a representative hue, saturation and lightness
 triple. A behaviour tracker exposes rolling scroll and cursor velocity in
-pixels per second from throttled listeners, capped at ten and twenty events per
-second respectively. Readability is a Flesch score \cite{flesch} normalised to
+pixels per second from throttled listeners, capped at ten events per second
+for scroll and twenty for cursor. Readability is a Flesch score \cite{flesch} normalised to
 the unit interval. Finally a persistent IndexedDB vector store answers whether
 a similar page has been seen before, so that a revisit can reuse a mood rather
 than re-run the pipeline; cosine thresholds are 0.95 for a duplicate, 0.85 for
-the same topic and 0.70 for a related page.
+the same topic and 0.70 for a related page -- starting points for tuning
+against real pages rather than derived or calibrated constants, specific to
+MiniLM-class embeddings and re-checked if the backend changes.
 
 Four of these six extractors -- text, the embedding, colour and behaviour --
 feed the mood and category decision and are the ``four signals'' this
@@ -525,7 +530,10 @@ is what actually makes the loop gapless.}
 \textbf{Loop synthesis.} The generator produces a one-shot clip, not a loop.
 Chroma features are computed and a vectorised self-similarity curve
 \cite{foote} is evaluated over candidate loop lengths, excluding anything
-shorter than three seconds. The best candidate is snapped to a bar boundary
+shorter than three seconds -- an engineering default with no documented
+derivation, unlike the cosine thresholds in Section
+\ref{sec:arch} which the implementation itself frames as tuning starting
+points. The best candidate is snapped to a bar boundary
 inferred from beat times \cite{ellis, librosa} under a 4/4 assumption, since
 true downbeats are not available. The clip is truncated at the loop point, and
 its head and tail are blended with a 250 ms equal-power crossfade (Section
@@ -1517,6 +1525,16 @@ unanswered. A forced-choice listening harness with twenty-two seeded stimulus
 pairs and a scoring script has been built and validated end to end, but only
 against simulated listeners, which carries no information about human
 perception. No claim about seam audibility is made here.
+
+A separate claim in this section, that the Ogg/Opus container rather than
+the crossfade is what makes the loop gapless, is asserted from Opus's
+documented format properties \cite{opus} rather than measured in this
+pipeline directly: no test here plays consecutive loop iterations through
+the same Web Audio API decode path used in production and checks for
+silence or a click at the boundary. The seam-discontinuity measurements
+above characterise energy and spectral continuity across the cut point,
+not the presence or absence of an inter-sample gap at the container level,
+which is a different, currently unmeasured claim.
 
 \textbf{Discussion.} Making a one-shot generator loop requires three things.
 Self-similarity chooses where to cut, the crossfade smooths the content of the
