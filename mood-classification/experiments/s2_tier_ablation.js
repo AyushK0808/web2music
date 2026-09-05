@@ -118,7 +118,25 @@ async function collectLocalZeroShot(page, cleaned) {
   }
 }
 
-async function collectRawResults(page) {
+async function collectRawResults(rawPage) {
+  // s2_smoke_corpus.json has rawText/title/lang at the top level of each
+  // page record. analysis/corpus/s2_corpus.json (capture_corpus.mjs's real
+  // output) nests the same fields under page.pageData instead, matching
+  // Feature A's actual Handoff-1 shape -- this harness was only ever
+  // exercised against the smoke corpus, so that mismatch silently zeroed
+  // out keyword/zero-shot extraction on every real-corpus page (empty
+  // rawText -> empty cleaned text -> no keywords, langSkipsKeyword always
+  // true since page.lang was undefined !== 'en' -> straight to the LLM tier
+  // every time, hence exposure_rate pinned at 1.0 regardless of threshold).
+  // Falls back to the flat shape first so the smoke corpus keeps working
+  // unchanged.
+  const page = {
+    ...rawPage,
+    rawText: rawPage.rawText ?? rawPage.pageData?.rawText ?? '',
+    title:   rawPage.title   ?? rawPage.pageData?.title   ?? '',
+    lang:    rawPage.lang    ?? rawPage.pageData?.lang    ?? 'en',
+  };
+
   const cleaned = cleanText(page.rawText || '');
   const isSensitive = checkSensitiveContent(cleaned + ' ' + page.title);
   const keywords = extractKeywords(cleaned);
@@ -218,6 +236,14 @@ function tierAlone(r, tier) {
 
 function macroF1(predictions) {
   // predictions: [{ true: 'Health', pred: 'Health' | null }, ...]
+  // Callers are expected to have already dropped any entry whose `true`
+  // isn't a real category (e.g. the 6 bypass pages in the S2 corpus, whose
+  // true_category is deliberately "?" because a donation page or a
+  // chrome://settings page has no content category to be right or wrong
+  // about). This function trusts that and does not re-filter, so a caller
+  // that forgets to filter will silently leak false positives against
+  // whatever real category those pages happened to be predicted as -- see
+  // summariseConfig's scoreable filter below, which is the actual fix.
   const perClass = {};
   for (const cat of CATEGORIES) perClass[cat] = { tp: 0, fp: 0, fn: 0 };
 
@@ -243,9 +269,26 @@ function macroF1(predictions) {
 }
 
 function summariseConfig(name, results, decide, { zeroShotIsLocal = false } = {}) {
-  const predictions = results.map((r) => ({ true: r.true_category, pred: decide(r).category }));
-  const sources = results.map((r) => decide(r).source);
+  const allPredictions = results.map((r) => ({ true: r.true_category, pred: decide(r).category }));
+
+  // Bypass-slice pages (donation pages, chrome:// settings -- correctly
+  // bypassed before either LLM tier in production, but still run through the
+  // cascade here for measurement) have no valid ground truth and must not be
+  // scored. In the corpus JSON their true_category is null/undefined, not
+  // the literal string "?" -- that string only ever existed in this file's
+  // own console.log display formatting (`r.true_category || '?'`) below. An
+  // earlier version of this filter checked `p.true !== '?'`, which matched
+  // nothing against the real null value and left both bugs live: accuracy's
+  // denominator still counted these 6 pages as guaranteed misses (deflating
+  // every config's accuracy by a constant ~6/260), and macroF1's
+  // false-positive branch still leaked against whatever category each was
+  // predicted as -- Entertainment took 3, Educational/Legal/News took 1
+  // each in the run that surfaced this. n stays at the full results.length
+  // for transparency about how many pages were processed; accuracy and
+  // macro_f1 are computed over the scoreable subset only.
+  const predictions = allPredictions.filter((p) => p.true != null);
   const correct = predictions.filter((p) => p.pred === p.true).length;
+  const sources = results.map((r) => decide(r).source);
 
   const sourceCounts = {};
   for (const s of sources) sourceCounts[s] = (sourceCounts[s] || 0) + 1;
@@ -255,6 +298,14 @@ function summariseConfig(name, results, decide, { zeroShotIsLocal = false } = {}
   // off-device to HF, but the plan (§4 metrics dictionary) defines exposure
   // specifically as `source == "llm"`; the zero-shot-proxy privacy cost is
   // a separate, smaller number worth reporting alongside it, not folded in.
+  // Unlike accuracy/macro_f1, exposure intentionally still counts bypass
+  // pages over the full results.length: it measures what actually left the
+  // device during this run, which happened regardless of whether those 6
+  // pages have a scoreable ground-truth label. In production these pages
+  // would never reach the classifier at all (Fig. 2's own bypass path
+  // short-circuits them earlier), so this run's exposure_rate is a slight
+  // overestimate relative to the deployed system -- worth restating if that
+  // gap matters for how the number gets used.
   const exposureRate = sourceCounts['llm'] ? sourceCounts['llm'] / results.length : 0;
   // A6 runs the zero-shot tier on-device, so its zero-shot decisions cost no
   // exposure at all. Reporting them in the same column as A5's proxy calls
@@ -268,7 +319,8 @@ function summariseConfig(name, results, decide, { zeroShotIsLocal = false } = {}
   return {
     name,
     n: results.length,
-    accuracy: round(correct / results.length, 3),
+    n_scored: predictions.length,
+    accuracy: round(correct / predictions.length, 3),
     macro_f1: round(macroF1(predictions), 3),
     escalation: sourceCounts,
     exposure_rate: round(exposureRate, 3),
@@ -302,6 +354,23 @@ async function main() {
 
   const corpusPath = path.resolve(__dirname, flag('corpus', 's2_smoke_corpus.json'));
   const outPath = flag('out', null);
+  const rescorePath = flag('rescore', null);
+
+  // --rescore replays scoring against an existing output file's per_page
+  // array instead of re-running the cascade -- every decide() function
+  // (tierAlone, simulateCascade) is a pure function over cached
+  // keyword/zeroShot/llm fields already saved there, so this needs no
+  // network calls and burns no Groq/HF quota. Exists specifically so a
+  // scoring-logic fix (like the truth==="?" bypass-page exclusion) can be
+  // verified against a real, already-paid-for run instead of requiring a
+  // second full pass over the corpus.
+  if (rescorePath) {
+    const prior = JSON.parse(fs.readFileSync(path.resolve(rescorePath), 'utf8'));
+    console.log(`[s2_tier_ablation] Rescoring ${prior.per_page.length} cached page(s) from ${rescorePath} ` +
+      '-- no network calls, no API quota used.');
+    await runScoringAndReport(prior.per_page, outPath || rescorePath);
+    return;
+  }
 
   const corpus = JSON.parse(fs.readFileSync(corpusPath, 'utf8'));
   const pages = corpus.pages;
@@ -356,6 +425,15 @@ async function main() {
       `kw=${String(r.keyword.primary).padEnd(14)} zs=${zs.padEnd(28)}${zsl} llm=${r.llm}`);
   }
 
+  await runScoringAndReport(results, outPath, corpusPath);
+}
+
+// Scoring + console report + optional JSON write. Pulled out of main() so
+// --rescore can call it directly against a saved per_page array without
+// duplicating this logic (and risking the two copies drifting apart the way
+// the original bypass-page scoring bug could have, had it been fixed in only
+// one of two near-identical blocks).
+async function runScoringAndReport(results, outPath, corpusLabel = '(rescored -- see source file)') {
   const configs = [
     summariseConfig('A1 keyword-only', results, (r) => tierAlone(r, 'keyword')),
     summariseConfig('A2 zero-shot-only (ungated)', results, (r) => tierAlone(r, 'zero-shot')),
@@ -364,7 +442,7 @@ async function main() {
     summariseConfig('A5 keyword->zero-shot->LLM', results, (r) => simulateCascade(r, { zeroShotEnabled: true, minScore: PROD_MIN_SCORE, minMargin: PROD_MIN_MARGIN })),
   ];
 
-  if (WITH_A6) {
+  if (WITH_A6 && _localClassifier) {
     // A6 — keyword -> LOCAL distilled zero-shot -> default. No LLM tier: the
     // point of the configuration is that nothing leaves the device, and a
     // cascade that still falls through to Groq would not be that point.
@@ -395,7 +473,7 @@ async function main() {
   console.log('TIER ABLATION — SUMMARY');
   console.log('='.repeat(78));
   for (const c of configs) {
-    console.log(`\n${c.name}  (n=${c.n})`);
+    console.log(`\n${c.name}  (n=${c.n}, n_scored=${c.n_scored})`);
     console.log(`  accuracy ${c.accuracy}   macro-F1 ${c.macro_f1}   exposure_rate ${c.exposure_rate}   ` +
       `zs_proxy ${c.zero_shot_proxy_rate}   zs_local ${c.zero_shot_local_rate}   ` +
       `TOTAL off-device ${c.total_offdevice_rate}`);
@@ -419,7 +497,7 @@ async function main() {
   if (outPath) {
     const outFull = path.resolve(process.cwd(), outPath);
     fs.mkdirSync(path.dirname(outFull), { recursive: true });
-    fs.writeFileSync(outFull, JSON.stringify({ corpus: corpusPath, per_page: results, configs, a7_sweep: sweep }, null, 2));
+    fs.writeFileSync(outFull, JSON.stringify({ corpus: corpusLabel, per_page: results, configs, a7_sweep: sweep }, null, 2));
     console.log(`\nWrote ${outFull}`);
   }
 }

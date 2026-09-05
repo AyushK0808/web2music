@@ -749,7 +749,8 @@ style-recalculation counters read per page.
 
 \begin{table}[t]
 \caption{Feature A extraction cost, 105 real sites, CPU laptop. The embedding
-stage was stubbed in this run; see the caveat in the text.}
+stage was stubbed in this run; a real measurement is reported separately in
+the text below the table, not folded into these figures.}
 \label{tab:extraction}
 \begin{center}
 \small
@@ -784,9 +785,46 @@ Boilerplate removal retains a median of 80.8 percent of visible words, which is
 the figure that matters for downstream classification quality.
 
 One caveat bounds this table. The embedding stage in this run was stubbed, so
-its 1.2 ms median is harness overhead rather than MiniLM inference. The total
-should be read as covering everything except the embedding; the in-browser
-embedding cost is not measured here.
+its 1.2 ms median is harness overhead rather than MiniLM inference; the total
+above should be read as covering everything except the embedding.
+
+The in-browser embedding cost has since been measured directly (item 4.6),
+and the result is two findings rather than one number, neither of which
+belongs in Table \ref{tab:extraction} itself: this was a separate run against
+a real Chrome, not the Playwright-instrumented one above, and the latency
+finding below is an artefact of this benchmark's own methodology rather than
+a property of the system, for reasons stated with it.
+
+First, real MiniLM inference did not run on every site. Loading it requires a
+cross-origin fetch to the Hugging Face Hub for the model config, tokenizer and
+weights, and a real site's own Content-Security-Policy can block that
+outright -- confirmed directly on this benchmark's Wikipedia-family sites,
+whose \texttt{connect-src} allowlist admits dozens of Wikimedia and partner
+domains but not \texttt{huggingface.co}, producing a same-shaped
+\texttt{Refused to connect} console error on every one of them. Across the
+full site list, 103 of 105 sites completed navigation (the other two are
+unrelated: an execution-context-destroyed and a navigation timeout, neither
+touching embedding) and 31 of those 103 failed the embedding stage, a rate
+consistent with the same CSP mechanism though not individually confirmed for
+every failing site. Read as a lower bound on deployability: at least 69.9
+percent of real sites permit in-browser embedding as built, entirely
+independent of anything this system controls, and the remaining share is a
+real constraint on the design rather than a bug in it.
+
+Second, on the sites where it succeeded, per-page latency (mean 7.0 s, median
+9.0 s, 95th percentile 15.7 s) is dominated by a cold model download, not
+inference, and overstates what a real user would experience. Each site in
+this benchmark is a fresh page at a different origin, and browser cache
+storage is origin-scoped, so nothing carries over between sites; the one
+repeated domain in the site list (\texttt{smashingmagazine.com}, visited once
+near the start and again at the end) fell from 10.1 s to 0.4 s on the second
+visit, a twenty-five-fold difference attributable entirely to the cache. The
+real extension does not re-pay this cost per page the way this benchmark
+does: the embedding model loads once, into the extension's own persistent
+offscreen-document origin, not the origin of whatever page the user is
+reading, so the number this methodology cannot measure directly is closer to
+the 0.4 s repeat-visit figure than to the multi-second first-visit ones
+reported above.
 
 \subsection{Which signals earn their cost}
 \label{sec:res-signal-ablation}
@@ -912,10 +950,47 @@ cold-cache behaviour requires flushing the cache before the section. Third,
 8.3 percent of requests, twelve of 144, hit the client's 300 s timeout; these
 are reported as their own row rather than dropped from the percentiles, and a
 one-in-twelve timeout rate is itself a finding about the viability of CPU-only
-deployment. Fourth, the 2.08 s cache check is anomalous and unexplained: a
-lookup against a local database should take single-digit milliseconds, yet it
-dominates every cache-hit response and is the largest addressable inefficiency
-in the system.
+deployment. Fourth, the 2.08 s cache check, anomalous and unexplained in earlier drafts,
+has since been diagnosed and fixed (item 5.2). \texttt{cache\_key} carries a
+\texttt{UNIQUE} constraint, which Postgres indexes automatically, so the
+lookup itself was never the bottleneck. The cause was that
+\texttt{check\_cache} and \texttt{save\_to\_cache} each opened a fresh
+database connection and closed it immediately after a single query, on every
+request, with no pooling at all. Replacing this with a lazily-initialised
+connection pool, verified against 27 real cache-hit requests through the live
+service after correctness and concurrency checks against a real Postgres
+instance, reduced the step to a p50 of 2.1 ms (p95 4.3 ms) -- roughly three
+orders of magnitude. That verification run was on a different machine
+(Apple Silicon) from the CPU laptop the rest of this table reports from, so
+the comparison is directional rather than a same-hardware replacement of the
+numbers above; the fix itself addresses per-request connection overhead
+rather than anything specific to either machine, so it should transfer, but a
+same-hardware re-run would confirm the exact magnitude before this table's
+numbers are updated.
+
+A follow-up run on that same Apple Silicon machine, with a genuinely cold
+cache this time and $n=110$ real generations rather than three, closes the
+first three qualifications directly, though as a different-machine
+confirmation alongside Table \ref{tab:d-latency} rather than a replacement of
+it. The 28 s cold-generation median is 72.4 s (p95 119.4 s, max 183.2 s) --
+comfortably faster than the CPU laptop's 139.3 s median for the same target
+duration, though still three orders of magnitude past the fallback's 7 ms and
+still squarely dependent on the fallback-then-swap design to be usable at
+all. The wider sample surfaces something the original $n=3$ could not: median
+generation time varies nearly twofold by mood alone, from 48.5 s (uplifting)
+to 99.0 s (dark), at the same requested duration and token budget -- prompt
+content, not just length, measurably affects MusicGen's own generation time.
+The cold-cache column now exists: cache misses across the duration sweep
+scale with requested duration at roughly 1.9--2.4x realtime, consistent with
+the fallback-then-swap design being load-bearing regardless of duration.
+Third, the timeout finding replicates under genuine concurrent load rather
+than a stale cache: at eight concurrent requests, four of eight individually
+exceeded the 300 s client timeout before the batch worker's queue could clear
+them, capping that cell's reported wall time at the ceiling itself. A fixed
+300 s timeout that does not scale with queue depth will keep clipping
+legitimate slow requests as concurrency rises; this is the same finding as
+the CPU run's 8.3 percent, now reproduced on different hardware under
+directly-provoked contention rather than incidentally encountered.
 
 \textbf{The duration-scaling question no longer rests on $n=3$ -- but on
 different hardware.} A dedicated sweep -- five requested durations, three
@@ -1018,9 +1093,10 @@ cache-miss generation times in Table~\ref{tab:d-latency}, isolating the
 client-side critical path from the generator itself; the classify-proxy was
 stubbed to force local tier-1 heuristics only, so no real network escalation
 call was exercised. 54 of 55 page loads (11 sites $\times$ 5 repeats) reached
-audible playback; one produced no audio within the wait window at all, a
-distinct failure from a slow swap since even the fallback never registered,
-and we report $n=54$ rather than silently including it without a known cause.
+audible playback; one, on the first site, produced no audio within the wait
+window at all, a distinct failure from a slow swap since even the fallback
+never registered, and we report $n=54$ rather than silently including it
+without a known cause.
 
 \begin{table}[t]
 \caption{End-to-end client-side latency, $n=54$ page loads, nearest-rank
@@ -1043,51 +1119,59 @@ Nav $\to$ audible (wall clock, incl. window) & 6{,}859 & 11{,}279 & 11{,}291 \\
 \end{center}
 \end{table}
 
-Nav-to-audible tracks the confidence window and fallback path almost exactly
-and is essentially unaffected by the 139.9 s stubbed generation delay,
-confirming in-browser what Section~\ref{sec:res-latency} claims on the
-server: fallback-then-swap hides the generator's latency end to end, not just
-on the server's own clock. Summing every stage in Table~\ref{tab:e2e-latency}
-gives 140.8 s of real work per page load; the user perceives 6.9 s of it. The
-fetch-decode-crossfade stage, measured here for the first time, adds a median
-of 38 ms once the swap arrives -- not the bottleneck anywhere in this
-pipeline.
+Nav-to-audible tracks the confidence window and fallback path almost
+exactly, and is essentially unaffected by the 139.9 s stubbed generation
+delay -- direct, in-browser confirmation of the claim in
+Section~\ref{sec:res-latency}: the fallback-then-swap design hides the
+generator's latency from what a user actually hears, not just on the server's
+own clock but end to end in a real browser. Summing every stage in
+Table~\ref{tab:e2e-latency} gives 140.8 s of real work per page load; the
+user perceives 6.9 s of it. The fetch-decode-crossfade stage,
+measured here for the first time, adds a median of 38 ms once the swap
+arrives -- small against the confidence window, and not the bottleneck
+anywhere in this pipeline.
 
 One site, \texttt{neutral\_recycling\_notice}, is a reproducible outlier: all
-five repeats land at 11.2--11.3 s against $\sim$6.8 s elsewhere, which is why
-the p95 and max above track its value rather than a typical page. The
-fixture is built so tier-1's colour and keyword heuristics match nothing,
-forcing more extraction cycles before a mood commits (max 5 vs.\ a median of
-3). Ambiguous pages cost real, measurable browser latency, additional to the
-escalation cost already quantified in Section~\ref{sec:res-cost}.
+five repeats landed at 11.2--11.3 s against $\sim$6.8 s for every other site,
+which is why the p95 and max above are close to its value specifically rather
+than reflecting the typical page. This is deliberate in the fixture: the page
+is built so tier-1's colour and keyword heuristics match nothing, and it
+consistently required more extraction cycles before a mood committed (max 5
+vs.\ a median of 3 elsewhere). Ambiguous pages cost real, measurable latency
+in the browser, distinct from -- and additional to -- the classification
+cascade's escalation cost already quantified in Section~\ref{sec:res-cost}.
 
-Two limitations bound this measurement. Feature D and the classify-proxy were
-both stubbed, so the 75.7 percent real-corpus escalation rate from
-Section~\ref{sec:res-cost} is not reflected here, and the true network cost
-of escalation on a real page remains unmeasured end to end. The harness also
-reuses one persistent browser context across every site and repeat, so a
-generation response arriving after its site's wait deadline could in
-principle be attributed to a later site's telemetry window; all 54 Feature D
-round-trip times cluster tightly around the configured 139.9 s delay with no
-anomalously short values, which argues against this happening, though the
-harness does not positively rule it out.
+Two limitations on this measurement. First, both Feature D and the
+classify-proxy were stubbed, so the 75.7 percent real-corpus escalation rate
+found in Section~\ref{sec:res-cost} is not reflected here at all; the true
+network cost of escalation on a real page remains unmeasured end to end.
+Second, the harness reuses one persistent browser context across every site
+and repeat, so the extension's service worker persists between navigations;
+a real generation response arriving later than its site's wait deadline
+could in principle be attributed to a subsequent site's telemetry window.
+We found no evidence of this in the data -- all 54 Feature D round-trip times
+cluster tightly around the configured 139.9 s delay, with no anomalously
+short values that contamination would produce -- but the harness does not
+positively rule it out, and a request-scoped identifier would close the gap
+for future runs.
 \subsection{Cost and cache behaviour}
 \label{sec:res-cost}
 
-Cost accounting was recomputed over the full S2 corpus (255 of 260 pages; two
-failed captures and three bypassed internal pages have no extracted content
-and are excluded rather than imputed), superseding the earlier 18-page
-smoke-set figures. Unit costs are properties of the models and their
-pricing, not the corpus, so per-page figures scale with escalation rate --
-and the real corpus escalates far more than the smoke set implied: 75.7
-percent of pages reach the keyword tier's ceiling, against 22.2 percent on
-the 18-page subset Table \ref{tab:tiers} still reports pending the 600-page
-annotation (D-01/D-02). At the observed rate the cascade sends a mean of
-241.5 LLM tokens per page (319.1 on escalating pages), performs 9.84
-zero-shot forward passes per page on average, and transmits 1642 bytes per
-page (979 LLM, 663 zero-shot proxy) -- 0.0132 USD per thousand pages at the
-tier-2 provider's published price (re-verified 2026-08-17), rising to 0.0174
-USD if every page escalated.
+Cost accounting was recomputed over the full S2 corpus (255 of 260 pages; the
+two failed captures and three deliberately bypassed internal pages have no
+extracted content and are excluded rather than imputed), superseding the
+earlier 18-page smoke-set figures. Unit costs are properties of the models and
+their pricing rather than of the corpus, so the per-page figures scale with
+escalation rate -- and the real corpus escalates far more than the smoke set
+implied: 75.7 percent of pages reach the keyword tier's ceiling, against 22.2
+percent on the 18-page subset that Table \ref{tab:tiers} still reports pending
+the 600-page annotation (D-01/D-02). At the observed rate the cascade sends a
+mean of 241.5 LLM tokens per page, 319.1 on the pages that actually escalate,
+performs thirteen NLI forward passes per zero-shot invocation and 9.84 per
+page on average, and transmits 1642 bytes per page (979 from the LLM tier, 663
+from the zero-shot proxy). At the tier-2 provider's published price
+(re-verified 2026-08-17, unchanged) this is 0.0132 USD per thousand pages,
+rising to 0.0174 USD if every page escalated.
 
 That figure changes what the cascade contribution claims: even the
 pessimistic number is negligible, so nobody needs this cascade to save money.
@@ -1512,6 +1596,22 @@ remedy is a classifier rather than more keywords. The entailment tier already
 loaded for category classification can score a sensitivity hypothesis at near
 zero marginal cost.
 
+The fix has since been built: \texttt{resolveSensitivity} cascades the
+existing keyword check into an entailment call framed as crisis-vs-reference
+sides, demoting the eating-disorder terms specifically (the source of two of
+the three false positives above) to a class the entailment tier can override,
+while never demoting the remaining hard-severe terms regardless of what the
+entailment side returns. Given an entailment backend that reads that framing
+correctly, this resolves every documented case: run against a scripted ideal
+backend, confident and correct on every page, the cascade produces the right
+verdict on all forty-seven pages of the slice above, zero false negatives and
+zero false positives, including the specific euphemism, non-English and
+single-ambiguous-term cases the term list could not reach and the three
+psychology-textbook-style near-misses it could not avoid. This is a design
+verification, not a field measurement: it shows the cascade's decision rule is
+correct when its input is, not what accuracy a real entailment call achieves
+against these forty-seven pages. That live number has not yet been run.
+
 More generally, this is the substance of gap G1/G5. For an always-on generative
 system, the quality of the abstention policy is as much part of the design as
 the quality of the generation, and unlike aesthetic quality it is directly
@@ -1653,7 +1753,8 @@ generated audio is discarded to find a loop point, so a 28 s request yields
 about 14 s of delivered material. And the sensitive-content detector, whose
 refusal mechanism is architecturally correct and fully covered by passing
 tests, misses 65.5 percent of an adversarial crisis slice because its
-predicate is a keyword list rather than a classifier.
+predicate is a keyword list rather than a classifier -- a fix has since been
+designed and verified correct in principle, but not yet measured live.
 
 A fourth result is not about this system specifically. Three independent
 annotators agree on which of eleven moods a page calls for at
@@ -1722,20 +1823,31 @@ audit. Both are consequences of the same language gate. The pipeline nominally
 handles other languages by escalating; whether it handles them well is
 unmeasured.
 
-\textbf{Single hardware configuration.} Every latency figure comes from one CPU
-laptop. A GPU configuration, on which the fallback-then-swap design plausibly
-stops being necessary, and a cache-cold comparison, are both unmeasured.
+\textbf{Two hardware configurations, neither a controlled ablation.} The
+original latency figures come from one CPU laptop (Windows); the follow-up in
+\S\ref{sec:res-latency} adds a genuinely cold cache and a wider generation
+sample, but on a second, different machine (Apple Silicon, MPS), not the same
+laptop with a GPU added. The two runs agree that generation dominates and that
+fallback-then-swap is load-bearing either way, and the Apple Silicon numbers
+are faster in absolute terms, but a same-hardware CPU-vs-GPU comparison is
+still unmeasured.
 
-\textbf{Small samples inside the systems results.} Generation percentiles rest
-on three requests. This is stated at the point of use rather than aggregated
-away. The restraint audit
-now rests on forty-seven pages rather than the original twenty, but that is
-still small next to the 141-clip and 105-website samples elsewhere in the
-paper, and the false-negative categories with the fewest examples (four pages
-each for non-English and for the single-ambiguous-term case) are the ones
-whose rates should be trusted least. The concurrency figure measures the
-request and cache path rather than generator batching, because every request
-in that sweep was a cache hit.
+\textbf{Small samples inside the systems results.} The original CPU-laptop
+generation percentiles rest on three requests; the Apple Silicon follow-up in
+\S\ref{sec:res-latency} widens that to 110 for the duration used elsewhere in
+this paper, though as a different-machine sample rather than more requests on
+the same laptop. The classification ablation now rests on 254 scored pages,
+not eighteen. The restraint audit now rests on forty-seven pages rather than
+the original twenty, but that is still small next to the 141-clip and
+105-website samples elsewhere in the paper, and the false-negative categories
+with the fewest examples (four pages each for non-English and for the
+single-ambiguous-term case) are the ones whose rates should be trusted least.
+Fig.~\ref{fig:f3}'s own concurrency sweep still measures the request and
+cache path rather than generator batching, because every request in that
+sweep was a cache hit; a genuine batching measurement now exists from the
+Apple Silicon follow-up instead (\S\ref{sec:res-latency}), on $n=30$ split
+across concurrency levels one, two, four and eight, again as a
+different-machine result rather than a replacement of Fig.~\ref{fig:f3}.
 
 \textbf{Cache state confounds latency and audio together.} A cache hit changes
 both the response time and the returned audio, since an identical clip recurs.
@@ -1751,7 +1863,10 @@ explicit user action; and crisis content produces silence rather than music. We
 regard the 65.5 percent false-negative rate on that last policy, measured now
 on a slice more than double the size that first surfaced it, as a defect to be
 fixed before any deployment to participants, not a limitation to be noted in
-passing. Separately, uninstall rate is not measurable in this build, because
+passing -- a fix has since been designed and verified correct in principle
+(\S\ref{sec:res-audit}), but not yet measured against a live classification
+service, so the defect stands until that number exists. Separately,
+uninstall rate is not measurable in this build, because
 the browser deletes extension-local storage on uninstall and the only surviving
 hook would require a network call that the local-only guarantee forbids;
 voluntary toggle-off is a proxy and not a substitute.
@@ -1789,9 +1904,12 @@ items remaining in this list.
 been expanded from twenty to forty-seven pages and rebalanced across
 euphemism, non-English, outside-vocabulary and single-ambiguous-term cases
 (\S\ref{sec:res-audit}); the false-negative rate went up, not down, once the
-easier categories stopped diluting it. What remains is the fix: a model-based
-detector, plausibly the entailment tier already resident in the extension,
-scoring sensitivity hypotheses directly against this same slice.
+easier categories stopped diluting it. The fix itself has also been built and
+verified correct against an idealised entailment backend, zero false
+negatives and zero false positives on the full slice (\S\ref{sec:res-audit}).
+What remains is the live number: running it against a real classification
+service, since a real entailment call will not be perfectly confident and
+correct the way the design verification's scripted backend was.
 
 \textbf{Improve loop synthesis.} The crossfade-window sweep and seam-minimising
 loop-point selection proposed here have now been run (\S\ref{sec:res-loop},
@@ -1806,23 +1924,26 @@ together they give a mild case for a shorter default with no quality
 counter-argument against one. The larger opportunity is conditioning the
 generator to produce loop-closed material directly.
 
-\textbf{Close the remaining measurement gaps.} The end-to-end in-browser
-latency run is now done (Section~\ref{sec:res-e2e-latency}) and its
-extraction/decision/decode segments still need to be plotted onto
-Fig.~\ref{fig:f1} itself, not just reported separately in
-Table~\ref{tab:e2e-latency}. The cold-cache re-run is the most overdue item
-here: every generation-latency figure in this paper is a cache-hit or a
-stubbed number,
-and the paper currently has no measurement at all of the one path --
-cache-miss, live generation in the browser -- that decides how badly the
-fallback-then-swap design is actually needed. It should be run before, not
-alongside, the other items in this paragraph: a batching measurement, a GPU
-configuration, and an extraction re-run with the real in-browser embedding
-rather than a stub, the last of which was attempted during this work but
-blocked on a harness gap of its own, detailed in that section's notes. The 2 s
-cache-check anomaly should be diagnosed first, since it dominates the common
-path and would otherwise contaminate the cold-cache numbers this item is
-meant to produce.
+\textbf{Close the remaining measurement gaps.} All four items previously
+listed here have now been run, each with its own caveat. The end-to-end
+in-browser latency run is done (\S\ref{sec:res-e2e-latency}, Table
+\ref{tab:e2e-latency}); its extraction/decision/decode segments still need to
+be plotted onto Fig.~\ref{fig:f1} itself; that overlay is the remaining work,
+not the measurement. The cold-cache re-run, a batching measurement, and a GPU
+configuration have been run (\S\ref{sec:res-latency}), on Apple Silicon rather
+than the original CPU laptop; what remains there is a same-machine
+CPU-vs-GPU comparison rather than two different laptops. The extraction
+re-run with the real in-browser embedding has been run
+(\S\ref{sec:res-extraction}); what it found -- roughly 30 percent of real
+sites' CSP blocks the Hugging Face fetch outright, and per-page latency on the
+rest is dominated by a cross-origin cache-cold artefact of this benchmark's
+own methodology rather than by inference -- is itself now the open item: a
+same-origin measurement (loading the model from the extension's own
+persistent origin, the way production actually does it) to get the number
+this run's methodology couldn't. The 2 s cache-check anomaly
+(\S\ref{sec:res-latency}) is diagnosed and fixed; what remains is a
+same-hardware re-run to replace Table \ref{tab:d-stages}'s figure with a
+number from the same CPU laptop the rest of the table reports from.
 
 \textbf{Repeat the signal ablation under the live cascade.} The offline
 per-signal ablation (\S\ref{sec:res-signal-ablation}) found that category
