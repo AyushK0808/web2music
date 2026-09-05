@@ -808,10 +808,20 @@ ms sits against a median of 50 ms on pages where the store has grown large.
 Boilerplate removal retains a median of 80.8 percent of visible words, which is
 the figure that matters for downstream classification quality.
 
-One caveat bounds this table. The embedding stage in this run was stubbed, so
+Two caveats bound this table. The embedding stage in this run was stubbed, so
 its 1.2 ms median is harness overhead rather than MiniLM inference. The total
 should be read as covering everything except the embedding; the in-browser
-embedding cost is not measured here.
+embedding cost is not measured here. Separately, the six stage medians above
+sum to 68.0 ms, not the reported 85.9 ms total: percentiles are not additive
+across independent stages even when the underlying work is, since each
+stage's own tail is measured separately from the sum's tail, so the gap is
+an artefact of reporting percentiles rather than a missing stage. The
+151.3 ms median layout duration is a different quantity again, not a
+component of either figure: it is Chrome's own cumulative layout counter
+since the page was created, covering layout work from navigation and
+initial render as well as anything the descriptor construction itself
+triggers, so it is scoped to the whole page session rather than to the
+descriptor-construction code specifically.
 
 \subsection{Which signals earn their cost}
 \label{sec:res-signal-ablation}
