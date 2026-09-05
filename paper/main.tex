@@ -148,7 +148,8 @@ The interesting design question is not whether to use an LLM, but how few pages
 can be sent to one.
 
 \textbf{The model is too slow to be on the critical path.} We measure a median
-of 139 s to generate a 28 s clip on a CPU laptop, against a page load of about
+of 139 s ($n=3$ live generations; Section \ref{sec:res-latency}) to generate
+a 28 s clip on a CPU laptop, against a page load of about
 two seconds. No amount of optimisation closes a two-order-of-magnitude gap; the
 interaction has to be designed so that the gap is not visible.
 
