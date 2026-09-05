@@ -1603,7 +1603,14 @@ The obvious cheaper design is to retrieve from a curated library, and gap G2
 notes that this is usually asserted rather than quantified. The request space
 the classifier can emit is eleven moods by seven styles by five tempo buckets
 by five energy buckets, or 1925 cells. Table \ref{tab:retrieval} gives the
-coverage a library of each size achieves.
+coverage a library of each size achieves. This table is an analytical model
+of a hypothetical library, not a measurement of a real one: no library of
+any size was built or evaluated. Its coverage column assumes every one of
+the 1925 cells is equally likely to be requested, and its dims-wrong column
+assumes a nearest-available track differs uniformly across the four
+dimensions; the skewed-coverage column relaxes the first assumption but not
+the second. The numbers describe what a library of each size could cover
+under these assumptions, not what one has been shown to deliver.
 
 \begin{table}[t]
 \caption{Retrieval-baseline coverage of the 1925-cell request space. ``Dims
