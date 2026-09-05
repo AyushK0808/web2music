@@ -1598,6 +1598,16 @@ important mechanism fails on nearly two-thirds of an adversarial slice. That gap
 between ``the architecture is correct'' and ``the policy is delivered'' is
 invisible to any evaluation that tests only the mechanism.
 
+The payment, banking and checkout bypass relies on the same class of
+mechanism, keyword-and-URL pattern matching, that the sensitive-content
+predicate above turned out to miss on nearly two-thirds of an adversarial
+slice, but it has not been adversarially audited to the same standard.
+Table \ref{tab:audit} confirms the bypass fires on its intended fixtures,
+not that it resists deliberately adversarial URLs or titles the way the
+sensitive slice was built to stress the other predicate. The confidence
+this paper places in one keyword-based mechanism and withholds from the
+other is not symmetric with the evidence behind them.
+
 \subsection{Generation against retrieval}
 \label{sec:res-retrieval}
 
