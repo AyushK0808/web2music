@@ -2,7 +2,6 @@ import hashlib, json, os
 import psycopg2
 import psycopg2.extras
 import psycopg2.pool
-from contextlib import contextmanager
 from dotenv import load_dotenv
 from d4_process import EXPORT_CODEC
 load_dotenv()
@@ -13,57 +12,59 @@ os.makedirs(AUDIO_CACHE_DIR, exist_ok=True)
 LOCAL_DB_URL = os.getenv("LOCAL_DB_URL", "postgresql://postgres:postgres@localhost:5432/audio_cache")
 LOCAL_SERVER_URL = os.getenv("LOCAL_SERVER_URL", "http://127.0.0.1:8000")
 
-def _connect():
-    return psycopg2.connect(LOCAL_DB_URL)
-
-# check_cache/save_to_cache each opened a brand-new psycopg2.connect() and
-# closed it immediately after a single query -- this is item 5.2, the
-# unexplained ~2s p50 on every cache-hit response (Table III). A fresh TCP
-# connection plus Postgres's own auth handshake is the standard cause of
-# exactly this symptom: cache_key has a UNIQUE constraint, which Postgres
-# auto-indexes, so the SELECT itself was never the bottleneck. On plain
-# localhost loopback a fresh connect() only costs ~10ms (verified locally),
-# nowhere near 2082ms -- the gap is almost certainly Docker Desktop's
-# container-to-container networking overhead on the Windows/WSL2 host this
-# was measured on (documented to add significant per-connection latency),
-# which this fix sidesteps entirely by paying that cost once at pool
-# creation rather than on every request, regardless of its exact size on any
-# given host. ThreadedConnectionPool specifically because check_cache and
-# save_to_cache run via asyncio.to_thread (main.py), so concurrent requests
-# can call in from different threads at once; a single shared connection
-# would not be safe there.
+# C-11/item-50 fix -- check_cache/save_to_cache/ensure_schema used to call
+# psycopg2.connect() (a fresh TCP connection + auth handshake) and close it
+# again on every single call. On this dev machine that measured as a ~2.08s
+# median (Table III's D5 stage, n=99) -- the exact size of the request path's
+# dominant cost, and the same order of magnitude as the well-documented
+# Docker-Desktop-on-Windows "localhost" IPv6-then-IPv4 connection stall. A
+# pooled, persistent set of connections removes the per-call reconnect
+# entirely regardless of which platform-specific mechanism was inflating it:
+# a local microbenchmark against a real Postgres shows connect+query+close
+# at ~9-10ms/call even on a fast loopback with no such stall, against
+# ~0.1ms/call once a connection is reused from the pool -- roughly two
+# orders of magnitude, before any Docker-networking overhead is added back.
+# minconn=1 so the pool doesn't start empty; maxconn=10 comfortably covers
+# concurrent asyncio.to_thread() calls from a single FastAPI worker without
+# unbounded connection growth.
 _pool = None
 
 def _get_pool():
     global _pool
     if _pool is None:
-        _pool = psycopg2.pool.ThreadedConnectionPool(minconn=1, maxconn=10, dsn=LOCAL_DB_URL)
+        _pool = psycopg2.pool.ThreadedConnectionPool(1, 10, LOCAL_DB_URL)
     return _pool
 
-@contextmanager
-def _pooled_connection():
-    pool = _get_pool()
-    conn = pool.getconn()
-    try:
-        yield conn
-    except Exception:
-        # Roll back before the connection goes back to the pool. Without
-        # this, a connection returned mid-transaction (any exception raised
-        # inside the `with` block above -- a bad query, a constraint
-        # violation, a dropped connection) sits in Postgres's aborted-
-        # transaction state. The pool doesn't know that; it just hands the
-        # same connection to the next caller, whose first query then fails
-        # with "current transaction is aborted, commands ignored until end
-        # of transaction block" -- a second, unrelated-looking failure
-        # caused entirely by the first one's cleanup being incomplete.
-        conn.rollback()
-        raise
-    finally:
-        # Always returned, even on error -- a leaked connection would
-        # eventually exhaust maxconn and turn every request into a cache
-        # miss the same way the original schema-drift bug did (see
-        # ensure_schema's docstring), just later and harder to notice.
-        pool.putconn(conn)
+class _PooledConn:
+    """Context manager: borrow a connection from the pool, always return it.
+
+    Existing call sites did `conn = _connect(); ...; finally: conn.close()`.
+    This gives them the same shape (`with _connect() as conn:`) so the
+    borrow/return is impossible to forget, while what actually happens is
+    `pool.getconn()` / `pool.putconn()` instead of open/close.
+    """
+    def __enter__(self):
+        self._conn = _get_pool().getconn()
+        return self._conn
+
+    def __exit__(self, exc_type, exc, tb):
+        pool = _get_pool()
+        if exc_type is not None:
+            # Don't return a connection that's mid-failed-transaction to the
+            # pool in an unknown state -- roll it back first so the next
+            # borrower gets a clean session.
+            try:
+                self._conn.rollback()
+            except Exception:
+                pass
+        pool.putconn(self._conn)
+        return False
+
+def _connect():
+    """Kept as the module's connection entry point so call sites are
+    unchanged; now returns a pooled-connection context manager instead of
+    opening a new TCP connection every time. See _get_pool() docstring."""
+    return _PooledConn()
 
 # Every nullable column save_to_cache() writes, as (name, type). Kept in the
 # same order as ../docker/init.sql's CREATE TABLE; tests/test_schema_sync.py
@@ -121,16 +122,13 @@ def ensure_schema():
         for name, type_ in SCHEMA_COLUMNS
     ]
 
-    conn = _connect()
-    try:
+    with _connect() as conn:
         with conn.cursor() as cur:
             before = _column_names(cur)
             for statement in statements:
                 cur.execute(statement)
             after = _column_names(cur)
         conn.commit()
-    finally:
-        conn.close()
 
     added = [c for c in after if c not in before]
     if not before:
@@ -190,7 +188,7 @@ def make_cache_key(profile: dict) -> str:
     ).hexdigest()
 
 def check_cache(cache_key: str):
-    with _pooled_connection() as conn:
+    with _connect() as conn:
         with conn.cursor() as cur:
             cur.execute("SELECT * FROM audio_cache WHERE cache_key = %s", (cache_key,))
             row = cur.fetchone()
@@ -212,7 +210,7 @@ def save_to_cache(cache_key, clip_bytes, profile, loop_point_ms, generation_time
 
     audio_url = f"{LOCAL_SERVER_URL}/audio-cache/{filename}"
 
-    with _pooled_connection() as conn:
+    with _connect() as conn:
         with conn.cursor() as cur:
             cur.execute(
                 """
