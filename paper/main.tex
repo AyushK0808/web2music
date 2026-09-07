@@ -421,20 +421,28 @@ similarly ($\alpha=0.419$ below threshold, ceiling highest of the three at
 0.775), consistent with its 87.6\% not-sensitive skew. Any
 classifier-accuracy claim here must be read against these ceilings.
 
-\textbf{Post-hoc mood re-collapse (blocked).} A coarser mood vocabulary
-(3-way valence/arousal buckets, 2-way positive/negative) would only move
-this conclusion if it moved $\alpha$ above 0.667 at some resolution.
-Computing that requires the raw per-annotator label files
-(\texttt{analysis/out/annotations/*.json}, per \texttt{krippendorff.py}'s
-own input contract); those were never committed (\texttt{analysis/out/}
-is build output, gitignored) and exist only as the majority-vote labels in
-\texttt{s2\_corpus\_annotated.json}, which cannot support a new alpha
-computation at a different granularity. This item is blocked on the raw
-annotation files existing somewhere outside \texttt{analysis/out/}, not on
-missing tooling: \texttt{krippendorff.py}'s \texttt{nominal\_alpha()}
-already computes alpha for an arbitrary label set, so re-collapsing is a
-same-day job once the three annotators' raw per-page judgements are
-available.
+\textbf{Post-hoc mood re-collapse (item 42).} A coarser mood vocabulary
+(3-way arousal buckets -- calm $\leftarrow$ \{calm, sad, nostalgic\},
+neutral $\leftarrow$ \{focused, curious, neutral\}, energetic $\leftarrow$
+\{joyful, energetic, uplifting, tense, dark\}; 2-way valence buckets --
+positive $\leftarrow$ \{calm, focused, joyful, energetic, curious,
+uplifting, neutral\}, negative $\leftarrow$ \{sad, dark, tense,
+nostalgic\}) does not clear the gate at either resolution: $\alpha=0.281$
+[0.204, 0.353] at 3-way and $\alpha=0.259$ [0.125, 0.383] at 2-way, against
+0.176 [0.128, 0.222] at 11-way -- all three computed with the same
+coincidence-matrix \texttt{nominal\_alpha()} and page-level bootstrap the
+11-way figure uses, over all 255 units and the three annotators' raw
+per-page judgements. Coarsening does not rescue mood: even a binary
+positive/negative split leaves three annotators short of the 0.667 minimum
+this paper's own gate requires. One thing does move sharply with
+granularity and is worth flagging on its own: the leave-one-annotator-out
+ceiling rises from 0.134 (11-way) to 0.402 (3-way) to 0.788 (2-way), while
+$\alpha$ does not follow it -- coarsening a label space inflates the
+ceiling a classifier would be scored against largely by construction
+(fewer buckets means more accidental agreement), not because annotators
+have started agreeing on anything more meaningful. A future switch to a
+coarser mood target should not cite the higher ceiling alone as
+justification.
 
 \subsection{Extraction cost}
 \label{sec:res-extraction}
@@ -1101,10 +1109,11 @@ system, not its effect on people, and the immediate priority is
 institutional ethics approval, followed by the within-subjects study and
 the in-the-wild deployment. Mood has no useful inter-annotator ceiling
 (\S\ref{sec:res-agreement}: 0.174, below the raw eleven-way agreement
-itself), unlike category (0.621) and sensitivity (0.775); a post-hoc
-re-collapse at coarser mood granularity remains blocked on the raw
-per-annotator label files not being committed anywhere in the repository
-(\S\ref{sec:res-agreement}). Table
+itself), unlike category (0.621) and sensitivity (0.775); coarsening the
+mood vocabulary does not rescue this either -- a post-hoc 3-way and 2-way
+re-collapse (\S\ref{sec:res-agreement}) tops out at $\alpha=0.281$, still
+short of the 0.667 gate, so the problem is the target, not its resolution.
+Table
 \ref{tab:tiers}'s tier-ablation numbers are a conservative floor:
 re-scored against the three-annotator label, the full cascade's accuracy
 cost relative to keyword-to-LLM widens to an estimated 7.7 points, 95\%
