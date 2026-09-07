@@ -401,7 +401,14 @@ count of \texttt{s2-ablation-real.json}, a separate results file (built
 against \texttt{s2\_corpus\_annotated.json} on a different contributor's
 machine) used specifically for \S\ref{sec:res-classification}'s re-scoring
 paragraph. The four numbers name three different corpus snapshots, not one
-pipeline with three clean exclusion steps.
+pipeline with three clean exclusion steps. \textbf{Annotator wellbeing.}
+Three annotators labelled all 12 sensitive and 15 sensitive-near-miss
+pages, covering crisis and self-harm content, as part of this task; no
+informed-consent, opt-out, or debriefing process for that specific
+exposure is recorded anywhere in this project's materials, and none
+should be assumed present. That is a gap in how this annotation was run,
+not a detail omitted from the writeup, and it should be closed before any
+further annotation of this kind is asked of anyone.
 \textbf{Hardware.} A single CPU laptop; no
 GPU configuration was measured. \textbf{Deployment status.} Web2Music has
 not been submitted to the Chrome Web Store or otherwise distributed: the
@@ -688,18 +695,16 @@ here, so the 75.7 percent real-corpus escalation rate is not reflected.
 \subsection{Cost and cache behaviour}
 \label{sec:res-cost}
 
-Cost accounting over the full S2 corpus supersedes the earlier 18-page
-smoke-set figures: the real corpus escalates far more than implied, 75.7
-percent of pages reaching the keyword tier's ceiling against 22.2 percent
-on the 18-page subset. At the observed rate the cascade sends a mean of
-241.5 LLM tokens, 9.84 zero-shot passes, and 1642 bytes per page — 0.0132
-USD per thousand pages, rising to 0.0174 USD if every page escalated.
-Even the pessimistic number is negligible, so the cascade is worth
-building not to save money but because it controls how much browsing
-leaves the machine — the disclosure gap this system targets. Audio cost is
-dominated by cache behaviour:
-expected hit rate is 57 percent under a uniform mood distribution, rising
-to 83 percent under heavy skew.
+Classification cost is negligible and was never the point: at the real
+corpus's 75.7 percent escalation rate (the earlier 18-page smoke set's 22.2
+percent understated this badly), the cascade sends a mean 241.5 LLM
+tokens, 9.84 zero-shot passes, and 1642 bytes per page -- 0.0132 USD per
+thousand pages, 0.0174 USD in the worst case. The cascade is worth
+building to control how much browsing leaves the machine, not to save
+money that was never meaningfully at stake. Audio cost is the one that
+matters, and it is dominated by cache behaviour: expected hit rate is 57
+percent under a uniform mood distribution, rising to 83 percent under
+heavy skew.
 
 \subsection{Classification and the tier cascade}
 \label{sec:res-classification}
@@ -731,6 +736,18 @@ A5 keyword$\to$ZS$\to$LLM (ours) & .622 [.546,.665] & .656 [.587,.697] & \textbf
 \end{center}
 \end{table}
 
+\textbf{Read this table against the stronger ground truth below, not
+against its own accuracy column.} \texttt{true\_category} here is not the
+three-annotator majority-vote label: checked against
+\texttt{s2\_corpus\_annotated.json} on the 208 pages both cover, the two
+disagree on category outright for 31 of them (14.9 percent) --
+\emph{mix-wiki-thanksgiving} labelled Food here and Entertainment there,
+\emph{myth-worldhistory-rome} Mythological here and Educational there, and
+so on. The accuracy and macro-F1 columns above are accordingly a
+conservative floor, not the number to cite; \textbf{Ground-truth
+sensitivity} below gives the annotator-verified figures and should be read
+as primary wherever it has an entry.
+
 \textbf{*Provenance caveat (item 40).} The bracketed CIs are centred on a
 fresh replay of the production cascade (the same
 \texttt{simulateCascade()} mirror \texttt{analysis/figures/f4\_confusion.py}
@@ -751,15 +768,35 @@ per-page snapshot than the one now checked in, or there is a scoring
 discrepancy in the original harness run that a code read did not surface.
 Until the provenance is confirmed, the CIs above should be read as
 attached to a fresh, reproducible replay rather than to the specific
-point estimates printed beside them.
+point estimates printed beside them -- and, per the paragraph above, to a
+weaker ground truth than the one that should decide this trade-off.
 
-The full cascade (A5) trails keyword-to-LLM (A4) by 4.7 points of accuracy
-(widening to 7.7 under the stronger label below) on the committed point
-estimates; \textbf{a paired bootstrap over the same per-page replay puts
-that delta's 95\% CI at $[-0.069, +0.025]$ macro-F1 (item 40) -- it
-includes zero, so on this corpus size (n=260) the A4/A5 accuracy gap this
-paper's headline trade-off rests on is not statistically distinguishable
-from noise.} A5's LLM-only exposure (.250) looks like a large reduction
+\textbf{Ground-truth sensitivity -- the primary read.} Three annotators'
+majority vote reaches only $\alpha=0.635$ for category, itself below the
+0.667 usability gate (\S\ref{sec:res-agreement}), so treat what follows as
+the better of two imperfect options, not a validated ground truth.
+Re-scoring against the 208 pages that vote resolves gives keyword-only
+.197/.297 (unchanged), LLM-only .764/.731 (+7.9), keyword-to-LLM .760/.705
+(+9.1), full cascade .683/.683 (+6.1 only) -- widening the accuracy gap
+between keyword-to-LLM and the full cascade to 7.7 points, 95\% interval
+[2.9, 12.5] ($\chi^2(1)=7.50$, $p<0.01$). \textbf{A2 (zero-shot only,
+ungated) has no entry here}: no re-scored figure for it exists anywhere in
+this codebase's results, and this paper does not fill the gap with an
+estimate. \textbf{This directly contradicts the significance finding
+above, and both cannot be the headline result.} The paired bootstrap over
+the original (260-snapshot, weaker-ground-truth) replay put the A4/A5
+macro-F1 delta's 95\% CI at $[-0.069, +0.025]$ -- includes zero, not
+significant. Re-scored against real annotators, the comparable accuracy
+gap's 95\% interval is $[2.9, 12.5]$ points -- excludes zero, significant.
+Which ground truth is trusted decides whether this paper's central
+cascade trade-off is real or noise, and the stronger ground truth says it
+is real: keyword-to-LLM (A4) outperforms the shipped cascade (A5) by a
+margin the weaker label was not sensitive enough to detect. The re-scored
+A7 sweep reproduces Fig.~\ref{fig:f5}'s disclosure story regardless of
+which ground truth is used, since exposure and total off-device rate are
+properties of the cascade's routing, not of category accuracy.
+
+A5's LLM-only exposure (.250) looks like a large reduction
 from A4's .762, but its zero-shot tier uses the hosted proxy, itself an
 off-device call: every page reaching the LLM tier in A4 now reaches the
 zero-shot proxy in A5 first. Summing both gives a \emph{total} off-device
@@ -794,15 +831,6 @@ change that, has not been run at full scale (\textbf{blocked, item 52} --
 pattern only dials disclosure \emph{provided} the middle model is actually
 local; hosted, the same knob mostly redistributes it, though it still
 cannot hallucinate a category outside its candidate set.
-
-\textbf{Ground-truth sensitivity.} Three annotators' majority vote reaches
-only $\alpha=0.635$ for category. Re-scoring against 208 resolved pages
-gives keyword-only .197/.297 (unchanged), LLM-only .764/.731 (+7.9),
-keyword-to-LLM .760/.705 (+9.1), full cascade .683/.683 (+6.1 only) —
-widening the accuracy gap to 7.7 points, 95\% interval [2.9, 12.5]
-($\chi^2(1)=7.50$, $p<0.01$). The re-scored A7 sweep reproduces
-Fig.~\ref{fig:f5}: Table \ref{tab:tiers} understates the cascade's accuracy
-cost but gets the disclosure story right regardless.
 
 \subsection{Confusion structure and per-class support}
 \label{sec:res-confusion}
@@ -944,11 +972,21 @@ qualify the seam-discontinuity claim rather than support it. \textbf{The
 crossfade helps less than
 expected.} Median paired improvement is 0.93 dB, and it \emph{worsens} the
 seam on 41.1 percent of clips (Fig.~\ref{fig:f6}). Widening the crossfade
-(Table \ref{tab:crossfade-sweep}, 50 to 500 ms) is a modest lever (3.46 to
-2.90 dB); replacing the selection rule is not — minimising \emph{measured}
-seam rather than trusting chroma similarity moves the loop point on 9 of 10
-clips and cuts discontinuity from 3.46 to 0.33 dB ($n=10$ secondary
-sample).
+(Table \ref{tab:crossfade-sweep}, 50 to 500 ms) is a modest lever on
+energy discontinuity, monotonically so (3.46 to 2.90 dB); the accompanying
+spectral-centroid column is not monotonic (577, 343, 125, then back up to
+195 Hz at 500 ms) -- unexplained at this $n=10$ secondary sample, and a
+reason to check a larger one before treating 500 ms as strictly better
+than 250 ms on both metrics at once.
+
+\textbf{Selecting for measured seam, not chroma similarity, is the
+largest lever in this paper.} Replacing the selection rule outperforms
+widening the crossfade by an order of magnitude: minimising \emph{measured}
+seam rather than trusting chroma similarity moves the loop point on 9 of
+10 clips and cuts discontinuity from 3.46 to 0.33 dB, against widening's
+3.46 to 2.90 dB above ($n=10$ secondary sample in both cases -- see the
+gating note below on why this has not been re-run at the full 141-clip
+scale).
 
 \begin{table}[t]
 \caption{Crossfade-window sweep, production loop point held fixed (n=10 of 11
@@ -1006,13 +1044,36 @@ collection pass.
 \subsection{Restraint policies}
 \label{sec:res-audit}
 
-Fourteen behavioural policies have executable tests and all fourteen pass
-(Table \ref{tab:audit}): sensitive pages short-circuit before both LLM
-tiers, audible tabs mute or duck correctly, and payment/browser-internal
-URLs bypass.
+The mechanisms pass; the predicate does not, and that is the finding this
+section leads with rather than buries. Against a 47-page adversarial
+slice, the sensitive-content detector records a false-negative rate of
+0.655 and a false-positive rate of 0.167. The failures are systematic:
+seven of nineteen false negatives use vocabulary entirely outside the term
+list; four are euphemism; four are non-English (missed by the language
+gate that skips tier 1); four mention only one term of the two-distinct
+threshold. False positives stayed at three regardless of slice size.
+
+This is a negative result for the restraint-policy claim: silence
+delivered 34.5 percent of the time is not the policy claimed. The
+short-circuit fires correctly, but the predicate deciding when to fire it
+is inadequate; the remedy is a classifier, not more keywords — the
+deployment-level gap noted earlier, invisible to any evaluation testing
+only the mechanism.
+
+None of the above is a wiring bug, and it is worth being precise about
+which fourteen things did work: every behavioural policy that has an
+executable test for it -- short-circuiting sensitive text before either
+LLM tier, muting or ducking around already-playing audio, bypassing
+payment/banking/browser-internal URLs, and the rest in Table
+\ref{tab:audit} -- passes that test. The mechanism obeys whatever the
+predicate tells it; the 0.655 false-negative rate above is entirely a
+failure of the predicate's vocabulary coverage, not of the short-circuit
+that acts on it.
 
 \begin{table}[t]
-\caption{Restraint audit, abridged. All fourteen policies pass their tests.}
+\caption{Restraint audit, abridged. All fourteen policies pass their tests
+-- listed here to show which fourteen, not as a rebuttal to the
+false-negative rate above.}
 \label{tab:audit}
 \begin{center}
 \scriptsize
@@ -1031,20 +1092,6 @@ A silent tier-2 model change is detectable & golden fixtures re-checked against 
 \end{tabular}
 \end{center}
 \end{table}
-
-The mechanisms pass; the predicate does not. Against a 47-page adversarial
-slice, the sensitive-content detector records a false-negative rate of
-0.655 and a false-positive rate of 0.167. The failures are systematic:
-seven of nineteen false negatives use vocabulary entirely outside the term
-list; four are euphemism; four are non-English (missed by the language
-gate that skips tier 1); four mention only one term of the two-distinct
-threshold. False positives stayed at three regardless of slice size.
-
-This is a negative result for the restraint-policy claim: silence
-delivered 34.5 percent of the time is not the policy claimed. The short-circuit fires correctly, but the
-predicate is inadequate; the remedy is a classifier, not more keywords —
-the deployment-level gap noted earlier, invisible to any evaluation
-testing only the mechanism.
 
 \textbf{Correction (item 47a).} The parenthetical above -- ``missed by the
 language gate that skips tier 1'' -- does not describe this codebase.
