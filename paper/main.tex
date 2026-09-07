@@ -137,8 +137,12 @@ interaction must be designed so it is invisible.
 
 First, a four-signal page descriptor over 105 real websites: an ablation
 finds category is decided by text alone regardless of what else is
-present; behaviour and the embedding move mood on zero pages; colour moves
-it on only 7.5 percent.
+present, measurable against a real inter-annotator ceiling; behaviour and
+the embedding change the descriptor's own predicted mood label on zero
+pages, colour on 7.5 percent — self-consistency counts against an
+eleven-way mood label three annotators agree on at only $\alpha=0.195$, so
+read as bounding what each signal perturbs, not as evidence any of them
+improves mood output (\S\ref{sec:res-signal-ablation}).
 
 Second, an abstaining three-tier classifier as a privacy dial (free
 keyword heuristic $\to$ zero-shot NLI $\to$ remote LLM), trading accuracy
@@ -474,13 +478,28 @@ excludes in-browser MiniLM inference.
 \subsection{Which signals earn their cost}
 \label{sec:res-signal-ablation}
 
-A per-signal offline ablation (255 pages): category never changes,
-decided by text alone. Removing behaviour or the embedding changes mood on
-zero pages; removing colour changes it on 7.5 percent, text-alone on 10.2
-percent — only colour moves the output measurably, and only for mood. This
-ran offline (keyword default, not either model tier), so it bounds rather
-than measures colour's contribution live; a live-tier repeat remains future
-work (\S\ref{sec:limitations}).
+A per-signal offline ablation (255 pages): category never changes, decided
+by text alone — measurable against a real ceiling (0.621,
+\S\ref{sec:res-agreement}), so this is a genuine finding. Removing
+behaviour or the embedding changes the descriptor's own predicted mood
+label on zero pages; removing colour changes it on 7.5 percent, text-alone
+on 10.2 percent.
+
+These mood counts are self-consistency against no ground truth at all —
+whether removing a signal flips the offline rule's own output — not
+accuracy. Three annotators agree on mood at only $\alpha=0.195$
+(\S\ref{sec:res-agreement}), close to chance, so there is no validated
+target for a signal to move toward; a signal perturbing an unvalidated
+label on 7.5 percent of pages has not been shown to move anything a person
+would recognise as better mood-matching. Read this as bounding what colour
+perturbs in the offline rule's own arithmetic, not as showing colour is
+the signal worth keeping for mood — on the mood side, the pathway these
+counts are taken over is unvalidated end to end, and no per-signal
+movement count changes that. This ran offline (keyword default, not
+either model tier), so it bounds rather than measures colour's
+contribution live; a live-tier repeat remains future work
+(\S\ref{sec:limitations}) and would still inherit the mood-validity gap
+above.
 
 \subsection{Generation latency and its failure modes}
 \label{sec:res-latency}
@@ -704,19 +723,23 @@ provider a page's text goes to.
 
 \begin{figure}[t]
 \centerline{\includegraphics[width=\columnwidth]{figures/f5.pdf}}
-\caption{Macro-F1 against total off-device rate (LLM exposure plus zero-shot
-proxy usage) for A1--A5 and the twelve-cell A7 threshold sweep. The sweep sits
-in a tight cluster near A4/A5 on the disclosure axis rather than tracing a
-curve, because the hosted zero-shot backend discloses regardless of the
-threshold; the shipped operating point (0.45 / 0.10) is marked.}
+\caption{LLM-specific exposure against total off-device rate (LLM plus
+zero-shot proxy), for A1--A5. Equal-height bars (A1, A3, A4) mean all
+off-device traffic is LLM traffic; A5 breaks that pattern -- its total
+off-device rate matches A4's despite an exposure bar three times smaller,
+the redistribution the surrounding text argues from. Error bars on A5 span
+the full twelve-cell A7 threshold sweep: exposure alone ranges .131--.596
+as the gates tighten, while total off-device rate barely moves (.761--.762).
+Macro-F1 (13 categories) is annotated above each pair.}
 \label{fig:f5}
 \end{figure}
 
-The A7 sweep (Fig.~\ref{fig:f5}, twelve cells) confirms this is not
-particular to the shipped thresholds: macro-F1 ranges only .653--.668, but
-total off-device rate stays within .001 of .762 throughout — the gate
-reallocates disclosure between providers, not whether text leaves the
-machine at all.
+The A7 sweep -- shown directly as the error bars on A5 in Fig.~\ref{fig:f5}
+-- confirms this is not particular to the shipped thresholds: macro-F1
+ranges only .653--.668 and exposure alone swings from .131 to .596, but
+total off-device rate stays within .001 of .762 throughout the full
+twelve-cell grid — the gate reallocates disclosure between providers, not
+whether text leaves the machine at all.
 
 The exposure-reduction claim holds only in part: the cascade dials
 LLM-specific exposure continuously but does not, with this hosted backend,
@@ -1050,7 +1073,10 @@ covers a request space retrieval does not.
 
 We presented Web2Music, a browser extension conditioning generative ambient
 music on the page being read: a four-signal page descriptor costing 86 ms at
-the median, of which only colour moves either output measurably; a
+the median, on which category is decided by text alone and colour is the
+only signal shown to perturb the descriptor's own mood label at all -- a
+self-consistency count, not an accuracy claim
+(\S\ref{sec:res-signal-ablation}); a
 three-tier abstaining classifier that classifies a thousand pages for about
 1.3 cents, though its thresholds redistribute disclosure rather than
 reducing total exposure; a fallback-then-swap design hiding a 139 s
