@@ -155,10 +155,6 @@ failure modes; and loop synthesis from a non-loop model, bar-snapped
 chroma self-similarity, a 50 ms crossfade, and a gapless Ogg/Opus
 container, evaluated over 141 clips.
 
-Finally, an evaluation apparatus against overclaiming: every number is
-emitted by a named script against a metric registry that rejects
-undeclared metrics and reports blocked artefacts rather than placeholders.
-
 % ===========================================================================
 \section{Related Work}
 \label{sec:related}
@@ -327,8 +323,11 @@ reverb, ambience, style, dynamics) and thence a prompt; for \emph{focused}:
 minimalist synth, light percussion, bass drone. Key: D minor, 88 BPM. No
 vocals. Seamlessly loopable. Instrumental only.'' A newly classified mood
 must remain stable for five seconds before committing — by far the largest
-term in the end-to-end wall clock (\S\ref{sec:res-latency}), a design
-parameter, not a limitation.
+term in the end-to-end wall clock (\S\ref{sec:res-latency}). Five seconds
+is a design parameter, not a limitation, but it is an unexamined one: no
+sweep of this value against false-commit rate or perceived responsiveness
+has been run, so there is no stated reason it is five seconds rather than
+three or ten, only that it is the value shipped.
 
 \subsection{Generation, loop synthesis and caching}
 
@@ -604,21 +603,26 @@ reached the generator; the real-time-factor line is drawn only where measured.}
 
 \begin{figure}[t]
 \centerline{\includegraphics[width=\columnwidth]{figures/f3.pdf}}
-\caption{Speedup against concurrency. Every request in this sweep was a cache
-hit, so the near-linear speedup describes the request and cache path rather
-than generator batching; reporting it as batching would require a cold-cache
-re-run.}
+\caption{Cache-hit request throughput against concurrency -- not generator
+throughput. Every request in this sweep was a cache hit, so the
+near-linear scaling describes the request and cache path only; reporting
+it as generator batching would require a cold-cache re-run, which this
+figure is not.}
 \label{fig:f3}
 \end{figure}
 
 Qualifications: only three of 144 requests invoked the generator ($n=3$
-percentiles); 8.3 percent hit the client's 300 s timeout; the 2.08 s cache
-check is anomalous, the largest addressable inefficiency in the system.
+percentiles); the 2.08 s cache check is anomalous, the largest addressable
+inefficiency in the system.
+\textbf{Reliability.} 8.3 percent of requests hit the client's 300 s
+timeout outright -- not a tail-latency footnote but a one-in-twelve
+failure rate for the request path as shipped, and one this paper does not
+otherwise account for or attribute a cause to.
 \textbf{Discussion.} Fallback-then-swap makes a 139 s generator feel
 immediate, at the cost of the first seconds being generic — nearly
 invisible, since a listener cannot miss a clip they never heard. The
 dominant wall-clock term is thus the five-second confidence window we
-chose, not the model.
+chose (\S\ref{sec:arch}) and never swept, not the model.
 
 \textbf{The 2.08 s cache check was a bug, not a cost, and it is now fixed
 (item 50).} \texttt{d5\_cache\_local.py}'s \texttt{check\_cache}/
@@ -648,8 +652,10 @@ the same GPU/MusicGen constraints as item 53 (\S\ref{sec:limitations}).
 
 An end-to-end Playwright harness drives the built extension against eleven
 synthetic fixture pages; the generation service was stubbed at
-139{,}894 ms to isolate the client-side critical path, and 54 of 55 page
-loads reached audible playback ($n=54$).
+139{,}894 ms to isolate the client-side critical path. 54 of 55 page
+loads reached audible playback; the one that did not is an unresolved
+1.8 percent failure, not a rounding artefact -- it has not been
+root-caused, and every table below reports $n=54$, not 55.
 
 \begin{table}[t]
 \caption{End-to-end client-side latency, $n=54$ page loads, nearest-rank
@@ -969,8 +975,12 @@ median of 50.3 percent of requested duration (Fig.~\ref{fig:f6}): 28 s
 yields about 14 s. The smallest observed retention (10.6 percent) is not a
 loop-detector bug — the source audio was already shorter than the 3.0 s
 minimum loop length, so the detector looped the whole clip. Audibility is
-unanswered: a listening harness (22 seeded pairs) has been validated only
-against simulated listeners. \textbf{Discussion.} The cut point, not the
+unanswered: the listening harness (22 seeded pairs) has only been run with
+\texttt{--simulate}, synthetic responses standing in for real listeners --
+by the scoring script's own description, ``a harness check, not a
+result.'' This confirms the pipeline produces well-formed trials and a
+working scorer; it says nothing about whether a real listener can tell the
+two clips apart. \textbf{Discussion.} The cut point, not the
 crossfade, is the weakest link, buying an order of magnitude more than
 widening the window while discarding half the requested audio for
 self-similarity that does not reliably deliver the seam quality it proxies
