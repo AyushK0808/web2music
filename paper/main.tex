@@ -82,7 +82,7 @@ page load. We present Web2Music, a Chrome extension generating
 mood-adaptive ambient music conditioned on the page being read. A
 four-signal extraction layer (text, a sentence embedding, page colour,
 scroll/cursor behaviour) produces a page descriptor at a median cost of
-86 ms across 105 websites; an ablation finds two of the four signals move
+86 ms across 105 websites (embedding stage stubbed; \S\ref{sec:res-extraction}); an ablation finds two of the four signals move
 nothing measurable. A three-tier classifier (free keyword heuristic, an
 abstaining zero-shot NLI tier, a remote LLM as last resort) maps that
 descriptor onto mood and category, with two confidence thresholds forming
@@ -185,7 +185,11 @@ and Thayer's arousal model \cite{thayer}; our problem is not strictly a
 classification problem with ground truth (\S\ref{sec:limitations}).
 Context-aware computing \cite{schilit, dey} and calm technology
 \cite{weiser} supply the framing; the irrelevant-speech effect
-\cite{salame} motivates instrumental, non-lyrical material.
+\cite{salame} motivates instrumental, non-lyrical material, and
+meta-analytic evidence that background music's effects on listeners are
+real but modest and context-dependent \cite{kampfe} is the empirical
+backdrop the untested central perceptual claim (\S\ref{sec:limitations})
+sits against.
 
 \subsection{Zero-shot classification, cascades, and page signal}
 
@@ -382,8 +386,35 @@ objective half of S3, the retrieval baseline and restraint audit are
 reported here; S4/S5 require ethics approval not yet obtained.
 \textbf{Corpus.} 260 pages (255 captured): 182 general, 15
 vocabulary-mismatch, 15 non-English, 15 mixed-genre, 12 sensitive, 15
-sensitive near-miss, 6 bypass. \textbf{Hardware.} A single CPU laptop; no
-GPU configuration was measured.
+sensitive near-miss, 6 bypass. Four page counts appear across this paper
+and do not share one arithmetic, so here is the reconciliation rather than
+four numbers that look like a typo of each other: 260 is the S2 corpus's
+target size (matches the slice breakdown just given); 255 is what the
+extraction benchmark actually captured (\texttt{s2\_corpus.json}: 255
+captured, 2 navigation failures, 3 bypassed-as-expected outcomes, summing
+to 260); 254 is 260 minus the 6-page bypass slice, computed directly from
+\texttt{s2-ablation.json}'s per-page records (6 of its 260 entries carry no
+\texttt{true\_category}, matching the bypass count exactly) -- a different
+snapshot than the one behind ``255 captured,'' not an arithmetic slip,
+since 255 minus 6 does not reconcile to 254 and 260 minus 6 does; and 208
+is not a further reduction of either -- it is the full per-page record
+count of \texttt{s2-ablation-real.json}, a separate results file (built
+against \texttt{s2\_corpus\_annotated.json} on a different contributor's
+machine) used specifically for \S\ref{sec:res-classification}'s re-scoring
+paragraph. The four numbers name three different corpus snapshots, not one
+pipeline with three clean exclusion steps.
+\textbf{Hardware.} A single CPU laptop; no
+GPU configuration was measured. \textbf{Deployment status.} Web2Music has
+not been submitted to the Chrome Web Store or otherwise distributed: the
+README's only installation path is Chrome's developer-mode ``Load
+unpacked'' against a locally built \texttt{ui/dist/}, itself requiring a
+local \texttt{services/classify} instance and manually generated fallback
+clips first, and Chrome dropped command-line unpacked loading from stable
+at v137 -- there is no public-facing artefact a non-technical user could
+install. This does not excuse the sensitive-content detector's 65.5
+percent false-negative rate (\S\ref{sec:res-audit}); it narrows who is
+currently exposed to it to developers running the extension locally, not
+the public the restraint policy is nominally written for.
 
 \subsection{Annotation agreement and human ceiling}
 \label{sec:res-agreement}
