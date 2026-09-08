@@ -197,18 +197,29 @@ async function auditSensitive() {
   const zsPerPage = [];
   for (const p of slice.pages) {
     const text = `${p.text} ${p.title}`;
-    let detected = null, error = null;
+    let detected = null, error = null, source = null, zeroShotDetail = null;
     try {
       const r = await resolveSensitivity(
         text, { title: p.title, summary: p.text, keywords: [] },
         { zeroShot: { enabled: true, backend: 'proxy', serviceUrl: zeroShotServiceUrl } },
       );
       detected = r.isSensitive;
+      // item-47 diagnostic: r.source/r.zeroShot were computed but previously
+      // discarded here, so a page falling back to the keyword verdict (proxy
+      // timeout/error, zeroShot === null) was indistinguishable from one the
+      // entailment tier actually reached and confidently classified. Both
+      // are captured now so a false negative can be attributed to "never
+      // reached the model" vs. "the model itself missed it" instead of
+      // reported as one undifferentiated number.
+      source = r.source;
+      zeroShotDetail = r.zeroShot;
     } catch (e) {
       error = e.message;
     }
     zsPerPage.push({
-      id: p.id, slice: p.slice, expected: p.sensitive, detected, error,
+      id: p.id, slice: p.slice, expected: p.sensitive, detected, error, source,
+      zeroShot: zeroShotDetail,
+      reached_zero_shot: zeroShotDetail !== null,
       outcome: error ? 'error' : (p.sensitive === detected ? 'correct'
                 : p.sensitive ? 'false negative' : 'false positive'),
     });
@@ -216,6 +227,8 @@ async function auditSensitive() {
   const errored = zsPerPage.filter((p) => p.error);
   const zeroShot = summariseSlice(slice, zsPerPage.filter((p) => !p.error));
   if (errored.length) zeroShot.errors = errored.map((p) => ({ id: p.id, error: p.error }));
+  zeroShot.n_reached_zero_shot = zsPerPage.filter((p) => p.reached_zero_shot).length;
+  zeroShot.n_fell_back_to_keyword = zsPerPage.filter((p) => !p.error && !p.reached_zero_shot).length;
 
   return { keyword, zero_shot: zeroShot };
 }
