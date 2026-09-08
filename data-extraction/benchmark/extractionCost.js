@@ -41,6 +41,25 @@ const fs = require('fs');
 const path = require('path');
 const puppeteer = require('puppeteer-core');
 
+// The real local-embedding bundle for --real-embedding (see NOTE ON EMBEDDING
+// above). Built from the exact @xenova/transformers version already pinned
+// in ui/package.json, via:
+//   npx esbuild benchmark/.embed-bundle-build/entry.mjs --bundle
+//     --format=iife --platform=browser --minify
+//     --outfile=benchmark/.embed-bundle-build/transformers-bundle.js
+// Re-run that build if the pinned version changes. Bundled to a plain IIFE
+// rather than loaded from a CDN via addScriptTag for the same CSP reason the
+// module injection above avoids addScriptTag: this still needs a *separate*,
+// unavoidable network call to fetch the actual MiniLM weights from the
+// Hugging Face Hub at runtime (there's no bundling around real model
+// weights), and a real site's connect-src CSP can legitimately block that
+// even when the script itself injected fine — that failure mode is real
+// data about deployability, not a bug in this harness, and is reported as
+// its own embedding-stage error rather than silently retried or masked.
+const REAL_EMBEDDING_BUNDLE_PATH = path.join(
+  __dirname, '.embed-bundle-build', 'transformers-bundle.js'
+);
+
 /* ── Module injection order (dependencies before pageData.js) ──────────────── */
 const MODULES = [
   'Textextractor.js',
@@ -161,6 +180,44 @@ async function measureSite(browser, url, moduleSources, args) {
   const page = await browser.newPage();
   const result = { url, ok: false };
 
+  // Diagnostics for --real-embedding failures that reproduce on some
+  // machines/Chrome builds but not others (item 4.6) — a renderer-side
+  // console.error, an uncaught page exception, or a failed/blocked network
+  // request to the model host would all currently be invisible: they'd
+  // either get swallowed into the generic "window.transformersPipeline not
+  // available" message downstream, or not surface at all. Collected per
+  // site and attached to the result so a failing run shows the real cause
+  // instead of requiring a second, separately-instrumented run to find it.
+  const diagnostics = { console: [], pageErrors: [], failedRequests: [] };
+  page.on('console', (msg) => {
+    if (msg.type() === 'error' || msg.type() === 'warning') {
+      diagnostics.console.push(`[${msg.type()}] ${msg.text()}`);
+    }
+  });
+  page.on('pageerror', (err) => {
+    diagnostics.pageErrors.push(String(err && err.message || err));
+  });
+  page.on('requestfailed', (req) => {
+    const u = req.url();
+    // Scoped to model-fetch hosts specifically -- a real page's own ads/
+    // analytics/tracking requests fail constantly and are not this bug.
+    if (/huggingface\.co|hf\.co|cdn-lfs/.test(u)) {
+      diagnostics.failedRequests.push(`${u} -- ${req.failure()?.errorText || 'unknown'}`);
+    }
+  });
+  page.on('response', (res) => {
+    // requestfailed only fires for network-level failures (DNS, connection
+    // refused, timeout) -- an HTTP error status like 403/404/429 completes
+    // successfully at the network layer and would otherwise be invisible
+    // here even though it's exactly what blocks a real model fetch (e.g. a
+    // proxy or firewall returning 403 for a disallowed host, as opposed to
+    // the request never reaching anything at all).
+    const u = res.url();
+    if (res.status() >= 400 && /huggingface\.co|hf\.co|cdn-lfs/.test(u)) {
+      diagnostics.failedRequests.push(`${u} -- HTTP ${res.status()}`);
+    }
+  });
+
   try {
     await page.setViewport({ width: 1280, height: 800 });
     // A realistic UA: some sites serve a stripped no-JS/blocked page to
@@ -213,6 +270,26 @@ async function measureSite(browser, url, moduleSources, args) {
           return { data: vec.map(v => v / norm) };
         };
       });
+    } else {
+      // Real backend. Same CDP Runtime.evaluate injection as the Feature A
+      // modules above (not addScriptTag, same CSP reason) — this only
+      // installs window.transformersPipeline; the actual MiniLM weights are
+      // fetched from the Hugging Face Hub lazily, on the first real
+      // getEmbedding() call inside buildPageData() below, which is the
+      // number this flag exists to measure and is deliberately NOT
+      // pre-warmed here.
+      if (!fs.existsSync(REAL_EMBEDDING_BUNDLE_PATH)) {
+        throw new Error(
+          `--real-embedding needs the bundle at ${REAL_EMBEDDING_BUNDLE_PATH}, which doesn't exist. ` +
+          'Build it first — see the comment above REAL_EMBEDDING_BUNDLE_PATH for the exact command.'
+        );
+      }
+      const bundleSrc = fs.readFileSync(REAL_EMBEDDING_BUNDLE_PATH, 'utf8');
+      await page.evaluate(bundleSrc);
+      const pipelineReady = await page.evaluate(() => typeof window.transformersPipeline === 'function');
+      if (!pipelineReady) {
+        throw new Error('--real-embedding bundle loaded but window.transformersPipeline was not defined afterward.');
+      }
     }
 
     const measured = await page.evaluate(async () => {
@@ -298,6 +375,11 @@ async function measureSite(browser, url, moduleSources, args) {
   } catch (err) {
     result.error = String(err && err.message || err);
   } finally {
+    // Only attach when there's something to see -- keeps clean-run output
+    // exactly as before instead of padding every result with empty arrays.
+    if (diagnostics.console.length || diagnostics.pageErrors.length || diagnostics.failedRequests.length) {
+      result.embeddingDiagnostics = diagnostics;
+    }
     await page.close().catch(() => {});
   }
 

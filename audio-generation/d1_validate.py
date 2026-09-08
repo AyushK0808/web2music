@@ -38,7 +38,10 @@ def validate_profile(payload: HandoffPayload) -> tuple:
             time_of_day=       p.get("time_of_day")        or "day",
             sensitive_override=p.get("sensitive_override") or False,
             duration_seconds=  p.get("duration_seconds")   if p.get("duration_seconds") is not None else 28,
-            nonce=             payload.nonce,
+            # Falls back to payload.nonce in case a client sends the
+            # cache-buster at the top level even while using the nested
+            # profile-dict shape.
+            nonce=             p.get("nonce")               or payload.nonce,
             seed_override=     payload.seed_override,
         ).model_dump()
     elif payload.musicProfile is not None:
