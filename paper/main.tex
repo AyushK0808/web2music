@@ -93,7 +93,8 @@ evaluation over 105 websites, 144 generation requests and 141 generated clips,
 an adversarial audit of the system's refusal behaviour, and a cost model
 showing the cascade classifies a thousand pages for 0.0132 USD. We also report
 four negative results: the crossfade removes a median of only 0.93 dB of seam
-energy discontinuity, the delivered clip retains a median of 50.3 percent of
+energy discontinuity under the superseded 50 ms default rather than the
+250 ms width now shipped, the delivered clip retains a median of 50.3 percent of
 its requested duration, the sensitive-content detector misses 65.5 percent
 of an adversarial crisis slice, and three independent annotators agree on the
 system's eleven-way mood label at only $\alpha=0.195$. Collapsing that label
@@ -1882,7 +1883,8 @@ loop synthesis that makes a one-shot generator's output repeat without a
 container gap.
 
 Three results run against the design's own assumptions and are reported as
-such. The equal-power crossfade removes a median of only 0.93 dB of seam
+such. The equal-power crossfade, at the 50 ms default now superseded by the
+shipped 250 ms width, removes a median of only 0.93 dB of seam
 discontinuity and worsens the measured seam on 41 percent of clips. Half the
 generated audio is discarded to find a loop point, so a 28 s request yields
 about 14 s of delivered material. And the sensitive-content detector, whose
