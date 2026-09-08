@@ -409,8 +409,8 @@ exposure is recorded anywhere in this project's materials, and none
 should be assumed present. That is a gap in how this annotation was run,
 not a detail omitted from the writeup, and it should be closed before any
 further annotation of this kind is asked of anyone.
-\textbf{Hardware.} A single CPU laptop; no
-GPU configuration was measured. \textbf{Deployment status.} Web2Music has
+\textbf{Hardware.} A single CPU laptop for every figure except
+Table \ref{tab:d-latency-cold} (Apple M4, MPS backend, added for item 53). \textbf{Deployment status.} Web2Music has
 not been submitted to the Chrome Web Store or otherwise distributed: the
 README's only installation path is Chrome's developer-mode ``Load
 unpacked'' against a locally built \texttt{ui/dist/}, itself requiring a
@@ -649,10 +649,66 @@ Windows development paths visible elsewhere in the project's run
 artefacts, and not a mechanism a native Linux loopback reproduces. Either
 way, the fix removes the cause: nothing in \texttt{check\_cache} or
 \texttt{save\_to\_cache} opens a new connection per call any more. Table
-\ref{tab:d-latency}'s D5/cache-hit rows describe the pre-fix build; a
-post-fix re-run of the full D-latency benchmark (item 53's cache-cold
-companion) is the remaining step to replace them, and is blocked here on
-the same GPU/MusicGen constraints as item 53 (\S\ref{sec:limitations}).
+\ref{tab:d-latency}'s D5/cache-hit rows describe the pre-fix build and
+remain unreplaced at that scale; the cache-cold companion below is now
+unblocked and current.
+
+\textbf{Cache-cold generation latency, real n=30 (item 53).} Table
+\ref{tab:d-latency}'s ``Cache miss (generated)'' row was $n=3$ -- too few
+for a percentile to mean anything. Table \ref{tab:d-latency-cold} reports
+30 genuine cache-miss generations (single mood, \texttt{calm}; every
+request confirmed \texttt{cache: miss}, zero failures) run on an Apple M4
+via PyTorch's MPS backend, not the CPU laptop the rest of this paper's
+numbers come from -- this is a second, separate hardware point
+(\S\ref{sec:limitations}), not a replacement for Table
+\ref{tab:d-latency}'s CPU figures, and the two should not be read as one
+population. Median wall time is 72.1 s against the CPU build's 139 s
+(n=3) -- consistent with MPS acceleration, though with only one hardware
+point on each side this is a single comparison, not a controlled one.
+\texttt{torch.compile} does not apply on this path (CUDA-only in
+\texttt{d3\_generate.py}), so this is plain-eager MPS inference. D3
+generation remains completely dominant, as on CPU: 71.5 s of the 72.1 s
+median wall time, with D1/D2/D4/D5 and queueing/transport summing to
+under a second combined at p50 and under four seconds at p95.
+
+This run also confirms the item-50 fix outside the microbenchmark that
+motivated it: it used a checked-out copy of the patched
+\texttt{d5\_cache\_local.py} (verified byte-identical to the version
+described above, not a drifted or partially-applied copy), and D5 cache
+check lands at 8 ms p50 / 41 ms p95 (max 391 ms, the pool's first
+cold-start borrow) across all 30 real requests -- not the 2082 ms this
+paper's own Table \ref{tab:d-latency} still shows for the pre-fix build.
+This is confirmation the fix works end-to-end under real traffic on a
+second machine, not new evidence about \emph{why} the original 2082 ms
+happened: this run's hardware and OS both differ from Table
+\ref{tab:d-latency}'s CPU laptop, so it cannot by itself distinguish the
+Docker-Desktop-on-Windows stall theory above from any other explanation --
+it only shows the fix removes whatever the cost was, on every machine
+tested so far.
+
+\begin{table}[t]
+\caption{Cache-cold generation latency, Apple M4 (MPS backend), single
+mood (\emph{calm}), $n=30$, all requests confirmed cache misses, zero
+failures. Nearest-rank percentiles.}
+\label{tab:d-latency-cold}
+\begin{center}
+\scriptsize
+\begin{tabular}{lrrr}
+\toprule
+\textbf{Stage} & \textbf{p50 (ms)} & \textbf{p95 (ms)} & \textbf{max (ms)} \\
+\midrule
+Wall clock (total) & 72{,}129 & 105{,}921 & 173{,}344 \\
+D1 validate & 2 & 15 & 39 \\
+D2 prompt build & 0 & 4 & 5 \\
+D3 generate & 71{,}504 & 104{,}859 & 171{,}495 \\
+D4 post-process (loop, export) & 896 & 3{,}487 & 5{,}864 \\
+D5 cache check & 8 & 41 & 391 \\
+D5 save & 44 & 225 & 564 \\
+Unaccounted (queue, transport) & 44 & 93 & 103 \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
 
 \subsection{Client-side (in-browser) latency}
 \label{sec:res-e2e-latency}
@@ -1217,15 +1273,15 @@ plausibly the entailment tier already resident in the extension, since the
 any deployment, not a limitation to note in passing; the keyword tier is
 also skipped by construction on non-English pages for category, and the
 sensitive detector's own non-English misses are a term-list vocabulary gap
-rather than a shared gating bug (\S\ref{sec:res-audit}). Every
-latency figure comes from one CPU laptop, with a GPU configuration and a
-cache-cold comparison both unmeasured — the cold-cache re-run (item 53) is
-the most overdue gap, since no generation-latency figure here reflects
-live cache-miss generation, and it remains blocked in this evaluation
-environment: MusicGen inference needs a model download this network
-cannot reach and is CPU-bound at $\sim$139 s/clip, so $n\geq30$ cold
-generations is a multi-hour run better suited to the original development
-machine than a sandboxed re-run. For loop synthesis, the crossfade-window
+rather than a shared gating bug (\S\ref{sec:res-audit}). Table
+\ref{tab:d-latency}'s figures still come from one CPU laptop; the
+cache-cold comparison that CPU table lacked is no longer missing, but it
+did not come from that same laptop -- Table \ref{tab:d-latency-cold}'s 30
+real cache-miss generations ran on an Apple M4 (MPS), the second hardware
+point this paper previously lacked entirely, not a like-for-like CPU
+re-run. A same-hardware cache-cold benchmark at $n\geq30$ on the original
+CPU laptop is consequently still open, now as a narrower, well-scoped gap
+rather than an unmeasured one. For loop synthesis, the crossfade-window
 sweep and seam-minimising selection proposed here warrant a production
 change pending confirmation at the full 141-clip scale, and the larger
 opportunity is conditioning the generator to produce loop-closed material
