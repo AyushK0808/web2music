@@ -193,33 +193,38 @@ async function auditSensitive() {
   // a clear per-page error rather than silently falling back to the keyword
   // verdict, so a misconfigured --with-zero-shot run doesn't get reported as
   // "the fix didn't help" when actually the service was just unreachable.
+  // item-53c diagnostic fix: reached_zero_shot used to be zeroShotDetail !==
+  // null, which cannot distinguish "the model answered but abstained" from
+  // "the proxy never got a chance to answer" (disabled/too-short/unusable
+  // payload/timeout/error) or "hard-severe never calls it at all" -- six
+  // paths inside classifySensitivityZeroShot plus resolveSensitivity's own
+  // hard-severe short-circuit, all collapsing to the same zeroShot: null.
+  // r.zeroShotReason (added to resolveSensitivity) is threaded straight
+  // through instead, and "reached" is defined as the model actually
+  // returning a scored verdict, abstention included, since an abstention is
+  // the model having answered, just not confidently.
   process.stderr.write(`[t5_audit] --with-zero-shot: auditing resolveSensitivity() against ${zeroShotServiceUrl} …\n`);
   const zsPerPage = [];
   for (const p of slice.pages) {
     const text = `${p.text} ${p.title}`;
-    let detected = null, error = null, source = null, zeroShotDetail = null;
+    let detected = null, error = null, source = null, zeroShotDetail = null, zeroShotReason = null;
     try {
       const r = await resolveSensitivity(
         text, { title: p.title, summary: p.text, keywords: [] },
         { zeroShot: { enabled: true, backend: 'proxy', serviceUrl: zeroShotServiceUrl } },
       );
       detected = r.isSensitive;
-      // item-47 diagnostic: r.source/r.zeroShot were computed but previously
-      // discarded here, so a page falling back to the keyword verdict (proxy
-      // timeout/error, zeroShot === null) was indistinguishable from one the
-      // entailment tier actually reached and confidently classified. Both
-      // are captured now so a false negative can be attributed to "never
-      // reached the model" vs. "the model itself missed it" instead of
-      // reported as one undifferentiated number.
       source = r.source;
       zeroShotDetail = r.zeroShot;
+      zeroShotReason = r.zeroShotReason;
     } catch (e) {
       error = e.message;
     }
     zsPerPage.push({
       id: p.id, slice: p.slice, expected: p.sensitive, detected, error, source,
       zeroShot: zeroShotDetail,
-      reached_zero_shot: zeroShotDetail !== null,
+      zeroShotReason,
+      reached_zero_shot: zeroShotReason === 'classified' || zeroShotReason === 'abstained',
       outcome: error ? 'error' : (p.sensitive === detected ? 'correct'
                 : p.sensitive ? 'false negative' : 'false positive'),
     });
@@ -229,6 +234,9 @@ async function auditSensitive() {
   if (errored.length) zeroShot.errors = errored.map((p) => ({ id: p.id, error: p.error }));
   zeroShot.n_reached_zero_shot = zsPerPage.filter((p) => p.reached_zero_shot).length;
   zeroShot.n_fell_back_to_keyword = zsPerPage.filter((p) => !p.error && !p.reached_zero_shot).length;
+  zeroShot.fell_back_reasons = zsPerPage
+    .filter((p) => !p.error && !p.reached_zero_shot)
+    .reduce((acc, p) => { acc[p.zeroShotReason] = (acc[p.zeroShotReason] || 0) + 1; return acc; }, {});
 
   return { keyword, zero_shot: zeroShot };
 }

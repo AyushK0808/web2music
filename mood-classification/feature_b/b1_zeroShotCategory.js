@@ -406,14 +406,26 @@ export function parseSensitivityResult(raw) {
  */
 export async function classifySensitivityZeroShot(content, config = {}) {
   const cfg = normaliseZeroShotConfig(config);
-  if (!cfg.enabled) return null;
+  // item-53b diagnostic: an optional, opt-in out-param. When a caller passes
+  // config.diagnostics = {}, this function writes a `reason` onto it
+  // distinguishing *why* it returned null -- disabled / no local classifier /
+  // input too short / an unusable payload / a real abstention (score or
+  // margin below gate) / a timeout / another error -- without changing the
+  // return value itself. Every existing caller (including every assertion in
+  // b1_sensitivity_test.js) passes no diagnostics object, so this is fully
+  // additive: null-vs-object behaviour is byte-identical to before.
+  const diag = config.diagnostics;
+  const setReason = (r) => { if (diag) diag.reason = r; };
+
+  if (!cfg.enabled) { setReason("disabled"); return null; }
   if (cfg.backend === "local" && !cfg.classify) {
     console.warn("[B1.5-sensitivity] backend is 'local' but no classify() was injected — skipping tier");
+    setReason("no-local-classifier");
     return null;
   }
 
   const text = buildZeroShotInput(content);
-  if (text.length < 20) return null;
+  if (text.length < 20) { setReason("input-too-short"); return null; }
 
   const minScore = Number.isFinite(config.sensitivityMinScore) ? config.sensitivityMinScore : DEFAULT_SENSITIVITY_MIN_SCORE;
   const minMargin = Number.isFinite(config.sensitivityMinMargin) ? config.sensitivityMinMargin : DEFAULT_SENSITIVITY_MIN_MARGIN;
@@ -434,6 +446,7 @@ export async function classifySensitivityZeroShot(content, config = {}) {
     const ms = Date.now() - startedAt;
     if (!parsed) {
       console.warn("[B1.5-sensitivity] zero-shot returned an unusable payload — keeping the keyword verdict");
+      setReason("unusable-payload");
       return null;
     }
     if (parsed.score < minScore || parsed.margin < minMargin) {
@@ -441,11 +454,14 @@ export async function classifySensitivityZeroShot(content, config = {}) {
         `[B1.5-sensitivity] abstained: ${parsed.side} score=${parsed.score.toFixed(3)} ` +
         `margin=${parsed.margin.toFixed(3)} (need >=${minScore}/${minMargin}) in ${ms}ms`
       );
+      setReason("abstained");
       return null;
     }
+    setReason("classified");
     return { side: parsed.side, score: parsed.score, margin: parsed.margin, ms, model: cfg.model, backend: cfg.backend };
   } catch (err) {
     console.warn(`[B1.5-sensitivity] zero-shot classification failed (${err.message}) — keeping the keyword verdict`);
+    setReason(err.name === "AbortError" || /timeout/i.test(err.message) ? "timed-out" : "error");
     return null;
   }
 }

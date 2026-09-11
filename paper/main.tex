@@ -1194,11 +1194,11 @@ replay the point estimates come from.}
 \toprule
 \textbf{Configuration} & \textbf{Acc.} & \textbf{Macro-F1} & \textbf{Expos.} & \textbf{ZS proxy} \\
 \midrule
-A1 keyword only & .189 [.162,.258]\textsuperscript{*} & .315 [.244,.370] & 0 & 0 \\
-A2 zero-shot only, ungated & .520 [.458,.581] & .562 [.495,.615] & 0 & .938 \\
-A3 LLM only & .685 [.608,.727] & .678 [.617,.718] & 1.00 & 0 \\
-A4 keyword$\to$LLM (prior) & .669 [.596,.712] & .677 [.613,.719] & .762 & 0 \\
-A5 keyword$\to$ZS$\to$LLM (ours) & .622 [.546,.665] & .656 [.587,.697] & \textbf{.250} & .512 \\
+A1 keyword only & .189 [.146,.236] & .315 [.246,.369] & 0 & 0 \\
+A2 zero-shot only, ungated & .520 [.461,.583] & .562 [.494,.616] & 0 & .938 \\
+A3 LLM only & .685 [.626,.744] & .678 [.620,.726] & 1.00 & 0 \\
+A4 keyword$\to$LLM (prior) & .669 [.610,.724] & .677 [.616,.722] & .762 & 0 \\
+A5 keyword$\to$ZS$\to$LLM (ours) & .622 [.559,.681] & .656 [.592,.704] & \textbf{.250} & .512 \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -1224,29 +1224,6 @@ so on. The accuracy and macro-F1 columns above are accordingly a
 conservative floor, not the number to cite; \textbf{Ground-truth
 sensitivity} below gives the annotator-verified figures and should be read
 as primary wherever it has an entry.
-
-\textbf{*Provenance caveat.} The bracketed CIs are centred on a
-fresh replay of the production cascade (the same
-\texttt{simulateCascade()} mirror \texttt{analysis/figures/f4\_confusion.py}
-already uses) over \texttt{s2-ablation.json}'s stored per-page tier outputs
--- not on the point estimates printed in the table, which are the
-previously-committed \texttt{configs} summary in that same file. The two
-should be identical (both claim to summarise the same 260 per-page
-records) and are not: a direct replay gives A1 accuracy 0.208 and A3
-(LLM-only) accuracy 0.669, against the table's committed 0.189 and 0.685.
-Macro-F1 matches to three decimal places for every configuration, so the
-divergence is specific to the accuracy column, on the order of 2--6
-percentage points depending on tier, and is not explained by anything in
-this codebase's own cascade-replay logic (Fig.~\ref{fig:f4}'s confusion matrix, built from the same replay, is
-internally consistent with the CIs reported here). We flag rather than
-silently resolve this: it means either the committed \texttt{configs}
-block was generated from a slightly different per-page snapshot than the
-one now checked in, or there is a scoring discrepancy in the original
-harness run that a code read did not surface. Until the provenance is
-confirmed, the CIs above should be read as attached to a fresh,
-reproducible replay rather than to the specific point estimates printed
-beside them -- and, per the paragraph above, to a weaker ground truth
-than the one that should decide this trade-off.
 
 \textbf{Ground-truth sensitivity -- the primary read.} Three annotators'
 majority vote reaches only $\alpha=0.635$ for category, itself below the
@@ -1784,23 +1761,37 @@ call achieves.
 
 That live measurement has since been run, three times, against a
 real hosted \texttt{facebook/bart-large-mnli} proxy, with per-page
-diagnostics added to distinguish a page the model actually classified
-from one that silently fell back to the keyword verdict on a proxy
-timeout, and \textbf{the result is a trade, not the repair the design
-verification implied.} All three runs agree to six decimal places on
-every score for every page that reached the model -- the entailment
-model itself is fully deterministic; the instability seen in earlier,
-undiagnosed attempts was network reliability (which pages round-tripped
-versus timed out), not model noise. The stable result: false-negative
-rate falls from 0.655 to \textbf{0.000} (29/29 genuine crisis pages now
+diagnostics threaded through \texttt{resolveSensitivity} itself (a
+\texttt{zeroShotReason} distinguishing a confident verdict from an
+abstention from the seven ways the tier never gets a real answer at all)
+to distinguish a page the model actually classified from one that
+silently fell back to the keyword verdict on a proxy timeout, and
+\textbf{the result is a trade, not the repair the design verification
+implied.} All three runs agree to six decimal places on every score for
+every page that reached the model -- the entailment model itself is
+fully deterministic; the instability seen in earlier, undiagnosed
+attempts was network reliability (which pages round-tripped versus
+timed out), not model noise. The stable result: false-negative rate
+falls from 0.655 to \textbf{0.000} (29/29 genuine crisis pages now
 caught, including all four non-English cases above), but false-positive
 rate rises from 0.167 to \textbf{0.611} -- worse than the original
-detector, not better. Every one of the 6 purely benign pages (recipe,
-programming, sport) is wrongly flagged; of the 14 non-sensitive pages
-that actually reached the model, 10 (71.4\%) were misclassified as
-crisis. One further false positive, \emph{near-grief-degree}, never
-reaches the model in any of the three runs and remains a pre-existing
-keyword-tier artefact this fix does not touch either way.
+detector, not better. All 18 non-sensitive pages reached the model; none
+fell back (the only pages that do are hard-severe crisis pages the
+design intentionally never escalates). Fourteen received a confident
+verdict, ten of them wrong, including every one of the 6 purely benign
+pages (recipe, programming, sport). The remaining four abstained rather
+than answering confidently, and abstention cuts both ways: three
+preserved an already-correct keyword verdict, but the fourth,
+\emph{near-grief-degree}, did not. The keyword tier had already flagged
+it, wrongly, on an ambiguous-term hit before the entailment tier was
+ever consulted; abstaining meant the entailment tier never got a chance
+to override that call, so a pre-existing keyword-tier error passed
+through unchallenged rather than being independently reintroduced. This
+is a third, genuinely distinct failure mode from the confident
+misclassifications above, not the same one under another name --
+whether it counts as a defect \emph{introduced} by adding the entailment
+tier is a real question, since the same page was already wrong before
+this fix existed either.
 
 The gap between the design verification and this live result is itself a
 finding. The scripted ideal backend proved the cascade's routing logic is

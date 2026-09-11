@@ -13,11 +13,21 @@ from pathlib import Path
 
 random.seed(20260904)
 
-REPO = Path("/home/claude/web2music")
+REPO = Path(__file__).resolve().parent.parent
+OUT = REPO / "analysis" / "out"
+OUT.mkdir(parents=True, exist_ok=True)
 data = json.loads((REPO / "mood-classification/results/s2-ablation.json").read_text())
-pages = data["per_page"]
+pages_all = data["per_page"]
+# 6 of 260 pages carry true_category: null (bypass slice). Item 41 already
+# filtered these out; Item 40 did not, and accuracy()'s direct p == t
+# comparison means a config whose prediction is also None on one of these
+# six pages (e.g. tier_alone returning (None, "none")) was being scored as
+# a match against a None ground truth -- silently inflating both the point
+# estimates and every bootstrap resample built from them. Filtering here,
+# once, is the fix; both Item 40 and Item 41 read from `pages` below now.
+pages = [p for p in pages_all if p.get("true_category")]
 N = len(pages)
-print(f"n pages = {N}")
+print(f"n pages = {len(pages_all)}, {len(pages_all) - N} with no true_category excluded, {N} scored")
 
 PROD_MIN_SCORE, PROD_MIN_MARGIN = 0.45, 0.10
 
@@ -111,12 +121,12 @@ point = macro_f1([(p["true_category"], CONFIGS["A5 keyword->zero-shot->LLM"](p)[
 print(f"A5 - A4 macro-F1 delta = {point:.4f}  95% CI [{lo:.4f}, {hi:.4f}]  "
       f"{'(CI excludes 0 -- significant)' if lo>0 or hi<0 else '(CI includes 0)'}")
 
-json.dump(results_40, open("/home/claude/w2m_work/item40_bootstrap_ci.json","w"), indent=2)
+json.dump(results_40, open(OUT / "item40_bootstrap_ci.json", "w"), indent=2)
 
 print("\n=== Item 41: per-class support + confusion, A5 cascade ===")
-preds_a5 = [(p["true_category"], cascade(p)[0]) for p in pages if p.get("true_category")]
-n_no_truth = sum(1 for p in pages if not p.get("true_category"))
-print(f"  ({n_no_truth} of {N} pages have no true_category and are excluded from support/confusion)")
+preds_a5 = [(p["true_category"], cascade(p)[0]) for p in pages]
+n_no_truth = len(pages_all) - N
+print(f"  ({n_no_truth} of {len(pages_all)} pages have no true_category and are excluded from support/confusion)")
 support = {c: 0 for c in CATEGORIES}
 for t, _ in preds_a5:
     support[t] += 1
@@ -124,4 +134,4 @@ for c in sorted(support, key=lambda c: support[c]):
     flag = "  <-- near-empty (n<10)" if support[c] < 10 else ""
     print(f"  {c:14s} n={support[c]:3d}{flag}")
 json.dump({"support": support, "n_classes": len(CATEGORIES), "n_pages": N},
-          open("/home/claude/w2m_work/item41_support.json","w"), indent=2)
+          open(OUT / "item41_support.json", "w"), indent=2)

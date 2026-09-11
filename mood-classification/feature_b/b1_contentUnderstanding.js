@@ -549,12 +549,16 @@ export async function resolveSensitivity(text, zsContent, opts = {}) {
 
   if (hard) {
     // Never escalate away from a hard-severe hit — see rationale above.
-    return { isSensitive: true, source: "keyword-hard-severe", keyword, zeroShot: null };
+    // classifySensitivityZeroShot is never called on this path at all, so
+    // its own "why null" reasons don't apply; this is its own, distinct
+    // seventh reason a caller sees zeroShot: null for.
+    return { isSensitive: true, source: "keyword-hard-severe", keyword, zeroShot: null, zeroShotReason: "skipped-hard-severe" };
   }
 
-  const zs = await classifySensitivityZeroShot(zsContent, opts.zeroShot);
+  const diag = {};
+  const zs = await classifySensitivityZeroShot(zsContent, { ...opts.zeroShot, diagnostics: diag });
   if (!zs) {
-    return { isSensitive: keywordSensitive, source: keywordSensitive ? "keyword" : "keyword-declined", keyword, zeroShot: null };
+    return { isSensitive: keywordSensitive, source: keywordSensitive ? "keyword" : "keyword-declined", keyword, zeroShot: null, zeroShotReason: diag.reason ?? "unknown" };
   }
 
   const zeroShot = { side: zs.side, score: zs.score, margin: zs.margin, ms: zs.ms, model: zs.model, backend: zs.backend };
@@ -563,15 +567,15 @@ export async function resolveSensitivity(text, zsContent, opts = {}) {
     // Promotion path: keyword tier found nothing, zero-shot may catch what
     // it missed (euphemism, outside-vocabulary, non-English).
     return zs.side === "crisis"
-      ? { isSensitive: true, source: "zero-shot-promoted", keyword, zeroShot }
-      : { isSensitive: false, source: "keyword", keyword, zeroShot };
+      ? { isSensitive: true, source: "zero-shot-promoted", keyword, zeroShot, zeroShotReason: "classified" }
+      : { isSensitive: false, source: "keyword", keyword, zeroShot, zeroShotReason: "classified" };
   }
 
   // Demotion path: keyword tier found a demotable-severe or ambiguous
   // signal, zero-shot may recognise reference/academic framing.
   return zs.side === "reference"
-    ? { isSensitive: false, source: "zero-shot-demoted", keyword, zeroShot }
-    : { isSensitive: true, source: "keyword", keyword, zeroShot };
+    ? { isSensitive: false, source: "zero-shot-demoted", keyword, zeroShot, zeroShotReason: "classified" }
+    : { isSensitive: true, source: "keyword", keyword, zeroShot, zeroShotReason: "classified" };
 }
 
 /**

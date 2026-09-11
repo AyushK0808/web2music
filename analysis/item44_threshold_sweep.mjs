@@ -6,10 +6,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { resolveSensitivity } from '../web2music/mood-classification/feature_b/b1_contentUnderstanding.js';
+import { resolveSensitivity } from '../mood-classification/feature_b/b1_contentUnderstanding.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const REPO = path.resolve(__dirname, '../web2music');
+const REPO = path.resolve(__dirname, '..');
+const OUT_DIR = path.join(REPO, 'analysis', 'out');
+fs.mkdirSync(OUT_DIR, { recursive: true });
 const slice = JSON.parse(fs.readFileSync(path.join(REPO, 'analysis/audit/sensitive_slice.json'), 'utf8'));
 const pages = slice.pages;
 
@@ -50,4 +52,4 @@ for (const sT of [1, 2]) {
 const shipped = scoreAt(1, 2);
 console.log('\nShipped operating point (severe>=1, ambiguous>=2):', JSON.stringify(shipped));
 
-fs.writeFileSync('/home/claude/w2m_work/item44_sweep.json', JSON.stringify({ per_page: counted, sweep: rows, shipped }, null, 2));
+fs.writeFileSync(path.join(OUT_DIR, 'item44_sweep.json'), JSON.stringify({ per_page: counted, sweep: rows, shipped }, null, 2));
