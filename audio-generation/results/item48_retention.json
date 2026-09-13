@@ -1,0 +1,1130 @@
+[
+  {
+    "mood": "calm",
+    "duration_ms": 10670,
+    "orig_loop_ms": 4800,
+    "orig_retention": 0.4498594189315839,
+    "new_loop_ms": 7968,
+    "new_retention": 0.7467666354264293
+  },
+  {
+    "mood": "curious",
+    "duration_ms": 8766,
+    "orig_loop_ms": 6282,
+    "orig_retention": 0.7166324435318275,
+    "new_loop_ms": 6282,
+    "new_retention": 0.7166324435318275
+  },
+  {
+    "mood": "dark",
+    "duration_ms": 5294,
+    "orig_loop_ms": 3093,
+    "orig_retention": 0.584246316584813,
+    "new_loop_ms": 3093,
+    "new_retention": 0.584246316584813
+  },
+  {
+    "mood": "energetic",
+    "duration_ms": 8654,
+    "orig_loop_ms": 5258,
+    "orig_retention": 0.6075803096833834,
+    "new_loop_ms": 5258,
+    "new_retention": 0.6075803096833834
+  },
+  {
+    "mood": "focused",
+    "duration_ms": 10350,
+    "orig_loop_ms": 4768,
+    "orig_retention": 0.46067632850241547,
+    "new_loop_ms": 6816,
+    "new_retention": 0.6585507246376812
+  },
+  {
+    "mood": "joyful",
+    "duration_ms": 3198,
+    "orig_loop_ms": 3008,
+    "orig_retention": 0.9405878674171357,
+    "new_loop_ms": 3008,
+    "new_retention": 0.9405878674171357
+  },
+  {
+    "mood": "neutral",
+    "duration_ms": 10542,
+    "orig_loop_ms": 6069,
+    "orig_retention": 0.5756972111553785,
+    "new_loop_ms": 6069,
+    "new_retention": 0.5756972111553785
+  },
+  {
+    "mood": "nostalgic",
+    "duration_ms": 11742,
+    "orig_loop_ms": 5194,
+    "orig_retention": 0.44234372338613526,
+    "new_loop_ms": 11402,
+    "new_retention": 0.9710441151422244
+  },
+  {
+    "mood": "sad",
+    "duration_ms": 5230,
+    "orig_loop_ms": 3360,
+    "orig_retention": 0.6424474187380497,
+    "new_loop_ms": 3360,
+    "new_retention": 0.6424474187380497
+  },
+  {
+    "mood": "tense",
+    "duration_ms": 6270,
+    "orig_loop_ms": 4672,
+    "orig_retention": 0.7451355661881978,
+    "new_loop_ms": 4672,
+    "new_retention": 0.7451355661881978
+  },
+  {
+    "mood": "uplifting",
+    "duration_ms": 8734,
+    "orig_loop_ms": 6837,
+    "orig_retention": 0.7828028394779024,
+    "new_loop_ms": 6837,
+    "new_retention": 0.7828028394779024
+  },
+  {
+    "mood": "focused",
+    "duration_ms": 3246,
+    "orig_loop_ms": 3029,
+    "orig_retention": 0.9331484904497843,
+    "new_loop_ms": 3029,
+    "new_retention": 0.9331484904497843
+  },
+  {
+    "mood": "calm",
+    "duration_ms": 6750,
+    "orig_loop_ms": 3786,
+    "orig_retention": 0.5608888888888889,
+    "new_loop_ms": 3786,
+    "new_retention": 0.5608888888888889
+  },
+  {
+    "mood": "calm",
+    "duration_ms": 18606,
+    "orig_loop_ms": 15648,
+    "orig_retention": 0.8410190261206063,
+    "new_loop_ms": 15648,
+    "new_retention": 0.8410190261206063
+  },
+  {
+    "mood": "calm",
+    "duration_ms": 19854,
+    "orig_loop_ms": 15221,
+    "orig_retention": 0.7666465195930291,
+    "new_loop_ms": 15221,
+    "new_retention": 0.7666465195930291
+  },
+  {
+    "mood": "calm",
+    "duration_ms": 18062,
+    "orig_loop_ms": 7626,
+    "orig_retention": 0.4222123795814417,
+    "new_loop_ms": 12618,
+    "new_retention": 0.698593732698483
+  },
+  {
+    "mood": "calm",
+    "duration_ms": 9374,
+    "orig_loop_ms": 5482,
+    "orig_retention": 0.5848090462982718,
+    "new_loop_ms": 5482,
+    "new_retention": 0.5848090462982718
+  },
+  {
+    "mood": "calm",
+    "duration_ms": 10350,
+    "orig_loop_ms": 7392,
+    "orig_retention": 0.7142028985507246,
+    "new_loop_ms": 7392,
+    "new_retention": 0.7142028985507246
+  },
+  {
+    "mood": "calm",
+    "duration_ms": 19822,
+    "orig_loop_ms": 3861,
+    "orig_retention": 0.19478357380688124,
+    "new_loop_ms": 11861,
+    "new_retention": 0.5983755423267076
+  },
+  {
+    "mood": "calm",
+    "duration_ms": 17662,
+    "orig_loop_ms": 9024,
+    "orig_retention": 0.5109274147888121,
+    "new_loop_ms": 9024,
+    "new_retention": 0.5109274147888121
+  },
+  {
+    "mood": "curious",
+    "duration_ms": 4254,
+    "orig_loop_ms": 3093,
+    "orig_retention": 0.7270803949224259,
+    "new_loop_ms": 3093,
+    "new_retention": 0.7270803949224259
+  },
+  {
+    "mood": "uplifting",
+    "duration_ms": 12446,
+    "orig_loop_ms": 10944,
+    "orig_retention": 0.8793186565964969,
+    "new_loop_ms": 10944,
+    "new_retention": 0.8793186565964969
+  },
+  {
+    "mood": "neutral",
+    "duration_ms": 7902,
+    "orig_loop_ms": 7786,
+    "orig_retention": 0.985320172108327,
+    "new_loop_ms": 7786,
+    "new_retention": 0.985320172108327
+  },
+  {
+    "mood": "energetic",
+    "duration_ms": 4878,
+    "orig_loop_ms": 3893,
+    "orig_retention": 0.7980729807298073,
+    "new_loop_ms": 3893,
+    "new_retention": 0.7980729807298073
+  },
+  {
+    "mood": "calm",
+    "duration_ms": 16462,
+    "orig_loop_ms": 4501,
+    "orig_retention": 0.27341756773174586,
+    "new_loop_ms": 14496,
+    "new_retention": 0.8805734418661159
+  },
+  {
+    "mood": "energetic",
+    "duration_ms": 16110,
+    "orig_loop_ms": 6922,
+    "orig_retention": 0.4296710117939168,
+    "new_loop_ms": 12853,
+    "new_retention": 0.7978274363749224
+  },
+  {
+    "mood": "energetic",
+    "duration_ms": 16334,
+    "orig_loop_ms": 12373,
+    "orig_retention": 0.7574996938900453,
+    "new_loop_ms": 12373,
+    "new_retention": 0.7574996938900453
+  },
+  {
+    "mood": "focused",
+    "duration_ms": 10830,
+    "orig_loop_ms": 8288,
+    "orig_retention": 0.7652816251154201,
+    "new_loop_ms": 8288,
+    "new_retention": 0.7652816251154201
+  },
+  {
+    "mood": "energetic",
+    "duration_ms": 6174,
+    "orig_loop_ms": 4181,
+    "orig_retention": 0.677194687398769,
+    "new_loop_ms": 4181,
+    "new_retention": 0.677194687398769
+  },
+  {
+    "mood": "energetic",
+    "duration_ms": 5614,
+    "orig_loop_ms": 3989,
+    "orig_retention": 0.7105450659066619,
+    "new_loop_ms": 3989,
+    "new_retention": 0.7105450659066619
+  },
+  {
+    "mood": "energetic",
+    "duration_ms": 26142,
+    "orig_loop_ms": 24181,
+    "orig_retention": 0.9249866115828934,
+    "new_loop_ms": 24181,
+    "new_retention": 0.9249866115828934
+  },
+  {
+    "mood": "energetic",
+    "duration_ms": 25934,
+    "orig_loop_ms": 22229,
+    "orig_retention": 0.8571373486542763,
+    "new_loop_ms": 22229,
+    "new_retention": 0.8571373486542763
+  },
+  {
+    "mood": "energetic",
+    "duration_ms": 5614,
+    "orig_loop_ms": 4650,
+    "orig_retention": 0.8282864267901674,
+    "new_loop_ms": 4650,
+    "new_retention": 0.8282864267901674
+  },
+  {
+    "mood": "energetic",
+    "duration_ms": 6462,
+    "orig_loop_ms": 6005,
+    "orig_retention": 0.9292788610337357,
+    "new_loop_ms": 6005,
+    "new_retention": 0.9292788610337357
+  },
+  {
+    "mood": "focused",
+    "duration_ms": 11310,
+    "orig_loop_ms": 6026,
+    "orig_retention": 0.5328028293545535,
+    "new_loop_ms": 6026,
+    "new_retention": 0.5328028293545535
+  },
+  {
+    "mood": "focused",
+    "duration_ms": 23694,
+    "orig_loop_ms": 13077,
+    "orig_retention": 0.5519118764244112,
+    "new_loop_ms": 13077,
+    "new_retention": 0.5519118764244112
+  },
+  {
+    "mood": "focused",
+    "duration_ms": 6622,
+    "orig_loop_ms": 5674,
+    "orig_retention": 0.8568408335850196,
+    "new_loop_ms": 5674,
+    "new_retention": 0.8568408335850196
+  },
+  {
+    "mood": "focused",
+    "duration_ms": 9326,
+    "orig_loop_ms": 8352,
+    "orig_retention": 0.8955607977696761,
+    "new_loop_ms": 8352,
+    "new_retention": 0.8955607977696761
+  },
+  {
+    "mood": "focused",
+    "duration_ms": 10222,
+    "orig_loop_ms": 6261,
+    "orig_retention": 0.6125024457053414,
+    "new_loop_ms": 6261,
+    "new_retention": 0.6125024457053414
+  },
+  {
+    "mood": "focused",
+    "duration_ms": 14846,
+    "orig_loop_ms": 14389,
+    "orig_retention": 0.969217297588576,
+    "new_loop_ms": 14389,
+    "new_retention": 0.969217297588576
+  },
+  {
+    "mood": "focused",
+    "duration_ms": 7950,
+    "orig_loop_ms": 6122,
+    "orig_retention": 0.770062893081761,
+    "new_loop_ms": 6122,
+    "new_retention": 0.770062893081761
+  },
+  {
+    "mood": "focused",
+    "duration_ms": 17982,
+    "orig_loop_ms": 14666,
+    "orig_retention": 0.8155933711489267,
+    "new_loop_ms": 14666,
+    "new_retention": 0.8155933711489267
+  },
+  {
+    "mood": "focused",
+    "duration_ms": 4318,
+    "orig_loop_ms": 4192,
+    "orig_retention": 0.9708198239925891,
+    "new_loop_ms": 4192,
+    "new_retention": 0.9708198239925891
+  },
+  {
+    "mood": "joyful",
+    "duration_ms": 12190,
+    "orig_loop_ms": 10730,
+    "orig_retention": 0.8802296964725185,
+    "new_loop_ms": 10730,
+    "new_retention": 0.8802296964725185
+  },
+  {
+    "mood": "joyful",
+    "duration_ms": 6718,
+    "orig_loop_ms": 6261,
+    "orig_retention": 0.9319738017267044,
+    "new_loop_ms": 6261,
+    "new_retention": 0.9319738017267044
+  },
+  {
+    "mood": "joyful",
+    "duration_ms": 6318,
+    "orig_loop_ms": 3701,
+    "orig_retention": 0.5857866413421969,
+    "new_loop_ms": 3701,
+    "new_retention": 0.5857866413421969
+  },
+  {
+    "mood": "joyful",
+    "duration_ms": 5758,
+    "orig_loop_ms": 3626,
+    "orig_retention": 0.6297325460229246,
+    "new_loop_ms": 3626,
+    "new_retention": 0.6297325460229246
+  },
+  {
+    "mood": "joyful",
+    "duration_ms": 24014,
+    "orig_loop_ms": 21546,
+    "orig_retention": 0.8972266178062797,
+    "new_loop_ms": 21546,
+    "new_retention": 0.8972266178062797
+  },
+  {
+    "mood": "joyful",
+    "duration_ms": 13406,
+    "orig_loop_ms": 10762,
+    "orig_retention": 0.8027748769207818,
+    "new_loop_ms": 10762,
+    "new_retention": 0.8027748769207818
+  },
+  {
+    "mood": "joyful",
+    "duration_ms": 23998,
+    "orig_loop_ms": 6048,
+    "orig_retention": 0.25202100175014586,
+    "new_loop_ms": 22026,
+    "new_retention": 0.9178264855404618
+  },
+  {
+    "mood": "joyful",
+    "duration_ms": 4494,
+    "orig_loop_ms": 3050,
+    "orig_retention": 0.6786826880284824,
+    "new_loop_ms": 3050,
+    "new_retention": 0.6786826880284824
+  },
+  {
+    "mood": "joyful",
+    "duration_ms": 8270,
+    "orig_loop_ms": 5301,
+    "orig_retention": 0.6409915356711003,
+    "new_loop_ms": 5301,
+    "new_retention": 0.6409915356711003
+  },
+  {
+    "mood": "sad",
+    "duration_ms": 5742,
+    "orig_loop_ms": 5429,
+    "orig_retention": 0.9454893765238593,
+    "new_loop_ms": 5429,
+    "new_retention": 0.9454893765238593
+  },
+  {
+    "mood": "sad",
+    "duration_ms": 17230,
+    "orig_loop_ms": 13269,
+    "orig_retention": 0.7701102727800349,
+    "new_loop_ms": 13269,
+    "new_retention": 0.7701102727800349
+  },
+  {
+    "mood": "sad",
+    "duration_ms": 4958,
+    "orig_loop_ms": 4682,
+    "orig_retention": 0.9443323920935861,
+    "new_loop_ms": 4682,
+    "new_retention": 0.9443323920935861
+  },
+  {
+    "mood": "sad",
+    "duration_ms": 17742,
+    "orig_loop_ms": 11776,
+    "orig_retention": 0.6637357682335701,
+    "new_loop_ms": 11776,
+    "new_retention": 0.6637357682335701
+  },
+  {
+    "mood": "sad",
+    "duration_ms": 24030,
+    "orig_loop_ms": 21408,
+    "orig_retention": 0.8908863920099875,
+    "new_loop_ms": 21408,
+    "new_retention": 0.8908863920099875
+  },
+  {
+    "mood": "sad",
+    "duration_ms": 26574,
+    "orig_loop_ms": 10122,
+    "orig_retention": 0.38089862271393093,
+    "new_loop_ms": 15114,
+    "new_retention": 0.5687514111537593
+  },
+  {
+    "mood": "sad",
+    "duration_ms": 5838,
+    "orig_loop_ms": 2997,
+    "orig_retention": 0.513360739979445,
+    "new_loop_ms": 2997,
+    "new_retention": 0.513360739979445
+  },
+  {
+    "mood": "sad",
+    "duration_ms": 13902,
+    "orig_loop_ms": 9301,
+    "orig_retention": 0.6690404258380089,
+    "new_loop_ms": 9301,
+    "new_retention": 0.6690404258380089
+  },
+  {
+    "mood": "dark",
+    "duration_ms": 17774,
+    "orig_loop_ms": 14634,
+    "orig_retention": 0.8233374592100822,
+    "new_loop_ms": 14634,
+    "new_retention": 0.8233374592100822
+  },
+  {
+    "mood": "sad",
+    "duration_ms": 21166,
+    "orig_loop_ms": 17205,
+    "orig_retention": 0.8128602475668525,
+    "new_loop_ms": 17205,
+    "new_retention": 0.8128602475668525
+  },
+  {
+    "mood": "dark",
+    "duration_ms": 8382,
+    "orig_loop_ms": 6709,
+    "orig_retention": 0.8004056311142925,
+    "new_loop_ms": 6709,
+    "new_retention": 0.8004056311142925
+  },
+  {
+    "mood": "dark",
+    "duration_ms": 20318,
+    "orig_loop_ms": 10634,
+    "orig_retention": 0.5233782852642976,
+    "new_loop_ms": 10634,
+    "new_retention": 0.5233782852642976
+  },
+  {
+    "mood": "dark",
+    "duration_ms": 6958,
+    "orig_loop_ms": 3338,
+    "orig_retention": 0.4797355561943087,
+    "new_loop_ms": 5941,
+    "new_retention": 0.853837309571716
+  },
+  {
+    "mood": "dark",
+    "duration_ms": 5614,
+    "orig_loop_ms": 5440,
+    "orig_retention": 0.9690060562878517,
+    "new_loop_ms": 5440,
+    "new_retention": 0.9690060562878517
+  },
+  {
+    "mood": "dark",
+    "duration_ms": 5022,
+    "orig_loop_ms": 2997,
+    "orig_retention": 0.5967741935483871,
+    "new_loop_ms": 2997,
+    "new_retention": 0.5967741935483871
+  },
+  {
+    "mood": "dark",
+    "duration_ms": 6382,
+    "orig_loop_ms": 4501,
+    "orig_retention": 0.7052648072704482,
+    "new_loop_ms": 4501,
+    "new_retention": 0.7052648072704482
+  },
+  {
+    "mood": "dark",
+    "duration_ms": 19934,
+    "orig_loop_ms": 4021,
+    "orig_retention": 0.20171566168355573,
+    "new_loop_ms": 15989,
+    "new_retention": 0.8020969198354571
+  },
+  {
+    "mood": "dark",
+    "duration_ms": 25966,
+    "orig_loop_ms": 21344,
+    "orig_retention": 0.8219979973811908,
+    "new_loop_ms": 21344,
+    "new_retention": 0.8219979973811908
+  },
+  {
+    "mood": "nostalgic",
+    "duration_ms": 3470,
+    "orig_loop_ms": 2997,
+    "orig_retention": 0.8636887608069165,
+    "new_loop_ms": 2997,
+    "new_retention": 0.8636887608069165
+  },
+  {
+    "mood": "nostalgic",
+    "duration_ms": 17310,
+    "orig_loop_ms": 14677,
+    "orig_retention": 0.8478913922588099,
+    "new_loop_ms": 14677,
+    "new_retention": 0.8478913922588099
+  },
+  {
+    "mood": "nostalgic",
+    "duration_ms": 17358,
+    "orig_loop_ms": 13365,
+    "orig_retention": 0.7699619771863118,
+    "new_loop_ms": 13365,
+    "new_retention": 0.7699619771863118
+  },
+  {
+    "mood": "nostalgic",
+    "duration_ms": 25854,
+    "orig_loop_ms": 24384,
+    "orig_retention": 0.9431422603852402,
+    "new_loop_ms": 24384,
+    "new_retention": 0.9431422603852402
+  },
+  {
+    "mood": "nostalgic",
+    "duration_ms": 4686,
+    "orig_loop_ms": 2997,
+    "orig_retention": 0.6395646606914213,
+    "new_loop_ms": 2997,
+    "new_retention": 0.6395646606914213
+  },
+  {
+    "mood": "nostalgic",
+    "duration_ms": 3870,
+    "orig_loop_ms": 3114,
+    "orig_retention": 0.8046511627906977,
+    "new_loop_ms": 3114,
+    "new_retention": 0.8046511627906977
+  },
+  {
+    "mood": "nostalgic",
+    "duration_ms": 4638,
+    "orig_loop_ms": 3978,
+    "orig_retention": 0.8576972833117723,
+    "new_loop_ms": 3978,
+    "new_retention": 0.8576972833117723
+  },
+  {
+    "mood": "nostalgic",
+    "duration_ms": 26894,
+    "orig_loop_ms": 24266,
+    "orig_retention": 0.9022830371086488,
+    "new_loop_ms": 24266,
+    "new_retention": 0.9022830371086488
+  },
+  {
+    "mood": "nostalgic",
+    "duration_ms": 16334,
+    "orig_loop_ms": 7392,
+    "orig_retention": 0.45255295702216236,
+    "new_loop_ms": 15605,
+    "new_retention": 0.955369168605363
+  },
+  {
+    "mood": "curious",
+    "duration_ms": 23998,
+    "orig_loop_ms": 15040,
+    "orig_retention": 0.6267188932411034,
+    "new_loop_ms": 15040,
+    "new_retention": 0.6267188932411034
+  },
+  {
+    "mood": "curious",
+    "duration_ms": 8350,
+    "orig_loop_ms": 6688,
+    "orig_retention": 0.8009580838323354,
+    "new_loop_ms": 6688,
+    "new_retention": 0.8009580838323354
+  },
+  {
+    "mood": "curious",
+    "duration_ms": 21534,
+    "orig_loop_ms": 12245,
+    "orig_retention": 0.5686356459552336,
+    "new_loop_ms": 12245,
+    "new_retention": 0.5686356459552336
+  },
+  {
+    "mood": "curious",
+    "duration_ms": 2958,
+    "orig_loop_ms": 2958,
+    "orig_retention": 1.0,
+    "new_loop_ms": 2958,
+    "new_retention": 1.0
+  },
+  {
+    "mood": "curious",
+    "duration_ms": 13902,
+    "orig_loop_ms": 9280,
+    "orig_retention": 0.667529851819882,
+    "new_loop_ms": 9280,
+    "new_retention": 0.667529851819882
+  },
+  {
+    "mood": "curious",
+    "duration_ms": 6478,
+    "orig_loop_ms": 4501,
+    "orig_retention": 0.6948132139549243,
+    "new_loop_ms": 4501,
+    "new_retention": 0.6948132139549243
+  },
+  {
+    "mood": "curious",
+    "duration_ms": 15822,
+    "orig_loop_ms": 11872,
+    "orig_retention": 0.7503476172418152,
+    "new_loop_ms": 11872,
+    "new_retention": 0.7503476172418152
+  },
+  {
+    "mood": "curious",
+    "duration_ms": 4510,
+    "orig_loop_ms": 3402,
+    "orig_retention": 0.7543237250554323,
+    "new_loop_ms": 3402,
+    "new_retention": 0.7543237250554323
+  },
+  {
+    "mood": "curious",
+    "duration_ms": 14350,
+    "orig_loop_ms": 12394,
+    "orig_retention": 0.8636933797909407,
+    "new_loop_ms": 12394,
+    "new_retention": 0.8636933797909407
+  },
+  {
+    "mood": "tense",
+    "duration_ms": 23790,
+    "orig_loop_ms": 17802,
+    "orig_retention": 0.748297604035309,
+    "new_loop_ms": 17802,
+    "new_retention": 0.748297604035309
+  },
+  {
+    "mood": "tense",
+    "duration_ms": 22510,
+    "orig_loop_ms": 22208,
+    "orig_retention": 0.9865837405597512,
+    "new_loop_ms": 22208,
+    "new_retention": 0.9865837405597512
+  },
+  {
+    "mood": "tense",
+    "duration_ms": 16670,
+    "orig_loop_ms": 10282,
+    "orig_retention": 0.6167966406718657,
+    "new_loop_ms": 10282,
+    "new_retention": 0.6167966406718657
+  },
+  {
+    "mood": "tense",
+    "duration_ms": 22046,
+    "orig_loop_ms": 20693,
+    "orig_retention": 0.9386283225982037,
+    "new_loop_ms": 20693,
+    "new_retention": 0.9386283225982037
+  },
+  {
+    "mood": "tense",
+    "duration_ms": 4990,
+    "orig_loop_ms": 4032,
+    "orig_retention": 0.8080160320641283,
+    "new_loop_ms": 4032,
+    "new_retention": 0.8080160320641283
+  },
+  {
+    "mood": "tense",
+    "duration_ms": 8574,
+    "orig_loop_ms": 4618,
+    "orig_retention": 0.5386050851411244,
+    "new_loop_ms": 4618,
+    "new_retention": 0.5386050851411244
+  },
+  {
+    "mood": "tense",
+    "duration_ms": 4478,
+    "orig_loop_ms": 4010,
+    "orig_retention": 0.8954890576150067,
+    "new_loop_ms": 4010,
+    "new_retention": 0.8954890576150067
+  },
+  {
+    "mood": "tense",
+    "duration_ms": 10350,
+    "orig_loop_ms": 3882,
+    "orig_retention": 0.3750724637681159,
+    "new_loop_ms": 9216,
+    "new_retention": 0.8904347826086957
+  },
+  {
+    "mood": "uplifting",
+    "duration_ms": 4126,
+    "orig_loop_ms": 3392,
+    "orig_retention": 0.8221037324285022,
+    "new_loop_ms": 3392,
+    "new_retention": 0.8221037324285022
+  },
+  {
+    "mood": "tense",
+    "duration_ms": 21950,
+    "orig_loop_ms": 20501,
+    "orig_retention": 0.9339863325740319,
+    "new_loop_ms": 20501,
+    "new_retention": 0.9339863325740319
+  },
+  {
+    "mood": "uplifting",
+    "duration_ms": 9582,
+    "orig_loop_ms": 5621,
+    "orig_retention": 0.5866207472343978,
+    "new_loop_ms": 5621,
+    "new_retention": 0.5866207472343978
+  },
+  {
+    "mood": "uplifting",
+    "duration_ms": 16350,
+    "orig_loop_ms": 3381,
+    "orig_retention": 0.20678899082568808,
+    "new_loop_ms": 9386,
+    "new_retention": 0.5740672782874617
+  },
+  {
+    "mood": "uplifting",
+    "duration_ms": 9294,
+    "orig_loop_ms": 5322,
+    "orig_retention": 0.5726275016139445,
+    "new_loop_ms": 5322,
+    "new_retention": 0.5726275016139445
+  },
+  {
+    "mood": "uplifting",
+    "duration_ms": 17166,
+    "orig_loop_ms": 14997,
+    "orig_retention": 0.8736455784690668,
+    "new_loop_ms": 14997,
+    "new_retention": 0.8736455784690668
+  },
+  {
+    "mood": "uplifting",
+    "duration_ms": 6654,
+    "orig_loop_ms": 4704,
+    "orig_retention": 0.7069431920649234,
+    "new_loop_ms": 4704,
+    "new_retention": 0.7069431920649234
+  },
+  {
+    "mood": "uplifting",
+    "duration_ms": 19262,
+    "orig_loop_ms": 12096,
+    "orig_retention": 0.6279721731907383,
+    "new_loop_ms": 12096,
+    "new_retention": 0.6279721731907383
+  },
+  {
+    "mood": "uplifting",
+    "duration_ms": 25182,
+    "orig_loop_ms": 19221,
+    "orig_retention": 0.7632832975935192,
+    "new_loop_ms": 19221,
+    "new_retention": 0.7632832975935192
+  },
+  {
+    "mood": "uplifting",
+    "duration_ms": 25358,
+    "orig_loop_ms": 3402,
+    "orig_retention": 0.13415884533480557,
+    "new_loop_ms": 23402,
+    "new_retention": 0.9228645792254909
+  },
+  {
+    "mood": "neutral",
+    "duration_ms": 15774,
+    "orig_loop_ms": 11808,
+    "orig_retention": 0.7485736021300875,
+    "new_loop_ms": 11808,
+    "new_retention": 0.7485736021300875
+  },
+  {
+    "mood": "neutral",
+    "duration_ms": 23614,
+    "orig_loop_ms": 6858,
+    "orig_retention": 0.29042093673244684,
+    "new_loop_ms": 16554,
+    "new_retention": 0.7010248157872448
+  },
+  {
+    "mood": "neutral",
+    "duration_ms": 7934,
+    "orig_loop_ms": 4053,
+    "orig_retention": 0.5108394252583817,
+    "new_loop_ms": 4053,
+    "new_retention": 0.5108394252583817
+  },
+  {
+    "mood": "neutral",
+    "duration_ms": 7998,
+    "orig_loop_ms": 4565,
+    "orig_retention": 0.5707676919229807,
+    "new_loop_ms": 6560,
+    "new_retention": 0.8202050512628157
+  },
+  {
+    "mood": "neutral",
+    "duration_ms": 18510,
+    "orig_loop_ms": 6048,
+    "orig_retention": 0.326742301458671,
+    "new_loop_ms": 18048,
+    "new_retention": 0.9750405186385738
+  },
+  {
+    "mood": "neutral",
+    "duration_ms": 19326,
+    "orig_loop_ms": 17685,
+    "orig_retention": 0.9150884818379386,
+    "new_loop_ms": 17685,
+    "new_retention": 0.9150884818379386
+  },
+  {
+    "mood": "neutral",
+    "duration_ms": 8910,
+    "orig_loop_ms": 6677,
+    "orig_retention": 0.7493827160493827,
+    "new_loop_ms": 6677,
+    "new_retention": 0.7493827160493827
+  },
+  {
+    "mood": "neutral",
+    "duration_ms": 11998,
+    "orig_loop_ms": 10709,
+    "orig_retention": 0.8925654275712619,
+    "new_loop_ms": 10709,
+    "new_retention": 0.8925654275712619
+  },
+  {
+    "mood": "neutral",
+    "duration_ms": 14766,
+    "orig_loop_ms": 12298,
+    "orig_retention": 0.83285927129893,
+    "new_loop_ms": 12298,
+    "new_retention": 0.83285927129893
+  },
+  {
+    "mood": "focused",
+    "duration_ms": 20014,
+    "orig_loop_ms": 17866,
+    "orig_retention": 0.8926751274108125,
+    "new_loop_ms": 17866,
+    "new_retention": 0.8926751274108125
+  },
+  {
+    "mood": "calm",
+    "duration_ms": 10366,
+    "orig_loop_ms": 8554,
+    "orig_retention": 0.8251977619139494,
+    "new_loop_ms": 8554,
+    "new_retention": 0.8251977619139494
+  },
+  {
+    "mood": "energetic",
+    "duration_ms": 20030,
+    "orig_loop_ms": 18570,
+    "orig_retention": 0.927109335996006,
+    "new_loop_ms": 18570,
+    "new_retention": 0.927109335996006
+  },
+  {
+    "mood": "focused",
+    "duration_ms": 15422,
+    "orig_loop_ms": 8277,
+    "orig_retention": 0.5367008170146544,
+    "new_loop_ms": 8277,
+    "new_retention": 0.5367008170146544
+  },
+  {
+    "mood": "focused",
+    "duration_ms": 3246,
+    "orig_loop_ms": 3029,
+    "orig_retention": 0.9331484904497843,
+    "new_loop_ms": 3029,
+    "new_retention": 0.9331484904497843
+  },
+  {
+    "mood": "joyful",
+    "duration_ms": 10782,
+    "orig_loop_ms": 8832,
+    "orig_retention": 0.8191430161380078,
+    "new_loop_ms": 8832,
+    "new_retention": 0.8191430161380078
+  },
+  {
+    "mood": "sad",
+    "duration_ms": 17918,
+    "orig_loop_ms": 15989,
+    "orig_retention": 0.8923428954124344,
+    "new_loop_ms": 15989,
+    "new_retention": 0.8923428954124344
+  },
+  {
+    "mood": "dark",
+    "duration_ms": 14654,
+    "orig_loop_ms": 12970,
+    "orig_retention": 0.8850825713115873,
+    "new_loop_ms": 12970,
+    "new_retention": 0.8850825713115873
+  },
+  {
+    "mood": "nostalgic",
+    "duration_ms": 9918,
+    "orig_loop_ms": 8629,
+    "orig_retention": 0.8700342811050615,
+    "new_loop_ms": 8629,
+    "new_retention": 0.8700342811050615
+  },
+  {
+    "mood": "curious",
+    "duration_ms": 6046,
+    "orig_loop_ms": 4085,
+    "orig_retention": 0.675653324512074,
+    "new_loop_ms": 4085,
+    "new_retention": 0.675653324512074
+  },
+  {
+    "mood": "tense",
+    "duration_ms": 15646,
+    "orig_loop_ms": 15189,
+    "orig_retention": 0.9707912565511952,
+    "new_loop_ms": 15189,
+    "new_retention": 0.9707912565511952
+  },
+  {
+    "mood": "uplifting",
+    "duration_ms": 16317,
+    "orig_loop_ms": 7360,
+    "orig_retention": 0.45106330820616536,
+    "new_loop_ms": 15360,
+    "new_retention": 0.9413495127780842
+  },
+  {
+    "mood": "calm",
+    "duration_ms": 6382,
+    "orig_loop_ms": 2997,
+    "orig_retention": 0.4696020056408649,
+    "new_loop_ms": 4821,
+    "new_retention": 0.7554058288937637
+  },
+  {
+    "mood": "calm",
+    "duration_ms": 6382,
+    "orig_loop_ms": 2997,
+    "orig_retention": 0.4696020056408649,
+    "new_loop_ms": 4821,
+    "new_retention": 0.7554058288937637
+  },
+  {
+    "mood": "calm",
+    "duration_ms": 10366,
+    "orig_loop_ms": 8554,
+    "orig_retention": 0.8251977619139494,
+    "new_loop_ms": 8554,
+    "new_retention": 0.8251977619139494
+  },
+  {
+    "mood": "focused",
+    "duration_ms": 3134,
+    "orig_loop_ms": 2997,
+    "orig_retention": 0.9562858966177409,
+    "new_loop_ms": 2997,
+    "new_retention": 0.9562858966177409
+  },
+  {
+    "mood": "sad",
+    "duration_ms": 5150,
+    "orig_loop_ms": 5130,
+    "orig_retention": 0.996116504854369,
+    "new_loop_ms": 5130,
+    "new_retention": 0.996116504854369
+  },
+  {
+    "mood": "neutral",
+    "duration_ms": 9806,
+    "orig_loop_ms": 7274,
+    "orig_retention": 0.741790740363043,
+    "new_loop_ms": 7274,
+    "new_retention": 0.741790740363043
+  },
+  {
+    "mood": "calm",
+    "duration_ms": 18990,
+    "orig_loop_ms": 17920,
+    "orig_retention": 0.9436545550289626,
+    "new_loop_ms": 17920,
+    "new_retention": 0.9436545550289626
+  },
+  {
+    "mood": "neutral",
+    "duration_ms": 14078,
+    "orig_loop_ms": 13280,
+    "orig_retention": 0.9433158119051002,
+    "new_loop_ms": 13280,
+    "new_retention": 0.9433158119051002
+  },
+  {
+    "mood": "dark",
+    "duration_ms": 19582,
+    "orig_loop_ms": 15765,
+    "orig_retention": 0.8050760902869982,
+    "new_loop_ms": 15765,
+    "new_retention": 0.8050760902869982
+  },
+  {
+    "mood": "focused",
+    "duration_ms": 26094,
+    "orig_loop_ms": 6837,
+    "orig_retention": 0.2620142561508393,
+    "new_loop_ms": 21258,
+    "new_retention": 0.8146700390894458
+  },
+  {
+    "mood": "focused",
+    "duration_ms": 6078,
+    "orig_loop_ms": 5941,
+    "orig_retention": 0.9774596906877262,
+    "new_loop_ms": 5941,
+    "new_retention": 0.9774596906877262
+  },
+  {
+    "mood": "energetic",
+    "duration_ms": 15358,
+    "orig_loop_ms": 13728,
+    "orig_retention": 0.8938663888527152,
+    "new_loop_ms": 13728,
+    "new_retention": 0.8938663888527152
+  },
+  {
+    "mood": "nostalgic",
+    "duration_ms": 26510,
+    "orig_loop_ms": 14986,
+    "orig_retention": 0.565296114673708,
+    "new_loop_ms": 14986,
+    "new_retention": 0.565296114673708
+  },
+  {
+    "mood": "focused",
+    "duration_ms": 15278,
+    "orig_loop_ms": 10197,
+    "orig_retention": 0.6674302919230266,
+    "new_loop_ms": 10197,
+    "new_retention": 0.6674302919230266
+  }
+]
