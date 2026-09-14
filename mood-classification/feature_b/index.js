@@ -369,6 +369,29 @@ export async function runFeatureB(pageData, tabId = DEFAULT_TAB_ID, opts = {}) {
       mood:           moodContext.mood,
     });
 
+    // Developer-visible console log, right after Feature B's own detection
+    // completes (distinct from emitDiagnostics above, which is a silent
+    // programmatic hook that only fires if a caller subscribes via
+    // opts.onDiagnostics — nothing was ever printed to the console before
+    // this). Logs the three things B1/B2 actually decided or passed
+    // through: category, mood/emotion, and the raw behaviour signal
+    // (scroll/cursor speed) that fed the mood blend, plus colour for
+    // completeness. Fires on every page, same as emitDiagnostics, so a
+    // developer can watch detection happen live in the service worker's
+    // DevTools console without wiring up a listener.
+    console.log("[FeatureB] detection:", {
+      category:       moodContext.category?.primary ?? "unknown",
+      categorySource: moodContext.category?.source ?? "unknown",
+      mood:           moodContext.mood,
+      moodTier:       moodContext.tier ?? "unknown",
+      confidence:     moodContext.confidence,
+      behaviour: {
+        scrollSpeed: moodContext.scrollSpeed ?? null,
+        cursorSpeed: moodContext.cursorSpeed ?? null,
+      },
+      colour: moodContext.colors ?? null,
+    });
+
     const stageTimings = { b1_ms: Math.round(b1Ms), b2_ms: Math.round(b2Ms) };
 
     // ── Confidence interval check (spec edge case #1) ─────────────────────
