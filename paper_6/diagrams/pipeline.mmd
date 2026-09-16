@@ -1,0 +1,20 @@
+flowchart TB
+  classDef page fill:#EAF0F9,stroke:#3B6FB6,stroke-width:2px,color:#14161E
+  classDef worker fill:#FBEEE3,stroke:#C1651C,stroke-width:2px,color:#14161E
+  classDef off fill:#E6F2EE,stroke:#2E8B6F,stroke-width:2px,color:#14161E
+  classDef svc fill:#F0EAF6,stroke:#8E5AA8,stroke-width:2px,stroke-dasharray:6 4,color:#14161E
+
+  A["<b>Content script</b> — page origin<br/>Feature A: text · colour<br/>behaviour · readability<br/>→ buildPageData()"]
+  B["<b>Service worker</b> — MV3<br/>Feature B: B1 → B2 → B3 → B4<br/>5 s confidence window<br/>abort-on-stale generation"]
+  D["<b>Feature D</b> — HTTP service<br/><i>the only component off the device</i><br/>D1–D5 · MusicGen · loop synthesis<br/>fallback clips · audio cache"]
+  O["<b>Offscreen document</b><br/>MiniLM ONNX worker + vector store<br/>playback: 2 decks · 4 gain stages"]
+
+  A -- "<b>Handoff 1</b> — PageData" --> B
+  B -- "<b>Handoff 2</b> — profile + prompt" --> D
+  D -- "<b>Handoff 3</b> — audio URL + metadata" --> O
+  A -. "ONNX + IndexedDB relay<br/><i>blocked by page CSP</i>" .-> O
+
+  class A page
+  class B worker
+  class O off
+  class D svc

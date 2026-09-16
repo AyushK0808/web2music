@@ -1,0 +1,20 @@
+flowchart LR
+  classDef stage fill:#F0EAF6,stroke:#8E5AA8,stroke-width:2px,color:#14161E
+  classDef loop fill:#E6F2EE,stroke:#2E8B6F,stroke-width:2px,color:#14161E
+  classDef fail fill:#FBE3E6,stroke:#B03A48,stroke-width:2px,color:#14161E
+  classDef gate fill:#FFFFFF,stroke:#14161E,stroke-width:1.5px,color:#14161E
+
+  CK{"D5 cache<br/>hit?"}
+  D3["<b>D3 — MusicGen</b><br/>musicgen-small<br/><i>seed excluded from<br/>the cache key</i>"]
+  L["<b>D4 — loop synthesis</b><br/>1 chroma self-similarity, ≥ 3 s<br/>2 snap to bar boundary (4/4)<br/>3 truncate at loop point<br/>4 50 ms equal-power crossfade<br/>5 −18 LUFS → <b>Ogg/Opus</b>"]
+  FB["<b>fallback clip</b><br/>neutral → calm<br/>→ focused"]
+  RET(["audio URL<br/>+ loop_point_ms<br/>+ seam metrics"])
+
+  CK -- "miss" --> D3 --> L --> RET
+  CK -. "hit" .-> RET
+  D3 -. "any stage fails" .-> FB -.-> RET
+
+  class D3 stage
+  class L loop
+  class FB fail
+  class CK gate
