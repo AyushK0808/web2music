@@ -308,18 +308,18 @@ measurable cost (\emph{negative for the hosted backend},
 \label{sec:arch}
 % ===========================================================================
 
-Web2Music is a Manifest V3 Chrome extension plus one HTTP
-audio-generation service. Fig.~\ref{fig:system} follows one page from DOM
-to speaker in nine numbered steps and marks the two persistent stores
-where they are touched: an IndexedDB vector store on the device and a
-Postgres cache index behind the generation service. The division of
-labour follows browser security boundaries: the descriptor extractor runs in the content script to reach
-the DOM, the classifier runs in the service worker since the content
-script's origin is untrusted, and playback and ONNX inference run in an
-offscreen document since Manifest V3 forbids audio in a service worker
-and a page's CSP blocks WebAssembly there. Three components are network
-services: the hosted zero-shot backend, the remote LLM, and the
-generation service.
+Web2Music consists of a Manifest V3 Chrome extension along with one audio
+generation service using HTTP. Fig.~\ref{fig:system} depicts the workflow path
+starting from the Document Object Model (DOM) till the speaker through nine
+steps and the two persistent storage areas used: an IndexedDB vector store on
+the local machine and a Postgres cache index on the back side of the
+generation service. The task division is done following the existing browser
+security model: the descriptor extraction is done inside the content script
+interacting with the DOM; the classifier is done inside the service worker
+since the content script is of an untrusted origin; the playback and ONNX
+inference are executed in an offscreen document due to the fact that the audio
+in service workers is not allowed in Manifest V3 and that Content Security
+Policy of the page does not allow WebAssembly usage in service workers.
 
 \begin{figure}[!t]
 \centerline{\includegraphics[width=\columnwidth]{figures/system.pdf}}
@@ -345,31 +345,30 @@ and DOM mutation.
 
 \subsection{The classifier cascade}
 
-The classifier maps the descriptor onto a 13-way category and 11-way
-mood, then a music profile and prompt. Category is a content-topic
-label; mood is the affective target that drives the profile, and is
-weakly agreed upon among annotators (\S\ref{sec:res-agreement}).
+The classifier takes the descriptor to one of 13 categories
+and one of 11 moods, followed by a music profile and a prompt.
+Category is a label about content and topic; mood is the emotional
+target that motivates the music profile, and is loosely agreed-upon
+by human annotators (§V-B).
+Keyword stage. The keyword map determines the category,
+keyword only here; the mood score comes from a combination
+of the keyword score, colour bias and behaviour bias. With
+confidence ≥ 0.5 the pipeline ends at effectively no additional
+cost here; automatically filtered out for pages in non-English languages.
+Zero-shot stage. Evaluated against 13 category hypotheses,
+accepting the label only if its score is ≥ 0.45 and has a lead
+over the runner-up of ≥ 0.10, or else abstaining. The entailment
+backend hosted on the service sends the page text; the quantised ONNX version of it running locally on device sends nothing, tested only on 18 pages. LLM stage. The hosted 8-secondtimeout model, falling back to keyword stage on failure;
+the percentage of pages going through is the LLM-specific
+exposure rate, while the overall off-device rate is the sum of
+these pages plus those getting through the zero-shot stage.
 
-\emph{Keyword stage.} A keyword map gives the category, keyword-only
-at this stage; mood blends the keyword score with a colour bias and a
-behaviour bias. At confidence $\geq 0.5$ the pipeline stops here at
-essentially zero cost; skipped by construction for non-English pages.
-\emph{Zero-shot stage.} Scored against thirteen category
-hypotheses, accepting a label only if the top score is $\geq 0.45$
-\emph{and} the margin over the runner-up is $\geq 0.10$, else abstaining.
-A hosted entailment backend transmits page text and is what every
-full-scale number here was measured with; a local quantised ONNX backend
-transmits nothing, measured only on 18 pages. \emph{LLM stage.} An eight-second-timeout hosted model, falling back to the keyword stage on
-failure; the fraction of pages reaching it is the LLM-specific exposure
-rate, and total off-device rate adds the pages the zero-shot stage also
-received.
-
-A committed mood maps to a music profile and a prompt. Every page the
-cascade-ablation harness processes is logged with every stage's output, not
-just the winner, so \S\ref{sec:res-classification} can replay any
-configuration offline. A newly classified mood must hold for five seconds
-before committing -- the largest term in end-to-end latency
-(\S\ref{sec:res-e2e-latency}), by design.
+Committed mood is mapped to a music profile and a prompt. Each page the
+cascade-ablation harness processes is recorded along with the output from each
+step, including the losing steps, which enables \S\ref{sec:res-classification}
+to recompute the entire pipeline offline. The mood classification that is
+performed needs to be stable for five seconds before it is committed -- the
+largest term in end-to-end latency (\S\ref{sec:res-e2e-latency}), by design.
 
 \subsection{Generation, loop synthesis and caching}
 
