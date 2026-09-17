@@ -329,19 +329,19 @@ Policy of the page does not allow WebAssembly usage in service workers.
 
 \subsection{Page descriptor extraction}
 
-A single function assembles the descriptor from four contextual signals
--- text, a 384-dimensional MiniLM sentence embedding (in-browser ONNX),
-colour (an area-weighted HSL histogram over up to 800 elements
-\cite{dominantcolour}), and behaviour (scroll/cursor velocity) -- plus
-readability \cite{flesch} as an auxiliary feature. The embedding is
-searched by cosine similarity against an IndexedDB vector store of prior
-pages (step 2 in Fig.~\ref{fig:system}) to flag a revisit, then upserted,
-capped at 2,000 entries; this search is the vector-store row of Table
-\ref{tab:extraction}. The embedding feeds the vector store only, not the
-keyword stage's mood computation (\S\ref{sec:res-signal-ablation}
-depends on this). Extraction stays off
-the critical path: debounced, idle-scheduled, and re-run on navigation
-and DOM mutation.
+One function combines the readability feature \cite{flesch} and four
+contextual features (text, behaviour (scroll/cursor speed), colour (area
+weighted histogram of up to 800 HSL values) \cite{dominantcolour}, and
+384-dimensional MiniLM sentence encoding run in the browser using ONNX) into a
+page descriptor. The page descriptor is run through a vector store using
+cosine similarity to compare against previously visited pages stored in
+IndexedDB (step 2 in Fig.~\ref{fig:system}). If a page is identified as a
+repeat visit it is upserted with a limit of 2,000 pages. This vector store
+lookup corresponds to a row in Table \ref{tab:extraction}. This embedding is
+only used for the vector store and not in the emotion process in the keyword
+stage (\S\ref{sec:res-signal-ablation} relies on this). The extraction is not
+on the critical path and is instead scheduled on DOM updates and navigation,
+debounced and run on idle.
 
 \subsection{The classifier cascade}
 
