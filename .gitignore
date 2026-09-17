@@ -132,7 +132,9 @@ temp/
 data-extraction/benchmark/extraction-cost-results.json
 
 # ── Paper build outputs (regenerate with `make` in paper/) ──
-paper/main.pdf
+# main.pdf is tracked on purpose so collaborators and reviewers can read the
+# current paper without a LaTeX install. Rebuild it with `make` in paper/ and
+# commit it alongside any main.tex change.
 paper/*.aux
 paper/*.out
 paper/*.bbl
