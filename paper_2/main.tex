@@ -122,14 +122,17 @@ classification, model cascades, on-device inference, ambient interfaces
 \section{Introduction}
 % ===========================================================================
 
-Background music is chosen once, for a session, and then ignored: a lo-fi
-playlist runs for four hours across a tax form, a horror wiki and a birthday
-message without acknowledging that anything changed. It is context-free
-because making it context-aware has historically required a human curator or
-a library covering every context in advance. Text-conditioned generative
-audio models remove that constraint in principle (\S\ref{sec:related}): if
-the description can be derived from what the user is doing, the curator is
-no longer needed.
+In this study, background music is selected at the beginning of a session and
+is ignored for the duration of the session. For example, users are presented
+with a low-fidelity playlist that continues uninterrupted for four hours as
+they interact with a tax form, a horror wikipedia page, and a birthday
+greeting without recognition of changes made. Background music is considered
+context-free since selecting background music based on context has
+traditionally been dependent upon either a human curator or a library that
+addresses all possible contexts. However, text-conditioned generative audio
+models potentially eliminate these constraints (\S\ref{sec:related}),
+providing the potential to derive the context automatically based on the
+activities being performed by the user.
 
 \begin{table*}[!t]
 \caption{Closest related systems.}
@@ -177,24 +180,32 @@ Web2Music (this paper) & Passive page context $\to$ 3-stage abstaining classifie
 \end{center}
 \end{table*}
 
-Deriving it is where the engineering lives, via three constraints, none
-about audio quality. \emph{The prompt has to come from somewhere:} a page
-is a DOM of navigation chrome, ads and colour, not a prompt.
-\emph{Classification is a privacy decision:} the most accurate way to
-classify a page is an LLM call, but doing that on every page turns a music
-player into a browsing-history exfiltration channel. \emph{The model is
-too slow for the critical path:} on a CPU laptop the three cold requests
-that completed took a median of 139 s for a 10--20 s clip, and every 28 s
-cold request exceeded a 300 s client timeout, against a page load of about
-two seconds -- a gap CPU inference does not close; the interaction must be
-designed so it is invisible.
+Deriving the appropriate background music is where the technical work occurs
+through three constraints that are unrelated to the quality of the audio
+generated. The first constraint involves how the prompt is received; i.e., a
+web-page is simply a collection of HTML tags representing navigation options,
+advertisements, color and content -- not a prompt. The second constraint is
+related to classification decisions regarding the user's privacy; e.g., using
+an LLM to determine the type of page loaded would provide the most accurate
+means of determining whether a user was interacting with their financial
+information versus entertainment media. However, utilizing an LLM on each page
+would essentially turn a music player into an exfiltration channel for a
+history of pages visited by the user. Finally, the third constraint is related
+to speed. Since CPU-based processing cannot bridge the gap between the time it
+takes to complete cold requests (i.e., requests that require access to
+external servers) and the amount of time available before the client times out
+due to an inability to receive responses within the allotted timeframe (e.g.,
+~2 s for loading a single web page vs. ~30 s for completing a 10-20 s audio
+clip), the interaction design must ensure that the process is transparently
+invisible.
 
-This paper's contributions follow the same three constraints. First, a
-four-signal page descriptor (text, sentence embedding, page
-colour, browsing behaviour) with its extraction cost measured over 105 real
-websites; an offline ablation under the keyword stage bounds colour's effect
-on the mood label at $\leq 7.5$ percent of pages and is uninformative for
-the other two auxiliary signals (\S\ref{sec:res-signal-ablation}).
+This paper contributes solutions to each of these constraints. First, this
+research developed a four-signal page descriptor (text, sentence embeddings,
+page colors, and browsing behavior) whose extraction costs were measured over
+105 different real-world sites. An offline ablation test was conducted under
+the keyword-stage bounds to evaluate whether the effect of color on the
+mood-labels was limited to fewer than 7.5\% of pages and found to be
+uninstructive for two auxiliary signals (\S\ref{sec:res-signal-ablation}).
 
 Second, an abstaining three-stage classifier (free keyword heuristic $\to$
 zero-shot NLI $\to$ remote LLM) and the finding that, with a hosted cheap
