@@ -95,22 +95,22 @@ email@vitstudent.ac.in}
 \maketitle
 
 \begin{abstract}
-Generative audio models can produce plausible music from text, but
-placing one inside an always-on browser extension raises problems audio
-quality alone does not solve: deriving a prompt from a page, keeping
-browsing history private, and hiding a slow generator from the critical
-path. We present Web2Music and measure where these assumptions fail. A
-four-signal page descriptor adds well under a tenth of a second per
-page. A three-stage cascade (keyword, zero-shot NLI, LLM) barely moves accuracy across its confidence thresholds and, with a hosted middle
-stage, never meaningfully reduces off-device disclosure. Fallback-then-swap
-decouples audible start from generation, though some cold requests still
-run long enough to time out. Across a corpus of real sites, requests and
-generated clips we report five further negative results: a crossfade
-that worsens a large share of seams; substantial loss of the requested
-clip duration; a sensitive-content detector that misses most of an
-adversarial slice; weak mood agreement among annotators; and an
-engineered prompt that loses to a bare mood word on nearly every loop
-metric.
+Generative audio models can create realistic music from text prompts, but
+embedding one in an always-on browser extension brings more problems than just
+audio quality: extracting a prompt from a webpage, protecting the user's
+browser history, and masking the fact that the model runs slowly. We present
+Web2Music and identify where our assumptions fall apart. A page descriptor made
+up of four signals adds less than a tenth of a second of latency per page.
+Our three-part cascade (keyword, zero-shot NLI, large language
+model) barely changes accuracy across its confidence
+thresholds and, when the middle stage is hosted, does not significantly reduce
+off-device disclosure. Fallback and swap enables the user to hear music before
+it is generated, even if some cold requests take too long to time out. In a
+corpus of websites, requests, and clips, we document five additional negative
+results: crossfade that worsens the seam on a large fraction of clips; lost
+clip duration; a sensitive content detector that fails to detect most of an
+adversarial set of pages; low agreement between annotators on moods; and an
+engineered prompt that loses to a mood word alone on nearly every loop metric. 
 \end{abstract}
 
 \begin{IEEEkeywords}
