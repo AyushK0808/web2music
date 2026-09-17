@@ -225,43 +225,46 @@ Ogg/Opus container, evaluated over 141 clips.
 \label{sec:recent-systems}
 % ===========================================================================
 
-\emph{Generative audio.} MusicGen \cite{musicgen} is a single-stage
-transformer language model over discrete EnCodec \cite{encodec} tokens,
-text-conditioned and openly deployable, which is why its small variant is
-the generator here; MusicLM \cite{musiclm} and AudioLDM \cite{audioldm}
-trade fidelity against speed, and AudioGen \cite{audiogen} applies the
-same conditioning to environmental sound. All four emit a fixed-length
-one-shot excerpt whose end does not join its beginning. AffectMachine-Pop
-\cite{affectmachine} is rule-based and truly real time, but takes its
-valence--arousal target \cite{russell} from outside rather than from
-context.
+\emph{Generative audio.} MusicGen \cite{musicgen} is a transformer-based
+language model running on discrete EnCodec \cite{encodec} tokens, which are
+conditioned on text and can be openly deployed; thus, the smaller version of
+this model acts as the generator for this task. By comparison, MusicLM
+\cite{musiclm} and AudioLDM \cite{audioldm} compromise between quality and
+performance, whereas AudioGen \cite{audiogen} applies the same conditioning
+for environmental sounds. All of these models output a sequence of fixed
+length in one attempt, which does not seamlessly loop back from the end to its
+start. AffectMachine-Pop \cite{affectmachine} relies on rule-based methods and
+runs in real-time; but the valence--arousal targets \cite{russell} for it are
+generated externally.
 
-\emph{Context-aware music and disclosure.} Four recent systems derive
-music from a user's situation: MetaBGM \cite{metabgm} from game state,
-Discussion Jockey 2 \cite{discussionjockey} from live meeting speech,
-Context-AI Tunes \cite{contextaitunes} from a photographed scene plus
-self-reported stress, and, on the privacy side, Casper \cite{casper}
-sanitises a typed prompt with a client-side cascade before it reaches a
-web LLM. FrugalGPT \cite{frugalgpt} established the confidence-gated
-cascade pattern this paper's classifier follows, framed as cost and
-latency optimisation. Table \ref{tab:litreview} places these against
-Web2Music on the properties this paper measures.
+\emph{Context-aware music generation and revelation.} Four modern systems
+create music depending on a user's context: MetaBGM \cite{metabgm} based on
+game context, Discussion Jockey 2 \cite{discussionjockey} based on live
+conference discussion, Context-AI Tunes \cite{contextaitunes} based on the
+picture and stress levels reported by the user, and Casper \cite{casper} which
+anonymizes a prompted text using a cascade on the client side before sending
+it to a web-based large language model. FrugalGPT \cite{frugalgpt} created the
+confidence-gated cascade architecture for the classifier we analyze in this
+paper, viewing it as a problem of cost and latency optimization. Table
+\ref{tab:litreview} compares these systems and Web2Music by their performance
+in terms of the parameters used in our study.
 
-Web2Music combines three properties no recent system in Table
-\ref{tab:litreview} combines. \emph{Passive context, not a request:}
-unlike MetaBGM, Discussion Jockey 2 and Context-AI Tunes, which respond
-to something a user is actively doing, Web2Music's context is whatever
-page is open, sensed without prompting. \emph{Disclosure as a measured
-rate:} every system in Table \ref{tab:litreview} sends its full context
-to a cloud model and reports no on-device fraction; Web2Music still
-discloses most pages as measured (\S\ref{sec:res-classification}), but
-the number is reported rather than assumed away. \emph{Deployment
-failure modes as findings:} none of the four context-to-music papers
-reviewed reports a latency distribution, cache behaviour, loop-continuity
-measurement or adversarial audit. The contribution is accordingly the
-deployment measurement -- not a better generator, classifier or cascade,
-all three adopted from existing work -- and the finding that several
-resulting guarantees do not hold as configured.
+Web2Music has three characteristics that are not shared by any currently
+existing system in Table \ref{tab:litreview}. \emph{Firstly, it uses passive,
+rather than active, context.} Whilst Discussion Jockey 2, Context-AI Tunes and
+MetaBGM react to some action a user is performing, Web2Music uses the
+currently displayed webpage, without the need for user interaction to discover
+this context. \emph{Secondly, there is disclosure of a measured rate.} All
+systems in Table \ref{tab:litreview} transmit their complete context to the
+cloud model and report no on-device fraction. Web2Music, however, discloses
+the majority of viewed pages as measured (\S\ref{sec:res-classification}), and
+provides the measured value instead of eliminating it. \emph{Finally, there
+are failure modes of deployment that are presented as results.} None of the
+four context-to-music systems provide an analysis of loop continuity, cache
+behaviour, latency distribution or an adversarial evaluation. Instead, this
+work provides an analysis of the deployment and some of the derived assurances
+that fail in their current form; the generator, classifier and cascade are all
+adopted from prior work rather than improved.
 
 % ===========================================================================
 \section{Research Gaps and Problem Statement}
@@ -270,16 +273,15 @@ resulting guarantees do not hold as configured.
 
 \subsection{Gaps}
 
-Prior work leaves four gaps, none about audio quality.
-\emph{Deployment-level properties go unmeasured:} prompt cost,
-generation-time behaviour and safeguard robustness fall outside the
-audio-quality frame prior work uses. \emph{On-device classification is
-treated as a cost problem, not a disclosure one:} no work we reviewed
-reports an \emph{exposure rate} as a tunable curve. \emph{Context-aware
-music systems assume a library:} whether generation beats retrieval on
-cost is asserted, not measured. \emph{Generative audio models do not
-produce loops:} how much a crossfade removes is not characterised in the
-literature we found.
+There are four gaps that have been identified previously, none of which
+relates to sound quality. Deployment-level metrics have yet to be measured, as
+prompt cost, behavior at generation time, and protection safety fall outside
+the scope of the audio quality paradigm used in previous studies. The
+on-device classification is considered from a cost standpoint and not from the
+aspect of disclosure, and there is no paper that reports the exposure rate as
+a variable curve. Context-dependent music systems rely on a fixed database,
+and the assertion about generation being more expensive than retrieval is
+stated without any measurements.
 
 \subsection{Problem statement}
 
