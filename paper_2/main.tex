@@ -95,22 +95,22 @@ email@vitstudent.ac.in}
 \maketitle
 
 \begin{abstract}
-Generative audio models can produce plausible music from text, but
-placing one inside an always-on browser extension raises problems audio
-quality alone does not solve: deriving a prompt from a page, keeping
-browsing history private, and hiding a slow generator from the critical
-path. We present Web2Music and measure where these assumptions fail. A
-four-signal page descriptor adds well under a tenth of a second per
-page. A three-stage cascade (keyword, zero-shot NLI, LLM) barely moves accuracy across its confidence thresholds and, with a hosted middle
-stage, never meaningfully reduces off-device disclosure. Fallback-then-swap
-decouples audible start from generation, though some cold requests still
-run long enough to time out. Across a corpus of real sites, requests and
-generated clips we report five further negative results: a crossfade
-that worsens a large share of seams; substantial loss of the requested
-clip duration; a sensitive-content detector that misses most of an
-adversarial slice; weak mood agreement among annotators; and an
-engineered prompt that loses to a bare mood word on nearly every loop
-metric.
+Generative audio models can create realistic music from text prompts, but
+embedding one in an always-on browser extension brings more problems than just
+audio quality: extracting a prompt from a webpage, protecting the user's
+browser history, and masking the fact that the model runs slowly. We present
+Web2Music and identify where our assumptions fall apart. A page descriptor made
+up of four signals adds less than a tenth of a second of latency per page.
+Our three-part cascade (keyword, zero-shot NLI, large language
+model) barely changes accuracy across its confidence
+thresholds and, when the middle stage is hosted, does not significantly reduce
+off-device disclosure. Fallback and swap enables the user to hear music before
+it is generated, even if some cold requests take too long to time out. In a
+corpus of websites, requests, and clips, we document five additional negative
+results: crossfade that worsens the seam on a large fraction of clips; lost
+clip duration; a sensitive content detector that fails to detect most of an
+adversarial set of pages; low agreement between annotators on moods; and an
+engineered prompt that loses to a mood word alone on nearly every loop metric. 
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -122,14 +122,17 @@ classification, model cascades, on-device inference, ambient interfaces
 \section{Introduction}
 % ===========================================================================
 
-Background music is chosen once, for a session, and then ignored: a lo-fi
-playlist runs for four hours across a tax form, a horror wiki and a birthday
-message without acknowledging that anything changed. It is context-free
-because making it context-aware has historically required a human curator or
-a library covering every context in advance. Text-conditioned generative
-audio models remove that constraint in principle (\S\ref{sec:related}): if
-the description can be derived from what the user is doing, the curator is
-no longer needed.
+In this study, background music is selected at the beginning of a session and
+is ignored for the duration of the session. For example, users are presented
+with a low-fidelity playlist that continues uninterrupted for four hours as
+they interact with a tax form, a horror wikipedia page, and a birthday
+greeting without recognition of changes made. Background music is considered
+context-free since selecting background music based on context has
+traditionally been dependent upon either a human curator or a library that
+addresses all possible contexts. However, text-conditioned generative audio
+models potentially eliminate these constraints (\S\ref{sec:related}),
+providing the potential to derive the context automatically based on the
+activities being performed by the user.
 
 \begin{table*}[!t]
 \caption{Closest related systems.}
@@ -177,36 +180,44 @@ Web2Music (this paper) & Passive page context $\to$ 3-stage abstaining classifie
 \end{center}
 \end{table*}
 
-Deriving it is where the engineering lives, via three constraints, none
-about audio quality. \emph{The prompt has to come from somewhere:} a page
-is a DOM of navigation chrome, ads and colour, not a prompt.
-\emph{Classification is a privacy decision:} the most accurate way to
-classify a page is an LLM call, but doing that on every page turns a music
-player into a browsing-history exfiltration channel. \emph{The model is
-too slow for the critical path:} on a CPU laptop the three cold requests
-that completed took a median of 139 s for a 10--20 s clip, and every 28 s
-cold request exceeded a 300 s client timeout, against a page load of about
-two seconds -- a gap CPU inference does not close; the interaction must be
-designed so it is invisible.
+Deriving the appropriate background music is where the technical work occurs
+through three constraints that are unrelated to the quality of the audio
+generated. The first constraint involves how the prompt is received; i.e., a
+web-page is simply a collection of HTML tags representing navigation options,
+advertisements, color and content -- not a prompt. The second constraint is
+related to classification decisions regarding the user's privacy; e.g., using
+an LLM to determine the type of page loaded would provide the most accurate
+means of determining whether a user was interacting with their financial
+information versus entertainment media. However, utilizing an LLM on each page
+would essentially turn a music player into an exfiltration channel for a
+history of pages visited by the user. Finally, the third constraint is related
+to speed. Since CPU-based processing cannot bridge the gap between the time it
+takes to complete cold requests (i.e., requests that require access to
+external servers) and the amount of time available before the client times out
+due to an inability to receive responses within the allotted timeframe (e.g.,
+~2 s for loading a single web page vs. ~30 s for completing a 10-20 s audio
+clip), the interaction design must ensure that the process is transparently
+invisible.
 
-This paper's contributions follow the same three constraints. First, a
-four-signal page descriptor (text, sentence embedding, page
-colour, browsing behaviour) with its extraction cost measured over 105 real
-websites; an offline ablation under the keyword stage bounds colour's effect
-on the mood label at $\leq 7.5$ percent of pages and is uninformative for
-the other two auxiliary signals (\S\ref{sec:res-signal-ablation}).
+This paper contributes solutions to each of these constraints. First, this
+research developed a four-signal page descriptor (text, sentence embeddings,
+page colors, and browsing behavior) whose extraction costs were measured over
+105 different real-world sites. An offline ablation test was conducted under
+the keyword-stage bounds to evaluate whether the effect of color on the
+mood-labels was limited to fewer than 7.5\% of pages and found to be
+uninstructive for two auxiliary signals (\S\ref{sec:res-signal-ablation}).
 
 Second, an abstaining three-stage classifier (free keyword heuristic $\to$
 zero-shot NLI $\to$ remote LLM) and the finding that, with a hosted cheap
-stage, such a cascade \emph{redistributes} disclosure between providers
-rather than reducing it: the thresholds are a privacy mechanism only if
-the middle stage is local, which we measure only on an 18-page subset.
+stage, such a cascade redistributes disclosure between providers rather than
+reducing it. The thresholds are a privacy mechanism only if the middle stage
+is local, which we measure only on an 18-page subset.
 
 Third, a latency-hiding playback design: instant fallback followed by an
-abort-on-stale crossfaded swap, with its full latency distribution and
-failure modes, including 12 of 144 client timeouts; and loop synthesis
-from a non-loop model, bar-snapped chroma self-similarity, a 50 ms
-crossfade, and a gapless Ogg/Opus container, evaluated over 141 clips.
+abort-on-stale crossfaded swap, with its full latency distribution and failure
+modes, including 12 of 144 client timeouts; and loop synthesis from a non-loop
+model, bar-snapped chroma self-similarity, a 50 ms crossfade, and a gapless
+Ogg/Opus container, evaluated over 141 clips.
 
 % ===========================================================================
 \section{Related Work}
@@ -214,43 +225,46 @@ crossfade, and a gapless Ogg/Opus container, evaluated over 141 clips.
 \label{sec:recent-systems}
 % ===========================================================================
 
-\emph{Generative audio.} MusicGen \cite{musicgen} is a single-stage
-transformer language model over discrete EnCodec \cite{encodec} tokens,
-text-conditioned and openly deployable, which is why its small variant is
-the generator here; MusicLM \cite{musiclm} and AudioLDM \cite{audioldm}
-trade fidelity against speed, and AudioGen \cite{audiogen} applies the
-same conditioning to environmental sound. All four emit a fixed-length
-one-shot excerpt whose end does not join its beginning. AffectMachine-Pop
-\cite{affectmachine} is rule-based and truly real time, but takes its
-valence--arousal target \cite{russell} from outside rather than from
-context.
+\emph{Generative audio.} MusicGen \cite{musicgen} is a transformer-based
+language model running on discrete EnCodec \cite{encodec} tokens, which are
+conditioned on text and can be openly deployed; thus, the smaller version of
+this model acts as the generator for this task. By comparison, MusicLM
+\cite{musiclm} and AudioLDM \cite{audioldm} compromise between quality and
+performance, whereas AudioGen \cite{audiogen} applies the same conditioning
+for environmental sounds. All of these models output a sequence of fixed
+length in one attempt, which does not seamlessly loop back from the end to its
+start. AffectMachine-Pop \cite{affectmachine} relies on rule-based methods and
+runs in real-time; but the valence--arousal targets \cite{russell} for it are
+generated externally.
 
-\emph{Context-aware music and disclosure.} Four recent systems derive
-music from a user's situation: MetaBGM \cite{metabgm} from game state,
-Discussion Jockey 2 \cite{discussionjockey} from live meeting speech,
-Context-AI Tunes \cite{contextaitunes} from a photographed scene plus
-self-reported stress, and, on the privacy side, Casper \cite{casper}
-sanitises a typed prompt with a client-side cascade before it reaches a
-web LLM. FrugalGPT \cite{frugalgpt} established the confidence-gated
-cascade pattern this paper's classifier follows, framed as cost and
-latency optimisation. Table \ref{tab:litreview} places these against
-Web2Music on the properties this paper measures.
+\emph{Context-aware music generation and revelation.} Four modern systems
+create music depending on a user's context: MetaBGM \cite{metabgm} based on
+game context, Discussion Jockey 2 \cite{discussionjockey} based on live
+conference discussion, Context-AI Tunes \cite{contextaitunes} based on the
+picture and stress levels reported by the user, and Casper \cite{casper} which
+anonymizes a prompted text using a cascade on the client side before sending
+it to a web-based large language model. FrugalGPT \cite{frugalgpt} created the
+confidence-gated cascade architecture for the classifier we analyze in this
+paper, viewing it as a problem of cost and latency optimization. Table
+\ref{tab:litreview} compares these systems and Web2Music by their performance
+in terms of the parameters used in our study.
 
-Web2Music combines three properties no recent system in Table
-\ref{tab:litreview} combines. \emph{Passive context, not a request:}
-unlike MetaBGM, Discussion Jockey 2 and Context-AI Tunes, which respond
-to something a user is actively doing, Web2Music's context is whatever
-page is open, sensed without prompting. \emph{Disclosure as a measured
-rate:} every system in Table \ref{tab:litreview} sends its full context
-to a cloud model and reports no on-device fraction; Web2Music still
-discloses most pages as measured (\S\ref{sec:res-classification}), but
-the number is reported rather than assumed away. \emph{Deployment
-failure modes as findings:} none of the four context-to-music papers
-reviewed reports a latency distribution, cache behaviour, loop-continuity
-measurement or adversarial audit. The contribution is accordingly the
-deployment measurement -- not a better generator, classifier or cascade,
-all three adopted from existing work -- and the finding that several
-resulting guarantees do not hold as configured.
+Web2Music has three characteristics that are not shared by any currently
+existing system in Table \ref{tab:litreview}. \emph{Firstly, it uses passive,
+rather than active, context.} Whilst Discussion Jockey 2, Context-AI Tunes and
+MetaBGM react to some action a user is performing, Web2Music uses the
+currently displayed webpage, without the need for user interaction to discover
+this context. \emph{Secondly, there is disclosure of a measured rate.} All
+systems in Table \ref{tab:litreview} transmit their complete context to the
+cloud model and report no on-device fraction. Web2Music, however, discloses
+the majority of viewed pages as measured (\S\ref{sec:res-classification}), and
+provides the measured value instead of eliminating it. \emph{Finally, there
+are failure modes of deployment that are presented as results.} None of the
+four context-to-music systems provide an analysis of loop continuity, cache
+behaviour, latency distribution or an adversarial evaluation. Instead, this
+work provides an analysis of the deployment and some of the derived assurances
+that fail in their current form; the generator, classifier and cascade are all
+adopted from prior work rather than improved.
 
 % ===========================================================================
 \section{Research Gaps and Problem Statement}
@@ -259,16 +273,15 @@ resulting guarantees do not hold as configured.
 
 \subsection{Gaps}
 
-Prior work leaves four gaps, none about audio quality.
-\emph{Deployment-level properties go unmeasured:} prompt cost,
-generation-time behaviour and safeguard robustness fall outside the
-audio-quality frame prior work uses. \emph{On-device classification is
-treated as a cost problem, not a disclosure one:} no work we reviewed
-reports an \emph{exposure rate} as a tunable curve. \emph{Context-aware
-music systems assume a library:} whether generation beats retrieval on
-cost is asserted, not measured. \emph{Generative audio models do not
-produce loops:} how much a crossfade removes is not characterised in the
-literature we found.
+There are four gaps that have been identified previously, none of which
+relates to sound quality. Deployment-level metrics have yet to be measured, as
+prompt cost, behavior at generation time, and protection safety fall outside
+the scope of the audio quality paradigm used in previous studies. The
+on-device classification is considered from a cost standpoint and not from the
+aspect of disclosure, and there is no paper that reports the exposure rate as
+a variable curve. Context-dependent music systems rely on a fixed database,
+and the assertion about generation being more expensive than retrieval is
+stated without any measurements.
 
 \subsection{Problem statement}
 
@@ -295,18 +308,18 @@ measurable cost (\emph{negative for the hosted backend},
 \label{sec:arch}
 % ===========================================================================
 
-Web2Music is a Manifest V3 Chrome extension plus one HTTP
-audio-generation service. Fig.~\ref{fig:system} follows one page from DOM
-to speaker in nine numbered steps and marks the two persistent stores
-where they are touched: an IndexedDB vector store on the device and a
-Postgres cache index behind the generation service. The division of
-labour follows browser security boundaries: the descriptor extractor runs in the content script to reach
-the DOM, the classifier runs in the service worker since the content
-script's origin is untrusted, and playback and ONNX inference run in an
-offscreen document since Manifest V3 forbids audio in a service worker
-and a page's CSP blocks WebAssembly there. Three components are network
-services: the hosted zero-shot backend, the remote LLM, and the
-generation service.
+Web2Music consists of a Manifest V3 Chrome extension along with one audio
+generation service using HTTP. Fig.~\ref{fig:system} depicts the workflow path
+starting from the Document Object Model (DOM) till the speaker through nine
+steps and the two persistent storage areas used: an IndexedDB vector store on
+the local machine and a Postgres cache index on the back side of the
+generation service. The task division is done following the existing browser
+security model: the descriptor extraction is done inside the content script
+interacting with the DOM; the classifier is done inside the service worker
+since the content script is of an untrusted origin; the playback and ONNX
+inference are executed in an offscreen document due to the fact that the audio
+in service workers is not allowed in Manifest V3 and that Content Security
+Policy of the page does not allow WebAssembly usage in service workers.
 
 \begin{figure}[!t]
 \centerline{\includegraphics[width=\columnwidth]{figures/system.pdf}}
@@ -316,47 +329,46 @@ generation service.
 
 \subsection{Page descriptor extraction}
 
-A single function assembles the descriptor from four contextual signals
--- text, a 384-dimensional MiniLM sentence embedding (in-browser ONNX),
-colour (an area-weighted HSL histogram over up to 800 elements
-\cite{dominantcolour}), and behaviour (scroll/cursor velocity) -- plus
-readability \cite{flesch} as an auxiliary feature. The embedding is
-searched by cosine similarity against an IndexedDB vector store of prior
-pages (step 2 in Fig.~\ref{fig:system}) to flag a revisit, then upserted,
-capped at 2,000 entries; this search is the vector-store row of Table
-\ref{tab:extraction}. The embedding feeds the vector store only, not the
-keyword stage's mood computation (\S\ref{sec:res-signal-ablation}
-depends on this). Extraction stays off
-the critical path: debounced, idle-scheduled, and re-run on navigation
-and DOM mutation.
+One function combines the readability feature \cite{flesch} and four
+contextual features (text, behaviour (scroll/cursor speed), colour (area
+weighted histogram of up to 800 HSL values) \cite{dominantcolour}, and
+384-dimensional MiniLM sentence encoding run in the browser using ONNX) into a
+page descriptor. The page descriptor is run through a vector store using
+cosine similarity to compare against previously visited pages stored in
+IndexedDB (step 2 in Fig.~\ref{fig:system}). If a page is identified as a
+repeat visit it is upserted with a limit of 2,000 pages. This vector store
+lookup corresponds to a row in Table \ref{tab:extraction}. This embedding is
+only used for the vector store and not in the emotion process in the keyword
+stage (\S\ref{sec:res-signal-ablation} relies on this). The extraction is not
+on the critical path and is instead scheduled on DOM updates and navigation,
+debounced and run on idle.
 
 \subsection{The classifier cascade}
 
-The classifier maps the descriptor onto a 13-way category and 11-way
-mood, then a music profile and prompt. Category is a content-topic
-label; mood is the affective target that drives the profile, and is
-weakly agreed upon among annotators (\S\ref{sec:res-agreement}).
+The classifier takes the descriptor to one of 13 categories
+and one of 11 moods, followed by a music profile and a prompt.
+Category is a label about content and topic; mood is the emotional
+target that motivates the music profile, and is loosely agreed-upon
+by human annotators (§V-B).
+Keyword stage. The keyword map determines the category,
+keyword only here; the mood score comes from a combination
+of the keyword score, colour bias and behaviour bias. With
+confidence ≥ 0.5 the pipeline ends at effectively no additional
+cost here; automatically filtered out for pages in non-English languages.
+Zero-shot stage. Evaluated against 13 category hypotheses,
+accepting the label only if its score is ≥ 0.45 and has a lead
+over the runner-up of ≥ 0.10, or else abstaining. The entailment
+backend hosted on the service sends the page text; the quantised ONNX version of it running locally on device sends nothing, tested only on 18 pages. LLM stage. The hosted 8-secondtimeout model, falling back to keyword stage on failure;
+the percentage of pages going through is the LLM-specific
+exposure rate, while the overall off-device rate is the sum of
+these pages plus those getting through the zero-shot stage.
 
-\emph{Keyword stage.} A keyword map gives the category, keyword-only
-at this stage; mood blends the keyword score with a colour bias and a
-behaviour bias. At confidence $\geq 0.5$ the pipeline stops here at
-essentially zero cost; skipped by construction for non-English pages.
-\emph{Zero-shot stage.} Scored against thirteen category
-hypotheses, accepting a label only if the top score is $\geq 0.45$
-\emph{and} the margin over the runner-up is $\geq 0.10$, else abstaining.
-A hosted entailment backend transmits page text and is what every
-full-scale number here was measured with; a local quantised ONNX backend
-transmits nothing, measured only on 18 pages. \emph{LLM stage.} An eight-second-timeout hosted model, falling back to the keyword stage on
-failure; the fraction of pages reaching it is the LLM-specific exposure
-rate, and total off-device rate adds the pages the zero-shot stage also
-received.
-
-A committed mood maps to a music profile and a prompt. Every page the
-cascade-ablation harness processes is logged with every stage's output, not
-just the winner, so \S\ref{sec:res-classification} can replay any
-configuration offline. A newly classified mood must hold for five seconds
-before committing -- the largest term in end-to-end latency
-(\S\ref{sec:res-e2e-latency}), by design.
+Committed mood is mapped to a music profile and a prompt. Each page the
+cascade-ablation harness processes is recorded along with the output from each
+step, including the losing steps, which enables \S\ref{sec:res-classification}
+to recompute the entire pipeline offline. The mood classification that is
+performed needs to be stable for five seconds before it is committed -- the
+largest term in end-to-end latency (\S\ref{sec:res-e2e-latency}), by design.
 
 \subsection{Generation, loop synthesis and caching}
 
