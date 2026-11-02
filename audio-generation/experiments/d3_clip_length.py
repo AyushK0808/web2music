@@ -49,7 +49,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from experiments._dcommon import (  # noqa: E402
-    analyse_clip, fetch_audio, health, payload_for, request, summarise,
+    analyse_clip, fetch_audio, hardware_manifest, health, payload_for, request, summarise,
 )
 
 DEFAULT_BASE = os.getenv("D_BASE_URL", "http://127.0.0.1:8000")
@@ -272,6 +272,7 @@ def main():
         "started_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
         "elapsed_s": round(time.time() - started, 1),
         "offline_source": source,
+        "manifest": hardware_manifest(args.base_url),  # E-4
         "config": {"durations": durations, "moods": moods, "repeats": args.repeats},
         "summary": summary,
         "rows": rows,

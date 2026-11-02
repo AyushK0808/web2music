@@ -500,6 +500,11 @@ def main():
     if "concurrency" in sections:
         results["sections"]["concurrency"] = section_concurrency(base_url, moods[0], levels, args.duration, args.timeout)
     results["elapsed_s"] = round(time.perf_counter() - started, 1)
+    try:
+        from _dcommon import hardware_manifest  # E-4
+        results["manifest"] = hardware_manifest(base_url)
+    except Exception as e:  # never lose a finished run over a header
+        results["manifest"] = {"error": f"{type(e).__name__}: {e}"}
 
     summary = report(results)
     print(summary)

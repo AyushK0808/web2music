@@ -68,6 +68,15 @@ RETAIN_PRETRIM_EVERY = int(os.getenv("RETAIN_PRETRIM_EVERY", "0") or 0)
 RETAIN_PRETRIM_DIR = Path(os.getenv("RETAIN_PRETRIM_DIR", "pretrim-samples"))
 _retain_counter = 0
 
+# C-1: loop-point selection rule. "seam" (default) picks, among the chroma
+# similarity peaks and bar boundaries, the cut with the smallest MEASURED
+# post-crossfade seam cost J = |dE| + LAMBDA*|dc| (paper eq. 3). "chroma" is the
+# original rule (argmax chroma similarity, snapped to a bar) and is kept so the
+# before/after comparison in the loop study can still be reproduced.
+LOOP_SELECTOR = os.getenv("W2M_LOOP_SELECTOR", "seam").strip().lower()
+SEAM_LAMBDA = 1.0 / 5000.0   # Hz -> dB-scale weight for the centroid term
+LOCAL_MAX_ORDER = 5          # frames each side a similarity point must beat
+
 
 def _should_retain() -> bool:
     """Deterministic 1-in-N sampling. A counter rather than a random draw so a
@@ -167,7 +176,9 @@ def process_audio(audio_bytes: bytes):
     retain = _should_retain()
     diagnostics: dict | None = {} if retain else None
     loop_point_ms = _detect_loop_point_ms(audio_array, sr, len(audio), diagnostics)
-    print(f"Loop point detected at {loop_point_ms}ms")
+    if LOOP_SELECTOR == "seam":
+        loop_point_ms = _select_loop_point_by_seam(audio, audio_array, sr, loop_point_ms, diagnostics)
+    print(f"Loop point detected at {loop_point_ms}ms (selector={LOOP_SELECTOR})")
 
     if retain:
         similarities = diagnostics.pop("similarities", np.array([]))
@@ -241,6 +252,80 @@ def _seam_discontinuity(audio: AudioSegment, crossfade_ms: int = CROSSFADE_MS) -
         "energy_delta_db": energy_delta_db,
         "spectral_centroid_delta_hz": spectral_centroid_delta_hz,
     }
+
+
+def seam_cost(metric: dict | None) -> float:
+    """J = |dE| + LAMBDA*|dc| (paper eq. 3); inf when the seam is unmeasurable."""
+    if not metric or metric.get("energy_delta_db") is None:
+        return float("inf")
+    c = metric.get("spectral_centroid_delta_hz")
+    return abs(metric["energy_delta_db"]) + (SEAM_LAMBDA * abs(c) if c is not None else 0.0)
+
+
+def _local_maxima(sims: np.ndarray, order: int = LOCAL_MAX_ORDER) -> list:
+    """Frame indices that are strict local peaks of the finite similarity curve."""
+    peaks = []
+    n = len(sims)
+    for i in range(n):
+        if not np.isfinite(sims[i]):
+            continue
+        window = sims[max(0, i - order):min(n, i + order + 1)]
+        if sims[i] == np.max(window) and np.sum(window == sims[i]) == 1:
+            peaks.append(i)
+    return peaks
+
+
+def _select_loop_point_by_seam(audio: AudioSegment, audio_array: np.ndarray, sr: int,
+                               chroma_point_ms: int, diagnostics: dict | None = None) -> int:
+    """
+    C-1: choose the cut that minimises the measured seam instead of trusting
+    chroma self-similarity as a proxy for it. Candidates are the chroma
+    similarity peaks, the bar boundaries, and the chroma rule's own choice
+    (so the result is never worse than the old rule on the measured cost).
+    Falls back to `chroma_point_ms` whenever the clip is too short to search.
+    """
+    audio_len_ms = len(audio)
+    if chroma_point_ms >= audio_len_ms or audio_len_ms < MIN_LOOP_SECONDS * 1000 + 2 * CROSSFADE_MS:
+        return chroma_point_ms
+
+    chroma = librosa.feature.chroma_cqt(y=audio_array, sr=sr, hop_length=HOP_LENGTH)
+    if chroma.shape[1] <= CHROMA_WINDOW:
+        return chroma_point_ms
+    sims = _vectorized_chroma_similarity(chroma, CHROMA_WINDOW)
+    min_loop_frames = librosa.time_to_frames(MIN_LOOP_SECONDS, sr=sr, hop_length=HOP_LENGTH)
+    if min_loop_frames >= chroma.shape[1]:
+        return chroma_point_ms
+    sims[:min_loop_frames] = -np.inf
+
+    candidates = {int(chroma_point_ms)}
+    for f in _local_maxima(sims):
+        t = librosa.frames_to_time(f, sr=sr, hop_length=HOP_LENGTH) * 1000
+        if t >= MIN_LOOP_SECONDS * 1000:
+            candidates.add(int(t))
+    _, beat_frames = librosa.beat.beat_track(y=audio_array, sr=sr, hop_length=HOP_LENGTH)
+    beat_ms = librosa.frames_to_time(beat_frames, sr=sr, hop_length=HOP_LENGTH) * 1000
+    for t in _bar_boundaries_ms(beat_ms):
+        if t >= MIN_LOOP_SECONDS * 1000:
+            candidates.add(int(t))
+    candidates = sorted(c for c in candidates if audio_len_ms - c >= 2 * CROSSFADE_MS)
+    if not candidates:
+        return chroma_point_ms
+
+    best_ms, best_cost = chroma_point_ms, float("inf")
+    base_cost = None
+    for c in candidates:
+        looped = _crossfade_loop(audio[:c], crossfade_ms=CROSSFADE_MS)
+        cost = seam_cost(_seam_discontinuity(looped, crossfade_ms=CROSSFADE_MS))
+        if c == chroma_point_ms:
+            base_cost = cost
+        if cost < best_cost:
+            best_ms, best_cost = c, cost
+
+    if diagnostics is not None:
+        diagnostics.update(selector="seam", n_seam_candidates=len(candidates),
+                           chroma_point_ms=int(chroma_point_ms), chosen_point_ms=int(best_ms),
+                           chroma_seam_cost=base_cost, chosen_seam_cost=best_cost)
+    return int(best_ms)
 
 
 def _detect_loop_point_ms(audio_array: np.ndarray, sr: int, audio_len_ms: int,

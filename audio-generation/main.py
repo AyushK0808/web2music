@@ -21,7 +21,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from d1_validate import validate_profile
 from d2_prompt import build_prompt
-from d3_generate import generate_audio, GenerationError
+from d3_generate import generate_audio, GenerationError, model_info
 from d4_process import process_audio
 from models import HandoffPayload
 from prewarm import prewarm_cache
@@ -83,7 +83,9 @@ app = FastAPI(lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 @app.get("/health")
 async def health():
-    return {"status": "ok", "is_prod": IS_PROD}
+    # `generator` lets experiment scripts record which back end / precision /
+    # compile setting produced their numbers (E-4) without importing torch.
+    return {"status": "ok", "is_prod": IS_PROD, "generator": model_info()}
 if not IS_PROD:
     from fastapi.staticfiles import StaticFiles
     app.mount("/audio-cache", StaticFiles(directory=AUDIO_CACHE_DIR), name="audio-cache")

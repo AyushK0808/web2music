@@ -1,5 +1,6 @@
 import asyncio
 import itertools
+import os
 import random
 import time
 import numpy as np
@@ -19,21 +20,80 @@ else:
     device_name = "CPU"
 print(f"Using device: {device_name}")
 
-print("Loading MusicGen model... (first time takes 1-2 mins)")
-synthesiser = pipeline(
-    "text-to-audio",
-    "facebook/musicgen-small",
-    device=device,
-    # float16 only on CUDA -- MPS has known float16 correctness gaps in some
-    # torch/transformers version combos, float32 is the safe default there
-    torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32
-)
+# C-4: generator back end, chosen once at start-up. Every back end is exposed
+# as a callable with the transformers-pipeline contract the batch worker
+# already uses: synthesiser(prompts, forward_params=...) -> dict(s) with
+# "audio" and "sampling_rate".
+#   musicgen-small   (default)  facebook/musicgen-small
+#   musicgen-medium             facebook/musicgen-medium
+#   audioldm2-music             cvssp/audioldm2-music via diffusers (latent diffusion)
+MODEL_NAME = os.getenv("W2M_MODEL", "musicgen-small").strip().lower()
+_MUSICGEN_IDS = {
+    "musicgen-small": "facebook/musicgen-small",
+    "musicgen-medium": "facebook/musicgen-medium",
+}
+SUPPORTED_MODELS = sorted(list(_MUSICGEN_IDS) + ["audioldm2-music"])
+# AudioLDM2 sampling steps: 100 is the model card's default; fewer is faster
+# and is recorded in the result headers via model_info().
+AUDIOLDM2_STEPS = int(os.getenv("W2M_AUDIOLDM2_STEPS", "100"))
+COMPILE = os.getenv("W2M_COMPILE", "0").strip().lower() in ("1", "true", "yes")
 
-if torch.cuda.is_available():
-    synthesiser.model = torch.compile(synthesiser.model)
-    print("Model compiled with torch.compile ✅")
+# float16 only on CUDA -- MPS has known float16 correctness gaps in some
+# torch/transformers version combos, float32 is the safe default there
+DTYPE = torch.float16 if torch.cuda.is_available() else torch.float32
+
+
+def model_info() -> dict:
+    """Recorded in every result-JSON header (E-4)."""
+    return {
+        "model": MODEL_NAME,
+        "device": device_name,
+        "precision": "fp16" if DTYPE == torch.float16 else "fp32",
+        "torch_compile": bool(COMPILE and torch.cuda.is_available() and MODEL_NAME in _MUSICGEN_IDS),
+        "audioldm2_steps": AUDIOLDM2_STEPS if MODEL_NAME == "audioldm2-music" else None,
+    }
+
+
+def _load_audioldm2():
+    from diffusers import AudioLDM2Pipeline
+
+    pipe = AudioLDM2Pipeline.from_pretrained("cvssp/audioldm2-music", torch_dtype=DTYPE)
+    pipe = pipe.to("cuda" if torch.cuda.is_available() else ("mps" if device == "mps" else "cpu"))
+
+    def _synth(prompts, forward_params=None):
+        fp = forward_params or {}
+        single = not isinstance(prompts, list)
+        plist = [prompts] if single else prompts
+        seconds = fp.get("max_new_tokens", 1400) / 50.0
+        gen = torch.Generator(device="cpu").manual_seed(int(torch.initial_seed() % (2**31)))
+        res = pipe(plist, num_inference_steps=AUDIOLDM2_STEPS, audio_length_in_s=seconds,
+                   num_waveforms_per_prompt=1, generator=gen)
+        outs = [{"audio": a, "sampling_rate": 16000} for a in res.audios]
+        return outs[0] if single else outs
+
+    return _synth
+
+
+print(f"Loading generator '{MODEL_NAME}'... (first time takes 1-2 mins)")
+if MODEL_NAME in _MUSICGEN_IDS:
+    synthesiser = pipeline(
+        "text-to-audio",
+        _MUSICGEN_IDS[MODEL_NAME],
+        device=device,
+        torch_dtype=DTYPE,
+    )
+    # torch.compile is opt-in: native Windows lacks Triton, and mixing compiled
+    # and eager runs makes timings incomparable. Use one setting for every
+    # timing run and read it back from model_info().
+    if COMPILE and torch.cuda.is_available():
+        synthesiser.model = torch.compile(synthesiser.model)
+        print("Model compiled with torch.compile (W2M_COMPILE=1)")
+    else:
+        print("Skipping torch.compile (set W2M_COMPILE=1 on CUDA to enable)")
+elif MODEL_NAME == "audioldm2-music":
+    synthesiser = _load_audioldm2()
 else:
-    print("Skipping torch.compile (CUDA-only benefit)")
+    raise SystemExit(f"Unknown W2M_MODEL '{MODEL_NAME}'. Supported: {', '.join(SUPPORTED_MODELS)}")
 
 print("Model loaded!")
 
