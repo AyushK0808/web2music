@@ -573,7 +573,9 @@ export async function resolveSensitivity(text, zsContent, opts = {}) {
 
   // Demotion path: keyword tier found a demotable-severe or ambiguous
   // signal, zero-shot may recognise reference/academic framing.
-  return zs.side === "reference"
+  // C-2: "unrelated" is also evidence against sensitivity -- a keyword hit on a
+  // page the model reads as everyday content is a vocabulary coincidence.
+  return zs.side === "reference" || zs.side === "unrelated"
     ? { isSensitive: false, source: "zero-shot-demoted", keyword, zeroShot, zeroShotReason: "classified" }
     : { isSensitive: true, source: "keyword", keyword, zeroShot, zeroShotReason: "classified" };
 }

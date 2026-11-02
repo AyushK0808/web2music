@@ -349,6 +349,13 @@ export const SENSITIVITY_HYPOTHESES = {
     + "or terminal illness, pregnancy loss, or acute grief",
   reference: "an academic, clinical, historical, or news discussion of a "
     + "difficult topic, not a personal crisis",
+  // C-2: the third hypothesis. With only crisis vs reference, a page about
+  // neither (a recipe, a product page, a sports report) still had to be
+  // assigned to one of the two, and the softmax over two options regularly
+  // handed it to "crisis" -- the over-triggering the restraint study measured.
+  // "unrelated" gives everyday content somewhere to go.
+  unrelated: "everyday content such as shopping, cooking, sport, travel, "
+    + "technology, entertainment, or general information, with no difficult topic",
 };
 
 /**
@@ -360,14 +367,22 @@ export const SENSITIVITY_HYPOTHESES = {
 export const DEFAULT_SENSITIVITY_MIN_SCORE = 0.45;
 export const DEFAULT_SENSITIVITY_MIN_MARGIN = 0.08;
 
-function sensitivityLabels() {
-  return [SENSITIVITY_HYPOTHESES.crisis, SENSITIVITY_HYPOTHESES.reference];
+/**
+ * C-2: 3-way is the default. `config.sensitivityHypotheses = 2` restores the
+ * original crisis-vs-reference contrast so the before/after comparison in the
+ * detector study (S-F) can be reproduced.
+ */
+function sensitivityLabels(config = {}) {
+  const base = [SENSITIVITY_HYPOTHESES.crisis, SENSITIVITY_HYPOTHESES.reference];
+  return config.sensitivityHypotheses === 2 ? base : [...base, SENSITIVITY_HYPOTHESES.unrelated];
 }
 
 /**
- * parseSensitivityResult — like parseZeroShotResult, but there are always
- * exactly two sides, so the caller just needs to know which one won and by
- * how much rather than a full ranking.
+ * parseSensitivityResult — like parseZeroShotResult, but there are only two or
+ * three sides, so the caller just needs to know which one won and by how much
+ * rather than a full ranking. `margin` is the gap between the winner and the
+ * runner-up. The "unrelated" label is optional in the payload, so a 2-label
+ * response (older fixtures, sensitivityHypotheses: 2) parses exactly as before.
  */
 export function parseSensitivityResult(raw) {
   const labels = raw?.labels;
@@ -378,15 +393,20 @@ export function parseSensitivityResult(raw) {
   const crisisIdx = labels.indexOf(SENSITIVITY_HYPOTHESES.crisis);
   const refIdx = labels.indexOf(SENSITIVITY_HYPOTHESES.reference);
   if (crisisIdx === -1 || refIdx === -1) return null;
+  const unrelatedIdx = labels.indexOf(SENSITIVITY_HYPOTHESES.unrelated);
 
-  const crisisScore = Number(scores[crisisIdx]);
-  const refScore = Number(scores[refIdx]);
-  if (!Number.isFinite(crisisScore) || !Number.isFinite(refScore)) return null;
+  const sides = [
+    { side: "crisis", score: Number(scores[crisisIdx]) },
+    { side: "reference", score: Number(scores[refIdx]) },
+  ];
+  if (unrelatedIdx !== -1) sides.push({ side: "unrelated", score: Number(scores[unrelatedIdx]) });
+  if (sides.some((x) => !Number.isFinite(x.score))) return null;
 
+  sides.sort((a, b) => b.score - a.score);
   return {
-    side: crisisScore >= refScore ? "crisis" : "reference",
-    score: Math.max(crisisScore, refScore),
-    margin: Math.abs(crisisScore - refScore),
+    side: sides[0].side,
+    score: sides[0].score,
+    margin: sides[0].score - sides[1].score,
   };
 }
 
@@ -402,7 +422,7 @@ export function parseSensitivityResult(raw) {
  *   margin gates default to this tier's own constants rather than the
  *   category tier's, but can be overridden via config.sensitivityMinScore /
  *   config.sensitivityMinMargin.
- * @returns {Promise<{side: "crisis"|"reference", score, margin, ms, model, backend}|null>}
+ * @returns {Promise<{side: "crisis"|"reference"|"unrelated", score, margin, ms, model, backend}|null>}
  */
 export async function classifySensitivityZeroShot(content, config = {}) {
   const cfg = normaliseZeroShotConfig(config);
@@ -430,7 +450,7 @@ export async function classifySensitivityZeroShot(content, config = {}) {
   const minScore = Number.isFinite(config.sensitivityMinScore) ? config.sensitivityMinScore : DEFAULT_SENSITIVITY_MIN_SCORE;
   const minMargin = Number.isFinite(config.sensitivityMinMargin) ? config.sensitivityMinMargin : DEFAULT_SENSITIVITY_MIN_MARGIN;
 
-  const labels = sensitivityLabels();
+  const labels = sensitivityLabels(config);
   const startedAt = Date.now();
 
   try {
