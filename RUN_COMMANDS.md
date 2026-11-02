@@ -145,7 +145,7 @@ The tag must contain `mood-classification/feature_b/llmConfig.js` and the prompt
 Terminal A (session block first; leave running; `W2M_PREWARM=0` so the grid does not compete with timed requests):
 
 ```bash
-cd audio-generation
+cd /mnt/c/Users/theof/projects/personal/web2music/audio-generation
 W2M_PREWARM=0 W2M_MODEL=musicgen-small uvicorn main:app --port 8000
 ```
 
@@ -153,12 +153,12 @@ Terminal B (session block first):
 
 ```bash
 curl -s http://127.0.0.1:8000/health      # "generator": {"model":"musicgen-small","device":"NVIDIA GeForce RTX 5060 ...","precision":"fp16",...}
-cd audio-generation
 ```
 
 ### S-B — generation latency by duration and concurrency  → `\tbd{S-B…}`
 
 ```bash
+cd /mnt/c/Users/theof/projects/personal/web2music/audio-generation
 python experiments/d4_latency.py --sections duration --durations 8,10,15,20,28 --moods calm,focused,joyful,energetic,sad,dark,nostalgic,curious,tense,uplifting,neutral --spread-moods --repeats 33 --timeout 600 --out results/d4-duration-5060.json
 python experiments/d4_latency.py --sections concurrency --concurrency-levels 1,2,4,8 --duration 15 --timeout 600 --out results/d4-concurrency-5060.json
 python experiments/d3_clip_length.py --durations 8,10,15,20,28 --moods calm,tense,energetic --repeats 3 --out results/d3-clip-length-5060.json
@@ -169,6 +169,7 @@ python experiments/d3_clip_length.py --durations 8,10,15,20,28 --moods calm,tens
 ### S-G — loop study, 220 fresh clips  → `\tbd{S-G: chroma/seam …}`
 
 ```bash
+cd /mnt/c/Users/theof/projects/personal/web2music/audio-generation
 python experiments/d6_loop_seeds.py --seeds 20 --duration 15 --keep-clips results/d6-loop-seeds-clips --out results/d6-loop-seeds-5060.json
 ```
 
@@ -179,6 +180,7 @@ python experiments/d6_loop_seeds.py --seeds 20 --duration 15 --keep-clips result
 ### S-G — prompt ablation, 11 moods × 5 seeds × 3 prompts  → `\tbd{S-G: P3−P2 …}`
 
 ```bash
+cd /mnt/c/Users/theof/projects/personal/web2music/audio-generation
 python experiments/d1_prompt_ablation.py --repeats 5 --duration 15 --out results/d1-prompt-seeds.json
 ```
 
@@ -188,6 +190,7 @@ Restart the service once per generator (terminal A: Ctrl-C, then the matching li
 `d7_generators.py run` line in terminal B each time:
 
 ```bash
+cd /mnt/c/Users/theof/projects/personal/web2music/audio-generation
 # terminal A:  W2M_PREWARM=0 W2M_MODEL=musicgen-small  uvicorn main:app --port 8000
 python experiments/d7_generators.py run --seeds 5 --duration 15 --clips-dir results/d7-clips --out results/d7-musicgen-small.json
 # terminal A:  W2M_PREWARM=0 W2M_MODEL=musicgen-medium uvicorn main:app --port 8000
@@ -208,9 +211,9 @@ AudioLDM2 is fp16 within 8 GB; lower `W2M_AUDIOLDM2_STEPS` (default 100) only if
 
 ```bash
 # terminal A (stop the GPU service first): hides the GPU from torch
-cd audio-generation && CUDA_VISIBLE_DEVICES= W2M_PREWARM=0 uvicorn main:app --port 8000
+cd /mnt/c/Users/theof/projects/personal/web2music/audio-generation && CUDA_VISIBLE_DEVICES= W2M_PREWARM=0 uvicorn main:app --port 8000
 # terminal B
-cd audio-generation && python experiments/d4_latency.py --sections duration --durations 10,15 --moods calm,tense,energetic --spread-moods --repeats 12 --timeout 300 --out results/d4-duration-cpu2.json
+cd /mnt/c/Users/theof/projects/personal/web2music/audio-generation && python experiments/d4_latency.py --sections duration --durations 10,15 --moods calm,tense,energetic --spread-moods --repeats 12 --timeout 300 --out results/d4-duration-cpu2.json
 ```
 
 Timeouts are recorded as errors and are treated as **censored** by S-C; report them as "> 300 s, k of n".
