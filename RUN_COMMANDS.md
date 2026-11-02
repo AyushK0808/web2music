@@ -87,10 +87,15 @@ The extension tests run headless by default; add `--headed` to see them (WSLg pr
 
 ### 0.4 Model files for S-D'
 
-Download into `models/essentia/` from <https://essentia.upf.edu/models.html>:
-`msd-musicnn-1.pb`, `emomusic-msd-musicnn-2.pb`, `discogs-effnet-bs64-1.pb`,
-`mtg_jamendo_moodtheme-discogs-effnet-1.pb` and its `.json`. Download the LAION-CLAP
-music checkpoint to `models/clap/music_audioset_epoch_15_esc_90.14.pt`.
+From **PowerShell** (the one non-WSL step; about 2.3 GB, mostly the CLAP checkpoint; re-running skips files already there):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File analysis\proxies\download_models.ps1
+```
+
+It fetches `msd-musicnn-1.pb`, `emomusic-msd-musicnn-2.pb`, `discogs-effnet-bs64-1.pb`,
+`mtg_jamendo_moodtheme-discogs-effnet-1.pb` and its `.json` into `models\essentia\`, and the LAION-CLAP music checkpoint
+`music_audioset_epoch_15_esc_90.14.pt` into `models\clap\`. WSL sees them at `models/essentia` and `models/clap`.
 
 ### 0.5 Gate: everything that already exists must pass
 
