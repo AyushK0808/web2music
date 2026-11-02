@@ -58,6 +58,13 @@ If both fail, keep the M4 as the "GPU-class" tier and say so (plan §10).
 
 Docker Desktop → Settings → Resources → WSL integration → enable **Ubuntu**. Then:
 
+If `docker` says "permission denied ... /var/run/docker.sock", your WSL user is not in the `docker` group. Add it once, then
+restart WSL (run `wsl --shutdown` from a Windows terminal and open Ubuntu again; a new tab is not enough):
+
+```bash
+sudo usermod -aG docker $USER
+```
+
 ```bash
 docker version --format '{{.Server.Version}}'          # must print a version
 docker compose -f docker/docker-compose.yml up -d db
