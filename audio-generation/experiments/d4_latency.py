@@ -307,11 +307,18 @@ def section_cold(base_url, moods, repeats, duration, timeout):
 
 
 def section_duration(base_url, mood, durations, repeats, timeout):
-    """Cold latency vs requested clip length — expect ~linear in duration."""
-    print(f"\n[duration] mood={mood}, durations={durations}, {repeats} repeat(s) each")
+    """Cold latency vs requested clip length — expect ~linear in duration.
+
+    `mood` may be one mood or a list: repeat i uses moods[i % len(moods)], so a
+    run with 30 repeats and 11 moods spreads its n across every mood rather than
+    resting on a single mood's prompt.
+    """
+    moods = [mood] if isinstance(mood, str) else list(mood)
+    print(f"\n[duration] moods={moods}, durations={durations}, {repeats} repeat(s) each")
     rows = []
     for d in durations:
         for i in range(repeats):
+            mood = moods[i % len(moods)]
             payload = build_payload(mood, d, nonce=str(uuid.uuid4()))
             wall, body, err = _request(f"{base_url}/generate", payload, timeout=timeout)
             row = record(wall, body, err, mood=mood, duration_seconds=d, iteration=i)
@@ -449,6 +456,8 @@ def main():
                          f"Default is the two fast ones; 'all' runs real generations.")
     ap.add_argument("--moods", default=",".join(ALL_MOODS))
     ap.add_argument("--repeats", type=int, default=3)
+    ap.add_argument("--spread-moods", action="store_true",
+                    help="duration section: cycle the repeats across every mood in --moods instead of only the first")
     ap.add_argument("--duration", type=int, default=28, help="duration_seconds for every section except --sections duration")
     ap.add_argument("--durations", default=",".join(str(d) for d in DEFAULT_DURATIONS))
     ap.add_argument("--concurrency-levels", default="1,2,4,8")
@@ -496,7 +505,7 @@ def main():
     if "cold" in sections:
         results["sections"]["cold"] = section_cold(base_url, moods, args.repeats, args.duration, args.timeout)
     if "duration" in sections:
-        results["sections"]["duration"] = section_duration(base_url, moods[0], durations, args.repeats, args.timeout)
+        results["sections"]["duration"] = section_duration(base_url, moods if args.spread_moods else moods[0], durations, args.repeats, args.timeout)
     if "concurrency" in sections:
         results["sections"]["concurrency"] = section_concurrency(base_url, moods[0], levels, args.duration, args.timeout)
     results["elapsed_s"] = round(time.perf_counter() - started, 1)
