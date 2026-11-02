@@ -48,6 +48,15 @@ import {
 } from '../feature_b/b1_contentUnderstanding.js';
 import { classifyCategoryZeroShot } from '../feature_b/b1_zeroShotCategory.js';
 import { createLocalClassifier } from './localZeroShot.js';
+import { setLlmCache } from '../feature_b/llmCache.js';
+import { createCacheFromEnv } from '../feature_b/llmCache.node.js';
+
+// C-10: W2M_LLM_CACHE=<file.jsonl> (+ W2M_LLM_CACHE_MODE=record|readwrite|replay) makes every LLM call in
+// this run read from / write to a response cache, so a rescore or a second run never re-queries the model.
+{
+  const cache = createCacheFromEnv();
+  if (cache) { setLlmCache(cache); console.log(`[s2_tier_ablation] LLM cache: ${process.env.W2M_LLM_CACHE} (${cache.mode}, ${cache.size()} entries)`); }
+}
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
