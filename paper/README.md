@@ -1,21 +1,23 @@
-# Web2Music — paper draft bundle
+# Web2Music — paper
 
-Drafted against the repository at commit `a492ec5`.
+*Web2Music: Page-Conditioned Music Generation with a Disclosure-Aware
+Classifier Cascade.* IEEEtran conference, 7 authors, 28 references.
 
 ```
-main.tex            The paper. IEEEtran conference, 6 authors, 41 references.
-SUPPLEMENTARY.md    Everything outstanding — the paper carries no draft markup.
+main.tex            The paper.
+main.pdf            Built from main.tex.
+SUPPLEMENTARY.md    Provenance notes from the earlier, longer draft.
 Makefile            `make` to build, `make clean`.
-figures/            7 figures: 3 mermaid architecture diagrams + 4 data figures.
-diagrams/           Mermaid sources + the renderer that turns them into vector PDFs.
-source-tables/      The markdown/LaTeX tables emitted by analysis/build_all.py.
+figures/            Figures used by main.tex, plus those of the earlier draft.
+diagrams/           Mermaid sources for the earlier draft's architecture diagrams.
+source-tables/      Markdown tables emitted by analysis/build_all.py.
 ```
 
 ## Sections
 
 Introduction · Related Work · Research Gaps and Problem Statement ·
-System Architecture · Results and Discussion · Conclusion · Limitations ·
-Future Scope · References
+System Architecture · Results and Discussion · Conclusion ·
+Limitations and Future Work · References
 
 ## Building
 
@@ -24,36 +26,25 @@ make          # pdflatex x2 -> main.pdf
 make clean
 ```
 
-`main.tex` has **not** been compiled — no LaTeX toolchain was available when it
-was written. It is structurally validated (balanced environments, no undefined
-refs or cites, all figure targets present), but expect a first-build fix.
+## Figures
 
-## Reading it honestly
+| Fig. | File | Source |
+|---|---|---|
+| 1 | `figures/architecture.png` | Architecture diagram (raster) |
+| 2 | `figures/frontier.pdf` | `analysis/figures/f10_disclosure_frontier.py` ← `mood-classification/results/s2-ablation-a6-full.json` |
+| 3 | `figures/coldgen.pdf` | `analysis/figures/f11_cold_generation.py` ← `audio-generation/results/d1-latency-full.json`, `d4-cold-rerun.json` |
+| 4 | `figures/seamcdf.pdf` | `analysis/figures/f12_seam_cdf.py` ← `audio-generation/results/d6-crossfade-loop-sweep-n141.json` |
 
-The paper prints no red markup, so the provenance of every number lives in
-[`SUPPLEMENTARY.md`](SUPPLEMENTARY.md) §0. In short:
-
-- **Measured**: extraction cost (105 sites), generation latency (144 requests),
-  loop quality (141 clips), the restraint audit (20-page adversarial slice),
-  the cost model, and the retrieval-coverage analysis.
-- **Preliminary, and flagged as such in the text**: the tier ablation, from an
-  18-page development subset with a single annotator.
-- **Excluded from the paper entirely**: everything built from simulated
-  listeners or synthetic sessions — the loop AB test, the user study tables,
-  and the in-the-wild figure.
-
-`python analysis/build_all.py` from the repo root reports 7 of 13 artefacts
-built and 6 blocked; the blocked six are the user study, the deployment, and
-everything downstream of annotating the corpus.
-
-## Regenerating the figures
+Regenerate Figs. 2–4 from the repo root (they need matplotlib):
 
 ```
-python analysis/build_all.py        # from the repo root -> figures/f1,f2,f3,f6
-cd diagrams && node render_mermaid.mjs ../figures   # -> pipeline, cascade, featured
+python -m analysis.figures.f10_disclosure_frontier
+python -m analysis.figures.f11_cold_generation
+python -m analysis.figures.f12_seam_cdf
 ```
 
-The mermaid renderer drives the repo's existing Playwright Chromium and prints
-to PDF, so the architecture diagrams are vector rather than bitmap. It needs a
-mermaid 10.x UMD bundle saved as `diagrams/mermaid10.js` (not committed —
-3.3 MB); any CDN mirror will do.
+Fig. 2's local-gate frontier is replayed from the stored per-page tier outputs
+with the same decision order as `simulateCascade` in
+`mood-classification/experiments/s2_tier_ablation.js`; it reproduces A6b
+(.689 macro-F1, .467 off-device), the 0.30 gate (.675, .290) and the open gate
+(.594, 0).
