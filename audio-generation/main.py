@@ -68,9 +68,15 @@ async def lifespan(app: FastAPI):
     # The task is held on app.state so it isn't garbage-collected mid-run --
     # asyncio only keeps a weak reference to tasks created via create_task,
     # so an unreferenced task can silently vanish before it completes.
-    app.state.prewarm_task = asyncio.create_task(
-        prewarm_cache(make_cache_key, check_cache, save_to_cache)
-    )
+    # W2M_PREWARM=0 skips the grid. Timing runs (E-5) need it: 99 background
+    # generations would share the GPU with the requests being timed, and a cold
+    # cache is what the cold-generation numbers are defined against.
+    if os.getenv("W2M_PREWARM", "1").strip().lower() not in ("0", "false", "no"):
+        app.state.prewarm_task = asyncio.create_task(
+            prewarm_cache(make_cache_key, check_cache, save_to_cache)
+        )
+    else:
+        print("[MAIN] W2M_PREWARM=0 -- pre-warm grid skipped")
     yield
 
 
