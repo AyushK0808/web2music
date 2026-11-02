@@ -48,3 +48,10 @@ with the same decision order as `simulateCascade` in
 `mood-classification/experiments/s2_tier_ablation.js`; it reproduces A6b
 (.689 macro-F1, .467 off-device), the 0.30 gate (.675, .290) and the open gate
 (.594, 0).
+
+## Revision placeholders
+
+During the CICT-2026 revision, `main.tex` contains `	bd{study: value}` (bold red) wherever a number is owed by a study
+that has not been run yet; the text names the study (S-A…S-I) and the value. `python analysis/numbers_diff.py` fails while any
+remain, and also fails for any number printed in the paper that is not registered in `paper/numbers.json` against a result file.
+See `RUN_COMMANDS.md` for how each placeholder is produced. A PDF built with placeholders in it is not committed.

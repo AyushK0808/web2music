@@ -121,6 +121,8 @@ def main():
     ap.add_argument("--seeds", type=int, default=20, help="fixed seeds per mood (11 x 20 = 220 clips)")
     ap.add_argument("--duration", type=int, default=15)
     ap.add_argument("--timeout", type=int, default=900)
+    ap.add_argument("--keep-clips", default=None,
+                    help="directory to keep the generated .ogg clips in (default: a temp dir deleted at exit)")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--out", default="results/d6-loop-seeds.json")
     args = ap.parse_args()
@@ -138,9 +140,17 @@ def main():
         return 1
 
     started = time.time()
-    with tempfile.TemporaryDirectory(prefix="w2m-loop-") as td:
-        rows = generate_clips(args.base_url, moods, seed_list, args.duration, args.timeout, Path(td))
+    if args.keep_clips:
+        # Persistent: the same clips can then be checked for gapless playback and
+        # relative seam size (S-I) without regenerating them.
+        clip_dir = Path(args.keep_clips)
+        clip_dir.mkdir(parents=True, exist_ok=True)
+        rows = generate_clips(args.base_url, moods, seed_list, args.duration, args.timeout, clip_dir)
         per_clip, summary = analyse(rows)
+    else:
+        with tempfile.TemporaryDirectory(prefix="w2m-loop-") as td:
+            rows = generate_clips(args.base_url, moods, seed_list, args.duration, args.timeout, Path(td))
+            per_clip, summary = analyse(rows)
 
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
