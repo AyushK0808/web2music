@@ -20,6 +20,8 @@
     "test:e2e": "node ui/build.mjs && node ui/e2e/chromiumExtension.e2e.mjs",
     "test:e2e:live": "node ui/build.mjs && node ui/e2e/livePlayback.e2e.mjs",
     "test:latency": "node ui/build.mjs && node ui/e2e/latency.e2e.mjs",
+    "test:network-audit": "node ui/build.mjs && node ui/e2e/networkAudit.e2e.mjs",
+    "test:gapless": "node ui/e2e/gapless.e2e.mjs",
     "bench:d": "python audio-generation/experiments/d4_latency.py",
     "bench": "npm run bench -w data-extraction",
     "up": "docker compose -f docker/docker-compose.yml up -d",
