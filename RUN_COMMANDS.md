@@ -20,15 +20,26 @@ Estimated durations are the plan's, not measurements.
 
 ### 0.1 GPU Python environment `[WSL]`  (E-1, E-2)
 
+Verified on this machine. Ubuntu 26.04 WSL ships Python 3.14, which `laion-clap` cannot build on, so the
+environment is Python 3.12 made with `uv`. It lives in the WSL home, not on `/mnt/c`, because venvs on NTFS are slow.
+
 ```bash
+sudo apt-get update && sudo apt-get install -y python3-venv python3-pip      # once; WSL has neither
+python3 -m venv ~/w2m-venv && ~/w2m-venv/bin/pip install uv
+~/w2m-venv/bin/uv venv --python 3.12 ~/w2m312
+source ~/w2m312/bin/activate
 cd /mnt/c/Users/theof/projects/personal/web2music
-python3 -m venv .venv && source .venv/bin/activate
-pip install torch --index-url https://download.pytorch.org/whl/cu128      # RTX 5060 = sm_120 needs cu128
-pip install -r audio-generation/requirements.txt
-pip install diffusers accelerate                                           # AudioLDM2-music back end
-pip install essentia-tensorflow laion-clap audiobox_aesthetics statsmodels scipy   # S-D' scorers
+
+U="uv pip install --python $HOME/w2m312/bin/python"
+$U torch torchvision torchaudio==2.11.0 --index-url https://download.pytorch.org/whl/cu128   # RTX 5060 = sm_120 needs cu128
+grep -vE '^(torch|huggingface_hub)==' audio-generation/requirements.txt > /tmp/req.txt        # keep the cu128 torch; hub is set below
+$U -r /tmp/req.txt 'huggingface_hub>=1.32,<2' diffusers accelerate essentia-tensorflow laion-clap audiobox_aesthetics statsmodels scipy
 python audio-generation/check_gpu.py                                       # must print READY and capability (12, 0)
 ```
+
+Notes: torch is 2.11.0, not the 2.12.1 pinned in `requirements.txt`. `huggingface_hub` must be >= 1.32 for `diffusers`.
+`torchaudio` must match torch exactly or `laion_clap` fails to import. From here on, `[WSL]` commands assume
+`source ~/w2m312/bin/activate` has been run in that shell.
 
 If `check_gpu.py` fails, use the Docker image instead (it now builds on CUDA 12.8):
 `[WIN] docker compose -f docker/docker-compose.yml --profile gpu up -d --build`.
