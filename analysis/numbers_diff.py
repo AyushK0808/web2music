@@ -158,6 +158,12 @@ def main():
     registry = json.loads(reg_path.read_text(encoding="utf-8")) if reg_path.exists() else {"numbers": {}, "exempt": {}}
     unregistered, mismatched, stale = check(tex, registry)
     ok = True
+    pending = re.findall(r"\tbd\{([^}]*)\}", tex)
+    if pending:
+        ok = False
+        print(f"{len(pending)} placeholder(s) still in the paper (\tbd): the studies they name have not been entered yet")
+        for name in sorted(set(pending)):
+            print(f"  [{name}]  x{pending.count(name)}")
     if unregistered:
         ok = False
         print(f"{len(unregistered)} number(s) printed in the paper with no source:")

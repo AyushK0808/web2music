@@ -9,6 +9,11 @@
 \usepackage{booktabs}
 \usepackage{url}
 
+% A number that a study in REVISION_PLAN.md has not produced yet. The text after
+% the colon names the study and result file to take it from. analysis/numbers_diff.py
+% fails while any \tbd remains, so none can reach a submitted PDF.
+\newcommand{\tbd}[1]{\textbf{\textcolor{red}{[#1]}}}
+
 \renewcommand{\arraystretch}{0.92}
 
 \setlength{\textfloatsep}{7pt plus 2pt minus 3pt}
@@ -86,28 +91,26 @@ pari.khandal2025@vitstudent.ac.in}
 \maketitle
 
 \begin{abstract}
-Text-based music generation models are capable of generating music in
-accordance with any text description. Nevertheless, a browser extension that
-generates music relevant to the page being viewed by the user needs to obtain
-the description from the webpage, to keep the user's browsing history from
-leaving the device, and to hide the generator that runs slower than the
-browsing process. We propose Web2Music, a Manifest V3 browser extension that
-tackles all three challenges. We evaluate the system on 105 live websites, 255
-pages of a labeled dataset, 144 generation queries, and 141 generated clips.
-The page descriptor has a latency of 86 milliseconds per page, excluding the
-embedding inference. The disclosure-aware classifier cascade that consists of
-keyword, zero-shot natural language inference, and large language model with
-an intermediate stage that operates on-device achieves the same
-macro-averaged F1 score of the keyword-to-large-language-model baseline
-(0.689) but has 38\% fewer pages sent off-device. With the local gate, we can
-trade accuracy for less off-device disclosure, resulting in a fully local
-version with a macro-averaged F1 score of 0.594. Fallback-then-swap playback
-ensures that the audio becomes perceptible 36 milliseconds after the mood
-commitment, regardless of how long it takes to generate, where, in the case of
-the Apple M4 machine, generation takes a median of 72 seconds for a cold
-28-second segment. The choice of the loop point using a measured seam and not
-the one based on similarity in chroma lowers the percentage of seams that have
-more than 1 decibel jump in energy from 74\% to 12\%.
+A browser extension that plays music suited to the page a person is reading
+has to solve three problems: describe the page, keep the page text from
+leaving the device, and hide a music generator that is slower than browsing.
+We present Web2Music, a Manifest V3 Chrome extension that addresses all three.
+The page descriptor takes 86\,ms per page without the embedding model
+(\tbd{S-A: descriptor cost including embedding}). A three-stage classifier
+(keywords, an on-device language-inference model, a hosted large language
+model) matches the macro-averaged F1 of a keyword-then-LLM baseline on the
+255-page development set (0.689) while sending 38\% fewer pages off the
+device; on a held-out test set of \tbd{S-E: n pages} pages its macro-F1 is
+\tbd{S-E: test macro-F1}. Playback starts with a short mood-level clip that
+becomes audible 36\,ms after the mood is decided. Music generated for the
+specific page replaces it only when generation finishes, which takes a median
+of \tbd{S-B: 5060 median seconds}\,s on a consumer GPU and 72\,s on an Apple
+M4 for a 28\,s clip; in a browsing simulation the generated audio is heard on
+\tbd{S-C: GPU share}\% of visits with the GPU and \tbd{S-C: CPU share}\% with a
+CPU. Choosing each loop's cut point by its measured seam lowers the share of
+seams with an energy jump above 1\,dB from 74\% to 12\%. Fit to the page is
+evaluated with objective conditioning-fidelity measures, not listener ratings;
+no listening study was run.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -128,31 +131,45 @@ context. Text-conditioned generative audio models remove that requirement
 (\S\ref{sec:related}): once a description can be derived from what the user
 is doing, music can be composed for it.
 
-Web2Music does this for the web, and doing it well raises three engineering
-problems, none about audio quality. \textbf{The prompt must be derived:} a
-page is a DOM of navigation chrome, advertisements, and colour, not a prompt.
-\textbf{Classification is a privacy decision:} the most accurate classifier
-is a hosted LLM, and calling one on every page would turn a music player into
-a browsing-history channel. \textbf{Generation is slower than browsing:} a
-cold 28\,s clip takes 72\,s on an Apple M4 and several minutes on a CPU
-laptop, against a page load of about two seconds, so the interaction must
-make generation time invisible.
+Web2Music does this for the web. Doing it well raises three engineering
+problems, none of them about audio quality.
+\begin{enumerate}
+\item \textbf{The prompt must be derived.} A page is navigation, advertising
+and colour, not a prompt.
+\item \textbf{Classification is a privacy decision.} The most accurate
+classifier is a hosted large language model (LLM), and calling one on every
+page would turn a music player into a browsing-history channel.
+\item \textbf{Generation is slower than browsing.} A cold 28\,s clip takes
+72\,s on an Apple M4 and several minutes on a CPU laptop, against a page load
+of about two seconds.
+\end{enumerate}
 
-Web2Music answers each problem with a component we measure. First, a
-four-signal page descriptor (text, sentence embedding, colour, behaviour)
-that costs 86\,ms per page excluding embedding inference, 4\% of navigation
-time. Second, a disclosure-aware three-stage cascade (keyword $\to$ zero-shot
-$\to$ LLM) that treats the share of pages sent off-device as a measured,
-tunable quantity: with an on-device middle stage it matches the
-keyword-to-LLM baseline's macro-F1 while disclosing 38\% fewer pages, and
-moving that stage's gate sets the trade-off anywhere down to a fully local
-configuration. Third, fallback-then-swap playback, which makes audio audible
-36\,ms after mood commitment regardless of generation time, and loop
-synthesis that turns a one-shot generator into gapless loops; choosing the
-cut point by measured seam reduces the share of seams with an energy jump
-above 1\,dB from 74\% to 12\%. Beyond this system, a hosted middle stage only
-changes which provider sees a page, so what matters is whether a local model
-is accurate enough; here a quantised one is.
+This paper contributes one measured answer to each.
+\begin{enumerate}
+\item A four-signal page descriptor (text, sentence embedding, colour,
+behaviour) that costs 86\,ms per page excluding embedding inference.
+\item A three-stage cascade (keywords, then a zero-shot natural-language-inference
+model, then an LLM) that treats the share of pages sent off the device (the
+\emph{off-device rate}) as a measured, adjustable quantity. With an on-device
+middle stage it matches the keyword-then-LLM baseline's macro-F1 (the mean over
+categories of each category's F1) on the development set while disclosing 38\%
+fewer pages, and the stage's gate moves the trade-off down to a fully local
+configuration.
+\item Fallback-then-swap playback, which keeps a sound audible 36\,ms after
+the mood is decided whatever the generation time, and loop synthesis that turns a
+one-shot generator into gapless loops; choosing the cut by measured seam cuts the
+share of seams with an energy jump above 1\,dB from 74\% to 12\%.
+\end{enumerate}
+
+Because generation is slow, what a listener hears falls into three
+\emph{levels of conditioning}. \textbf{L1} is a mood-level clip, one of 11
+pre-generated clips, one per mood; it is always available. \textbf{L2} is a
+profile-level clip from the cache, generated earlier for a similar music
+profile (mood, tempo bucket, energy). \textbf{L3} is a page-level clip,
+generated for this page. L1 is audible within 36\,ms; L2 and L3 take longer, and
+Section~\ref{sec:res-exposure} measures how often a listener reaches them. This
+paper claims music \emph{conditioned on} the page. It does not claim that
+listeners find the music fits the page; no listening study was run.
 
 % ===========================================================================
 \section{Related Work}
@@ -245,15 +262,16 @@ ensuring all loops are closed with a measurable seam.
 
 \subsection{Problem statement}
 
-For a rendered page $p$, the ambient audio $a(t)$ has four properties.
-\textbf{Latency:} audio begins after a set delay that depends on the mood.
-\textbf{Disclosure:} text that exits the device is measured; sensitive pages
-produce none. \textbf{Continuity:} clips loop without gaps.
-\textbf{Restraint:} pages with sensitive categories produce no audio. The
-zero-shot and LLM providers, and the key proxy in front of them, receive only
-the page title, two-sentence description, and top keywords. The generation
-service receives only mood, time of day, and tempo; local generation removes
-that channel entirely. Sensitive pages send nothing.
+Web2Music is judged on four properties. \textbf{Latency:} how soon after a mood
+is decided something is audible, and how soon page-level audio follows.
+\textbf{Disclosure:} how much page text leaves the device; this is measured, not
+assumed. \textbf{Continuity:} clips loop without gaps. \textbf{Restraint:} pages
+with sensitive content produce no audio and send nothing. The zero-shot and LLM
+providers, and the key proxy in front of them, are designed to receive only the
+page title, a two-sentence description and the top keywords. The generation
+service is designed to receive only the music profile (category, mood, tempo and
+related fields); with a local GPU that channel disappears too. A network audit
+(Section~\ref{sec:res-restraint}) checks both statements.
 
 % ===========================================================================
 \section{System Architecture}
@@ -278,17 +296,25 @@ at 2,000 entries.
 \subsection{Classifier cascade}
 \label{sec:arch-cascade}
 
-The classifier is used to map descriptors to 13 categories and 11 moods, then
-maps them respectively to the music profile and prompt. \textbf{Keyword
+The classifier maps a descriptor to one of 13 content categories and one of 11
+moods, and these select the music profile and the prompt. The shipped default is
+the full three-stage cascade with the on-device middle stage (configuration A6b in
+Section~\ref{sec:res-classification}). \textbf{Keyword
 stage:} at the keyword level, the keyword map is used to find the category,
 while moods take the keyword score, colour, and behaviour biases together into
 account \cite{jonauskaite}. The cascade also stops at this stage, at zero
 cost, when confidence is $\geq 0.5$. \textbf{Zero-shot stage:} the text is
-scored versus the thirteen category hypotheses using natural-language
-inference \cite{laurer}. Once a label's score attains 0.45 and is at least
-0.10 larger than the subsequent highest score, the stage will take a label;
-in any other case, it abstains \cite{agreement}. The stage has two
-interchangeable back ends: an online hosted bart-large-mnli endpoint, and a
+scored against thirteen category hypotheses using natural-language
+inference (NLI) \cite{laurer}. With $s_{(1)}$ and $s_{(2)}$ the highest and
+second-highest scores, the stage takes the top label only if
+\begin{equation}
+s_{(1)} \ge \tau \quad\text{and}\quad s_{(1)} - s_{(2)} \ge \delta ,
+\label{eq:gate}
+\end{equation}
+that is, the best label is strong enough and clearly ahead of the runner-up; in
+any other case it abstains and the page moves to the next stage
+\cite{agreement}. The defaults are $\tau = 0.45$ and $\delta = 0.10$. The stage
+has two interchangeable back ends: an online hosted bart-large-mnli endpoint, and a
 quantised ONNX nli-deberta-v3-xsmall model that runs in the offscreen
 document without sending any data. \textbf{LLM stage:} the gpt-oss-20b model
 running on Groq is used, with the temperature set to 0. An eight-second
@@ -296,9 +322,23 @@ timeout limit is implemented; in case of timeout, the decision would be made
 on the basis of keywords. The chosen mood will stay the same for five seconds
 in the confidence period before the musical transition to avoid the
 perceivable fluctuations due to user scrolling. The externally hosted stages
-are available via a proxy that holds the API keys instead of embedding the
-credentials into the extension. Every stage's output is logged, so any
-configuration can be replayed offline (\S\ref{sec:res-classification}).
+are reached through a proxy that holds the API keys, so no credential is
+embedded in the extension. The share of pages that leave the device is then
+\begin{equation}
+D = \frac{1}{N}\sum_{i=1}^{N} P(\text{page } i \text{ reaches an off-device stage}),
+\label{eq:disclosure}
+\end{equation}
+which is the quantity the gate $(\tau,\delta)$ adjusts. Every stage's output is
+logged, and the LLM's raw answers are cached, so any configuration can be
+replayed offline without querying the model again
+(\S\ref{sec:res-classification}).
+
+\textbf{Sensitive-page check.} Before either hosted stage, a term list flags
+sensitive pages. An optional entailment check then scores the page against three
+hypotheses: a personal crisis, an academic or news discussion of a difficult
+topic, and everyday content with no difficult topic. The third hypothesis is what
+lets an ordinary page (a recipe, a tutorial) score as neither crisis nor
+discussion. A sensitive page produces no audio and is never sent to the LLM.
 
 \textbf{From mood to prompt.} A committed mood picks a particular row from a
 per-mood table, including parameters like tempo span, keys, timbre,
@@ -322,22 +362,30 @@ The service verifies the query and queries the Postgres cache index (steps
 5--7), where the index is exact on the mood, style, and key but also on the
 energy, valence, arousal, tempo, and duration buckets. If the match was
 successful, the URL and loop point are returned. In case of a miss,
-MusicGen-small (300 million parameters, with default sampling) is run on one
-batching worker. The worker batches up to four queries within a 150\,ms time
+MusicGen-small (300 million parameters, default sampling) is run on one
+batching worker. The back end is a start-up setting: MusicGen-small (default),
+MusicGen-medium, or AudioLDM2-music, a latent-diffusion model, so that
+Section~\ref{sec:res-generators} can compare generators under one pipeline. The worker batches up to four queries within a 150\,ms time
 window, and it generates 50 tokens per second of requested audio that is then
 processed into an audio clip with index upserting. In case of failure during
 any step, the system uses a pre-generated audio clip for the particular mood.
 
-\textbf{Loop synthesis.} Chroma descriptors are employed to create a
-self-similarity curve \cite{marmoret} for potential loop segments, which have
-a minimum duration of 3 seconds. The best candidate is aligned to a bar
-boundary, cut there, and then crossfaded over a period of 50\,ms using an
-equal power crossfade. The loudness normalization is performed to
-$-18$\,LUFS \cite{ebu128}, after which the clip is exported as an Ogg/Opus
-file, which, unlike MP3, adds no padding at every repeat. A measured seam
-selector, as discussed in \S\ref{sec:res-loop}, instead examines the same set
-of candidates and picks the one whose crossfaded seam has the lowest energy
-and spectral discontinuity.
+\textbf{Loop synthesis.} Chroma descriptors give a self-similarity curve
+\cite{marmoret} whose peaks, together with the bar boundaries, are the
+candidate loop points (at least 3\,s into the clip). The default selector cuts
+at each candidate, applies an equal-power crossfade (250\,ms in the shipped
+build), and keeps the candidate whose crossfaded seam is smallest:
+\begin{equation}
+J = |\Delta E| + \lambda\,|\Delta c| ,
+\label{eq:seam}
+\end{equation}
+where $\Delta E$ is the energy jump in dB between the end and start of the
+loop, $\Delta c$ the jump in spectral centroid in Hz, and $\lambda = 1/5000$ per
+Hz, so the centroid term only breaks ties. The earlier rule, which cuts at the
+chroma-similarity maximum, remains available as a switch for comparison
+(\S\ref{sec:res-loop}). Loudness is normalised to $-18$\,LUFS (loudness units relative to full scale) \cite{ebu128} and
+the clip is exported as Ogg/Opus, which, unlike MP3, adds no padding at every
+repeat.
 
 \subsection{Playback and restraint}
 \label{sec:arch-playback}
@@ -355,9 +403,14 @@ and are skipped before the start of either of the two hosted stages. When the
 current tab is generating audio, then the player is muted. On the other hand,
 background tabs playing audio decrease the gain to 0.1 of the player's
 volume. URLs of payment sites, banking websites, and internal browser URLs are
-exempted from the process. The system maintains up to 2,000 telemetry events
-in SHA-256 hashed form on a local ring buffer, which are never sent out
-unless exported.
+exempted from the process. The system keeps up to 2,000 telemetry events in a local ring buffer, with each
+URL replaced by an HMAC-SHA-256 digest under a random per-install key (a plain
+hash of a URL can be reversed by hashing likely URLs). The buffer is never sent
+anywhere unless the user exports it. What leaves the device is: in the fully local
+configuration (A6), only the music profile sent to the generation service; in the
+default configuration (A6b), additionally the title, description and keywords of
+pages that the on-device stages could not decide, sent to the LLM through the
+proxy.
 
 % ===========================================================================
 \section{Results and Discussion}
@@ -367,22 +420,66 @@ unless exported.
 \subsection{Evaluation design}
 \label{sec:res-design}
 
-We report a systems benchmark, a cascade ablation, a loop quality study, and a
-restraint audit. Percentiles are nearest-rank. \textbf{Corpus.} 255 real pages
-in seven slices (general, vocabulary mismatch, non-English, mixed-genre,
-sensitive, near-miss, bypass), 252 of them category-labelled.
-\textbf{Adversarial slice.} 47 hand-written pages (29 sensitive, 18 not) built
-from the detector's own term lists to target its failure modes.
-\textbf{Labels.} Each page carries the category it was collected for; three of
-the authors then labelled every page independently, and where their majority
-resolves (208 pages) it agrees with that label on 85\%. \textbf{Clips.} The
-loop study uses the 141 clips in the service's store, 130 generated and 11
-per-mood fallbacks. The systems benchmark ran on a machine with an Intel
-i7-1255U and 16\,GB of memory using CPU-only PyTorch; the cold-generation,
-duration, and prompt studies ran on an Apple M4 through PyTorch's MPS backend.
+We report a systems benchmark, a cascade ablation with a held-out test set, a
+browsing simulation of how often generated audio is heard, objective
+conditioning-fidelity measures, a loop quality study, and a restraint audit.
+Percentiles are nearest-rank. Where an interval is given it is a 95\%
+percentile bootstrap over pages or clips (10,000 resamples).
+
+\textbf{Corpora.} The \emph{development set} is 255 real pages in seven slices
+(general, vocabulary mismatch, non-English, mixed-genre, sensitive, near-miss,
+bypass), 252 of them category-labelled. Every threshold is chosen on it. The
+\emph{test set} is \tbd{S-E: n} further pages captured after the system was
+frozen, from a URL list fixed before any classifier saw them, and is scored once
+with the thresholds chosen on development. No URL was suggested by an LLM; the
+source mix is \tbd{S-E: source mix}, and \tbd{S-E: n post-cutoff} pages were
+published after the LLM's knowledge cutoff, so that contamination can be checked.
+The \emph{adversarial slice} is 47 hand-written pages (29 sensitive, 18 not)
+built from the detector's own term lists; it is used only to choose the
+sensitivity gates. The \emph{black-box set} is \tbd{S-F: n} real crisis and
+support pages found by searching for support resources, not by using the term
+lists.
+
+\textbf{Labels.} Each page carries the category it was collected for. Three of
+the authors labelled every page independently. For the test set the labelling was
+blind: the collection category, the system's predictions and the other labellers'
+answers were hidden, page order was shuffled per labeller, and the guidelines
+were frozen after a calibration round on development pages and before any test
+page was labelled. The labellers are the authors, not independent annotators; we
+state this as a limitation (Section~\ref{sec:limitations}). The gold label is the
+majority of the three, and \tbd{S-E: n ties} ties were settled by discussion. On
+the development set the majority resolves for 208 pages and agrees with the
+collection category on 85\%. Only category and binary sensitivity are labelled;
+mood is not labelled or evaluated. No LLM chose pages, labelled them or judged
+any output; the LLM stage (model, prompt, temperature 0) was frozen before the
+test set was opened and its raw answers are cached, so every replay uses the same
+answers.
+
+\textbf{Clips and hardware.} The loop study uses the 141 clips in the service's
+store, 130 generated and 11 per-mood fallbacks. Table~\ref{tab:hardware} lists the
+three hardware tiers. Generation time and the browsing simulation are reported
+for each; the systems benchmark ran on the CPU tier.
 
 \begin{table}[t]
-\caption{Cascade configuration results.}
+\caption{Hardware tiers.}
+\label{tab:hardware}
+\begin{center}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{llll}
+\toprule
+\textbf{Tier} & \textbf{Device} & \textbf{Precision} & \textbf{Used for} \\
+\midrule
+CPU & i7-1255U, 16\,GB & fp32 & systems; CPU generation \\
+M4  & Apple M4 (MPS) & fp32 & cold generation, prompts \\
+GPU & RTX 5060, 8\,GB & fp16 & \tbd{S-B: driver, CUDA, torch} \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+
+\begin{table}[t]
+\caption{Cascade configurations on the 255-page development set. Seven configurations, from keyword-only to LLM-only, serve as the baselines.}
 \label{tab:cascade}
 \begin{center}
 \scriptsize
@@ -405,21 +502,45 @@ A6b & keyword $\to$ local ZS $\to$ LLM      & .671 & .689 [.63, .74] & .467 & .4
 
 \begin{figure}[t]
 \centerline{\includegraphics[width=\columnwidth]{figures/frontier.pdf}}
-\caption{Macro-F1 versus off-device rate.}
+\caption{Macro-F1 versus off-device rate (development set).}
 \label{fig:frontier}
 \end{figure}
+
+\begin{table}[t]
+\caption{Held-out test set: gates chosen on the development set, each
+configuration scored once. Accuracy is split by the stage that decided.}
+\label{tab:cascade-test}
+\begin{center}
+\scriptsize
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Configuration} & \textbf{Macro-F1 [95\% CI]} & \textbf{Off-dev.} & \textbf{Kw.} & \textbf{ZS} & \textbf{LLM} \\
+\midrule
+keyword $\to$ LLM (A4) & \tbd{S-E} & \tbd{S-E} & \tbd{S-E} & -- & \tbd{S-E} \\
+A6b local ZS $\to$ LLM & \tbd{S-E} & \tbd{S-E} & \tbd{S-E} & \tbd{S-E} & \tbd{S-E} \\
+A6 keyword $\to$ local ZS & \tbd{S-E} & 0 & \tbd{S-E} & \tbd{S-E} & -- \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
 
 \subsection{Annotation agreement}
 \label{sec:res-agreement}
 
-Over 255 pages, Krippendorff's $\alpha$ \cite{kalpha} is 0.635 for category,
+Over 255 pages, Krippendorff's $\alpha$ \cite{kalpha}, a chance-corrected
+agreement coefficient, is 0.635 for category,
 0.419 for binary sensitivity and 0.195 for mood. Category agreement
 approaches but does not reach the 0.667 reliability threshold, so we score
 the cascade on category and read its results as tentative. Mood agreement
 stays low even after coarsening to valence--arousal quadrants \cite{kang}
 ($\alpha = 0.121$) or NRC VAD norms \cite{nrcvad} ($\alpha = 0.300$): the
 mood of a page is a matter of taste. Web2Music therefore treats mood as a
-stylistic mapping from page signals rather than a classification target.
+stylistic mapping from page signals rather than a classification target, and mood
+is not evaluated anywhere in this paper. On the test set, labelled blind under
+frozen guidelines, $\alpha$ is \tbd{S-E: test alpha category} for category and
+\tbd{S-E: test alpha sensitivity} for binary sensitivity, with per-category values
+in the supplementary material.
 
 \subsection{Descriptor cost and signal value}
 \label{sec:res-descriptor}
@@ -427,8 +548,9 @@ stylistic mapping from page signals rather than a classification target.
 On 105 live websites loaded in an automated Chromium browser, descriptor
 construction takes a median of 86\,ms against a 1,989\,ms navigation, and
 boilerplate removal keeps 80.8\% of visible text. Embedding inference is
-stubbed in this benchmark, so 86\,ms is the extraction cost excluding the
-model. Text extraction, the colour histogram, and readability take medians of
+stubbed in this benchmark, so 86\,ms is the extraction cost excluding the model;
+with the real embedding model on \tbd{S-A: n} sites the median is
+\tbd{S-A: ms}\,ms. Text extraction, the colour histogram, and readability take medians of
 11.0, 3.9, and 1.5\,ms; most of the remainder, and the whole p95 tail, is the
 vector-store search, which is idle-scheduled. An offline ablation on 255
 pages replays the keyword stage with one signal removed: removing colour
@@ -438,7 +560,7 @@ both shape about a tenth of mood decisions, which, with no reliable mood
 ground truth (\S\ref{sec:res-agreement}), shows influence, not benefit.
 
 \begin{table}[t]
-\caption{Latency by request path.}
+\caption{Latency by request path. CPU-only timeouts are censored (reported as $>$300\,s, $k$ of $n$).}
 \label{tab:latency}
 \begin{center}
 \scriptsize
@@ -454,6 +576,10 @@ Cold generation, 10--20\,s clip         & CPU & 3   & 139\,s    & -- \\
 Cold generation, 28\,s clip             & CPU & 12  & $>$300\,s & -- \\
 Cold generation, 28\,s clip, one mood   & M4  & 30  & 72.1\,s   & 105.9\,s \\
 Cold generation, 28\,s clip, 11 moods   & M4  & 110 & 72.2\,s   & 119.4\,s \\
+Cold generation, 28\,s clip             & GPU & \tbd{S-B} & \tbd{S-B} & \tbd{S-B} \\
+Cold generation, 15\,s clip             & GPU & \tbd{S-B} & \tbd{S-B} & \tbd{S-B} \\
+Cold generation, 15\,s clip             & CPU & \tbd{S-B} & \tbd{S-B} & \tbd{S-B} \\
+Navigation to generated audio, real pipeline & GPU & \tbd{S-A} & \tbd{S-A} & \tbd{S-A} \\
 Navigation to audible (client)          & CPU & 54  & 6.86\,s   & 11.28\,s \\
 \bottomrule
 \end{tabular}
@@ -483,8 +609,16 @@ the score threshold from 0.45 to 0.30 cuts off-device from .467 to .290 at
 macro-F1 .675, and opening the gate entirely keeps every page on the device
 at .594, level with the hosted zero-shot model alone (A2, .595); A6 at the
 default gate reaches only .500 because declined pages fall to a default
-category. The gate cells are scored on the corpus they are chosen from, so
-they locate the trade-off rather than tune it.
+category. On the development set
+these gate cells locate the trade-off. For the held-out test set, the gates are
+chosen on development pages only and every configuration is then scored once
+(Table~\ref{tab:cascade-test}): A6b reaches macro-F1 \tbd{S-E: A6b test F1} against
+\tbd{S-E: A4 test F1} for keyword-to-LLM, a paired difference of \tbd{S-E: paired
+diff}, with off-device rates of \tbd{S-E: A6b off-device} and \tbd{S-E: A4
+off-device}. Splitting accuracy by the stage that decided shows how much of each
+score comes from the LLM: \tbd{S-E: by-stage}. On the \tbd{S-E: n post-cutoff}
+test pages published after the LLM's knowledge cutoff, macro-F1 is \tbd{S-E:
+post-cutoff F1} against \tbd{S-E: pre-cutoff F1} on the rest.
 
 A hosted middle stage only redistributes disclosure. A5 cuts LLM-specific
 exposure from .757 to .220, but every page it keeps from the LLM reaches the
@@ -501,7 +635,7 @@ backend changes whether one does.
 Table~\ref{tab:latency} and Fig.~\ref{fig:coldgen} show the routes a request
 can take. The fallback clip is served in 7\,ms, so the audible start is never
 delayed by the generation process. On the Apple M4, all 140 cold generations
-of 28 seconds complete, with a median of 72 seconds and a real-time factor of
+of 28 seconds complete, with a median of 72 seconds and a real-time factor (RTF, generation seconds per second of audio) of
 1.8--2.3 across durations; the generation process itself takes up 71.5
 seconds of that median, and every other stage takes under a second. The CPU
 laptop is approximately four times slower (real-time factor 8.2--10.1): its
@@ -510,7 +644,13 @@ three completed cold generations took a median of 139 seconds, and 12 out of
 worker, exceeded the 300-second client timeout; the fallback clip played the
 whole time. Cache hits on the CPU laptop took 2.09 seconds, almost all of it
 spent in the cache lookup, and using pooled Postgres connections lowers that
-lookup to 8\,ms.
+lookup to 8\,ms. On the RTX 5060 a cold 15\,s clip takes a median of
+\tbd{S-B: 15 s median}\,s and a 28\,s clip \tbd{S-B: 28 s median}\,s
+(real-time factor \tbd{S-B: RTF}), measured end to end with the real
+classifier, embedding model and generator over \tbd{S-A: n} page loads per
+setup, so the figures in the abstract no longer rest on stubbed components.
+On a CPU-only machine generated audio rarely arrives within a visit, so the
+system behaves as a mood-level player with cache hits (Section~\ref{sec:res-exposure}).
 
 \begin{figure}[t]
 \centerline{\includegraphics[width=\columnwidth]{figures/coldgen.pdf}}
@@ -530,6 +670,124 @@ which is a design parameter, not model latency. The p95 value (11.28 seconds)
 is due to one fixture requiring five extraction passes before its mood
 commits.
 
+\subsection{How often generated audio is heard}
+\label{sec:res-exposure}
+
+The 36\,ms figure describes the mood-level clip (L1), not generated audio. Whether
+a listener ever reaches the page-level clip (L3) depends on how long they stay
+compared with how long generation takes:
+\begin{equation}
+P(\mathrm{L3}) = P\bigl(T_{\mathrm{gen}} + W < T_{\mathrm{dwell}}\bigr),
+\label{eq:exposure}
+\end{equation}
+where $T_{\mathrm{gen}}$ is the generation time, $W = 5$\,s is the confidence
+window before a mood is committed, and $T_{\mathrm{dwell}}$ is the time on the
+page. We estimate it by simulating browsing sessions. Moods follow a Markov chain
+fitted to the corpus mood frequencies; dwell times are Weibull-distributed
+\cite{liudwell} with the median swept from 10 to 120\,s and a longer median for
+long-form pages; generation times are drawn from the measured distributions of
+each tier and clip length, with timeouts treated as censored; there is one
+worker, generation is cancelled when the next page needs a different clip, and the
+99-entry pre-warm grid and earlier generations fill the cache. L2 is a cache hit
+and L3 a fresh generation that finishes before the visit ends.
+
+\begin{table}[t]
+\caption{Simulated share of visits and of listening time at each level of
+conditioning (median dwell 30\,s). Dwell and cache assumptions are in the text.}
+\label{tab:exposure}
+\begin{center}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{llcccc}
+\toprule
+\textbf{Tier} & \textbf{Clip} & \textbf{Visits L1/L2/L3} & \textbf{Listening L3} & \textbf{Long-form L3} & \textbf{Other L3} \\
+\midrule
+GPU & 15\,s & \tbd{S-C} & \tbd{S-C} & \tbd{S-C} & \tbd{S-C} \\
+GPU & 28\,s & \tbd{S-C} & \tbd{S-C} & \tbd{S-C} & \tbd{S-C} \\
+M4  & 15\,s & \tbd{S-C} & \tbd{S-C} & \tbd{S-C} & \tbd{S-C} \\
+CPU & 15\,s & \tbd{S-C} & \tbd{S-C} & \tbd{S-C} & \tbd{S-C} \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+
+The simulation says how often generated audio \emph{could} be heard under stated
+assumptions; it is not a measurement of listeners. On the GPU, page-level audio is
+heard on \tbd{S-C: GPU L3 visit share}\% of visits and accounts for
+\tbd{S-C: GPU L3 listening share}\% of listening time at a 15\,s clip; on a CPU the
+figures are \tbd{S-C: CPU shares}, so a CPU-only user hears mood-level audio almost
+throughout. The share rises with dwell time and is higher on long-form pages
+(\tbd{S-C: dwell curve}).
+
+\subsection{Conditioning fidelity}
+\label{sec:res-fidelity}
+
+With no listening study, we ask a narrower, objective question: does audio
+generated for a page agree with the mood the system intended for it, more than
+audio generated for a page of a different mood does? We generate
+\tbd{S-D: n clips} clips (\tbd{S-D: n pages} pages $\times$ 3 seeds) on the GPU and
+compare each with a \emph{shuffled} control, a clip from a page whose mood is at
+least two steps away in valence--arousal space, plus a page-agnostic fixed-prompt
+control. Four non-generative scorers are used: Essentia valence/arousal regressors
+and the MTG-Jamendo mood tagger; LAION-CLAP, which retrieves a page's own clip
+among 10 candidates from the page's title and lead text (chance is 10\%); and
+Audiobox Aesthetics for quality. No LLM or audio-language model judges any output.
+
+\begin{table}[t]
+\caption{Conditioning fidelity, matched versus shuffled clips (paired over pages;
+Wilcoxon and bootstrap CI).}
+\label{tab:fidelity}
+\begin{center}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Measure} & \textbf{Matched} & \textbf{Matched $-$ shuffled [95\% CI]} \\
+\midrule
+Valence Spearman $\rho$ & \tbd{S-D} & -- \\
+Arousal Spearman $\rho$ & \tbd{S-D} & -- \\
+Valence--arousal distance to target & \tbd{S-D} & \tbd{S-D} \\
+Intended mood in top-5 tags & \tbd{S-D} & \tbd{S-D} \\
+CLAP page-text similarity & \tbd{S-D} & \tbd{S-D} \\
+CLAP top-1 retrieval (chance 10\%) & \tbd{S-D} & -- \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+
+\tbd{S-D: one-sentence reading of Table~\ref{tab:fidelity}, including any null result.}
+These are proxies for conditioning fidelity, not for perceived fit. CLAP is trained
+on music captions, not web pages; the mapping from moods to tags is an assumption
+fixed before scoring; and agreement between a prompt and its audio shows only that
+the generator follows its prompt, which is why page text against audio is the
+primary CLAP measure.
+
+\subsection{Generator comparison}
+\label{sec:res-generators}
+
+The pipeline is generator-agnostic. Table~\ref{tab:generators} runs the same 11
+moods and 5 fixed seeds through MusicGen-small (the default), MusicGen-medium and
+AudioLDM2-music, a latent-diffusion model, on the GPU. It shows the effect of
+scale and of a different model family, and every other stage is unchanged.
+
+\begin{table}[t]
+\caption{Generator comparison (15\,s requests, RTX 5060; paired by mood and seed).}
+\label{tab:generators}
+\begin{center}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Generator} & \textbf{RTF} & \textbf{Seam $|\Delta E|$ p50} & \textbf{Retention} & \textbf{CLAP} & \textbf{Aesthetics PQ} \\
+\midrule
+MusicGen-small  & \tbd{S-G} & \tbd{S-G} & \tbd{S-G} & \tbd{S-G} & \tbd{S-G} \\
+MusicGen-medium & \tbd{S-G} & \tbd{S-G} & \tbd{S-G} & \tbd{S-G} & \tbd{S-G} \\
+AudioLDM2-music & \tbd{S-G} & \tbd{S-G} & \tbd{S-G} & \tbd{S-G} & \tbd{S-G} \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{table}
+
 \begin{table}[t]
 \caption{Loop-seam quality by cut method.}
 \label{tab:seam}
@@ -540,11 +798,11 @@ commits.
 \toprule
 \textbf{Cut point, crossfade} & \textbf{$|\Delta E|$ p50} & \textbf{$|\Delta E|$ p95} & \textbf{$>$1\,dB} & \textbf{$|\Delta c|$ p50} \\
 \midrule
-Chroma similarity, 50\,ms (default) & 2.44\,dB & 10.29\,dB & 74\% & 405\,Hz \\
-Chroma similarity, 100\,ms          & 2.03\,dB & 7.87\,dB  & 81\% & 314\,Hz \\
-Chroma similarity, 250\,ms          & 2.18\,dB & 7.41\,dB  & 71\% & 190\,Hz \\
-Chroma similarity, 500\,ms          & 1.82\,dB & 7.56\,dB  & 67\% & 133\,Hz \\
-Measured seam, 50\,ms               & 0.14\,dB & 1.54\,dB  & 12\% & 288\,Hz \\
+Chroma, 50\,ms (orig. default) & 2.44\,dB & 10.29\,dB & 74\% & 405\,Hz \\
+Chroma, 100\,ms          & 2.03\,dB & 7.87\,dB  & 81\% & 314\,Hz \\
+Chroma, 250\,ms          & 2.18\,dB & 7.41\,dB  & 71\% & 190\,Hz \\
+Chroma, 500\,ms          & 1.82\,dB & 7.56\,dB  & 67\% & 133\,Hz \\
+Measured seam, 50\,ms    & 0.14\,dB & 1.54\,dB  & 12\% & 288\,Hz \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -572,7 +830,22 @@ clips, worse on two, and preserves internal duration retention (.695 vs.\
 .690). The selector minimises this same energy jump together with a small
 spectral-centroid term, so these numbers show how far the candidates let the
 jump fall, not that listeners hear it; the 500\,ms crossfade still gives the
-smallest centroid jump.
+smallest centroid jump. The shipped build uses a 250\,ms crossfade with the
+measured-seam selector; this table compares the levers on the 50\,ms setting they
+were measured at.
+
+Two further checks replace listener judgement. First, a fresh study of 220 clips
+(11 moods $\times$ 20 fixed seeds) compares the two rules on the shipped crossfade:
+the median $|\Delta E|$ is \tbd{S-G: chroma p50 [CI]} for chroma similarity and
+\tbd{S-G: seam p50 [CI]} for the measured seam, and the share above 1\,dB falls from
+\tbd{S-G: chroma share [CI]} to \tbd{S-G: seam share [CI]} (McNemar $p =$
+\tbd{S-G: p}). Second, the loops are \emph{gapless}: rendering each clip through the
+browser's own decoder and a looping buffer source for 10 cycles, \tbd{S-I: k/30}
+clips show no inserted silence and are sample-identical from cycle to cycle, so the
+Ogg/Opus container adds no padding at repeats. Relative to each clip's own
+variation, the seam lies within the clip's 95th percentile of interior energy
+change in \tbd{S-I: share [CI]}\% of clips. Gapless playback is shown; a seam being
+\emph{inaudible} is not claimed.
 
 \begin{figure}[t]
 \centerline{\includegraphics[width=\columnwidth]{figures/seamcdf.pdf}}
@@ -611,8 +884,11 @@ seam, and all three take the same time to generate (18.2--18.3\,s). The
 template yields the smallest energy jump, and the mood word yields the
 longest loops. Prompt engineering therefore brings no improvement in loop
 quality here; with 15 generations per prompt and no statistical testing,
-this is an indication rather than a ranking, and whether listeners prefer the
-engineered prompt's timbre remains a question for the listening study.
+this table is an indication rather than a ranking. A fixed-seed rerun on the GPU
+(11 moods $\times$ 5 seeds per prompt, 165 clips, paired by mood and seed) gives
+$|\Delta E|$ differences of \tbd{S-G: P3$-$P2 [CI], Wilcoxon p}, and the same seeds
+are reported with every result. Whether the engineered prompt's timbre is
+preferred is untested.
 
 \subsection{Restraint}
 \label{sec:res-restraint}
@@ -632,14 +908,30 @@ between 0.83 and 0.92 (Table~\ref{tab:sensitive}). This run used the hosted
 bart-large-mnli backend, which receives every page without a hard-severe
 term; in this configuration, the check itself therefore discloses the pages
 it is meant to protect. The disclosure property holds only with the on-device
-backend, which has not yet been run on this slice. The check also
-overtriggers: its eleven false positives include all six plainly benign
-pages, such as a Rust tutorial, because the prompt offers only two
-hypotheses, crisis or reference discussion, without an ``unrelated'' option,
-so the check stays optional until it is re-measured.
+backend. The hosted two-hypothesis check also overtriggers: its eleven false
+positives include all six plainly benign pages, such as a Rust tutorial, because
+the prompt offers only crisis or reference discussion and no ``unrelated'' option.
+The shipped check therefore adds that third hypothesis and runs on-device. With
+its gates chosen on the hand-written slice only, it detects \tbd{S-F: recall
+[Wilson CI]} of the \tbd{S-F: n} real black-box pages (\tbd{S-F: non-English
+recall} of the non-English ones) and raises a false alarm on \tbd{S-F: FPR
+[Wilson CI]} of \tbd{S-F: n benign} benign pages, with a median latency of
+\tbd{S-F: ms}\,ms (Table~\ref{tab:sensitive}). All detector claims come from the
+black-box and benign sets, not from the hand-written slice.
+
+\textbf{Network audit.} To check the disclosure claims on the wire, we recorded every
+request made by the service worker, the offscreen document, the content scripts
+and the pages while the built extension browsed the corpus. In the fully local
+configuration (A6), \tbd{S-H: A6 verdict: no request body contains page text}. In
+the default configuration (A6b), page text left the device on \tbd{S-H: share}\% of
+pages, all to the LLM proxy, which matches the replayed off-device rate of
+\tbd{S-H: replayed rate}\%. No telemetry left the browser, and every request to the
+generation service carried the music profile and nothing else
+(\tbd{S-H: bytes per page by destination}). The generation service therefore sees
+the category and mood of each page; with a local GPU it is local too.
 
 \begin{table}[t]
-\caption{Sensitive-page detection.}
+\caption{Sensitive-page detection: the hand-written slice (29 sensitive, 18 not), then real black-box pages and benign pages.}
 \label{tab:sensitive}
 \begin{center}
 \scriptsize
@@ -649,7 +941,12 @@ so the check stays optional until it is re-measured.
 \textbf{Detector} & \textbf{Missed} & \textbf{False alarms} & \textbf{Non-English caught} \\
 \midrule
 Term lists (default)             & 19/29 & 3/18  & 0/4 \\
-Term lists + entailment (hosted) & 0/29  & 11/18 & 4/4 \\
+Term lists + NLI (hosted) & 0/29  & 11/18 & 4/4 \\
+Term lists + NLI (on-device, 3-way) & \tbd{S-F} & \tbd{S-F} & \tbd{S-F} \\
+\midrule
+\multicolumn{4}{l}{\emph{Black-box set and benign pages (Wilson 95\% intervals)}} \\
+Term lists (default) & \tbd{S-F} & \tbd{S-F} & \tbd{S-F} \\
+Term lists + NLI (on-device, 3-way) & \tbd{S-F} & \tbd{S-F} & \tbd{S-F} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -660,39 +957,54 @@ Term lists + entailment (hosted) & 0/29  & 11/18 & 4/4 \\
 \label{sec:conclusion}
 % ===========================================================================
 
-The Web2Music system creates background music that is suitable for the
-context of the current page that the user is reading. The pipeline steps of
-the system are assessed based on the characteristics outlined in
-Section~\ref{sec:gaps}. Running the intermediate step of the pipeline
-on-device keeps the keyword-to-LLM macro-F1 score intact and cuts down
-off-device page transfers by 38\%, whereas the relevant gate controls the
-level of reduction of further information leakage. Playback of audio starts
-36 milliseconds after the mood decision, irrespective of the duration of
-generation. Choosing the loop point by measured seam also removes most of the
-energy jumps at the loop.
+Web2Music plays background music conditioned on the page being read. Each
+pipeline step is assessed against the properties of Section~\ref{sec:gaps}.
+Running the middle classifier stage on the device keeps the keyword-to-LLM
+macro-F1 on the development set and cuts off-device page transfers by 38\%;
+the gate sets how much further disclosure is reduced, and the held-out result is
+in Table~\ref{tab:cascade-test}. A mood-level clip is audible 36\,ms after the
+mood decision whatever the generation time, and the share of visits in which the
+page-level clip is also heard is estimated in Section~\ref{sec:res-exposure}.
+Choosing the loop point by measured seam removes most large energy jumps at the
+loop, and the loops are gapless.
 
 % ===========================================================================
 \section{Limitations and Future Work}
 \label{sec:limitations}
 % ===========================================================================
 
-The following stage will be a listening experiment (within-subjects design)
-pending ethics clearance to test page-matched audio versus shuffled audio in
-terms of forced-choice fit, Likert rating, dwell times, skip rate and mute
-rate. Also, the experiment will find out if cleaner seams can be heard and if
-the loop period of 14 seconds can cause fatigue. There are three other steps
-expected in the engineering process: (1) making A6b and the measured seam
-selector the default settings, (2) performing the entailment sensitivity test
-on the on-device back end, employing an ``unrelated'' hypothesis, and
-re-measuring the two error rates, and (3) conditioning the generator to
-create loop-closed content.
+\textbf{No perceptual evaluation.} We did not run a listening study, so we make
+no claim that listeners find the music fits the page, that the loops sound
+seamless, or that the 14\,s loop period does not cause fatigue. The protocol and
+instruments for a within-subjects study (page-matched against shuffled audio;
+forced choice, Likert ratings, dwell, skip and mute) are released with the code.
+The conditioning-fidelity measures of Section~\ref{sec:res-fidelity} are proxies
+and inherit the biases of the models behind them: CLAP is trained on music
+captions, not web pages, and the mood-to-tag mapping is an assumption.
 
-The benchmarks do not contain any model inference; the authors are the
-annotators, and the gate cells are tested based on the corpus from which they
-were extracted. The next set of tests will time the embedding model, use
-independent annotators, and use a held-out corpus. An analogous pipeline
-could also be used for further continuous contexts such as documents and code
-editors.
+\textbf{Author annotation.} The three labellers are authors. Labelling was blind
+and the guidelines were frozen first, but this is not independent annotation, and
+agreement between authors who share a design may overstate reliability.
+
+\textbf{Simulation assumptions.} How often generated audio is heard depends on
+dwell times and cache behaviour that we model rather than measure: the Weibull
+shape, the long-form multiplier and the share of pages whose profile is in the
+pre-warm grid. The sweep over the median dwell shows the sensitivity, not the
+truth for any particular user.
+
+\textbf{Other limits.} The held-out test set is small, so macro-F1 intervals are
+about $\pm .05$ wide and smaller differences are not resolved. The LLM stage is a
+hosted model; its answers are cached for replay but its behaviour can change
+under the same model name. The hardware is one machine with one GPU, plus two
+CPU-class tiers. Future work includes conditioning the generator to produce
+loop-closed content, independent annotators and a listening study, and applying the
+same pipeline to other continuous contexts such as documents and code editors.
+
+\section*{Acknowledgment}
+Language editing of this paper, and planning of the revision, were assisted by an
+AI language model (Anthropic Claude). Every number in the paper is produced by a
+script in the released repository, was checked against its output file, and was
+verified by the authors.
 
 \scriptsize
 \begin{thebibliography}{00}
@@ -732,6 +1044,8 @@ editors.
 \bibitem{mv3} N. Pantelaios and A. Kapravelos, ``Manifest V3 unveiled: Navigating the new era of browser extensions,'' in \emph{Proc. NDSS Workshop MADWeb}, 2024.
 
 \bibitem{kalpha} G. Marzi, M. Balzano, and D. Marchiori, ``K-Alpha Calculator--Krippendorff's Alpha Calculator: A user-friendly tool for computing Krippendorff's alpha inter-rater reliability coefficient,'' \emph{MethodsX}, vol. 12, Art. no. 102545, 2024.
+
+\bibitem{liudwell} C. Liu, R. W. White, and S. Dumais, ``Understanding web browsing behaviors through Weibull analysis of dwell time,'' in \emph{Proc. ACM SIGIR}, 2010, pp. 379--386.
 
 \bibitem{psyguard} H. Qiu, L. Ma, and Z. Lan, ``PsyGUARD: An automated system for suicide detection and risk assessment in psychological counseling,'' in \emph{Proc. Conf. Empirical Methods Natural Lang. Process.}, 2024, pp. 4581--4607.
 
