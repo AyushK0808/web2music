@@ -34,7 +34,7 @@ Verified on this machine. Ubuntu 26.04 WSL ships Python 3.14, which `laion-clap`
 environment is Python 3.12 made with `uv`. It lives in the WSL home, not on `/mnt/c`, because venvs on NTFS are slow.
 
 ```bash
-sudo apt-get update && sudo apt-get install -y python3-venv python3-pip      # once; WSL has neither
+sudo apt-get update && sudo apt-get install -y python3-venv python3-pip ffmpeg      # once; WSL has none of them (ffmpeg also provides ffprobe, which pydub needs to decode the .ogg clips)
 python3 -m venv ~/w2m-venv && ~/w2m-venv/bin/pip install uv
 ~/w2m-venv/bin/uv venv --python 3.12 ~/w2m312
 source ~/w2m312/bin/activate
