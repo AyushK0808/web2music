@@ -16,6 +16,7 @@
 
 import { DEFAULT_MODEL } from "./llmConfig.js";
 import { classifyCategoryZeroShot, classifySensitivityZeroShot } from "./b1_zeroShotCategory.js";
+import { cachedLlmFetch } from "./llmCache.js";
 
 // ─── Handoff-1 version compatibility ─────────────────────────────────────────
 // Feature A (data-extraction/pageData.js) stamps every pageData object with
@@ -375,14 +376,16 @@ Return ONLY a valid JSON object, no explanation: { "category": "<one of the cate
       // browser call CORS-succeeds here is unconfirmed. If it fails in the
       // actual extension, switch to "proxy", which sidesteps the question
       // entirely (the container calls Groq server-to-server, no CORS involved).
-      const res = backend === "proxy"
-        ? await fetch(serviceUrl, {
+      // C-10: replays and ablations read raw responses from the cache (no-op
+      // unless a cache is installed, see llmCache.js).
+      const res = await cachedLlmFetch("b1-category", requestBody, () => backend === "proxy"
+        ? fetch(serviceUrl, {
             method:  "POST",
             signal:  controller.signal,
             headers: { "Content-Type": "application/json" },
             body:    requestBody,
           })
-        : await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        : fetch("https://api.groq.com/openai/v1/chat/completions", {
             method:  "POST",
             signal:  controller.signal,
             headers: {
@@ -390,7 +393,7 @@ Return ONLY a valid JSON object, no explanation: { "category": "<one of the cate
               "Authorization": `Bearer ${apiKey}`,
             },
             body: requestBody,
-          });
+          }));
       clearTimeout(timeout);
 
       if (res.status === 429 && attempt < maxAttempts) {
