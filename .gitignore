@@ -143,3 +143,6 @@ paper/*.synctex.gz
 # The mermaid 10.x UMD bundle the diagram renderer needs: 3.3 MB, fetched from
 # any CDN mirror rather than vendored. See paper/README.md.
 paper/diagrams/mermaid10.js
+
+# Scorer model weights downloaded by analysis/proxies/download_models.ps1 (about 2.3 GB)
+/models/
