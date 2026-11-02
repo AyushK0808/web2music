@@ -40,7 +40,7 @@ python3 -m venv ~/w2m-venv && ~/w2m-venv/bin/pip install uv
 source ~/w2m312/bin/activate
 cd /mnt/c/Users/theof/projects/personal/web2music
 
-U="uv pip install --python $HOME/w2m312/bin/python"
+U="$HOME/w2m-venv/bin/uv pip install --python $HOME/w2m312/bin/python"   # uv lives in w2m-venv, not on PATH once w2m312 is active
 $U torch torchvision torchaudio==2.11.0 --index-url https://download.pytorch.org/whl/cu128   # RTX 5060 = sm_120 needs cu128
 grep -vE '^(torch|huggingface_hub)==' audio-generation/requirements.txt > /tmp/req.txt        # keep the cu128 torch; hub is set below
 $U -r /tmp/req.txt 'huggingface_hub>=1.32,<2' diffusers accelerate essentia-tensorflow laion-clap audiobox_aesthetics statsmodels scipy
