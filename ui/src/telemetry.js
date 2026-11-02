@@ -1,10 +1,14 @@
 // ui/src/telemetry.js — local-only telemetry ring buffer.
 //
-// urlHash, not url — SHA-256 the URL before storing. No participant's
-// browsing history exists in plaintext, and it never leaves their machine
-// until they explicitly export it (popup "Export" button).
+// urlHash, not url — HMAC-SHA-256 the URL, keyed by a random per-install secret,
+// before storing. A plain SHA-256 of a URL can be reversed by hashing a list of
+// likely URLs (dictionary attack); without the secret the digest cannot be
+// checked against any guess. The secret lives only in chrome.storage.local, is
+// never exported, and is rotated by clearTelemetry(), so hashes from before a
+// clear cannot be linked to hashes after it.
 const MAX_EVENTS = 2000;
 const STORAGE_KEY = "w2mTelemetry";
+const SECRET_KEY = "w2mTelemetrySecret";
 
 let _sessionId = null;
 function sessionId() {
@@ -12,11 +16,35 @@ function sessionId() {
   return _sessionId;
 }
 
+const toHex = (buf) => Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+
+/** HMAC-SHA-256(secretHex, text) → hex. Pure apart from WebCrypto, so it is unit-testable. */
+export async function hmacHex(secretHex, text) {
+  const raw = new Uint8Array(secretHex.match(/../g).map((h) => parseInt(h, 16)));
+  const key = await crypto.subtle.importKey("raw", raw, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  return toHex(await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(text)));
+}
+
+function newSecretHex() {
+  return toHex(crypto.getRandomValues(new Uint8Array(32)));
+}
+
+let _secret = null;
+async function installSecret() {
+  if (_secret) return _secret;
+  const stored = (await chrome.storage.local.get(SECRET_KEY))[SECRET_KEY];
+  if (typeof stored === "string" && /^[0-9a-f]{64}$/.test(stored)) {
+    _secret = stored;
+  } else {
+    _secret = newSecretHex();
+    await chrome.storage.local.set({ [SECRET_KEY]: _secret });
+  }
+  return _secret;
+}
+
 export async function urlHash(url) {
   if (!url) return null;
-  const bytes = new TextEncoder().encode(url);
-  const digest = await crypto.subtle.digest("SHA-256", bytes);
-  return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+  return hmacHex(await installSecret(), url);
 }
 
 /**
@@ -44,5 +72,7 @@ export async function exportTelemetry() {
 }
 
 export async function clearTelemetry() {
-  await chrome.storage.local.remove(STORAGE_KEY);
+  // Dropping the secret too unlinks every hash recorded before this point.
+  _secret = null;
+  await chrome.storage.local.remove([STORAGE_KEY, SECRET_KEY]);
 }
