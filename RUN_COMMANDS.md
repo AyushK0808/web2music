@@ -95,10 +95,11 @@ The result headers (`manifest`) record all of this.
 
 ## 1. Freeze (E-6) — before the test corpus is collected
 
-C-1, C-2, C-3 are already committed. Merge the branch, then:
+C-1, C-2, C-3 are already committed on `revision-wp1` (branched from `paper-docx-update`). Merge it into the branch you submit from
+(`main` once `paper-docx-update` is merged), then tag that commit:
 
 ```powershell
-git checkout main; git merge --no-ff revision-wp1
+git checkout main; git merge --no-ff revision-wp1        # or merge into paper-docx-update first
 git tag -a revision-freeze -m "pipeline frozen before the held-out corpus is collected"
 ```
 
