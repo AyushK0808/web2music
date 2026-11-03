@@ -586,7 +586,7 @@ Cold generation, 28\,s clip, one mood   & M4  & 30  & 72.1\,s   & 105.9\,s \\
 Cold generation, 28\,s clip, 11 moods   & M4  & 110 & 72.2\,s   & 119.4\,s \\
 Cold generation, 28\,s clip             & GPU & 33  & 24.3\,s   & 25.0\,s \\
 Cold generation, 15\,s clip             & GPU & 33  & 13.3\,s   & 13.6\,s \\
-Navigation to generated audio, A6 (LLM unreachable) & GPU & 110 & 7.7\,s & 37.4\,s \\
+Navigation to generated audio, A6 (LLM unreachable) & GPU & 110 & 7.7\,s & 37.6\,s \\
 Navigation to generated audio, A6b (local 7B LLM) & GPU & 110 & 7.9\,s & 64.6\,s \\
 Navigation to audible (client)          & CPU & 54  & 6.86\,s   & 11.28\,s \\
 \bottomrule
@@ -953,12 +953,14 @@ black-box and benign sets, not from the hand-written slice.
 \textbf{Network audit.} To check the disclosure claims on the wire, we recorded every
 request made by the service worker, the offscreen document, the content scripts
 and the pages while the built extension browsed the corpus. In the fully local
-configuration (A6), \tbd{S-H: A6 verdict: no request body contains page text}. In
-the default configuration (A6b), page text left the device on \tbd{S-H: share}\% of
-pages, all to the LLM proxy, which matches the replayed off-device rate of
-\tbd{S-H: replayed rate}\%. No telemetry left the browser, and every request to the
-generation service carried the music profile and nothing else
-(\tbd{S-H: bytes per page by destination}). The generation service therefore sees
+configuration (A6, the LLM stage switched off), no request body contained page text
+(12 fixture pages $\times$ 3 visits; the only traffic was the generation service, 850 bytes per
+page). In the default configuration (A6b), page text left the device on 30 of the 36 visits (83\%),
+all to the LLM proxy and nowhere else (5.9\,kB per page to the proxy and 0.8\,kB to the generation
+service). The fixtures were written to exercise the cascade and are not representative of browsing,
+so this rate is not the disclosure rate (47\% of the 255 development pages in the replayed cascade); what the
+audit establishes is the destination of the text. No telemetry left the browser, and every request to the
+generation service carried the music profile and nothing else. The generation service therefore sees
 the category and mood of each page; with a local GPU it is local too.
 
 \begin{table}[t]
