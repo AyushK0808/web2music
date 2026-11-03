@@ -319,7 +319,8 @@ export async function callLLMClassifier(cleanedContent, llmConfig) {
     // silently starving B2's larger structured-output response the same way
     // it starved B1's. Set explicitly rather than relying on the per-model
     // default.
-    reasoning_effort: "low",
+    // Only gpt-oss takes this field; servers such as Ollama reject it for other models with a 400.
+    ...(/gpt-oss/i.test(model) ? { reasoning_effort: "low" } : {}),
     temperature: 0, // deterministic classification — reproducibility over variety
     messages:    [{ role: "user", content: prompt }],
   });

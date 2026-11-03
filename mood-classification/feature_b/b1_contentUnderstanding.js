@@ -361,7 +361,8 @@ Return ONLY a valid JSON object, no explanation: { "category": "<one of the cate
     // set explicitly rather than relying on Groq's per-model default, which
     // has already changed once and can again. Non-gpt-oss models on Groq
     // ignore this field, so it's safe to send unconditionally.
-    reasoning_effort: "low",
+    // Only gpt-oss takes this field; servers such as Ollama reject it for other models with a 400.
+    ...(/gpt-oss/i.test(model) ? { reasoning_effort: "low" } : {}),
     temperature: 0, // deterministic classification — reproducibility over variety
     messages:    [{ role: "user", content: prompt }],
   });
