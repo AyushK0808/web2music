@@ -291,7 +291,8 @@ category-labelled. Every threshold is chosen on it, so the cascade results are
 development-set results and no held-out set was evaluated. The \emph{adversarial
 slice} is 47 hand-written pages (29 sensitive, 18 not) built from the detector's
 own term lists. Three authors labelled every page independently and the gold
-label is their majority; only category and binary sensitivity are labelled, and
+label is their majority, which resolves on 208 pages and agrees with the
+collection category on 85\% of them; only category and binary sensitivity are labelled, and
 mood is not evaluated. No LLM chose pages, labelled them or judged any output.
 Krippendorff's $\alpha$ \cite{kalpha} is 0.635 for category (just under the 0.667
 reliability threshold, so cascade results are tentative), 0.419 for sensitivity
@@ -330,7 +331,9 @@ On 105 live websites in automated Chromium, descriptor construction takes a
 median of 86\,ms against a 1,989\,ms navigation (embedding inference stubbed);
 with the real warm MiniLM model on 166 sites the median is 360\,ms (p95 519\,ms),
 343\,ms of it the embedding. Of 204 sites attempted, 38 failed to load and are
-excluded. Removing colour changes the mood label on 7.5\% of pages and reducing
+excluded. Text extraction, colour histogram and readability take medians of 11.0,
+3.9 and 1.5\,ms; most of the rest, and the whole p95 tail, is the idle-scheduled
+vector-store search. Boilerplate removal keeps 80.8\% of visible text. Removing colour changes the mood label on 7.5\% of pages and reducing
 the descriptor to text alone changes 10.2\%; with no reliable mood ground truth
 this shows influence, not benefit.
 
@@ -387,11 +390,14 @@ Navigation to audible, stubbed          & CPU laptop & 54  & 6.86\,s   & 11.28\,
 
 Table~\ref{tab:latency} shows the routes a request can take and
 Fig.~\ref{fig:coldgen} the cold generation time per tier. The fallback clip is
-served in 7\,ms, so the audible start is never delayed by generation. Only the GPU
+served in 7\,ms, so the audible start is never delayed by generation. A cache hit
+spends almost all of its 2.09\,s in the cache lookup, which pooled database
+connections lower to 8\,ms. Only the GPU
 generates faster than real time (RTF 0.83--0.85 for the generator call alone); the
 M4 takes 72\,s for a 28\,s clip (RTF 1.8--2.3) and the CPU-only host 62\,s for a
 15\,s clip (RTF 3.9--4.2). No request failed or fell back. Concurrent requests give
-no throughput gain (speedup 1.01--1.02$\times$ at 2, 4 and 8 requests).
+no throughput gain (speedup 1.01--1.02$\times$ at 2, 4 and 8 requests), so
+queueing delay grows linearly with the number of waiting requests.
 
 \begin{figure}[t]
 \centerline{\includegraphics[width=0.92\columnwidth]{figures/coldgen.pdf}}
@@ -451,8 +457,11 @@ measurement of listeners. At a 15\,s clip, page-level audio is heard on 52\% of
 visits (75\% of listening time) on the GPU, 48\% (73\%) on the M4 and 34\% (64\%)
 on the CPU, so dwell time and the confidence window matter more than generator
 speed. The GPU share rises with median dwell (37\%, 52\% and 64\% at 10, 30 and
-120\,s). If half the pages hit the pre-warm grid, which we do not observe, it
-would fall to 29\% at 30\,s, because a grid hit is served as L2.
+120\,s; 52\%, 62\% and 68\% on long-form pages). If half the pages hit the
+pre-warm grid, which we do not observe, it would fall to 29\% at 30\,s, because a
+grid hit is served as L2. A cache persisting across sessions would serve 81\% of
+visits as L2, a trivial upper bound since the corpus has only 75 distinct profile
+keys.
 
 \subsection{Conditioning fidelity and generator choice}
 \label{sec:res-fidelity}
@@ -489,8 +498,10 @@ CLAP top-1 retrieval (chance 10\%) & 12.5\% [10.1, 15.0] & -- \\
 \end{table}
 
 Matched clips are closer to the intended mood on all three scorers (paired
-Wilcoxon $p = .010$, $.029$, $4\times10^{-5}$), and valence and arousal track the
-intended values ($\rho = .40$, $.51$). The effects are small: the tagger's hit
+Wilcoxon $p = .010$, $.029$, $4\times10^{-5}$; mixed-model intercepts accounting
+for the three seeds per page, $p = 2\times10^{-6}$, $.004$, $3\times10^{-8}$), and
+valence and arousal track the intended values ($\rho = .40$, $.51$, $p <
+10^{-27}$). The effects are small: the tagger's hit
 rate for a shuffled mood is already 52\%, and CLAP retrieves a page's own clip in
 only 12.5\% of cases against 10\% chance, so the audio shifts toward the intended
 mood on average but a page's clip cannot be picked out from its text. These are
@@ -525,7 +536,8 @@ AudioLDM2-music & 0.51 & 0.05\,dB & 0.68 & 6.87 \\
 A prompt
 ablation (bare mood word, service template, engineered 312-character prompt; 165
 clips) shows no measurable effect on seam quality (paired differences 0.00 to
-$-0.05$\,dB, $p \geq .34$); the earlier M4 difference did not reproduce.
+$-0.05$\,dB, $p \geq .34$) or on generation time (13.2--13.3\,s median); the
+earlier M4 difference did not reproduce.
 
 \subsection{Loop quality}
 \label{sec:res-loop}
@@ -550,8 +562,11 @@ A fresh study of 220 seeded clips (11 moods $\times$ 20 seeds) compares the two
 rules at the shipped 250\,ms crossfade. Of these, 176 are scoreable (39 have a tail
 too short for the crossfade and 5 no loop point). The median $|\Delta E|$ is 2.08\,dB
 [1.69, 2.33] for chroma similarity and 0.16\,dB [0.12, 0.23] for the measured seam,
-and the share above 1\,dB falls from 72.7\% to 8.5\% (McNemar $p = 2\times10^{-34}$).
-The loops are also \emph{gapless}: rendered through the browser's decoder and a
+and the share above 1\,dB falls from 72.7\% to 8.5\% (McNemar $p = 2\times10^{-34}$;
+71.7\% to 6.2\% on the 145 clips that fit the full crossfade). The seam's
+spectral-centroid change, which the selector only uses to break ties, lies within
+the clip's own 95th percentile of interior change in 91.4\% [87.7, 95.0] of the
+clips. The loops are also \emph{gapless}: rendered through the browser's decoder and a
 looping buffer for 10 cycles, 30 of 30 clips show no inserted silence and are
 sample-identical from cycle to cycle. Gapless playback is shown; an inaudible seam
 is not claimed.
@@ -563,9 +578,11 @@ All fourteen executable restraint policies pass their tests: silence on sensitiv
 pages \cite{psyguard}, muting and ducking, bypass of payment and browser-internal
 pages, hashed-URL telemetry, and seven unit cases. The term lists are precise but a
 white-box slice built from their own vocabulary evades them on 19 of 29 sensitive
-pages (Table~\ref{tab:sensitive}). The hosted entailment model detects all 29,
-including the four non-English pages, but raises 11 false alarms on 18 because it
-offers no ``unrelated'' option, and it discloses every page not caught by a
+pages (Table~\ref{tab:sensitive}): seven use out-of-list terms, four euphemisms,
+four are non-English and four rest on a single ambiguous term. The hosted
+entailment model detects all 29, including the four non-English pages, but raises
+11 false alarms on 18, among them all six plainly benign pages (e.g.\ a Rust
+tutorial), because it offers no ``unrelated'' option, and it discloses every page not caught by a
 hard-severe term, so disclosure holds only with the on-device back end. The shipped
 check adds the third hypothesis and runs on-device; its recall on real crisis pages
 is unmeasured.
@@ -602,13 +619,13 @@ audit establishes the destination of the text. No telemetry left the browser.
 \label{sec:conclusion}
 % ===========================================================================
 
-Running the middle classifier stage on the device keeps the keyword-to-LLM
-macro-F1 on the development set while cutting off-device page transfers by 38\%;
-on the wire the fully local configuration sends no page text. A mood-level clip is
-audible 36\,ms after the mood decision whatever the generation time, and the
-page-level clip is heard on about half of simulated visits on a laptop GPU and a
-third on a CPU. Generated audio leans only slightly toward the intended mood, and
-choosing the loop point by measured seam removes most large energy jumps.
+An on-device middle stage keeps the keyword-to-LLM macro-F1 while cutting
+off-device pages by 38\%, and the fully local configuration sends no page text. A
+mood clip is audible 36\,ms after the mood decision, page-level audio is heard on
+about half of simulated GPU visits, and measured-seam cuts remove most large
+energy jumps. Generated audio leans slightly toward its intended mood on three
+objective scorers and loops without gaps; whether listeners hear that fit is the
+open question.
 
 % ===========================================================================
 \section{Limitations and Future Work}
@@ -620,8 +637,10 @@ the page or that the loops sound seamless; the fidelity measures are proxies wit
 small effects. The labellers are authors, and there is no held-out test set, so the
 cascade's macro-F1 values are in-sample. The exposure results rest on a modelled
 dwell time, and the end-to-end and network runs use 11 and 12 fixture pages. The
-hardware is one laptop GPU, one Apple M4 and one CPU laptop. Future work includes a
-listening study with independent annotators, loop-closed generation, and applying
+hardware is one laptop GPU, one Apple M4 and one CPU laptop. The hosted LLM can
+change behind the same model name, and the local Qwen2.5-7B configuration gives
+different answers. Future work includes a listening study (its protocol is released
+with the code) with independent annotators, loop-closed generation, and applying
 the pipeline to other continuous contexts such as documents and code editors.
 
 \scriptsize
