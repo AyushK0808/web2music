@@ -131,7 +131,7 @@ W3 / R3 & Labels come from the authors; $\alpha$ below threshold; mood $\alpha =
 Not resolved (see above). Mood is no longer an evaluated target, the existing agreement
 coefficients are reported as they were, and author labelling is stated as a limitation. We
 did not collect a new labelled set, so there is no new $\alpha$. &
-Results: Evaluation design, Annotation agreement; Limitations \\
+Results: Evaluation design; Limitations \\
 \midrule
 W4 & Headline latencies come from stubbed benchmarks &
 Re-measured end to end with the real embedding model, classifier and generator: 110 page loads
@@ -143,7 +143,7 @@ per setup, all of which became audible, with none timed out.
   live sites.
 \end{itemize}
 The stubbed figures remain only where labelled as such. &
-Abstract; Introduction; Results: Descriptor cost, Generation latency (Table ``Latency'') \\
+Abstract; Introduction; Results: Descriptor cost and classification, Generation latency (Table ``Latency'') \\
 \midrule
 R4 (clarity) & Garbled sentences; ``bart-large-mini''; dense notation &
 Rewrote the abstract, introduction and the architecture sections in plain language. The
@@ -210,7 +210,7 @@ Fixed seed lists, paired tests and bootstrap CIs:
 \item \textbf{Generator comparison:} MusicGen-small, MusicGen-medium and AudioLDM2-music, 55
   clips each, reporting RTF, seam, loop retention, CLAP-space FAD and Audiobox quality.
 \end{itemize} &
-Results: Loop quality, Prompt ablation, Generator comparison (Table ``Generators'') \\
+Results: Loop quality; Conditioning fidelity and generator choice (generator comparison and prompt ablation, in text) \\
 \midrule
 6 & Rewrite abstract and intro; define terms; release code and data &
 Rewritten, and terms defined. Code, URLs, result files and the raw LLM responses are released
@@ -230,12 +230,12 @@ exposure), and $\alpha$ reported on the development set.
 \item URL hashes in telemetry now use a keyed HMAC.
 \end{itemize}
 \textbf{Perception:} handled as above. &
-System architecture; Results: Annotation agreement, Restraint (network audit) \\
+System architecture; Results: Evaluation design, Restraint (network audit) \\
 \midrule
 W & Limited comparison with alternatives &
 Generator comparison added. The cascade table's seven configurations, from keyword-only to
 LLM-only, are the baselines and are now named as such. &
-Table ``Cascade configurations''; Table ``Generators'' \\
+Table ``Cascade configurations''; Results: Conditioning fidelity and generator choice \\
 \bottomrule
 \end{xltabular}
 
@@ -261,7 +261,6 @@ Table ``Cascade configurations''; Table ``Generators'' \\
 \item \textbf{Batching.} Concurrent generation requests were measured to give no throughput
   gain on the GPU (speedup 1.01--1.02$\times$ at 2--8 concurrent requests, five repeats), and
   the paper says so.
-\item \textbf{Disclosure.} AI-assisted language editing is disclosed in the acknowledgments.
 \end{itemize}
 
 \end{document}
