@@ -91,7 +91,7 @@ pari.khandal2025@vitstudent.ac.in}
 \maketitle
 
 \begin{abstract}
-A browser extension that plays music suited to the page a person is reading
+A browser extension that plays music conditioned on the page a person is reading
 has to solve three problems: describe the page, keep the page text from
 leaving the device, and hide a music generator that is slower than browsing.
 We present Web2Music, a Manifest V3 Chrome extension that addresses all three.
@@ -104,13 +104,14 @@ device; on a held-out test set of \tbd{S-E: n pages} pages its macro-F1 is
 \tbd{S-E: test macro-F1}. Playback starts with a short mood-level clip that
 becomes audible 36\,ms after the mood is decided. Music generated for the
 specific page replaces it only when generation finishes, which takes a median
-of 24\,s on a consumer GPU and 72\,s on an Apple
-M4 for a 28\,s clip; in a browsing simulation the generated audio is heard on
-28\% of visits with the GPU and 21\% with the M4 (28\,s clips, median dwell 30\,s).
-Choosing each loop's cut point by its measured seam lowers the share of
-seams with an energy jump above 1\,dB from 74\% to 12\%. Fit to the page is
-evaluated with objective conditioning-fidelity measures, not listener ratings;
-no listening study was run.
+of 13\,s for a 15\,s clip on a consumer GPU, 62\,s on the same machine's CPU and
+20\,s on an Apple M4; in a browsing simulation with a cold cache the page-level audio
+is heard on 52\% of visits with the GPU, 48\% with the M4 and 34\% on the CPU
+(15\,s clips, median dwell 30\,s). Choosing each loop's cut point by its measured seam
+lowers the share of seams with an energy jump above 1\,dB from 73\% to 9\% on 176
+fresh clips, and the loops play back gaplessly. Audio generated for a page is closer to
+its intended mood than audio generated for a page of another mood on three objective
+scorers, but the effect is small; no listening study was run.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -139,15 +140,16 @@ and colour, not a prompt.
 \item \textbf{Classification is a privacy decision.} The most accurate
 classifier is a hosted large language model (LLM), and calling one on every
 page would turn a music player into a browsing-history channel.
-\item \textbf{Generation is slower than browsing.} A cold 28\,s clip takes
-72\,s on an Apple M4 and several minutes on a CPU laptop, against a page load
-of about two seconds.
+\item \textbf{Generation is slower than browsing.} A cold 15\,s clip takes
+13\,s on a laptop GPU, 20\,s on an Apple M4 and about a minute on a laptop CPU,
+against a page load of about two seconds.
 \end{enumerate}
 
 This paper contributes one measured answer to each.
 \begin{enumerate}
 \item A four-signal page descriptor (text, sentence embedding, colour,
-behaviour) that costs 86\,ms per page excluding embedding inference.
+behaviour) that costs 86\,ms per page excluding embedding inference and 360\,ms
+with it.
 \item A three-stage cascade (keywords, then a zero-shot natural-language-inference
 model, then an LLM) that treats the share of pages sent off the device (the
 \emph{off-device rate}) as a measured, adjustable quantity. With an on-device
@@ -158,7 +160,8 @@ configuration.
 \item Fallback-then-swap playback, which keeps a sound audible 36\,ms after
 the mood is decided whatever the generation time, and loop synthesis that turns a
 one-shot generator into gapless loops; choosing the cut by measured seam cuts the
-share of seams with an energy jump above 1\,dB from 74\% to 12\%.
+share of seams with an energy jump above 1\,dB from 74\% to 12\%, and from 73\% to 9\%
+on a fresh, seeded set of clips at the shipped crossfade.
 \end{enumerate}
 
 Because generation is slow, what a listener hears falls into three
@@ -325,7 +328,8 @@ running on Groq is used, with the temperature set to 0. A second, fully local co
 uses Qwen2.5-7B-Instruct (4-bit, served by Ollama) in the same role; it builds the page
 profiles for the fidelity study and is reported separately from the Groq results. An eight-second
 timeout limit is implemented; in case of timeout, the decision would be made
-on the basis of keywords. The chosen mood will stay the same for five seconds
+on the basis of keywords. The LLM stage can be switched off in the settings; the
+extension then makes no LLM request at all, which is configuration A6. The chosen mood will stay the same for five seconds
 in the confidence period before the musical transition to avoid the
 perceivable fluctuations due to user scrolling. The externally hosted stages
 are reached through a proxy that holds the API keys, so no credential is
@@ -461,13 +465,15 @@ any output; the LLM stage (model, prompt, temperature 0) was frozen before the
 test set was opened and its raw answers are cached, so every replay uses the same
 answers.
 
-\textbf{Clips and hardware.} The loop study uses the 141 clips in the service's
-store, 130 generated and 11 per-mood fallbacks. Table~\ref{tab:hardware} lists the
-three hardware tiers. Generation time and the browsing simulation are reported
-for each; the systems benchmark ran on the CPU tier.
+\textbf{Clips and hardware.} The first loop study uses the 141 clips in the service's
+store, 130 generated and 11 per-mood fallbacks; the second generates 220 fresh clips
+from fixed seeds. The fidelity study generates 702 clips and the generator comparison
+55 per generator. Table~\ref{tab:hardware} lists the hardware. Generation time and the
+browsing simulation are reported for the GPU, its CPU alone and the M4; the stubbed systems
+benchmark ran on the CPU laptop.
 
 \begin{table}[t]
-\caption{Hardware tiers.}
+\caption{Hardware (GPU: driver 592.82, CUDA 12.8, PyTorch 2.11).}
 \label{tab:hardware}
 \begin{center}
 \scriptsize
@@ -476,9 +482,10 @@ for each; the systems benchmark ran on the CPU tier.
 \toprule
 \textbf{Tier} & \textbf{Device} & \textbf{Precision} & \textbf{Used for} \\
 \midrule
-CPU & i7-1255U, 16\,GB & fp32 & systems; CPU generation \\
-M4  & Apple M4 (MPS) & fp32 & cold generation, prompts \\
-GPU & RTX 5060, 8\,GB & fp16 & driver 592.82, CUDA 12.8, torch 2.11 \\
+CPU laptop & i7-1255U, 16\,GB & fp32 & stubbed systems benchmark \\
+M4  & Apple M4 (MPS) & fp32 & cold generation, first prompt study \\
+GPU & RTX 5060 Laptop, 8\,GB & fp16 & generation, end to end, loops, fidelity \\
+CPU only & i7-14650HX (GPU host) & fp32 & CPU-only generation \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -568,7 +575,7 @@ both shape about a tenth of mood decisions, which, with no reliable mood
 ground truth (\S\ref{sec:res-agreement}), shows influence, not benefit.
 
 \begin{table}[t]
-\caption{Latency by request path (wall-clock time at the client; the CPU rows are the same machine with the GPU disabled).}
+\caption{Latency by request path (wall-clock time at the client). ``CPU only'' is the GPU host with the GPU disabled; navigation rows are the real pipeline, 110 loads each, of which 10 generate.}
 \label{tab:latency}
 \begin{center}
 \scriptsize
@@ -577,18 +584,18 @@ ground truth (\S\ref{sec:res-agreement}), shows influence, not benefit.
 \toprule
 \textbf{Path} & \textbf{HW} & \textbf{n} & \textbf{p50} & \textbf{p95} \\
 \midrule
-Fallback clip served                    & CPU & 33  & 7\,ms     & 153\,ms \\
-Cache hit, end to end                   & CPU & 93  & 2.09\,s   & 2.11\,s \\
+Fallback clip served                    & CPU laptop & 33  & 7\,ms     & 153\,ms \\
+Cache hit, end to end                   & CPU laptop & 93  & 2.09\,s   & 2.11\,s \\
 Cache check, pooled connection          & M4  & 30  & 8\,ms     & 41\,ms \\
-Cold generation, 10\,s clip             & CPU & 12  & 38.5\,s   & 39.5\,s \\
-Cold generation, 15\,s clip             & CPU & 12  & 62.2\,s   & 63.6\,s \\
+Cold generation, 10\,s clip             & CPU only & 12  & 38.5\,s   & 39.5\,s \\
+Cold generation, 15\,s clip             & CPU only & 12  & 62.2\,s   & 63.6\,s \\
 Cold generation, 28\,s clip, one mood   & M4  & 30  & 72.1\,s   & 105.9\,s \\
 Cold generation, 28\,s clip, 11 moods   & M4  & 110 & 72.2\,s   & 119.4\,s \\
 Cold generation, 28\,s clip             & GPU & 33  & 24.3\,s   & 25.0\,s \\
 Cold generation, 15\,s clip             & GPU & 33  & 13.3\,s   & 13.6\,s \\
-Navigation to generated audio, A6 (LLM unreachable) & GPU & 110 & 7.7\,s & 37.6\,s \\
+Navigation to generated audio, A6 (LLM off) & GPU & 110 & 7.7\,s & 37.6\,s \\
 Navigation to generated audio, A6b (local 7B LLM) & GPU & 110 & 7.9\,s & 64.6\,s \\
-Navigation to audible (client)          & CPU & 54  & 6.86\,s   & 11.28\,s \\
+Navigation to audible, stubbed          & CPU laptop & 54  & 6.86\,s   & 11.28\,s \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -652,9 +659,19 @@ while a cold clip is generated. Cache hits on the CPU laptop took 2.09 seconds, 
 spent in the cache lookup, and using pooled Postgres connections lowers that
 lookup to 8\,ms. On the RTX 5060 a cold 15\,s clip takes a median of
 13.3\,s and a 28\,s clip 24.3\,s
-(real-time factor 0.87--0.91 end to end across 8--28\,s clips, of which the generator call alone is 0.83--0.85; 33 cold requests per length, spread over all 11 moods, none failed or fell back), measured end to end with the real
-classifier, embedding model and generator over 110 page loads per
-setup (11 fixture pages $\times$ 10 repeats, of which 10 loads per setup generate and the rest hit the cache), so the figures in the abstract no longer rest on stubbed components.
+(real-time factor 0.87--0.91 end to end across 8--28\,s clips, of which the generator call alone is 0.83--0.85; 33 cold requests per length, spread over all 11 moods, none failed or fell back).
+
+The whole pipeline was then measured with the real classifier, embedding model and
+generator: the built extension loads 11 fixture pages 10 times each (110 loads per
+setup, of which the first load of each page generates and the rest hit the cache). With
+the LLM stage off (A6), the first sound is heard a median of 7.7\,s after navigation
+(p95 12.1\,s), almost all of it the 5\,s confidence window, and the generated clip takes
+over at p95 37.6\,s; the generation round trip is 29.8\,s at p95 for the 28\,s default
+clip. With the LLM stage on (A6b) the first sound is heard at 7.9\,s (p95 9.2\,s) and a
+classifier decision takes a median of 1.2\,s against 0.9\,s, but the generated clip arrives
+later (p95 64.6\,s): the LLM in this run is a local 7B model that shares the 8\,GB GPU with
+MusicGen, which roughly doubles generation time, so this row bounds a fully local setup on
+one GPU rather than a hosted LLM. All 220 loads became audible and none timed out.
 Concurrent requests do not raise throughput: $k = 2$, 4 and 8 simultaneous 15\,s requests finish in 28.3, 54.8 and 111.3\,s, within 1--2\% of running the same requests one after another (speedup 1.02, 1.01 and 1.01$\times$; five repeats per level, rotating moods, none failed), so the worker's batching brings no gain on this GPU and the queueing delay grows linearly with $k$.
 On the CPU-only configuration a cold 15\,s clip takes about a minute, so generated audio
 arrives only in longer visits, and for most visits the system behaves as a mood-level
@@ -694,11 +711,12 @@ page. We estimate it by simulating browsing sessions. Moods follow a Markov chai
 fitted to the corpus mood frequencies; dwell times are Weibull-distributed
 \cite{liudwell} with the median swept from 10 to 120\,s and a longer median for
 long-form pages; generation times are drawn from the measured distributions of
-each tier and clip length, with timeouts treated as censored; there is one
-worker, generation is cancelled when the next page needs a different clip, and the
-99-entry pre-warm grid and L3 a fresh generation that finishes before the visit ends. Cache entries are keyed on
+each tier and clip length (none of the requests timed out); there is one
+worker, and generation is cancelled when the next page needs a different clip. L1 is the
+mood clip, L2 a cache hit and L3 a fresh generation that finishes before the visit ends.
+Cache entries are keyed on
 the exact profile (mood, tempo, key, energy and the style string), and the cache starts empty
-for each simulated session. The pre-warm grid is credited only with the hit rate measured on
+for each simulated session. The service's 99-entry pre-warm grid is credited only with the hit rate measured on
 real profiles: replaying the profile builder's keys for the 235 corpus pages, none falls on a
 grid key (75 distinct keys occur in all), so L2 arises only from an earlier visit to the same
 key within a session. Mood frequencies are those of the corpus (curious 36\%, focused 18\%,
@@ -733,8 +751,9 @@ heard on 52\% of visits and accounts for 75\% of listening time at a 15\,s clip;
 
 With no listening study, we ask a narrower, objective question: does audio
 generated for a page agree with the mood the system intended for it, more than
-audio generated for a page of a different mood does? We generate
-702 clips (234 pages $\times$ 3 seeds) on the GPU and
+audio generated for a page of a different mood does? The cascade (with the
+local Qwen2.5-7B LLM stage) builds a music profile for each of the 234 non-sensitive corpus pages; we
+generate 702 clips (234 pages $\times$ 3 seeds) from these profiles on the GPU and
 compare each with a \emph{shuffled} control, a clip from a page whose mood is at
 least two steps away in valence--arousal space, plus a page-agnostic fixed-prompt
 control. Four non-generative scorers are used: Essentia valence/arousal regressors
@@ -816,7 +835,7 @@ study we cannot say which timbre is preferred; the data support the default only
 speed and seam quality.
 
 \begin{table}[t]
-\caption{Loop-seam quality by cut method.}
+\caption{Loop-seam quality by cut method (113 usable clips of the 141 in the store).}
 \label{tab:seam}
 \begin{center}
 \scriptsize
@@ -880,7 +899,7 @@ do not count it as evidence. Gapless playback is shown; a seam being
 
 \begin{figure}[t]
 \centerline{\includegraphics[width=\columnwidth]{figures/seamcdf.pdf}}
-\caption{Energy jump across loop seams.}
+\caption{Energy jump across loop seams, by cut method (the 113 clips of Table~\ref{tab:seam}).}
 \label{fig:seam}
 \end{figure}
 
@@ -952,10 +971,10 @@ black-box and benign sets, not from the hand-written slice.
 
 \textbf{Network audit.} To check the disclosure claims on the wire, we recorded every
 request made by the service worker, the offscreen document, the content scripts
-and the pages while the built extension browsed the corpus. In the fully local
+and the pages while the built extension browsed 12 fixture pages, one per mood plus a
+crisis-support page, three times each. In the fully local
 configuration (A6, the LLM stage switched off), no request body contained page text
-(12 fixture pages $\times$ 3 visits; the only traffic was the generation service, 850 bytes per
-page). In the default configuration (A6b), page text left the device on 30 of the 36 visits (83\%),
+(the only traffic was the generation service, 850 bytes per page). In the default configuration (A6b), page text left the device on 30 of the 36 visits (83\%),
 all to the LLM proxy and nowhere else (5.9\,kB per page to the proxy and 0.8\,kB to the generation
 service). The fixtures were written to exercise the cascade and are not representative of browsing,
 so this rate is not the disclosure rate (47\% of the 255 development pages in the replayed cascade); what the
@@ -995,11 +1014,13 @@ pipeline step is assessed against the properties of Section~\ref{sec:gaps}.
 Running the middle classifier stage on the device keeps the keyword-to-LLM
 macro-F1 on the development set and cuts off-device page transfers by 38\%;
 the gate sets how much further disclosure is reduced, and the held-out result is
-in Table~\ref{tab:cascade-test}. A mood-level clip is audible 36\,ms after the
-mood decision whatever the generation time, and the share of visits in which the
-page-level clip is also heard is estimated in Section~\ref{sec:res-exposure}.
-Choosing the loop point by measured seam removes most large energy jumps at the
-loop, and the loops are gapless.
+in Table~\ref{tab:cascade-test}. On the wire, the fully local configuration sends
+no page text, and the default sends it only to the LLM proxy. A mood-level clip is
+audible 36\,ms after the mood decision whatever the generation time; with a laptop GPU
+the page-level clip is heard on about half of the simulated visits, and on a CPU on
+about a third. The generated audio leans toward the intended mood, but only slightly
+on objective scorers. Choosing the loop point by measured seam removes most large
+energy jumps at the loop, and the loops are gapless.
 
 % ===========================================================================
 \section{Limitations and Future Work}
@@ -1013,7 +1034,9 @@ instruments for a within-subjects study (page-matched against shuffled audio;
 forced choice, Likert ratings, dwell, skip and mute) are released with the code.
 The conditioning-fidelity measures of Section~\ref{sec:res-fidelity} are proxies
 and inherit the biases of the models behind them: CLAP is trained on music
-captions, not web pages, and the mood-to-tag mapping is an assumption.
+captions, not web pages, and the mood-to-tag mapping is an assumption. The
+measured effects are small (CLAP retrieval of 12.5\% against 10\% chance), so the
+fidelity result shows a tendency, not that a page's music is recognisably its own.
 
 \textbf{Author annotation.} The three labellers are authors. Labelling was blind
 and the guidelines were frozen first, but this is not independent annotation, and
@@ -1025,12 +1048,17 @@ multiplier. The share of pages whose profile is in the pre-warm grid is measured
 corpus (0 of 235), but the corpus is not a sample of real browsing. The sweep over the median dwell shows the sensitivity, not the
 truth for any particular user.
 
+\textbf{Measurement scope.} The end-to-end runs and the network audit use 11 and 12
+fixture pages, so they establish timings and where text goes, not rates over real
+browsing. The A6b end-to-end run used a local 7B LLM on the same GPU as the generator,
+which slows generation; a hosted LLM would not.
+
 \textbf{Other limits.} The held-out test set is small, so macro-F1 intervals are
 about $\pm .05$ wide and smaller differences are not resolved. The LLM stage in the main
 configuration is a hosted model; its answers are cached for replay but its behaviour can
 change under the same model name, and the local Qwen2.5-7B configuration gives different
-answers and is not interchangeable with it. The hardware is one machine with one GPU, plus two
-CPU-class tiers. Future work includes conditioning the generator to produce
+answers and is not interchangeable with it. The hardware is one laptop GPU (also measured CPU-only), one
+Apple M4 and one CPU laptop. Future work includes conditioning the generator to produce
 loop-closed content, independent annotators and a listening study, and applying the
 same pipeline to other continuous contexts such as documents and code editors.
 
