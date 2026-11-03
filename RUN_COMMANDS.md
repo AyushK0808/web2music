@@ -34,7 +34,7 @@ Verified on this machine. Ubuntu 26.04 WSL ships Python 3.14, which `laion-clap`
 environment is Python 3.12 made with `uv`. It lives in the WSL home, not on `/mnt/c`, because venvs on NTFS are slow.
 
 ```bash
-sudo apt-get update && sudo apt-get install -y python3-venv python3-pip ffmpeg      # once; WSL has none of them (ffmpeg also provides ffprobe, which pydub needs to decode the .ogg clips)
+sudo apt-get update && sudo apt-get install -y python3-venv python3-pip      # once; WSL has neither
 python3 -m venv ~/w2m-venv && ~/w2m-venv/bin/pip install uv
 ~/w2m-venv/bin/uv venv --python 3.12 ~/w2m312
 source ~/w2m312/bin/activate
@@ -145,7 +145,7 @@ The tag must contain `mood-classification/feature_b/llmConfig.js` and the prompt
 Terminal A (session block first; leave running; `W2M_PREWARM=0` so the grid does not compete with timed requests):
 
 ```bash
-cd /mnt/c/Users/theof/projects/personal/web2music/audio-generation
+cd audio-generation
 W2M_PREWARM=0 W2M_MODEL=musicgen-small uvicorn main:app --port 8000
 ```
 
@@ -153,12 +153,12 @@ Terminal B (session block first):
 
 ```bash
 curl -s http://127.0.0.1:8000/health      # "generator": {"model":"musicgen-small","device":"NVIDIA GeForce RTX 5060 ...","precision":"fp16",...}
+cd audio-generation
 ```
 
 ### S-B — generation latency by duration and concurrency  → `\tbd{S-B…}`
 
 ```bash
-cd /mnt/c/Users/theof/projects/personal/web2music/audio-generation
 python experiments/d4_latency.py --sections duration --durations 8,10,15,20,28 --moods calm,focused,joyful,energetic,sad,dark,nostalgic,curious,tense,uplifting,neutral --spread-moods --repeats 33 --timeout 600 --out results/d4-duration-5060.json
 python experiments/d4_latency.py --sections concurrency --concurrency-levels 1,2,4,8 --duration 15 --timeout 600 --out results/d4-concurrency-5060.json
 python experiments/d3_clip_length.py --durations 8,10,15,20,28 --moods calm,tense,energetic --repeats 3 --out results/d3-clip-length-5060.json
@@ -169,7 +169,6 @@ python experiments/d3_clip_length.py --durations 8,10,15,20,28 --moods calm,tens
 ### S-G — loop study, 220 fresh clips  → `\tbd{S-G: chroma/seam …}`
 
 ```bash
-cd /mnt/c/Users/theof/projects/personal/web2music/audio-generation
 python experiments/d6_loop_seeds.py --seeds 20 --duration 15 --keep-clips results/d6-loop-seeds-clips --out results/d6-loop-seeds-5060.json
 ```
 
@@ -180,7 +179,6 @@ python experiments/d6_loop_seeds.py --seeds 20 --duration 15 --keep-clips result
 ### S-G — prompt ablation, 11 moods × 5 seeds × 3 prompts  → `\tbd{S-G: P3−P2 …}`
 
 ```bash
-cd /mnt/c/Users/theof/projects/personal/web2music/audio-generation
 python experiments/d1_prompt_ablation.py --repeats 5 --duration 15 --out results/d1-prompt-seeds.json
 ```
 
@@ -190,7 +188,6 @@ Restart the service once per generator (terminal A: Ctrl-C, then the matching li
 `d7_generators.py run` line in terminal B each time:
 
 ```bash
-cd /mnt/c/Users/theof/projects/personal/web2music/audio-generation
 # terminal A:  W2M_PREWARM=0 W2M_MODEL=musicgen-small  uvicorn main:app --port 8000
 python experiments/d7_generators.py run --seeds 5 --duration 15 --clips-dir results/d7-clips --out results/d7-musicgen-small.json
 # terminal A:  W2M_PREWARM=0 W2M_MODEL=musicgen-medium uvicorn main:app --port 8000
@@ -211,9 +208,9 @@ AudioLDM2 is fp16 within 8 GB; lower `W2M_AUDIOLDM2_STEPS` (default 100) only if
 
 ```bash
 # terminal A (stop the GPU service first): hides the GPU from torch
-cd /mnt/c/Users/theof/projects/personal/web2music/audio-generation && CUDA_VISIBLE_DEVICES= W2M_PREWARM=0 uvicorn main:app --port 8000
+cd audio-generation && CUDA_VISIBLE_DEVICES= W2M_PREWARM=0 uvicorn main:app --port 8000
 # terminal B
-cd /mnt/c/Users/theof/projects/personal/web2music/audio-generation && python experiments/d4_latency.py --sections duration --durations 10,15 --moods calm,tense,energetic --spread-moods --repeats 12 --timeout 300 --out results/d4-duration-cpu2.json
+cd audio-generation && python experiments/d4_latency.py --sections duration --durations 10,15 --moods calm,tense,energetic --spread-moods --repeats 12 --timeout 300 --out results/d4-duration-cpu2.json
 ```
 
 Timeouts are recorded as errors and are treated as **censored** by S-C; report them as "> 300 s, k of n".
@@ -277,10 +274,11 @@ Night 1 already kept the 220 loop-study clips (`--keep-clips`), so S-I needs no 
 After S-B has produced the three duration files (the M4 file is your existing `audio-generation/results/d4-duration.json`):
 
 ```bash
-python analysis/exposure/simulate_exposure.py --d4 5060=audio-generation/results/d4-duration-5060.json --d4 cpu=audio-generation/results/d4-duration-cpu2.json --d4 m4=audio-generation/results/d4-duration.json --moods analysis/out/corpus_moods.json --durations 10,15,28 --medians 10,20,30,60,120 --grid-hit 0.5 --out analysis/exposure/exposure.json
+python analysis/exposure/profile_keys.py --profiles analysis/proxies/out/profiles.json --out analysis/exposure/profile_keys.json
+python analysis/exposure/simulate_exposure.py --d4 5060=audio-generation/results/d4-duration-5060.json --d4 cpu=audio-generation/results/d4-duration-cpu2.json --d4 m4=audio-generation/results/d4-duration.json --moods analysis/out/corpus_moods.json --profile-keys analysis/exposure/profile_keys.json --durations 10,15,20,28 --medians 10,20,30,60,120 --grid-hit-sensitivity 0.5 --out analysis/exposure/exposure.json
 ```
 
-Sensitivity: rerun with `--grid-hit 0.2` and `--grid-hit 0.8`, `--stickiness 0.0/0.6`. `analysis/out/corpus_moods.json` is a JSON array of
+The grid-hit share is measured from the real profiles (`profile_keys.py`), not assumed; `exposure.json` holds a `cold_cache` scenario (primary), a `warm_cache` one (persistent cache, upper bound) and the assumed 0.5 grid hit as a sensitivity row. Further sensitivity: `--stickiness 0.0/0.6`. `analysis/out/corpus_moods.json` is a JSON array of
 mood strings, e.g. the `mood` of each page from `analysis/proxies/out/profiles.json` (step 7.1).
 
 ---
@@ -334,8 +332,8 @@ Needs `classify-service` up and the Groq key. `readwrite` on the first pass, `re
 
 ```bash
 export W2M_LLM_CACHE=analysis/llm-cache/gpt-oss-20b.jsonl W2M_LLM_CACHE_MODE=readwrite
-node mood-classification/experiments/s2_tier_ablation.js --corpus analysis/corpus/s2_corpus.json      --with-a6 --out mood-classification/results/s2-ablation-dev.json
-node mood-classification/experiments/s2_tier_ablation.js --corpus analysis/corpus/s2_corpus_test.json --with-a6 --out mood-classification/results/s2-ablation-test.json
+node mood-classification/experiments/s2_tier_ablation.js --corpus "$PWD/analysis/corpus/s2_corpus.json"      --with-a6 --zs-local --zs-fp32 --out mood-classification/results/s2-ablation-dev.json
+node mood-classification/experiments/s2_tier_ablation.js --corpus "$PWD/analysis/corpus/s2_corpus_test.json" --with-a6 --zs-local --zs-fp32 --out mood-classification/results/s2-ablation-test.json
 ```
 
 L-5 agreement check (re-run the LLM stage on 50 test pages, expect a few % flips because hosted temperature-0 is not deterministic):
