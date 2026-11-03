@@ -1,0 +1,234 @@
+{
+  "generators": {
+    "musicgen-small": {
+      "summary": {
+        "generator": "musicgen-small",
+        "n_requests": 55,
+        "n_generated": 55,
+        "rtf": {
+          "n": 55,
+          "min": 0.84,
+          "p50": 0.889,
+          "p95": 0.91,
+          "max": 0.912,
+          "mean": 0.888,
+          "stdev": 0.017
+        },
+        "d3_generate_ms": {
+          "n": 55,
+          "min": 11979,
+          "p50": 12740,
+          "p95": 12982,
+          "max": 13077,
+          "mean": 12707.309,
+          "stdev": 237.106
+        },
+        "seam_energy_delta_db": {
+          "n": 55,
+          "min": 0.0,
+          "p50": 0.11,
+          "p95": 0.69,
+          "max": 1.2,
+          "mean": 0.163,
+          "stdev": 0.229
+        },
+        "duration_retention": {
+          "n": 55,
+          "min": 0.191,
+          "p50": 0.548,
+          "p95": 0.918,
+          "max": 0.932,
+          "mean": 0.558,
+          "stdev": 0.225
+        }
+      },
+      "manifest": {
+        "recorded_at": "2026-11-02T22:17:41",
+        "platform": "Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+        "python": "3.12.16",
+        "cpu": null,
+        "form_factor": "laptop",
+        "power_plan": "high-performance",
+        "nvidia_smi": "NVIDIA GeForce RTX 5060 Laptop GPU, 592.82, 8151 MiB",
+        "torch": {
+          "version": "2.11.0+cu128",
+          "cuda": "12.8",
+          "cuda_available": true,
+          "capability": [
+            12,
+            0
+          ]
+        },
+        "generator": {
+          "model": "musicgen-small",
+          "device": "NVIDIA GeForce RTX 5060 Laptop GPU",
+          "precision": "fp16",
+          "torch_compile": false,
+          "audioldm2_steps": null
+        }
+      }
+    },
+    "musicgen-medium": {
+      "summary": {
+        "generator": "musicgen-medium",
+        "n_requests": 55,
+        "n_generated": 55,
+        "rtf": {
+          "n": 55,
+          "min": 1.483,
+          "p50": 1.608,
+          "p95": 2.005,
+          "max": 2.082,
+          "mean": 1.671,
+          "stdev": 0.153
+        },
+        "d3_generate_ms": {
+          "n": 55,
+          "min": 21665,
+          "p50": 23522,
+          "p95": 29316,
+          "max": 30235,
+          "mean": 24417.418,
+          "stdev": 2174.466
+        },
+        "seam_energy_delta_db": {
+          "n": 55,
+          "min": 0.0,
+          "p50": 0.12,
+          "p95": 0.78,
+          "max": 1.69,
+          "mean": 0.239,
+          "stdev": 0.334
+        },
+        "duration_retention": {
+          "n": 55,
+          "min": 0.202,
+          "p50": 0.536,
+          "p95": 0.923,
+          "max": 0.939,
+          "mean": 0.551,
+          "stdev": 0.219
+        }
+      },
+      "manifest": {
+        "recorded_at": "2026-11-02T22:46:15",
+        "platform": "Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+        "python": "3.12.16",
+        "cpu": null,
+        "form_factor": "laptop",
+        "power_plan": "high-performance",
+        "nvidia_smi": "NVIDIA GeForce RTX 5060 Laptop GPU, 592.82, 8151 MiB",
+        "torch": {
+          "version": "2.11.0+cu128",
+          "cuda": "12.8",
+          "cuda_available": true,
+          "capability": [
+            12,
+            0
+          ]
+        },
+        "generator": {
+          "model": "musicgen-medium",
+          "device": "NVIDIA GeForce RTX 5060 Laptop GPU",
+          "precision": "fp16",
+          "torch_compile": false,
+          "audioldm2_steps": null
+        }
+      }
+    },
+    "audioldm2-music": {
+      "summary": {
+        "generator": "audioldm2-music",
+        "n_requests": 55,
+        "n_generated": 55,
+        "rtf": {
+          "n": 55,
+          "min": 0.433,
+          "p50": 0.505,
+          "p95": 0.539,
+          "max": 0.551,
+          "mean": 0.503,
+          "stdev": 0.025
+        },
+        "d3_generate_ms": {
+          "n": 55,
+          "min": 6065,
+          "p50": 7123,
+          "p95": 7577,
+          "max": 7844,
+          "mean": 7093.164,
+          "stdev": 365.364
+        },
+        "seam_energy_delta_db": {
+          "n": 55,
+          "min": 0.0,
+          "p50": 0.05,
+          "p95": 0.42,
+          "max": 1.47,
+          "mean": 0.118,
+          "stdev": 0.217
+        },
+        "duration_retention": {
+          "n": 55,
+          "min": 0.188,
+          "p50": 0.602,
+          "p95": 0.926,
+          "max": 0.945,
+          "mean": 0.577,
+          "stdev": 0.24
+        }
+      },
+      "manifest": {
+        "recorded_at": "2026-11-03T03:32:50",
+        "platform": "Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+        "python": "3.12.16",
+        "cpu": null,
+        "form_factor": "laptop",
+        "power_plan": "high-performance",
+        "nvidia_smi": "NVIDIA GeForce RTX 5060 Laptop GPU, 592.82, 8151 MiB",
+        "torch": {
+          "version": "2.11.0+cu128",
+          "cuda": "12.8",
+          "cuda_available": true,
+          "capability": [
+            12,
+            0
+          ]
+        },
+        "generator": {
+          "model": "audioldm2-music",
+          "device": "NVIDIA GeForce RTX 5060 Laptop GPU",
+          "precision": "fp16",
+          "torch_compile": false,
+          "audioldm2_steps": 100
+        }
+      }
+    }
+  },
+  "paired": {
+    "musicgen-small_vs_musicgen-medium": {
+      "n_pairs": 55,
+      "median_seam_diff_db": -0.03,
+      "ci": [
+        -0.08,
+        0.010000000000000002
+      ]
+    },
+    "musicgen-small_vs_audioldm2-music": {
+      "n_pairs": 55,
+      "median_seam_diff_db": 0.02,
+      "ci": [
+        -0.01,
+        0.09000000000000001
+      ]
+    },
+    "musicgen-medium_vs_audioldm2-music": {
+      "n_pairs": 55,
+      "median_seam_diff_db": 0.05,
+      "ci": [
+        0.020000000000000004,
+        0.1
+      ]
+    }
+  }
+}

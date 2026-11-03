@@ -1,0 +1,1195 @@
+{
+  "started_at": "2026-11-02T22:46:15",
+  "elapsed_s": 1387.0,
+  "manifest": {
+    "recorded_at": "2026-11-02T22:46:15",
+    "platform": "Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+    "python": "3.12.16",
+    "cpu": null,
+    "form_factor": "laptop",
+    "power_plan": "high-performance",
+    "nvidia_smi": "NVIDIA GeForce RTX 5060 Laptop GPU, 592.82, 8151 MiB",
+    "torch": {
+      "version": "2.11.0+cu128",
+      "cuda": "12.8",
+      "cuda_available": true,
+      "capability": [
+        12,
+        0
+      ]
+    },
+    "generator": {
+      "model": "musicgen-medium",
+      "device": "NVIDIA GeForce RTX 5060 Laptop GPU",
+      "precision": "fp16",
+      "torch_compile": false,
+      "audioldm2_steps": null
+    }
+  },
+  "seeds": [
+    1824823701,
+    1155623686,
+    1476309087,
+    1491498720,
+    600741671
+  ],
+  "config": {
+    "moods": [
+      "calm",
+      "focused",
+      "joyful",
+      "energetic",
+      "sad",
+      "dark",
+      "nostalgic",
+      "curious",
+      "tense",
+      "uplifting",
+      "neutral"
+    ],
+    "duration_seconds": 15
+  },
+  "summary": {
+    "generator": "musicgen-medium",
+    "n_requests": 55,
+    "n_generated": 55,
+    "rtf": {
+      "n": 55,
+      "min": 1.483,
+      "p50": 1.608,
+      "p95": 2.005,
+      "max": 2.082,
+      "mean": 1.671,
+      "stdev": 0.153
+    },
+    "d3_generate_ms": {
+      "n": 55,
+      "min": 21665,
+      "p50": 23522,
+      "p95": 29316,
+      "max": 30235,
+      "mean": 24417.418,
+      "stdev": 2174.466
+    },
+    "seam_energy_delta_db": {
+      "n": 55,
+      "min": 0.0,
+      "p50": 0.12,
+      "p95": 0.78,
+      "max": 1.69,
+      "mean": 0.239,
+      "stdev": 0.334
+    },
+    "duration_retention": {
+      "n": 55,
+      "min": 0.202,
+      "p50": 0.536,
+      "p95": 0.923,
+      "max": 0.939,
+      "mean": 0.551,
+      "stdev": 0.219
+    }
+  },
+  "rows": [
+    {
+      "generator": "musicgen-medium",
+      "mood": "calm",
+      "seed_index": 0,
+      "seed": 1824823701,
+      "wall_ms": 31230.0,
+      "error": null,
+      "rtf": 2.082,
+      "is_fallback": false,
+      "d3_generate_ms": 27966,
+      "clip": "results/d7-clips/musicgen-medium/calm-00.ogg",
+      "quality": {
+        "duration_ms": 5798,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.09,
+        "post_spectral_centroid_delta_hz": 53.7,
+        "lufs": -19.773807658018626,
+        "rms_dbfs": -19.777149498065572
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "calm",
+      "seed_index": 1,
+      "seed": 1155623686,
+      "wall_ms": 30895.9,
+      "error": null,
+      "rtf": 2.06,
+      "is_fallback": false,
+      "d3_generate_ms": 30235,
+      "clip": "results/d7-clips/musicgen-medium/calm-01.ogg",
+      "quality": {
+        "duration_ms": 10822,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.57,
+        "post_spectral_centroid_delta_hz": 144.7,
+        "lufs": -18.43502970121894,
+        "rms_dbfs": -17.688874090043928
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "calm",
+      "seed_index": 2,
+      "seed": 1476309087,
+      "wall_ms": 29115.0,
+      "error": null,
+      "rtf": 1.941,
+      "is_fallback": false,
+      "d3_generate_ms": 28430,
+      "clip": "results/d7-clips/musicgen-medium/calm-02.ogg",
+      "quality": {
+        "duration_ms": 11398,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.09,
+        "post_spectral_centroid_delta_hz": 111.2,
+        "lufs": -18.553287655441405,
+        "rms_dbfs": -18.2720989790989
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "calm",
+      "seed_index": 3,
+      "seed": 1491498720,
+      "wall_ms": 28923.1,
+      "error": null,
+      "rtf": 1.928,
+      "is_fallback": false,
+      "d3_generate_ms": 28313,
+      "clip": "results/d7-clips/musicgen-medium/calm-03.ogg",
+      "quality": {
+        "duration_ms": 6294,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.08,
+        "post_spectral_centroid_delta_hz": 10.4,
+        "lufs": -35.20294733461472,
+        "rms_dbfs": -34.2482358367726
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "calm",
+      "seed_index": 4,
+      "seed": 600741671,
+      "wall_ms": 30074.4,
+      "error": null,
+      "rtf": 2.005,
+      "is_fallback": false,
+      "d3_generate_ms": 29428,
+      "clip": "results/d7-clips/musicgen-medium/calm-04.ogg",
+      "quality": {
+        "duration_ms": 8102,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.04,
+        "post_spectral_centroid_delta_hz": 2.4,
+        "lufs": -18.84711358851366,
+        "rms_dbfs": -17.23150138042659
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "focused",
+      "seed_index": 0,
+      "seed": 1824823701,
+      "wall_ms": 29913.5,
+      "error": null,
+      "rtf": 1.994,
+      "is_fallback": false,
+      "d3_generate_ms": 29316,
+      "clip": "results/d7-clips/musicgen-medium/focused-00.ogg",
+      "quality": {
+        "duration_ms": 5318,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.02,
+        "post_spectral_centroid_delta_hz": 353.5,
+        "lufs": -15.87963586322786,
+        "rms_dbfs": -15.350527985895905
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "focused",
+      "seed_index": 1,
+      "seed": 1155623686,
+      "wall_ms": 29808.9,
+      "error": null,
+      "rtf": 1.987,
+      "is_fallback": false,
+      "d3_generate_ms": 29277,
+      "clip": "results/d7-clips/musicgen-medium/focused-01.ogg",
+      "quality": {
+        "duration_ms": 3430,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.16,
+        "post_spectral_centroid_delta_hz": 808.3,
+        "lufs": -19.626493982768316,
+        "rms_dbfs": -18.927994148446714
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "focused",
+      "seed_index": 2,
+      "seed": 1476309087,
+      "wall_ms": 29846.7,
+      "error": null,
+      "rtf": 1.99,
+      "is_fallback": false,
+      "d3_generate_ms": 29199,
+      "clip": "results/d7-clips/musicgen-medium/focused-02.ogg",
+      "quality": {
+        "duration_ms": 8582,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 1.69,
+        "post_spectral_centroid_delta_hz": 201.4,
+        "lufs": -18.57339225934582,
+        "rms_dbfs": -17.22381672384855
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "focused",
+      "seed_index": 3,
+      "seed": 1491498720,
+      "wall_ms": 29247.7,
+      "error": null,
+      "rtf": 1.95,
+      "is_fallback": false,
+      "d3_generate_ms": 28656,
+      "clip": "results/d7-clips/musicgen-medium/focused-03.ogg",
+      "quality": {
+        "duration_ms": 5430,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.71,
+        "post_spectral_centroid_delta_hz": 91.4,
+        "lufs": -18.174472702838017,
+        "rms_dbfs": -17.886364018708008
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "focused",
+      "seed_index": 4,
+      "seed": 600741671,
+      "wall_ms": 24502.3,
+      "error": null,
+      "rtf": 1.633,
+      "is_fallback": false,
+      "d3_generate_ms": 23863,
+      "clip": "results/d7-clips/musicgen-medium/focused-04.ogg",
+      "quality": {
+        "duration_ms": 12454,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.12,
+        "post_spectral_centroid_delta_hz": 115.3,
+        "lufs": -19.650347260020137,
+        "rms_dbfs": -20.123550539416932
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "joyful",
+      "seed_index": 0,
+      "seed": 1824823701,
+      "wall_ms": 22239.0,
+      "error": null,
+      "rtf": 1.483,
+      "is_fallback": false,
+      "d3_generate_ms": 21665,
+      "clip": "results/d7-clips/musicgen-medium/joyful-00.ogg",
+      "quality": {
+        "duration_ms": 7702,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.78,
+        "post_spectral_centroid_delta_hz": 382.2,
+        "lufs": -18.498459658372003,
+        "rms_dbfs": -17.500732732492
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "joyful",
+      "seed_index": 1,
+      "seed": 1155623686,
+      "wall_ms": 22578.5,
+      "error": null,
+      "rtf": 1.505,
+      "is_fallback": false,
+      "d3_generate_ms": 22019,
+      "clip": "results/d7-clips/musicgen-medium/joyful-01.ogg",
+      "quality": {
+        "duration_ms": 7222,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.03,
+        "post_spectral_centroid_delta_hz": 401.4,
+        "lufs": -22.309426215303148,
+        "rms_dbfs": -21.013162130929715
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "joyful",
+      "seed_index": 2,
+      "seed": 1476309087,
+      "wall_ms": 22610.0,
+      "error": null,
+      "rtf": 1.507,
+      "is_fallback": false,
+      "d3_generate_ms": 22028,
+      "clip": "results/d7-clips/musicgen-medium/joyful-02.ogg",
+      "quality": {
+        "duration_ms": 7286,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.19,
+        "post_spectral_centroid_delta_hz": 625.4,
+        "lufs": -19.183282831756557,
+        "rms_dbfs": -18.66903788774438
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "joyful",
+      "seed_index": 3,
+      "seed": 1491498720,
+      "wall_ms": 23584.7,
+      "error": null,
+      "rtf": 1.572,
+      "is_fallback": false,
+      "d3_generate_ms": 23065,
+      "clip": "results/d7-clips/musicgen-medium/joyful-03.ogg",
+      "quality": {
+        "duration_ms": 4326,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.1,
+        "post_spectral_centroid_delta_hz": 107.2,
+        "lufs": -20.82924809035187,
+        "rms_dbfs": -20.6745897864197
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "joyful",
+      "seed_index": 4,
+      "seed": 600741671,
+      "wall_ms": 22692.3,
+      "error": null,
+      "rtf": 1.513,
+      "is_fallback": false,
+      "d3_generate_ms": 22174,
+      "clip": "results/d7-clips/musicgen-medium/joyful-04.ogg",
+      "quality": {
+        "duration_ms": 3558,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.39,
+        "post_spectral_centroid_delta_hz": 381.3,
+        "lufs": -21.32014557036909,
+        "rms_dbfs": -20.93567628676324
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "energetic",
+      "seed_index": 0,
+      "seed": 1824823701,
+      "wall_ms": 24105.1,
+      "error": null,
+      "rtf": 1.607,
+      "is_fallback": false,
+      "d3_generate_ms": 23452,
+      "clip": "results/d7-clips/musicgen-medium/energetic-00.ogg",
+      "quality": {
+        "duration_ms": 11910,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.21,
+        "post_spectral_centroid_delta_hz": 15.5,
+        "lufs": -19.24814785952003,
+        "rms_dbfs": -18.079430920400583
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "energetic",
+      "seed_index": 1,
+      "seed": 1155623686,
+      "wall_ms": 24646.1,
+      "error": null,
+      "rtf": 1.643,
+      "is_fallback": false,
+      "d3_generate_ms": 24115,
+      "clip": "results/d7-clips/musicgen-medium/energetic-01.ogg",
+      "quality": {
+        "duration_ms": 4310,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.06,
+        "post_spectral_centroid_delta_hz": 887.3,
+        "lufs": -20.05054351186995,
+        "rms_dbfs": -22.159511592653466
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "energetic",
+      "seed_index": 2,
+      "seed": 1476309087,
+      "wall_ms": 24257.5,
+      "error": null,
+      "rtf": 1.617,
+      "is_fallback": false,
+      "d3_generate_ms": 23663,
+      "clip": "results/d7-clips/musicgen-medium/energetic-02.ogg",
+      "quality": {
+        "duration_ms": 9542,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.12,
+        "post_spectral_centroid_delta_hz": 83.0,
+        "lufs": -18.228705661578353,
+        "rms_dbfs": -15.823173878746733
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "energetic",
+      "seed_index": 3,
+      "seed": 1491498720,
+      "wall_ms": 24069.4,
+      "error": null,
+      "rtf": 1.605,
+      "is_fallback": false,
+      "d3_generate_ms": 23438,
+      "clip": "results/d7-clips/musicgen-medium/energetic-03.ogg",
+      "quality": {
+        "duration_ms": 9094,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.11,
+        "post_spectral_centroid_delta_hz": 613.3,
+        "lufs": -16.851117743204803,
+        "rms_dbfs": -15.040226772671675
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "energetic",
+      "seed_index": 4,
+      "seed": 600741671,
+      "wall_ms": 24206.0,
+      "error": null,
+      "rtf": 1.614,
+      "is_fallback": false,
+      "d3_generate_ms": 23537,
+      "clip": "results/d7-clips/musicgen-medium/energetic-04.ogg",
+      "quality": {
+        "duration_ms": 12998,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.29,
+        "post_spectral_centroid_delta_hz": 361.6,
+        "lufs": -18.09406069574548,
+        "rms_dbfs": -15.844364882872634
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "sad",
+      "seed_index": 0,
+      "seed": 1824823701,
+      "wall_ms": 24095.3,
+      "error": null,
+      "rtf": 1.606,
+      "is_fallback": false,
+      "d3_generate_ms": 23477,
+      "clip": "results/d7-clips/musicgen-medium/sad-00.ogg",
+      "quality": {
+        "duration_ms": 11270,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.07,
+        "post_spectral_centroid_delta_hz": 82.1,
+        "lufs": -17.642224724174003,
+        "rms_dbfs": -17.761087550590165
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "sad",
+      "seed_index": 1,
+      "seed": 1155623686,
+      "wall_ms": 24113.5,
+      "error": null,
+      "rtf": 1.608,
+      "is_fallback": false,
+      "d3_generate_ms": 23522,
+      "clip": "results/d7-clips/musicgen-medium/sad-01.ogg",
+      "quality": {
+        "duration_ms": 9574,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.34,
+        "post_spectral_centroid_delta_hz": 148.7,
+        "lufs": -18.860484306325613,
+        "rms_dbfs": -18.423738502301415
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "sad",
+      "seed_index": 2,
+      "seed": 1476309087,
+      "wall_ms": 24048.2,
+      "error": null,
+      "rtf": 1.603,
+      "is_fallback": false,
+      "d3_generate_ms": 23451,
+      "clip": "results/d7-clips/musicgen-medium/sad-02.ogg",
+      "quality": {
+        "duration_ms": 7958,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.35,
+        "post_spectral_centroid_delta_hz": 167.4,
+        "lufs": -17.515872483872343,
+        "rms_dbfs": -16.738337876673498
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "sad",
+      "seed_index": 3,
+      "seed": 1491498720,
+      "wall_ms": 24119.0,
+      "error": null,
+      "rtf": 1.608,
+      "is_fallback": false,
+      "d3_generate_ms": 23517,
+      "clip": "results/d7-clips/musicgen-medium/sad-03.ogg",
+      "quality": {
+        "duration_ms": 10774,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.15,
+        "post_spectral_centroid_delta_hz": 54.0,
+        "lufs": -18.018909569832463,
+        "rms_dbfs": -17.148635958892008
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "sad",
+      "seed_index": 4,
+      "seed": 600741671,
+      "wall_ms": 24129.0,
+      "error": null,
+      "rtf": 1.609,
+      "is_fallback": false,
+      "d3_generate_ms": 23561,
+      "clip": "results/d7-clips/musicgen-medium/sad-04.ogg",
+      "quality": {
+        "duration_ms": 6918,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.23,
+        "post_spectral_centroid_delta_hz": 296.1,
+        "lufs": -21.018884664960286,
+        "rms_dbfs": -19.533693016081617
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "dark",
+      "seed_index": 0,
+      "seed": 1824823701,
+      "wall_ms": 24004.4,
+      "error": null,
+      "rtf": 1.6,
+      "is_fallback": false,
+      "d3_generate_ms": 23483,
+      "clip": "results/d7-clips/musicgen-medium/dark-00.ogg",
+      "quality": {
+        "duration_ms": 5030,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.04,
+        "post_spectral_centroid_delta_hz": 323.3,
+        "lufs": -18.14148357609017,
+        "rms_dbfs": -16.96341811510486
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "dark",
+      "seed_index": 1,
+      "seed": 1155623686,
+      "wall_ms": 24004.3,
+      "error": null,
+      "rtf": 1.6,
+      "is_fallback": false,
+      "d3_generate_ms": 23479,
+      "clip": "results/d7-clips/musicgen-medium/dark-01.ogg",
+      "quality": {
+        "duration_ms": 4454,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.04,
+        "post_spectral_centroid_delta_hz": 185.3,
+        "lufs": -21.5913020367726,
+        "rms_dbfs": -18.650288473292743
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "dark",
+      "seed_index": 2,
+      "seed": 1476309087,
+      "wall_ms": 23808.1,
+      "error": null,
+      "rtf": 1.587,
+      "is_fallback": false,
+      "d3_generate_ms": 23228,
+      "clip": "results/d7-clips/musicgen-medium/dark-02.ogg",
+      "quality": {
+        "duration_ms": 8038,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.32,
+        "post_spectral_centroid_delta_hz": 173.8,
+        "lufs": -17.3987757339147,
+        "rms_dbfs": -15.317120849327452
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "dark",
+      "seed_index": 3,
+      "seed": 1491498720,
+      "wall_ms": 23710.2,
+      "error": null,
+      "rtf": 1.581,
+      "is_fallback": false,
+      "d3_generate_ms": 23207,
+      "clip": "results/d7-clips/musicgen-medium/dark-03.ogg",
+      "quality": {
+        "duration_ms": 3638,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.14,
+        "post_spectral_centroid_delta_hz": 290.1,
+        "lufs": -16.661713540966627,
+        "rms_dbfs": -13.198168985589266
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "dark",
+      "seed_index": 4,
+      "seed": 600741671,
+      "wall_ms": 23838.1,
+      "error": null,
+      "rtf": 1.589,
+      "is_fallback": false,
+      "d3_generate_ms": 23324,
+      "clip": "results/d7-clips/musicgen-medium/dark-04.ogg",
+      "quality": {
+        "duration_ms": 3734,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.02,
+        "post_spectral_centroid_delta_hz": 185.3,
+        "lufs": -24.597822487473977,
+        "rms_dbfs": -21.340585308755678
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "nostalgic",
+      "seed_index": 0,
+      "seed": 1824823701,
+      "wall_ms": 24014.8,
+      "error": null,
+      "rtf": 1.601,
+      "is_fallback": false,
+      "d3_generate_ms": 23359,
+      "clip": "results/d7-clips/musicgen-medium/nostalgic-00.ogg",
+      "quality": {
+        "duration_ms": 12278,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.47,
+        "post_spectral_centroid_delta_hz": 774.6,
+        "lufs": -17.796426182126464,
+        "rms_dbfs": -15.392531444707096
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "nostalgic",
+      "seed_index": 1,
+      "seed": 1155623686,
+      "wall_ms": 24009.6,
+      "error": null,
+      "rtf": 1.601,
+      "is_fallback": false,
+      "d3_generate_ms": 23398,
+      "clip": "results/d7-clips/musicgen-medium/nostalgic-01.ogg",
+      "quality": {
+        "duration_ms": 11062,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.04,
+        "post_spectral_centroid_delta_hz": 616.7,
+        "lufs": -20.297852761897772,
+        "rms_dbfs": -19.896956390767134
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "nostalgic",
+      "seed_index": 2,
+      "seed": 1476309087,
+      "wall_ms": 24014.7,
+      "error": null,
+      "rtf": 1.601,
+      "is_fallback": false,
+      "d3_generate_ms": 23461,
+      "clip": "results/d7-clips/musicgen-medium/nostalgic-02.ogg",
+      "quality": {
+        "duration_ms": 6198,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.34,
+        "post_spectral_centroid_delta_hz": 696.4,
+        "lufs": -18.06863644650802,
+        "rms_dbfs": -15.76235416922482
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "nostalgic",
+      "seed_index": 3,
+      "seed": 1491498720,
+      "wall_ms": 23954.9,
+      "error": null,
+      "rtf": 1.597,
+      "is_fallback": false,
+      "d3_generate_ms": 23306,
+      "clip": "results/d7-clips/musicgen-medium/nostalgic-03.ogg",
+      "quality": {
+        "duration_ms": 10806,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.01,
+        "post_spectral_centroid_delta_hz": 848.3,
+        "lufs": -17.937682706170225,
+        "rms_dbfs": -16.224281982929245
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "nostalgic",
+      "seed_index": 4,
+      "seed": 600741671,
+      "wall_ms": 24123.8,
+      "error": null,
+      "rtf": 1.608,
+      "is_fallback": false,
+      "d3_generate_ms": 23523,
+      "clip": "results/d7-clips/musicgen-medium/nostalgic-04.ogg",
+      "quality": {
+        "duration_ms": 9718,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.08,
+        "post_spectral_centroid_delta_hz": 61.6,
+        "lufs": -17.491426133788657,
+        "rms_dbfs": -16.30859768988749
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "curious",
+      "seed_index": 0,
+      "seed": 1824823701,
+      "wall_ms": 24119.9,
+      "error": null,
+      "rtf": 1.608,
+      "is_fallback": false,
+      "d3_generate_ms": 23529,
+      "clip": "results/d7-clips/musicgen-medium/curious-00.ogg",
+      "quality": {
+        "duration_ms": 8198,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.0,
+        "post_spectral_centroid_delta_hz": 466.2,
+        "lufs": -16.7062423629857,
+        "rms_dbfs": -16.276703522353287
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "curious",
+      "seed_index": 1,
+      "seed": 1155623686,
+      "wall_ms": 23941.7,
+      "error": null,
+      "rtf": 1.596,
+      "is_fallback": false,
+      "d3_generate_ms": 23407,
+      "clip": "results/d7-clips/musicgen-medium/curious-01.ogg",
+      "quality": {
+        "duration_ms": 6502,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.21,
+        "post_spectral_centroid_delta_hz": 75.7,
+        "lufs": -15.889586973893348,
+        "rms_dbfs": -13.723418372501365
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "curious",
+      "seed_index": 2,
+      "seed": 1476309087,
+      "wall_ms": 24002.6,
+      "error": null,
+      "rtf": 1.6,
+      "is_fallback": false,
+      "d3_generate_ms": 23354,
+      "clip": "results/d7-clips/musicgen-medium/curious-02.ogg",
+      "quality": {
+        "duration_ms": 10006,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.1,
+        "post_spectral_centroid_delta_hz": 442.4,
+        "lufs": -17.755850512772824,
+        "rms_dbfs": -17.28653957926936
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "curious",
+      "seed_index": 3,
+      "seed": 1491498720,
+      "wall_ms": 23809.3,
+      "error": null,
+      "rtf": 1.587,
+      "is_fallback": false,
+      "d3_generate_ms": 23237,
+      "clip": "results/d7-clips/musicgen-medium/curious-03.ogg",
+      "quality": {
+        "duration_ms": 6678,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.08,
+        "post_spectral_centroid_delta_hz": 179.6,
+        "lufs": -18.03007682949395,
+        "rms_dbfs": -17.69714077535507
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "curious",
+      "seed_index": 4,
+      "seed": 600741671,
+      "wall_ms": 24317.4,
+      "error": null,
+      "rtf": 1.621,
+      "is_fallback": false,
+      "d3_generate_ms": 23817,
+      "clip": "results/d7-clips/musicgen-medium/curious-04.ogg",
+      "quality": {
+        "duration_ms": 3030,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.2,
+        "post_spectral_centroid_delta_hz": 271.2,
+        "lufs": -19.570587852371744,
+        "rms_dbfs": -18.969106603021388
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "tense",
+      "seed_index": 0,
+      "seed": 1824823701,
+      "wall_ms": 24302.5,
+      "error": null,
+      "rtf": 1.62,
+      "is_fallback": false,
+      "d3_generate_ms": 23635,
+      "clip": "results/d7-clips/musicgen-medium/tense-00.ogg",
+      "quality": {
+        "duration_ms": 13974,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.05,
+        "post_spectral_centroid_delta_hz": 752.8,
+        "lufs": -18.075001501566813,
+        "rms_dbfs": -14.103384653826023
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "tense",
+      "seed_index": 1,
+      "seed": 1155623686,
+      "wall_ms": 24078.5,
+      "error": null,
+      "rtf": 1.605,
+      "is_fallback": false,
+      "d3_generate_ms": 23378,
+      "clip": "results/d7-clips/musicgen-medium/tense-01.ogg",
+      "quality": {
+        "duration_ms": 13638,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.04,
+        "post_spectral_centroid_delta_hz": 77.2,
+        "lufs": -17.89362287959068,
+        "rms_dbfs": -16.781781645294252
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "tense",
+      "seed_index": 2,
+      "seed": 1476309087,
+      "wall_ms": 24670.4,
+      "error": null,
+      "rtf": 1.645,
+      "is_fallback": false,
+      "d3_generate_ms": 24051,
+      "clip": "results/d7-clips/musicgen-medium/tense-02.ogg",
+      "quality": {
+        "duration_ms": 8822,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.11,
+        "post_spectral_centroid_delta_hz": 210.2,
+        "lufs": -18.69748593439707,
+        "rms_dbfs": -17.236125190794777
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "tense",
+      "seed_index": 3,
+      "seed": 1491498720,
+      "wall_ms": 26019.8,
+      "error": null,
+      "rtf": 1.735,
+      "is_fallback": false,
+      "d3_generate_ms": 25431,
+      "clip": "results/d7-clips/musicgen-medium/tense-03.ogg",
+      "quality": {
+        "duration_ms": 4406,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.03,
+        "post_spectral_centroid_delta_hz": 304.2,
+        "lufs": -18.453176878057814,
+        "rms_dbfs": -14.96922446944679
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "tense",
+      "seed_index": 4,
+      "seed": 600741671,
+      "wall_ms": 27537.3,
+      "error": null,
+      "rtf": 1.836,
+      "is_fallback": false,
+      "d3_generate_ms": 26876,
+      "clip": "results/d7-clips/musicgen-medium/tense-04.ogg",
+      "quality": {
+        "duration_ms": 13046,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.69,
+        "post_spectral_centroid_delta_hz": 1163.9,
+        "lufs": -19.23359168247529,
+        "rms_dbfs": -12.954918743358865
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "uplifting",
+      "seed_index": 0,
+      "seed": 1824823701,
+      "wall_ms": 24303.0,
+      "error": null,
+      "rtf": 1.62,
+      "is_fallback": false,
+      "d3_generate_ms": 23773,
+      "clip": "results/d7-clips/musicgen-medium/uplifting-00.ogg",
+      "quality": {
+        "duration_ms": 5574,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.14,
+        "post_spectral_centroid_delta_hz": 274.0,
+        "lufs": -15.69365481370402,
+        "rms_dbfs": -13.96330397974457
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "uplifting",
+      "seed_index": 1,
+      "seed": 1155623686,
+      "wall_ms": 23838.5,
+      "error": null,
+      "rtf": 1.589,
+      "is_fallback": false,
+      "d3_generate_ms": 23341,
+      "clip": "results/d7-clips/musicgen-medium/uplifting-01.ogg",
+      "quality": {
+        "duration_ms": 4150,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.09,
+        "post_spectral_centroid_delta_hz": 606.5,
+        "lufs": -17.617458089546155,
+        "rms_dbfs": -14.716936845250888
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "uplifting",
+      "seed_index": 2,
+      "seed": 1476309087,
+      "wall_ms": 24713.8,
+      "error": null,
+      "rtf": 1.648,
+      "is_fallback": false,
+      "d3_generate_ms": 24086,
+      "clip": "results/d7-clips/musicgen-medium/uplifting-02.ogg",
+      "quality": {
+        "duration_ms": 11574,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.06,
+        "post_spectral_centroid_delta_hz": 156.4,
+        "lufs": -17.780121132003103,
+        "rms_dbfs": -13.487668447329211
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "uplifting",
+      "seed_index": 3,
+      "seed": 1491498720,
+      "wall_ms": 24615.7,
+      "error": null,
+      "rtf": 1.641,
+      "is_fallback": false,
+      "d3_generate_ms": 24082,
+      "clip": "results/d7-clips/musicgen-medium/uplifting-03.ogg",
+      "quality": {
+        "duration_ms": 4118,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.19,
+        "post_spectral_centroid_delta_hz": 138.5,
+        "lufs": -16.709232830261975,
+        "rms_dbfs": -16.065709292702596
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "uplifting",
+      "seed_index": 4,
+      "seed": 600741671,
+      "wall_ms": 24405.2,
+      "error": null,
+      "rtf": 1.627,
+      "is_fallback": false,
+      "d3_generate_ms": 23824,
+      "clip": "results/d7-clips/musicgen-medium/uplifting-04.ogg",
+      "quality": {
+        "duration_ms": 6902,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.68,
+        "post_spectral_centroid_delta_hz": 156.9,
+        "lufs": -17.212382621574196,
+        "rms_dbfs": -13.505402183197004
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "neutral",
+      "seed_index": 0,
+      "seed": 1824823701,
+      "wall_ms": 24576.8,
+      "error": null,
+      "rtf": 1.638,
+      "is_fallback": false,
+      "d3_generate_ms": 24032,
+      "clip": "results/d7-clips/musicgen-medium/neutral-00.ogg",
+      "quality": {
+        "duration_ms": 6102,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 1.57,
+        "post_spectral_centroid_delta_hz": 403.0,
+        "lufs": -20.184284702180996,
+        "rms_dbfs": -20.25581843897932
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "neutral",
+      "seed_index": 1,
+      "seed": 1155623686,
+      "wall_ms": 24089.6,
+      "error": null,
+      "rtf": 1.606,
+      "is_fallback": false,
+      "d3_generate_ms": 23407,
+      "clip": "results/d7-clips/musicgen-medium/neutral-01.ogg",
+      "quality": {
+        "duration_ms": 13094,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.04,
+        "post_spectral_centroid_delta_hz": 145.6,
+        "lufs": -17.994489060259458,
+        "rms_dbfs": -17.13617658624321
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "neutral",
+      "seed_index": 2,
+      "seed": 1476309087,
+      "wall_ms": 24079.1,
+      "error": null,
+      "rtf": 1.605,
+      "is_fallback": false,
+      "d3_generate_ms": 23416,
+      "clip": "results/d7-clips/musicgen-medium/neutral-02.ogg",
+      "quality": {
+        "duration_ms": 13846,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.23,
+        "post_spectral_centroid_delta_hz": 136.7,
+        "lufs": -17.94418390028326,
+        "rms_dbfs": -16.60100409183121
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "neutral",
+      "seed_index": 3,
+      "seed": 1491498720,
+      "wall_ms": 23992.8,
+      "error": null,
+      "rtf": 1.6,
+      "is_fallback": false,
+      "d3_generate_ms": 23358,
+      "clip": "results/d7-clips/musicgen-medium/neutral-03.ogg",
+      "quality": {
+        "duration_ms": 9686,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.14,
+        "post_spectral_centroid_delta_hz": 189.6,
+        "lufs": -25.225042080539325,
+        "rms_dbfs": -24.785709493798386
+      }
+    },
+    {
+      "generator": "musicgen-medium",
+      "mood": "neutral",
+      "seed_index": 4,
+      "seed": 600741671,
+      "wall_ms": 24464.3,
+      "error": null,
+      "rtf": 1.631,
+      "is_fallback": false,
+      "d3_generate_ms": 23789,
+      "clip": "results/d7-clips/musicgen-medium/neutral-04.ogg",
+      "quality": {
+        "duration_ms": 14086,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.01,
+        "post_spectral_centroid_delta_hz": 291.9,
+        "lufs": -17.953033943480694,
+        "rms_dbfs": -17.133868811307277
+      }
+    }
+  ]
+}
