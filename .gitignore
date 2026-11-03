@@ -152,3 +152,4 @@ data-extraction/benchmark/.hf-cache/
 
 # Run logs
 analysis/run-logs-*.txt
+data-extraction/benchmark/.embed-bundle-build/transformers-bundle.js
