@@ -1,0 +1,267 @@
+\documentclass[10pt]{article}
+\usepackage[a4paper,margin=2cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{xltabular}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+
+\definecolor{pending}{HTML}{B3261E}
+\newcommand{\pending}[1]{\textcolor{pending}{\textbf{Pending:} #1}}
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\newcolumntype{R}[1]{>{\raggedright\arraybackslash}p{#1}}
+\renewcommand{\arraystretch}{1.25}
+\setlist{nosep,leftmargin=*}
+
+\title{Response to the Reviewers\\[2pt]\large CICT-2026 --- ``Web2Music: Page-Conditioned Music Generation with a Disclosure-Aware Classifier Cascade''}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-3em}
+
+\noindent We thank both reviewers for a careful reading and for recommending acceptance after
+minor revision. Each comment is answered below with what changed in the manuscript and
+where. Locations refer to section and table titles in the revised paper. Every number
+quoted here is produced by a script in the released repository from a result file that is
+committed alongside it.
+
+\medskip
+\noindent Two requests could not be met in full in the revision window: we ran \textbf{no human
+listening study}, and we could \textbf{not recruit independent annotators}. For each we
+explain what we did instead and how the claims were narrowed. Two studies are still
+running and are marked \textcolor{pending}{\textbf{Pending}} below: the held-out test set for the cascade (R4\,\#1,
+R3\,W3) and the real black-box set for the sensitive-page detector (R4\,\#3). Their
+placeholders remain in the manuscript and will be filled before the camera-ready version.
+
+\section*{Summary of the main changes}
+\begin{itemize}
+\item \textbf{Real end-to-end latency on a consumer GPU.} The built extension was measured
+  with the real embedding model, classifier and generator (110 page loads per setup).
+  Generation was measured on an RTX~5060 laptop GPU (33 cold requests per clip length), on the
+  same machine with the GPU disabled, and on an Apple~M4.
+\item \textbf{How often generated audio is heard.} A browsing simulation now uses measured
+  generation times and the cache hit rate measured on real page profiles. With a cold cache,
+  page-level audio is heard on 52\% of visits on the GPU, 48\% on the M4 and 34\% on the CPU
+  (15\,s clips, median dwell 30\,s).
+\item \textbf{Objective conditioning fidelity}, in place of a listening study: 702 clips for
+  234 pages compared against shuffled-mood controls on three scorers. The effect is
+  significant but small, and the paper says so.
+\item \textbf{Loops.} A fresh seeded study of 220 clips at the shipped crossfade, objective
+  gapless verification (30 of 30), and seam size relative to each clip's own variation.
+\item \textbf{Generator comparison} against MusicGen-medium and AudioLDM2-music.
+\item \textbf{Network-level privacy audit} of the built extension, and a switch that
+  makes the fully local configuration (A6) send no LLM request at all.
+\item \textbf{Prompt ablation} rerun with fixed seeds and paired tests. The earlier ``template wins''
+  reading did not reproduce and was replaced by the null result.
+\end{itemize}
+
+\section*{Requests we could not meet in full}
+
+\paragraph{Listening study (R3 W1/R1; R4 \#2).}
+We could not run a human listening study within the revision period, so we:
+(i) removed every claim that the music is perceived as fitting the page;
+(ii) added objective tests of conditioning fidelity; and
+(iii) separated \emph{gapless} playback, which we now verify from rendered output, from
+\emph{perceptual} seamlessness, which we do not claim.
+
+The fidelity tests use audio valence/arousal regressors, a mood tagger and CLAP retrieval.
+Each compares page-matched against shuffled-mood clips over 234 pages $\times$ 3 seeds. The
+protocol and instruments for a within-subjects listening study are released for follow-up
+work.
+
+\paragraph{Independent annotators (R3 W3/R3; R4 \#1).}
+We could not recruit independent annotators. The revised protocol:
+\begin{itemize}
+\item labelling is blind to the collection category, to system outputs and to the other
+  labellers, under guidelines frozen before the test set is labelled;
+\item all cascade thresholds are chosen on the 255-page development set only;
+\item LLMs are kept out of page selection, labelling and judging, and the LLM stage is frozen,
+  with its raw answers cached for replay;
+\item every claim that depends on mood labels is removed, since mood is no longer an
+  evaluated target;
+\item author annotation is stated as a limitation.
+\end{itemize}
+\pending{the held-out test set itself (pages captured after the freeze, blind labels and
+test-set agreement) is being collected; its numbers will be added to the test table and
+the abstract.}
+
+\section*{Reviewer 3}
+
+\begin{xltabular}{\textwidth}{@{}R{1.25cm}R{3.6cm}LR{3.2cm}@{}}
+\toprule
+\textbf{\#} & \textbf{Comment} & \textbf{What we did} & \textbf{Where} \\
+\midrule
+\endhead
+W1 / R1 & Fit to the page is never evaluated with listeners &
+Narrowed the claim to music \emph{conditioned on} the page, and removed ``suits the page''
+wording, including from the abstract. Added objective conditioning-fidelity measures
+(702 clips, matched against shuffled-mood controls):
+\begin{itemize}
+\item matched clips are closer to the intended valence--arousal by 0.050 [0.026, 0.076];
+\item the intended mood is in the top-5 tags 7.5 points more often [1.3, 13.8];
+\item CLAP page-text similarity is higher by 0.023 [0.014, 0.033];
+\item valence and arousal track the targets ($\rho = 0.40$ and $0.51$).
+\end{itemize}
+The effect is small: CLAP picks a page's own clip among ten in 12.5\% of cases against 10\%
+chance. We report it as a tendency. Listening protocol released. &
+Abstract; Introduction; Results: Conditioning fidelity (Table ``Conditioning fidelity''); Limitations \\
+\midrule
+W2 / R2 & ``36\,ms'' is the fallback clip, and users mostly hear the fallback &
+Restated the claim as three levels of conditioning: L1 mood-level, L2 profile-level from the
+cache, L3 page-level. Measured cold generation on a consumer GPU: a median of 13.3\,s for a
+15\,s clip and 24.3\,s for a 28\,s clip (real-time factor 0.87--0.91 end to end, $n=33$ per
+length).
+Simulated how often each level is heard, with a cold per-session cache and the pre-warm-grid
+hit rate measured on real profiles (0 of 235). At 15\,s clips and a median dwell of 30\,s:
+\begin{itemize}
+\item L3 is heard on 52\% of visits on the GPU, 48\% on the M4 and 34\% on the CPU;
+\item L3 is 75\% of listening time on the GPU;
+\item the results are stratified by page type, with a dwell sweep from 10 to 120\,s and two
+  stated bounds (an assumed 50\% grid hit, and a cache persisting across sessions).
+\end{itemize} &
+Abstract; Introduction; Results: Generation latency, How often generated audio is heard (Table ``Exposure'', Eq.~4) \\
+\midrule
+W3 / R3 & Labels come from the authors; $\alpha$ below threshold; mood $\alpha = 0.195$ &
+Partly addressed (see above): blind labelling under frozen guidelines; mood is no longer an
+evaluated target; author labelling stated as a limitation.
+\pending{held-out test set and test-set $\alpha$ for category and sensitivity.} &
+Results: Evaluation design, Annotation agreement; Limitations \\
+\midrule
+W4 & Headline latencies come from stubbed benchmarks &
+Re-measured end to end with the real embedding model, classifier and generator: 110 page loads
+per setup, all of which became audible, with none timed out.
+\begin{itemize}
+\item With the LLM stage off, the first sound is heard at a median of 7.7\,s (p95 12.1\,s),
+  and the generated clip takes over by p95 37.6\,s.
+\item Descriptor cost with the real, warm embedding model: median 360\,ms (p95 519\,ms) on 166
+  live sites.
+\end{itemize}
+The stubbed figures remain only where labelled as such. &
+Abstract; Introduction; Results: Descriptor cost, Generation latency (Table ``Latency'') \\
+\midrule
+R4 (clarity) & Garbled sentences; ``bart-large-mini''; dense notation &
+Rewrote the abstract, introduction and the architecture sections in plain language. The
+models are named \texttt{bart-large-mnli} and \texttt{nli-deberta-v3-xsmall} throughout. Four
+numbered equations (gate rule, disclosure, seam cost, exposure) are each explained in words,
+and terms (macro-F1, NLI, off-device rate, RTF, LUFS, $\alpha$) are defined at first use. &
+Throughout \\
+\bottomrule
+\end{xltabular}
+
+\section*{Reviewer 4}
+
+\begin{xltabular}{\textwidth}{@{}R{1.25cm}R{3.6cm}LR{3.2cm}@{}}
+\toprule
+\textbf{\#} & \textbf{Comment} & \textbf{What we did} & \textbf{Where} \\
+\midrule
+\endhead
+1 & Independent held-out corpus and annotators; tune thresholds on a separate set &
+Gates are chosen on the 255-page development set only, and the test protocol scores every
+configuration once with those gates. Independent annotators: not possible, mitigated as
+above. \pending{held-out test results (macro-F1 with CIs, off-device rate, accuracy by
+deciding stage, post-cutoff split).} &
+Results: Evaluation design, Classification and disclosure (Table ``Held-out test set'') \\
+\midrule
+2 & Listening study for fit and gapless loops &
+A listening study was not possible. Instead:
+\begin{itemize}
+\item \textbf{Gapless playback, verified objectively:} rendering clips through the browser's
+  decoder for 10 loop cycles, 30 of 30 show no inserted silence and are sample-identical from
+  cycle to cycle.
+\item \textbf{Seam size relative to each clip's own variation:} the spectral-centroid change at
+  the seam is within the clip's 95th percentile in 91.4\% [87.7, 95.0] of 220 clips. The
+  energy share (100\%) is reported as circular, because the selector minimises it.
+\end{itemize}
+``Seamless'' and ``inaudible'' are not claimed. &
+Results: Loop quality \\
+\midrule
+3 & Improve and re-measure the sensitive detector, including the on-device model &
+Added an ``unrelated'' hypothesis (three-way entailment) and an on-device back end. Gates are
+chosen on the hand-written slice only. \pending{evaluation on the real black-box crisis/support
+pages and benign pages (recall and false-alarm rate with Wilson CIs, latency).} &
+Results: Restraint (Table ``Sensitive-page detection'') \\
+\midrule
+4 & Real end-to-end latency; enough runs for p95; CPU-only case &
+See R3 W4.
+\begin{itemize}
+\item \textbf{Enough runs for p95:} each cold-generation cell has 33 requests, and each
+  end-to-end setup 110 loads.
+\item \textbf{CPU-only:} the GPU host with the GPU disabled generates a 10\,s clip in a median
+  of 38.5\,s and a 15\,s clip in 62.2\,s (12 per length, none timed out). The simulation shows
+  page-level audio on 34\% of visits in this configuration.
+\end{itemize} &
+Results: Generation latency (Table ``Latency'', Fig.\ ``Cold generation''); How often generated audio is heard \\
+\midrule
+5 & Seeds and intervals for prompt and loop studies; compare another generator &
+Fixed seed lists, paired tests and bootstrap CIs:
+\begin{itemize}
+\item \textbf{Loop study:} 220 clips, 176 scoreable, with the two exclusion reasons stated.
+  The share of seams above 1\,dB falls from 72.7\% to 8.5\% (McNemar $p = 2\times10^{-34}$).
+\item \textbf{Prompt study:} 165 clips. The earlier difference does not reproduce (engineered
+  minus template 0.00\,dB [$-0.10$, 0.04], $p = 0.88$), and the paper now reports a null
+  result.
+\item \textbf{Generator comparison:} MusicGen-small, MusicGen-medium and AudioLDM2-music, 55
+  clips each, reporting RTF, seam, loop retention, CLAP-space FAD and Audiobox quality.
+\end{itemize} &
+Results: Loop quality, Prompt ablation, Generator comparison (Table ``Generators'') \\
+\midrule
+6 & Rewrite abstract and intro; define terms; release code and data &
+Rewritten, and terms defined. Code, URLs, result files and the raw LLM responses are released
+(page text withheld for copyright). \pending{archive DOI.} &
+Abstract; Introduction; repository release \\
+\midrule
+7 & Mathematical modelling, annotation reliability, privacy validation, perception, clarity &
+\textbf{Modelling and annotation:} four numbered equations (gate rule, disclosure, seam cost,
+exposure), and $\alpha$ reported on the development set.
+
+\textbf{Privacy validation:} a network-level audit of the built extension.
+\begin{itemize}
+\item In the fully local configuration (A6) no request body carries page text.
+\item In the default (A6b) page text goes only to the LLM proxy.
+\item No telemetry leaves the browser, and every request to the generation service carries
+  only the music profile.
+\item URL hashes in telemetry now use a keyed HMAC.
+\end{itemize}
+\textbf{Perception:} handled as above. &
+System architecture; Results: Annotation agreement, Restraint (network audit) \\
+\midrule
+W & Limited comparison with alternatives &
+Generator comparison added. The cascade table's seven configurations, from keyword-only to
+LLM-only, are the baselines and are now named as such. &
+Table ``Cascade configurations''; Table ``Generators'' \\
+\bottomrule
+\end{xltabular}
+
+\section*{Other corrections found during the revision}
+\begin{itemize}
+\item \textbf{The shipped build now matches the evaluated system.} The on-device zero-shot
+  middle stage and the measured-seam loop selector are the defaults.
+\item \textbf{Crossfade.} The paper previously described a 50\,ms default crossfade; the
+  shipped default is 250\,ms, and the text now says so.
+\item \textbf{The fully local configuration (A6) previously still attempted LLM requests.} It
+  sent them to the local proxy address and they failed when the proxy was down. The network
+  audit exposed this. A6 is now an explicit setting under which no LLM request is made, and
+  the audit and the A6 latency run were repeated with it.
+\item \textbf{The exposure simulation earlier assumed that half of all pages hit the pre-warm
+  cache.} Replaying real page profiles gives 0 of 235, because cache keys include the exact
+  style string. The simulation now uses the measured value, and the assumed value is reported
+  only as a bound.
+\item \textbf{Real-time factors.} They are now reported end to end (0.87--0.91), with the
+  generator-only figure (0.83--0.85) stated separately.
+\item \textbf{The descriptor-cost benchmark previously timed the embedding model's download
+  and load on every page.} It now times per-page inference with the model loaded once, as in
+  the extension.
+\item \textbf{Batching.} Concurrent generation requests were measured to give no throughput
+  gain on the GPU (speedup 1.01--1.02$\times$ at 2--8 concurrent requests, five repeats), and
+  the paper says so.
+\item \textbf{Disclosure.} AI-assisted language editing is disclosed in the acknowledgments.
+\end{itemize}
+
+\end{document}
