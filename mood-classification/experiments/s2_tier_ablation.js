@@ -163,7 +163,10 @@ async function collectRawResults(rawPage) {
   try {
     zs = await classifyCategoryZeroShot(
       { keywords, title: page.title, summary },
-      { enabled: true, backend: 'proxy', serviceUrl: ZS_SERVICE_URL, minScore: 0, minMargin: 0 }
+      _zsLocal
+        ? { enabled: true, backend: 'local', classify: _zsLocal.classify, model: _zsLocal.modelId,
+            minScore: 0, minMargin: 0, timeoutMs: 120_000 }
+        : { enabled: true, backend: 'proxy', serviceUrl: ZS_SERVICE_URL, minScore: 0, minMargin: 0 }
     );
   } catch (e) {
     zsError = e.message;
@@ -358,6 +361,14 @@ const flag = (name, def) => {
   return i >= 0 ? args[i + 1] : def;
 };
 const WITH_A6 = args.includes('--with-a6');
+// --zs-local: run the main zero-shot tier (A2/A5/A7) on a local ONNX build of the
+// same checkpoint instead of the HF-hosted proxy. Used when the hosted Inference
+// API is unavailable. The tier is still accounted as the off-device proxy tier
+// (zero_shot_proxy_rate) -- only where the model runs for this measurement changes.
+const ZS_LOCAL = args.includes('--zs-local');
+const ZS_LOCAL_MODEL = flag('zs-model', 'Xenova/bart-large-mnli');
+const ZS_LOCAL_QUANTIZED = !args.includes('--zs-fp32');  // fp32 = full-precision weights, ~1.6 GB download
+let _zsLocal = null;
 
 async function main() {
 
@@ -407,13 +418,22 @@ async function main() {
       'zero-exposure point.');
   }
 
+  if (ZS_LOCAL) {
+    _zsLocal = await createLocalClassifier({
+      model: ZS_LOCAL_MODEL,
+      quantized: ZS_LOCAL_QUANTIZED,
+      log: (m) => console.log(`[s2_tier_ablation] ${m.replace('[A6]', '[zs-local]')}`),
+    });
+    console.log(`[s2_tier_ablation] main zero-shot tier: ${_zsLocal.modelId} run LOCALLY (--zs-local); the HF proxy is not called`);
+  }
+
   // Health check first -- fail fast and legibly, same convention as
   // audio-generation/experiments/d4_latency.py, rather than N pages of
   // identical "fetch failed" errors.
   try {
     const health = await fetch(`${CLASSIFY_SERVICE_URL}/health`).then((r) => r.json());
     console.log(`[s2_tier_ablation] classify-service: groq=${health.keyConfigured} zero-shot=${health.zeroShotConfigured} (${health.zeroShotModel || 'n/a'})`);
-    if (!health.zeroShotConfigured) {
+    if (!health.zeroShotConfigured && !ZS_LOCAL) {
       console.warn('[s2_tier_ablation] WARNING: zeroShotConfigured=false -- A2/A5/A7 will show 0% zero-shot escalation. Set HF_API_TOKEN in .env and rebuild classify-service.');
     }
   } catch (e) {
@@ -506,7 +526,7 @@ async function runScoringAndReport(results, outPath, corpusLabel = '(rescored --
   if (outPath) {
     const outFull = path.resolve(process.cwd(), outPath);
     fs.mkdirSync(path.dirname(outFull), { recursive: true });
-    fs.writeFileSync(outFull, JSON.stringify({ corpus: corpusLabel, per_page: results, configs, a7_sweep: sweep }, null, 2));
+    fs.writeFileSync(outFull, JSON.stringify({ corpus: corpusLabel, zero_shot_backend: ZS_LOCAL ? `local:${ZS_LOCAL_MODEL}${ZS_LOCAL_QUANTIZED ? '(q8)' : '(fp32)'}` : 'proxy', per_page: results, configs, a7_sweep: sweep }, null, 2));
     console.log(`\nWrote ${outFull}`);
   }
 }
