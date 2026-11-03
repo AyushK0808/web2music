@@ -148,3 +148,4 @@ paper/diagrams/mermaid10.js
 
 # Scorer model weights downloaded by analysis/proxies/download_models.ps1 (about 2.3 GB)
 /models/
+data-extraction/benchmark/.hf-cache/
