@@ -55,6 +55,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import os
 import random
 import statistics
 import sys
@@ -383,7 +384,8 @@ def cmd_extract(args):
         import subprocess
         for stage in ("essentia", "clap"):
             print(f"[score_fit] extract stage: {stage}", flush=True)
-            rc = subprocess.call([sys.executable, str(Path(__file__).resolve()), *sys.argv[1:], "--stage", stage])
+            rc = subprocess.call([sys.executable, str(Path(__file__).resolve()), *sys.argv[1:], "--stage", stage],
+                            env={**os.environ, "TF_CPP_MIN_LOG_LEVEL": "3"})      # TF logs device init on every clip
             if rc != 0:
                 print(f"[score_fit] stage {stage} failed (exit {rc})", file=sys.stderr)
                 return rc
@@ -415,7 +417,7 @@ def cmd_extract(args):
                 entry["error"] = f"{args.stage}: {type(e).__name__}: {e}"
             cache["clips"][key] = entry
             done += 1
-            if done % 25 == 0:
+            if done % 10 == 0:
                 save()
                 print(f"  {args.stage}: {done} clips this run", flush=True)
 
