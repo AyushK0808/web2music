@@ -58,6 +58,19 @@ def _load_audioldm2():
     from diffusers import AudioLDM2Pipeline
 
     pipe = AudioLDM2Pipeline.from_pretrained("cvssp/audioldm2-music", torch_dtype=DTYPE)
+    lm = pipe.language_model
+    if not hasattr(lm, "_update_model_kwargs_for_generation"):
+        # transformers 5 dropped this hook; diffusers' AudioLDM2 still calls it once per step.
+        def _update_kwargs(outputs, model_kwargs, is_encoder_decoder=False, **_):
+            model_kwargs["past_key_values"] = outputs.past_key_values
+            mask = model_kwargs.get("attention_mask")
+            if mask is not None:
+                model_kwargs["attention_mask"] = torch.cat([mask, mask.new_ones((mask.shape[0], 1))], dim=-1)
+            pos = model_kwargs.get("cache_position")
+            if pos is not None:
+                model_kwargs["cache_position"] = pos[-1:] + 1
+            return model_kwargs
+        lm._update_model_kwargs_for_generation = _update_kwargs
     pipe = pipe.to("cuda" if torch.cuda.is_available() else ("mps" if device == "mps" else "cpu"))
 
     def _synth(prompts, forward_params=None):
