@@ -30,7 +30,7 @@ import { runB1 } from '../../mood-classification/feature_b/b1_contentUnderstandi
 import { runB2 } from '../../mood-classification/feature_b/b2_moodClassifier.js';
 import { runB3 } from '../../mood-classification/feature_b/b3_musicProfileGenerator.js';
 import { runB4 } from '../../mood-classification/feature_b/b4_promptEngineer.js';
-import { setLlmCache } from '../../mood-classification/feature_b/llmCache.js';
+import { setLlmCache, llmCacheStats } from '../../mood-classification/feature_b/llmCache.js';
 import { createCacheFromEnv } from '../../mood-classification/feature_b/llmCache.node.js';
 import { createLocalClassifier } from '../../mood-classification/experiments/localZeroShot.js';
 import { AROUSAL } from '../s4/assignment.mjs';
@@ -45,7 +45,29 @@ const cache = createCacheFromEnv();
 if (cache) { setLlmCache(cache); console.log(`[profiles] LLM cache ${process.env.W2M_LLM_CACHE} (${cache.mode}, ${cache.size()} entries)`); }
 
 const classifyBase = flag('classify-url', 'http://localhost:8078');
-const llmCfg = { backend: 'proxy', serviceUrl: `${classifyBase}/v1/chat/completions` };
+// --no-llm: the zero-exposure pipeline. B1 stops at keyword -> on-device zero-shot (then its
+// default category) and B2 stays on its tier-1 heuristic; no text is sent to any LLM and the
+// classify service is not used. An empty config is how both stages already skip the LLM.
+const NO_LLM = args.includes('--no-llm');
+// --llm-url / --llm-model: send B1/B2 to a local OpenAI-compatible server (e.g. Ollama's
+// http://localhost:11435/v1/chat/completions) instead of the Groq proxy.
+const llmUrl = flag('llm-url');
+const llmModel = flag('llm-model');
+const llmCfg = NO_LLM ? '' : {
+  backend: 'proxy',
+  serviceUrl: llmUrl ?? `${classifyBase}/v1/chat/completions`,
+  ...(llmModel ? { model: llmModel } : {}),
+};
+if (!NO_LLM && llmUrl) console.log(`[profiles] LLM: ${llmModel ?? 'default model'} at ${llmUrl}`);
+if (!NO_LLM && llmUrl) {
+  // fail fast on a wrong URL/model: a 400/404 can never succeed, and B2's retries would just burn minutes per page
+  const r = await fetch(llmUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model: llmModel, messages: [{ role: 'user', content: 'Reply with OK.' }], max_tokens: 8 }) })
+    .catch((e) => ({ ok: false, status: 0, text: async () => e.message }));
+  if (!r.ok && r.status !== 429) { console.error(`[profiles] LLM preflight failed (${r.status}): ${(await r.text()).slice(0, 300)}`); process.exit(1); }
+  console.log('[profiles] LLM preflight ok');
+}
+if (NO_LLM) console.log('[profiles] --no-llm: local-only pipeline (no LLM calls)');
 const local = await createLocalClassifier({ model: flag('local-model'), log: (m) => console.log(m) });
 const zeroShot = { enabled: true, backend: 'local', classify: local.classify, model: local.modelId };
 
@@ -53,13 +75,38 @@ const pages = flagAll('corpus').flatMap((f) => JSON.parse(fs.readFileSync(path.r
   .filter((p) => p.pageData);
 console.log(`[profiles] ${pages.length} page(s)`);
 
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const PAGE_PACING_MS = Number(process.env.PROFILES_PAGE_PACING_MS ?? 1500);
+const B2_RETRIES = Number(process.env.PROFILES_B2_RETRIES ?? 5);
+const B2_RETRY_BASE_MS = Number(process.env.PROFILES_B2_RETRY_BASE_MS ?? 4000);
+const b2Fallbacks = [];
+
 const out = [];
 let skippedSensitive = 0, failed = 0;
 for (const [i, p] of pages.entries()) {
   try {
     const b1 = await runB1(p.pageData, llmCfg, { zeroShot });
     if (b1.isSensitive) { skippedSensitive++; continue; }
-    const b2 = await runB2(b1, llmCfg, { sensitiveContentMode: 'silence' });
+    // B2 only calls the LLM when its tier-1 confidence is low; on confident pages "tier1-heuristic" is
+    // the intended result. So a page is retried only if a live LLM request was actually sent and
+    // failed (rate limit, timeout, bad reply) -- i.e. `live` went up but no answer was stored.
+    let b2, ranLive;
+    const runPageB2 = async () => {
+      const before = llmCacheStats();
+      b2 = await runB2(b1, llmCfg, { sensitiveContentMode: 'silence' });
+      const after = llmCacheStats();
+      ranLive = after.live > before.live;
+      return ranLive && after.stored === before.stored;     // sent a request, got nothing usable
+    };
+    let failedLive = await runPageB2();
+    for (let attempt = 1; failedLive && attempt <= B2_RETRIES; attempt++) {
+      const waitMs = B2_RETRY_BASE_MS * 2 ** (attempt - 1);
+      console.warn(`  ${p.id}: B2's LLM request failed -- retrying in ${waitMs}ms (${attempt}/${B2_RETRIES})`);
+      await sleep(waitMs);
+      failedLive = await runPageB2();
+    }
+    if (failedLive) b2Fallbacks.push(p.id);
+    if (ranLive) await sleep(PAGE_PACING_MS);
     if (b2.sensitiveOverride || b2.mood == null) { skippedSensitive++; continue; }
     const handoff = runB4(runB3({ ...b2, hour: 12 }), { targetModel: 'musicgen' });
     out.push({
@@ -82,4 +129,5 @@ for (const [i, p] of pages.entries()) {
 const outFile = path.resolve(REPO, flag('out', 'analysis/proxies/out/profiles.json'));
 fs.mkdirSync(path.dirname(outFile), { recursive: true });
 fs.writeFileSync(outFile, JSON.stringify(out, null, 2));
+if (b2Fallbacks.length) console.warn(`[profiles] WARNING: ${b2Fallbacks.length} page(s) ended on B2's tier-1 fallback, not the LLM: ${b2Fallbacks.join(', ')}`);
 console.log(`[profiles] wrote ${out.length} profile(s) to ${outFile} (skipped ${skippedSensitive} sensitive, ${failed} failed)`);

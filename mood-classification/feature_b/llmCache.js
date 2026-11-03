@@ -27,12 +27,12 @@
 "use strict";
 
 let _cache = null;
-const _stats = { hits: 0, misses: 0, stored: 0 };
+const _stats = { hits: 0, misses: 0, stored: 0, live: 0 };
 
 /** Install (or, with null, remove) the cache backend. */
 export function setLlmCache(cache) {
   _cache = cache;
-  _stats.hits = _stats.misses = _stats.stored = 0;
+  _stats.hits = _stats.misses = _stats.stored = _stats.live = 0;
 }
 
 export function llmCacheStats() {
@@ -76,6 +76,7 @@ export async function cachedLlmFetch(kind, requestBody, fetchFn) {
     }
   }
 
+  _stats.live++; // a real request was sent (on success `stored` follows; callers can tell a failed one apart)
   const res = await fetchFn();
   if (!res.ok) return res; // errors are never cached
   const data = await res.json();
