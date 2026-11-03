@@ -511,6 +511,11 @@ async function main() {
       async (backendUrl) => { await chrome.storage.local.set({ backendUrl, masterEnabled: true }); },
       D_URL ? D_URL.replace(/\/$/, "") : `${server.baseUrl}/d`
     );
+    // A6 = the LLM stage switched off (no LLM request is made at all); A6b leaves it on, via the real proxy
+    if (!REAL_CLASSIFY) {
+      await worker.evaluate(async () => { await chrome.storage.sync.set({ llmEnabled: false }); });
+      await new Promise((r) => setTimeout(r, 500));
+    }
 
     // A discarded warm-up load: the very first page of a session also pays
     // the offscreen document's creation, the audio context's first start and
