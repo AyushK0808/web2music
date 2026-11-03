@@ -1,0 +1,1659 @@
+{
+  "started_at": "2026-11-02T20:03:19",
+  "elapsed_s": 651.8,
+  "offline_source": null,
+  "manifest": {
+    "recorded_at": "2026-11-02T20:03:19",
+    "platform": "Linux-6.18.54.1-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+    "python": "3.12.16",
+    "cpu": null,
+    "form_factor": null,
+    "power_plan": null,
+    "nvidia_smi": "NVIDIA GeForce RTX 5060 Laptop GPU, 592.82, 8151 MiB",
+    "torch": {
+      "version": "2.11.0+cu128",
+      "cuda": "12.8",
+      "cuda_available": true,
+      "capability": [
+        12,
+        0
+      ]
+    },
+    "generator": {
+      "model": "musicgen-small",
+      "device": "NVIDIA GeForce RTX 5060 Laptop GPU",
+      "precision": "fp16",
+      "torch_compile": false,
+      "audioldm2_steps": null
+    }
+  },
+  "config": {
+    "durations": [
+      8,
+      10,
+      15,
+      20,
+      28
+    ],
+    "moods": [
+      "calm",
+      "tense",
+      "energetic"
+    ],
+    "repeats": 3
+  },
+  "summary": {
+    "per_duration": {
+      "8": {
+        "n": 9,
+        "delivered_ms": {
+          "n": 9,
+          "min": 2742,
+          "p50": 4022,
+          "p95": 6774,
+          "max": 6774,
+          "mean": 4505.556,
+          "stdev": 1318.733
+        },
+        "duration_retention": {
+          "n": 9,
+          "min": 0.343,
+          "p50": 0.503,
+          "p95": 0.847,
+          "max": 0.847,
+          "mean": 0.563,
+          "stdev": 0.165
+        },
+        "seam_energy_delta_db": {
+          "n": 9,
+          "min": 0.01,
+          "p50": 0.33,
+          "p95": 9.17,
+          "max": 9.17,
+          "mean": 1.581,
+          "stdev": 2.98
+        },
+        "loop_cost": {
+          "n": 9,
+          "min": 0.1,
+          "p50": 4.923,
+          "p95": 152.579,
+          "max": 152.579,
+          "mean": 24.17,
+          "stdev": 49.418
+        },
+        "loops_per_minute": 14.92,
+        "wall_ms": {
+          "n": 9,
+          "min": 7179.6,
+          "p50": 7295.5,
+          "p95": 7586.1,
+          "max": 7586.1,
+          "mean": 7314.978,
+          "stdev": 129.723
+        },
+        "d3_generate_ms": {
+          "n": 9,
+          "min": 6759,
+          "p50": 6874,
+          "p95": 7108,
+          "max": 7108,
+          "mean": 6868.556,
+          "stdev": 113.902
+        }
+      },
+      "10": {
+        "n": 9,
+        "delivered_ms": {
+          "n": 9,
+          "min": 2822,
+          "p50": 5942,
+          "p95": 7654,
+          "max": 7654,
+          "mean": 5643.333,
+          "stdev": 1668.36
+        },
+        "duration_retention": {
+          "n": 9,
+          "min": 0.282,
+          "p50": 0.594,
+          "p95": 0.765,
+          "max": 0.765,
+          "mean": 0.564,
+          "stdev": 0.167
+        },
+        "seam_energy_delta_db": {
+          "n": 9,
+          "min": 0.01,
+          "p50": 0.53,
+          "p95": 3.35,
+          "max": 3.35,
+          "mean": 0.917,
+          "stdev": 1.17
+        },
+        "loop_cost": {
+          "n": 9,
+          "min": 0.089,
+          "p50": 4.473,
+          "p95": 51.665,
+          "max": 51.665,
+          "mean": 11.61,
+          "stdev": 16.995
+        },
+        "loops_per_minute": 10.1,
+        "wall_ms": {
+          "n": 9,
+          "min": 8867.1,
+          "p50": 8958.6,
+          "p95": 9075.0,
+          "max": 9075.0,
+          "mean": 8973.344,
+          "stdev": 67.102
+        },
+        "d3_generate_ms": {
+          "n": 9,
+          "min": 8434,
+          "p50": 8488,
+          "p95": 8544,
+          "max": 8544,
+          "mean": 8495.111,
+          "stdev": 38.251
+        }
+      },
+      "15": {
+        "n": 9,
+        "delivered_ms": {
+          "n": 9,
+          "min": 4006,
+          "p50": 8374,
+          "p95": 13142,
+          "max": 13142,
+          "mean": 8363.333,
+          "stdev": 3252.676
+        },
+        "duration_retention": {
+          "n": 9,
+          "min": 0.267,
+          "p50": 0.558,
+          "p95": 0.876,
+          "max": 0.876,
+          "mean": 0.558,
+          "stdev": 0.217
+        },
+        "seam_energy_delta_db": {
+          "n": 9,
+          "min": 0.01,
+          "p50": 0.11,
+          "p95": 3.27,
+          "max": 3.27,
+          "mean": 0.491,
+          "stdev": 1.051
+        },
+        "loop_cost": {
+          "n": 9,
+          "min": 0.046,
+          "p50": 1.035,
+          "p95": 39.894,
+          "max": 39.894,
+          "mean": 5.456,
+          "stdev": 12.953
+        },
+        "loops_per_minute": 7.17,
+        "wall_ms": {
+          "n": 9,
+          "min": 13159.8,
+          "p50": 13269.3,
+          "p95": 13459.0,
+          "max": 13459.0,
+          "mean": 13299.644,
+          "stdev": 112.457
+        },
+        "d3_generate_ms": {
+          "n": 9,
+          "min": 12576,
+          "p50": 12700,
+          "p95": 12864,
+          "max": 12864,
+          "mean": 12685.667,
+          "stdev": 102.395
+        }
+      },
+      "20": {
+        "n": 9,
+        "delivered_ms": {
+          "n": 9,
+          "min": 5910,
+          "p50": 11094,
+          "p95": 19094,
+          "max": 19094,
+          "mean": 11470.889,
+          "stdev": 4268.539
+        },
+        "duration_retention": {
+          "n": 9,
+          "min": 0.295,
+          "p50": 0.555,
+          "p95": 0.955,
+          "max": 0.955,
+          "mean": 0.574,
+          "stdev": 0.213
+        },
+        "seam_energy_delta_db": {
+          "n": 9,
+          "min": 0.0,
+          "p50": 0.06,
+          "p95": 0.68,
+          "max": 0.68,
+          "mean": 0.187,
+          "stdev": 0.26
+        },
+        "loop_cost": {
+          "n": 9,
+          "min": 0.0,
+          "p50": 0.541,
+          "p95": 6.904,
+          "max": 6.904,
+          "mean": 1.32,
+          "stdev": 2.259
+        },
+        "loops_per_minute": 5.41,
+        "wall_ms": {
+          "n": 9,
+          "min": 17339.8,
+          "p50": 17571.0,
+          "p95": 17762.0,
+          "max": 17762.0,
+          "mean": 17539.233,
+          "stdev": 161.615
+        },
+        "d3_generate_ms": {
+          "n": 9,
+          "min": 16566,
+          "p50": 16832,
+          "p95": 17056,
+          "max": 17056,
+          "mean": 16792.0,
+          "stdev": 162.897
+        }
+      },
+      "28": {
+        "n": 9,
+        "delivered_ms": {
+          "n": 9,
+          "min": 6278,
+          "p50": 15638,
+          "p95": 27094,
+          "max": 27094,
+          "mean": 15518.889,
+          "stdev": 7022.21
+        },
+        "duration_retention": {
+          "n": 9,
+          "min": 0.224,
+          "p50": 0.558,
+          "p95": 0.968,
+          "max": 0.968,
+          "mean": 0.554,
+          "stdev": 0.251
+        },
+        "seam_energy_delta_db": {
+          "n": 9,
+          "min": 0.01,
+          "p50": 0.03,
+          "p95": 0.11,
+          "max": 0.11,
+          "mean": 0.044,
+          "stdev": 0.034
+        },
+        "loop_cost": {
+          "n": 9,
+          "min": 0.031,
+          "p50": 0.115,
+          "p95": 1.051,
+          "max": 1.051,
+          "mean": 0.29,
+          "stdev": 0.371
+        },
+        "loops_per_minute": 3.84,
+        "wall_ms": {
+          "n": 9,
+          "min": 24239.2,
+          "p50": 24422.0,
+          "p95": 24715.2,
+          "max": 24715.2,
+          "mean": 24457.222,
+          "stdev": 178.94
+        },
+        "d3_generate_ms": {
+          "n": 9,
+          "min": 23236,
+          "p50": 23430,
+          "p95": 23884,
+          "max": 23884,
+          "mean": 23521.667,
+          "stdev": 212.539
+        }
+      }
+    },
+    "retention_fit": {
+      "n": 45,
+      "slope": -0.0002554447852760743,
+      "intercept": 0.5667137610770279,
+      "r": -0.009531875462537422
+    },
+    "delivered_fit": {
+      "n": 45,
+      "slope": 0.5549925017041581,
+      "intercept": 0.10952147239263965,
+      "r": 0.7225291908937874
+    },
+    "verdict": "retention is roughly flat in requested length \u2014 the detector keeps a constant fraction, so the choice is a straight latency/loop-frequency trade and the loop-cost column decides it."
+  },
+  "rows": [
+    {
+      "duration_seconds": 8,
+      "mood": "calm",
+      "iteration": 0,
+      "wall_ms": 7313.5,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1143580444,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 6899,
+        "d4_process_ms": 404,
+        "d5_save_ms": 7
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/0c839d47e6abf13781af070929210b1e9b61348a985f9f896878a3147590baf9.ogg",
+      "quality": {
+        "duration_ms": 2742,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.18,
+        "post_spectral_centroid_delta_hz": 141.9,
+        "lufs": -16.51141386209877,
+        "rms_dbfs": -15.349863198087117,
+        "duration_ratio": 0.3427,
+        "loop_cost": 3.938730853391685
+      }
+    },
+    {
+      "duration_seconds": 8,
+      "mood": "calm",
+      "iteration": 1,
+      "wall_ms": 7204.9,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 151049040,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 6765,
+        "d4_process_ms": 428,
+        "d5_save_ms": 8
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/b7b78469bc5dc9048940f89e048e222874ba49aceeb5edc1fc68a8a7fdd18541.ogg",
+      "quality": {
+        "duration_ms": 6006,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.01,
+        "post_spectral_centroid_delta_hz": 8.5,
+        "lufs": -17.996530756137428,
+        "rms_dbfs": -17.157575365729713,
+        "duration_ratio": 0.7508,
+        "loop_cost": 0.09990009990009989
+      }
+    },
+    {
+      "duration_seconds": 8,
+      "mood": "calm",
+      "iteration": 2,
+      "wall_ms": 7360.2,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1297808711,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 6920,
+        "d4_process_ms": 423,
+        "d5_save_ms": 11
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/8a9c9353eee0823c9d09a9ea496dfe271b1e91b05a2610c39ed094de1670e7cc.ogg",
+      "quality": {
+        "duration_ms": 4022,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.33,
+        "post_spectral_centroid_delta_hz": 508.3,
+        "lufs": -17.605210583672598,
+        "rms_dbfs": -14.236737470222103,
+        "duration_ratio": 0.5028,
+        "loop_cost": 4.922923918448533
+      }
+    },
+    {
+      "duration_seconds": 8,
+      "mood": "tense",
+      "iteration": 0,
+      "wall_ms": 7586.1,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 890747050,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 7108,
+        "d4_process_ms": 465,
+        "d5_save_ms": 8
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/b4209d1009328a1aa87eddf5b6fe72bfc9a5e2cbe4e10268bcf075a3b2f6ab25.ogg",
+      "quality": {
+        "duration_ms": 3798,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.47,
+        "post_spectral_centroid_delta_hz": 273.1,
+        "lufs": -19.45121300795797,
+        "rms_dbfs": -16.880214818723505,
+        "duration_ratio": 0.4748,
+        "loop_cost": 7.424960505529226
+      }
+    },
+    {
+      "duration_seconds": 8,
+      "mood": "tense",
+      "iteration": 1,
+      "wall_ms": 7179.6,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1005182070,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 6759,
+        "d4_process_ms": 407,
+        "d5_save_ms": 8
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/9e96f7018da3e8e34a1ef24f1a510077ab608c67cf1824d5111542f9840064f6.ogg",
+      "quality": {
+        "duration_ms": 5398,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.28,
+        "post_spectral_centroid_delta_hz": 266.9,
+        "lufs": -18.008388386313264,
+        "rms_dbfs": -14.458177074846756,
+        "duration_ratio": 0.6747,
+        "loop_cost": 3.1122638014079294
+      }
+    },
+    {
+      "duration_seconds": 8,
+      "mood": "tense",
+      "iteration": 2,
+      "wall_ms": 7431.3,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 210254071,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 6933,
+        "d4_process_ms": 486,
+        "d5_save_ms": 8
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/ce790f0da6a61d18f7d8d3c71fa40336392db8b775dcd92d157e79f16b26cad7.ogg",
+      "quality": {
+        "duration_ms": 6774,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.82,
+        "post_spectral_centroid_delta_hz": 119.8,
+        "lufs": -17.88687695604893,
+        "rms_dbfs": -13.004908252706288,
+        "duration_ratio": 0.8468,
+        "loop_cost": 7.263064658990256
+      }
+    },
+    {
+      "duration_seconds": 8,
+      "mood": "energetic",
+      "iteration": 0,
+      "wall_ms": 7210.7,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1738362321,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 6787,
+        "d4_process_ms": 410,
+        "d5_save_ms": 7
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/92d59a20a62c027799a44590af235d27ff1e99c32c1b9bcd1882fa587836f316.ogg",
+      "quality": {
+        "duration_ms": 3606,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -9.17,
+        "post_spectral_centroid_delta_hz": 318.8,
+        "lufs": -18.19837262462103,
+        "rms_dbfs": -14.869508786828476,
+        "duration_ratio": 0.4507,
+        "loop_cost": 152.57903494176372
+      }
+    },
+    {
+      "duration_seconds": 8,
+      "mood": "energetic",
+      "iteration": 1,
+      "wall_ms": 7295.5,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 406475087,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 6874,
+        "d4_process_ms": 407,
+        "d5_save_ms": 9
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/3956b6dc4adf4b0c7022df119e695a4864040fb87eba2049af3b353b2025400f.ogg",
+      "quality": {
+        "duration_ms": 3494,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.08,
+        "post_spectral_centroid_delta_hz": 235.3,
+        "lufs": -22.702171705788903,
+        "rms_dbfs": -20.26558191780869,
+        "duration_ratio": 0.4368,
+        "loop_cost": 1.3737836290784202
+      }
+    },
+    {
+      "duration_seconds": 8,
+      "mood": "energetic",
+      "iteration": 2,
+      "wall_ms": 7253.0,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 86858443,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 6772,
+        "d4_process_ms": 470,
+        "d5_save_ms": 6
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/b7691dc7f75df81c9fb8cd3c853d631096181bb3502c3ed8ac45ee80a91a2591.ogg",
+      "quality": {
+        "duration_ms": 4710,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -2.89,
+        "post_spectral_centroid_delta_hz": 204.4,
+        "lufs": -18.24248316400211,
+        "rms_dbfs": -16.14884661083903,
+        "duration_ratio": 0.5887,
+        "loop_cost": 36.81528662420383
+      }
+    },
+    {
+      "duration_seconds": 10,
+      "mood": "calm",
+      "iteration": 0,
+      "wall_ms": 8867.1,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 403012524,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 8434,
+        "d4_process_ms": 423,
+        "d5_save_ms": 6
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/2604434942c2d80567334474f53b92345f01bd5212646393afde331d9ea07e32.ogg",
+      "quality": {
+        "duration_ms": 5318,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.82,
+        "post_spectral_centroid_delta_hz": 169.3,
+        "lufs": -20.469033822594813,
+        "rms_dbfs": -18.620962747422137,
+        "duration_ratio": 0.5318,
+        "loop_cost": 9.251598345242572
+      }
+    },
+    {
+      "duration_seconds": 10,
+      "mood": "calm",
+      "iteration": 1,
+      "wall_ms": 8980.5,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 722683708,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 8488,
+        "d4_process_ms": 476,
+        "d5_save_ms": 9
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/35a7ba01fd924875ae4e5f05f99f0c9a2d92a238c1963c49f2eed839fe419e46.ogg",
+      "quality": {
+        "duration_ms": 5942,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.33,
+        "post_spectral_centroid_delta_hz": 32.7,
+        "lufs": -16.696131061388307,
+        "rms_dbfs": -16.700573654238926,
+        "duration_ratio": 0.5942,
+        "loop_cost": 3.3322113766408616
+      }
+    },
+    {
+      "duration_seconds": 10,
+      "mood": "calm",
+      "iteration": 2,
+      "wall_ms": 8958.6,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 358505175,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 8496,
+        "d4_process_ms": 451,
+        "d5_save_ms": 6
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/ef76652a084e785e01542bb7b5768ae8c557eb0601c40bf4319c25cfa499be7d.ogg",
+      "quality": {
+        "duration_ms": 4774,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.53,
+        "post_spectral_centroid_delta_hz": 49.8,
+        "lufs": -17.60541308030722,
+        "rms_dbfs": -16.62838766083491,
+        "duration_ratio": 0.4774,
+        "loop_cost": 6.661080854629242
+      }
+    },
+    {
+      "duration_seconds": 10,
+      "mood": "tense",
+      "iteration": 0,
+      "wall_ms": 8949.6,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 2001278519,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 8463,
+        "d4_process_ms": 476,
+        "d5_save_ms": 6
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/5317796d3f95d69b5693ff45bd19d42597addd64bfd10d6ea457ccd9a2ef2515.ogg",
+      "quality": {
+        "duration_ms": 7110,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.53,
+        "post_spectral_centroid_delta_hz": 323.0,
+        "lufs": -18.278667824758887,
+        "rms_dbfs": -17.331772888923172,
+        "duration_ratio": 0.711,
+        "loop_cost": 4.472573839662448
+      }
+    },
+    {
+      "duration_seconds": 10,
+      "mood": "tense",
+      "iteration": 1,
+      "wall_ms": 8941.0,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 279187993,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 8471,
+        "d4_process_ms": 457,
+        "d5_save_ms": 7
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/bb80230ce29d3138b7d9c5b3f51860d4806c068f2ed3b386a04afdc6aeb0f25d.ogg",
+      "quality": {
+        "duration_ms": 6758,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.01,
+        "post_spectral_centroid_delta_hz": 65.1,
+        "lufs": -18.44472355906889,
+        "rms_dbfs": -16.32170815838127,
+        "duration_ratio": 0.6758,
+        "loop_cost": 0.08878366380585971
+      }
+    },
+    {
+      "duration_seconds": 10,
+      "mood": "tense",
+      "iteration": 2,
+      "wall_ms": 9053.8,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 63508529,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 8537,
+        "d4_process_ms": 506,
+        "d5_save_ms": 7
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/4769fdb4b43971526f8da73558aff41f62fad367401cf23c338c0b62d6322c78.ogg",
+      "quality": {
+        "duration_ms": 6870,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.18,
+        "post_spectral_centroid_delta_hz": 165.5,
+        "lufs": -19.405088708267378,
+        "rms_dbfs": -17.844744616316607,
+        "duration_ratio": 0.687,
+        "loop_cost": 1.572052401746725
+      }
+    },
+    {
+      "duration_seconds": 10,
+      "mood": "energetic",
+      "iteration": 0,
+      "wall_ms": 8912.6,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1740818705,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 8483,
+        "d4_process_ms": 418,
+        "d5_save_ms": 6
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/ae8b93ee592f3974f334cde6e85cecc41e14a1f9c7eee83d9940f3c12b9175b4.ogg",
+      "quality": {
+        "duration_ms": 2822,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -2.43,
+        "post_spectral_centroid_delta_hz": 185.5,
+        "lufs": -13.85555980508875,
+        "rms_dbfs": -12.24090391804947,
+        "duration_ratio": 0.2822,
+        "loop_cost": 51.665485471296954
+      }
+    },
+    {
+      "duration_seconds": 10,
+      "mood": "energetic",
+      "iteration": 1,
+      "wall_ms": 9021.9,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1137195738,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 8540,
+        "d4_process_ms": 458,
+        "d5_save_ms": 19
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/0a23c3a8c5836b6fac052aed337be99cedb733794331a847bca5b066c489d1c4.ogg",
+      "quality": {
+        "duration_ms": 3542,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.07,
+        "post_spectral_centroid_delta_hz": 395.4,
+        "lufs": -18.141353155606108,
+        "rms_dbfs": -15.611356227746409,
+        "duration_ratio": 0.3542,
+        "loop_cost": 1.1857707509881423
+      }
+    },
+    {
+      "duration_seconds": 10,
+      "mood": "energetic",
+      "iteration": 2,
+      "wall_ms": 9075.0,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 500221743,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 8544,
+        "d4_process_ms": 517,
+        "d5_save_ms": 7
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/dfa67ec16911800545a841d37c8e0c41482f7d6c6ad83e0254b2fdc81f00c06d.ogg",
+      "quality": {
+        "duration_ms": 7654,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 3.35,
+        "post_spectral_centroid_delta_hz": 804.5,
+        "lufs": -18.211727879854504,
+        "rms_dbfs": -14.928917350766733,
+        "duration_ratio": 0.7654,
+        "loop_cost": 26.260778677815523
+      }
+    },
+    {
+      "duration_seconds": 15,
+      "mood": "calm",
+      "iteration": 0,
+      "wall_ms": 13423.2,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 108428140,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 12786,
+        "d4_process_ms": 626,
+        "d5_save_ms": 6
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/d37512d0490cf1ea7a972a72296603f5e5f7275905bb455d6ed4e8f47790cfb0.ogg",
+      "quality": {
+        "duration_ms": 9110,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.48,
+        "post_spectral_centroid_delta_hz": 116.1,
+        "lufs": -17.530596668353887,
+        "rms_dbfs": -13.352354568462715,
+        "duration_ratio": 0.6073,
+        "loop_cost": 3.1613611416026344
+      }
+    },
+    {
+      "duration_seconds": 15,
+      "mood": "calm",
+      "iteration": 1,
+      "wall_ms": 13189.4,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 250769716,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 12605,
+        "d4_process_ms": 558,
+        "d5_save_ms": 20
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/3537c325db814a1b9abc4d7c02fac2ce23b072ff9a8cf2a47c72a283403274e5.ogg",
+      "quality": {
+        "duration_ms": 5798,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.1,
+        "post_spectral_centroid_delta_hz": 47.4,
+        "lufs": -17.900830586296127,
+        "rms_dbfs": -16.903038629447174,
+        "duration_ratio": 0.3865,
+        "loop_cost": 1.0348395998620215
+      }
+    },
+    {
+      "duration_seconds": 15,
+      "mood": "calm",
+      "iteration": 2,
+      "wall_ms": 13459.0,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1612598230,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 12864,
+        "d4_process_ms": 583,
+        "d5_save_ms": 8
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/a1906f15104cb22a55c024e392eac22e7e22d3b42fba4d1732bdad272302f497.ogg",
+      "quality": {
+        "duration_ms": 7414,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.1,
+        "post_spectral_centroid_delta_hz": 412.6,
+        "lufs": -19.12794264205862,
+        "rms_dbfs": -18.09846736146044,
+        "duration_ratio": 0.4943,
+        "loop_cost": 0.809279741030483
+      }
+    },
+    {
+      "duration_seconds": 15,
+      "mood": "tense",
+      "iteration": 0,
+      "wall_ms": 13440.2,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1723881075,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 12736,
+        "d4_process_ms": 691,
+        "d5_save_ms": 6
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/7a0a4b9293435ca3dd15e9caff0afd2eeaf6edd5da7896b90884995ed3830a2e.ogg",
+      "quality": {
+        "duration_ms": 13142,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.11,
+        "post_spectral_centroid_delta_hz": 56.8,
+        "lufs": -18.170592111934933,
+        "rms_dbfs": -17.394134607456067,
+        "duration_ratio": 0.8761,
+        "loop_cost": 0.5022066656521078
+      }
+    },
+    {
+      "duration_seconds": 15,
+      "mood": "tense",
+      "iteration": 1,
+      "wall_ms": 13269.3,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 723585540,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 12597,
+        "d4_process_ms": 660,
+        "d5_save_ms": 9
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/a4ab372fa6fdc5fa7b389b71485352172ae51499e968c040e3e60aef3ba43e0b.ogg",
+      "quality": {
+        "duration_ms": 13014,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.01,
+        "post_spectral_centroid_delta_hz": 271.6,
+        "lufs": -18.48590925109855,
+        "rms_dbfs": -15.929160728829011,
+        "duration_ratio": 0.8676,
+        "loop_cost": 0.04610419548178884
+      }
+    },
+    {
+      "duration_seconds": 15,
+      "mood": "tense",
+      "iteration": 2,
+      "wall_ms": 13262.1,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 605986929,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 12727,
+        "d4_process_ms": 524,
+        "d5_save_ms": 7
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/345dab7085c8f4ac087ba0b5a93632d404c064f4c2ee4ed825ce9689311c58f1.ogg",
+      "quality": {
+        "duration_ms": 4006,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.15,
+        "post_spectral_centroid_delta_hz": 421.9,
+        "lufs": -17.712960313958895,
+        "rms_dbfs": -15.768410262963144,
+        "duration_ratio": 0.2671,
+        "loop_cost": 2.2466300549176235
+      }
+    },
+    {
+      "duration_seconds": 15,
+      "mood": "energetic",
+      "iteration": 0,
+      "wall_ms": 13270.9,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1826294063,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 12700,
+        "d4_process_ms": 556,
+        "d5_save_ms": 7
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/5c77819727605394fcc2831c91743cfff1e7a2c29da36d1521c7d689e4936914.ogg",
+      "quality": {
+        "duration_ms": 8374,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.17,
+        "post_spectral_centroid_delta_hz": 909.0,
+        "lufs": -17.987341667265174,
+        "rms_dbfs": -15.760828882107782,
+        "duration_ratio": 0.5583,
+        "loop_cost": 1.218055887270122
+      }
+    },
+    {
+      "duration_seconds": 15,
+      "mood": "energetic",
+      "iteration": 1,
+      "wall_ms": 13159.8,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1324327126,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 12576,
+        "d4_process_ms": 570,
+        "d5_save_ms": 9
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/a3a3de1cda313895ba27fd2b7f1b5ed04ae61d3f59ddf09d0f3b1bc0334fd9d1.ogg",
+      "quality": {
+        "duration_ms": 4918,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -3.27,
+        "post_spectral_centroid_delta_hz": 530.4,
+        "lufs": -18.12272682833603,
+        "rms_dbfs": -15.857347062807133,
+        "duration_ratio": 0.3279,
+        "loop_cost": 39.89426596177308
+      }
+    },
+    {
+      "duration_seconds": 15,
+      "mood": "energetic",
+      "iteration": 2,
+      "wall_ms": 13222.9,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 348289387,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 12580,
+        "d4_process_ms": 631,
+        "d5_save_ms": 6
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/cdde92f83ed37856581a23ce4422fb9ef85f66ea3e4e501e04e19d057f0c0e23.ogg",
+      "quality": {
+        "duration_ms": 9494,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.03,
+        "post_spectral_centroid_delta_hz": 242.2,
+        "lufs": -18.579464786184754,
+        "rms_dbfs": -16.30978628814145,
+        "duration_ratio": 0.6329,
+        "loop_cost": 0.18959342742784915
+      }
+    },
+    {
+      "duration_seconds": 20,
+      "mood": "calm",
+      "iteration": 0,
+      "wall_ms": 17571.0,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1477168052,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 16842,
+        "d4_process_ms": 718,
+        "d5_save_ms": 6
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/14cb97b2eea8e74aeb7545703b2073e20389e1d4f1928918454b3eccc76b2305.ogg",
+      "quality": {
+        "duration_ms": 9894,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.03,
+        "post_spectral_centroid_delta_hz": 11.8,
+        "lufs": -18.850781311461823,
+        "rms_dbfs": -17.98983814277567,
+        "duration_ratio": 0.4947,
+        "loop_cost": 0.18192844147968465
+      }
+    },
+    {
+      "duration_seconds": 20,
+      "mood": "calm",
+      "iteration": 1,
+      "wall_ms": 17378.9,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 6015973,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 16736,
+        "d4_process_ms": 628,
+        "d5_save_ms": 9
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/95c0c9b6e7a025ce2776bdafb87ddaff9a03c82097a3f2eccbb2de7847f7d951.ogg",
+      "quality": {
+        "duration_ms": 6566,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.06,
+        "post_spectral_centroid_delta_hz": 76.0,
+        "lufs": -18.133542328490925,
+        "rms_dbfs": -17.11154901642015,
+        "duration_ratio": 0.3283,
+        "loop_cost": 0.5482790130977764
+      }
+    },
+    {
+      "duration_seconds": 20,
+      "mood": "calm",
+      "iteration": 2,
+      "wall_ms": 17736.5,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 983379824,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 16841,
+        "d4_process_ms": 882,
+        "d5_save_ms": 7
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/cd94f48291612359ec1d3d1ab8e3992aad1f0063e3fc9f2554c652a0e72e8958.ogg",
+      "quality": {
+        "duration_ms": 19094,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.05,
+        "post_spectral_centroid_delta_hz": 14.5,
+        "lufs": -18.019637318592128,
+        "rms_dbfs": -16.96773272815802,
+        "duration_ratio": 0.9547,
+        "loop_cost": 0.15711741908452917
+      }
+    },
+    {
+      "duration_seconds": 20,
+      "mood": "tense",
+      "iteration": 0,
+      "wall_ms": 17762.0,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1245167183,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 17056,
+        "d4_process_ms": 695,
+        "d5_save_ms": 7
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/3a93ca7cdf41e7b4fcbdfb8ce5a72ddbf314d6e8506695ed8ee7853b28ec72eb.ogg",
+      "quality": {
+        "duration_ms": 9542,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.0,
+        "post_spectral_centroid_delta_hz": 300.2,
+        "lufs": -18.690366758354365,
+        "rms_dbfs": -14.084789738985897,
+        "duration_ratio": 0.4771,
+        "loop_cost": 0.0
+      }
+    },
+    {
+      "duration_seconds": 20,
+      "mood": "tense",
+      "iteration": 1,
+      "wall_ms": 17491.5,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 743350322,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 16673,
+        "d4_process_ms": 805,
+        "d5_save_ms": 7
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/2be70696152c1fdbc7c6adaca087300e8cb13af01fb3e9a7f3bed4f283355b0b.ogg",
+      "quality": {
+        "duration_ms": 16390,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.04,
+        "post_spectral_centroid_delta_hz": 142.2,
+        "lufs": -17.628851081653135,
+        "rms_dbfs": -15.976236498554213,
+        "duration_ratio": 0.8195,
+        "loop_cost": 0.1464307504575961
+      }
+    },
+    {
+      "duration_seconds": 20,
+      "mood": "tense",
+      "iteration": 2,
+      "wall_ms": 17339.8,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1047013421,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 16607,
+        "d4_process_ms": 722,
+        "d5_save_ms": 6
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/2c3ab2c802a16f46b0e5b9b82763acf429f6addec89b2c0749f4e0a017864d00.ogg",
+      "quality": {
+        "duration_ms": 11878,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.12,
+        "post_spectral_centroid_delta_hz": 255.5,
+        "lufs": -18.519139642038223,
+        "rms_dbfs": -9.299134988127523,
+        "duration_ratio": 0.5939,
+        "loop_cost": 0.6061626536453948
+      }
+    },
+    {
+      "duration_seconds": 20,
+      "mood": "energetic",
+      "iteration": 0,
+      "wall_ms": 17618.5,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1666418579,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 16975,
+        "d4_process_ms": 627,
+        "d5_save_ms": 10
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/cfda98f6e1a7dbfadcbb31a19b02858e1e33e473d908e2adcfadf4aa2b4991e6.ogg",
+      "quality": {
+        "duration_ms": 5910,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.68,
+        "post_spectral_centroid_delta_hz": 396.7,
+        "lufs": -18.37156953678623,
+        "rms_dbfs": -15.83960240237387,
+        "duration_ratio": 0.2955,
+        "loop_cost": 6.903553299492386
+      }
+    },
+    {
+      "duration_seconds": 20,
+      "mood": "energetic",
+      "iteration": 1,
+      "wall_ms": 17340.1,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 986005422,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 16566,
+        "d4_process_ms": 764,
+        "d5_save_ms": 6
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/544d03115d8cb4225ec69351b964af50bbd4f576974bf0135a591996fa18f409.ogg",
+      "quality": {
+        "duration_ms": 12870,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.6,
+        "post_spectral_centroid_delta_hz": 495.6,
+        "lufs": -18.415619171239804,
+        "rms_dbfs": -17.226615506620803,
+        "duration_ratio": 0.6435,
+        "loop_cost": 2.797202797202797
+      }
+    },
+    {
+      "duration_seconds": 20,
+      "mood": "energetic",
+      "iteration": 2,
+      "wall_ms": 17614.8,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 839167317,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 16832,
+        "d4_process_ms": 771,
+        "d5_save_ms": 6
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/cfb2d0b51bf64eee1a11350d0dcfef30335481086b23229b897b2237e07486c1.ogg",
+      "quality": {
+        "duration_ms": 11094,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.1,
+        "post_spectral_centroid_delta_hz": 386.6,
+        "lufs": -29.201907061605443,
+        "rms_dbfs": -30.868078433331707,
+        "duration_ratio": 0.5547,
+        "loop_cost": 0.5408328826392645
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "calm",
+      "iteration": 0,
+      "wall_ms": 24350.0,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 2084500786,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 23236,
+        "d4_process_ms": 1101,
+        "d5_save_ms": 7
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/76056e5fb3e2c6a9129023e1be6953b6c5b482e8894e1d3b4bf3bbfbfdf5733b.ogg",
+      "quality": {
+        "duration_ms": 27094,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.03,
+        "post_spectral_centroid_delta_hz": 41.5,
+        "lufs": -17.907997981172667,
+        "rms_dbfs": -17.115399228924005,
+        "duration_ratio": 0.9676,
+        "loop_cost": 0.06643537314534584
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "calm",
+      "iteration": 1,
+      "wall_ms": 24715.2,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 117413249,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 23816,
+        "d4_process_ms": 887,
+        "d5_save_ms": 6
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/49edc6c83b1deb385b8ea43b3eea3449f0a39e66947088f5754a79a416a69c25.ogg",
+      "quality": {
+        "duration_ms": 15638,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.03,
+        "post_spectral_centroid_delta_hz": 95.8,
+        "lufs": -16.938872821950216,
+        "rms_dbfs": -15.997022082829933,
+        "duration_ratio": 0.5585,
+        "loop_cost": 0.11510423327791278
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "calm",
+      "iteration": 2,
+      "wall_ms": 24239.2,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 653165509,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 23423,
+        "d4_process_ms": 803,
+        "d5_save_ms": 6
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/1a584e81131bbaebdc98ccbebe0f4240baf485a2c201e5dfdb81e7e62f4eb1ce.ogg",
+      "quality": {
+        "duration_ms": 6278,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.11,
+        "post_spectral_centroid_delta_hz": 264.2,
+        "lufs": -14.967797729436741,
+        "rms_dbfs": -12.21049204890516,
+        "duration_ratio": 0.2242,
+        "loop_cost": 1.0512902198152279
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "tense",
+      "iteration": 0,
+      "wall_ms": 24384.5,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 377835365,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 23410,
+        "d4_process_ms": 965,
+        "d5_save_ms": 6
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/fc385587c82c5b119d85b8c688c75f2b6e8e05bc2f92b079ba58591d960f5d82.ogg",
+      "quality": {
+        "duration_ms": 19270,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.01,
+        "post_spectral_centroid_delta_hz": 282.8,
+        "lufs": -16.889386494132665,
+        "rms_dbfs": -15.357874018087392,
+        "duration_ratio": 0.6882,
+        "loop_cost": 0.031136481577581733
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "tense",
+      "iteration": 1,
+      "wall_ms": 24422.0,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 1911496547,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 23430,
+        "d4_process_ms": 980,
+        "d5_save_ms": 7
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/84d340a5c51824a4ea87ed2f5ae0d9db50db7fa9cc307cc4f158c5f065f7c4b0.ogg",
+      "quality": {
+        "duration_ms": 21126,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.03,
+        "post_spectral_centroid_delta_hz": 376.1,
+        "lufs": -17.9978697596432,
+        "rms_dbfs": -12.94586255107535,
+        "duration_ratio": 0.7545,
+        "loop_cost": 0.08520306731042317
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "tense",
+      "iteration": 2,
+      "wall_ms": 24667.1,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 2060504708,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 23884,
+        "d4_process_ms": 770,
+        "d5_save_ms": 7
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/267689f4b0b5938e254877eefc005cfac5cbb1c6de4968eee17283e836954981.ogg",
+      "quality": {
+        "duration_ms": 6726,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.09,
+        "post_spectral_centroid_delta_hz": 47.8,
+        "lufs": -20.892941631832713,
+        "rms_dbfs": -17.687911419763395,
+        "duration_ratio": 0.2402,
+        "loop_cost": 0.8028545941123996
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "energetic",
+      "iteration": 0,
+      "wall_ms": 24639.9,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 2113994625,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 23625,
+        "d4_process_ms": 1002,
+        "d5_save_ms": 7
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/8420256eb92d9fc12adf21846310c2c6825a84b8e590d7eb473c5d81054cb3d0.ogg",
+      "quality": {
+        "duration_ms": 19062,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.02,
+        "post_spectral_centroid_delta_hz": 97.3,
+        "lufs": -18.052362364805425,
+        "rms_dbfs": -15.727173538282864,
+        "duration_ratio": 0.6808,
+        "loop_cost": 0.06295247088448222
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "energetic",
+      "iteration": 1,
+      "wall_ms": 24241.3,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 558925872,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 23382,
+        "d4_process_ms": 847,
+        "d5_save_ms": 6
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/b7690180160e75a1c57a57a27f1748bde390c1a7ac56c82b2c2b167f10be1757.ogg",
+      "quality": {
+        "duration_ms": 9222,
+        "sample_rate": 48000,
+        "post_energy_delta_db": 0.03,
+        "post_spectral_centroid_delta_hz": 258.7,
+        "lufs": -18.247217064623356,
+        "rms_dbfs": -15.245596743105816,
+        "duration_ratio": 0.3294,
+        "loop_cost": 0.1951854261548471
+      }
+    },
+    {
+      "duration_seconds": 28,
+      "mood": "energetic",
+      "iteration": 2,
+      "wall_ms": 24455.8,
+      "error": null,
+      "cache": "miss",
+      "is_fallback": false,
+      "generation_seed": 855781365,
+      "timings": {
+        "d1_validate_ms": 0,
+        "d5_cache_check_ms": 1,
+        "d2_prompt_ms": 0,
+        "d3_generate_ms": 23489,
+        "d4_process_ms": 956,
+        "d5_save_ms": 7
+      },
+      "audio_url": "http://127.0.0.1:8000/audio-cache/b6fa427a5870d8f6f3f3117714439c7e8eba72275a7c6a5b2bbc918970ed1bb5.ogg",
+      "quality": {
+        "duration_ms": 15254,
+        "sample_rate": 48000,
+        "post_energy_delta_db": -0.05,
+        "post_spectral_centroid_delta_hz": 94.9,
+        "lufs": -17.860071007260387,
+        "rms_dbfs": -14.984260215125722,
+        "duration_ratio": 0.5448,
+        "loop_cost": 0.19666972597351517
+      }
+    }
+  ]
+}

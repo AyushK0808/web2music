@@ -21,7 +21,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from d1_validate import validate_profile
 from d2_prompt import build_prompt
-from d3_generate import generate_audio, GenerationError
+from d3_generate import generate_audio, GenerationError, model_info
 from d4_process import process_audio
 from models import HandoffPayload
 from prewarm import prewarm_cache
@@ -68,9 +68,15 @@ async def lifespan(app: FastAPI):
     # The task is held on app.state so it isn't garbage-collected mid-run --
     # asyncio only keeps a weak reference to tasks created via create_task,
     # so an unreferenced task can silently vanish before it completes.
-    app.state.prewarm_task = asyncio.create_task(
-        prewarm_cache(make_cache_key, check_cache, save_to_cache)
-    )
+    # W2M_PREWARM=0 skips the grid. Timing runs (E-5) need it: 99 background
+    # generations would share the GPU with the requests being timed, and a cold
+    # cache is what the cold-generation numbers are defined against.
+    if os.getenv("W2M_PREWARM", "1").strip().lower() not in ("0", "false", "no"):
+        app.state.prewarm_task = asyncio.create_task(
+            prewarm_cache(make_cache_key, check_cache, save_to_cache)
+        )
+    else:
+        print("[MAIN] W2M_PREWARM=0 -- pre-warm grid skipped")
     yield
 
 
@@ -83,7 +89,9 @@ app = FastAPI(lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 @app.get("/health")
 async def health():
-    return {"status": "ok", "is_prod": IS_PROD}
+    # `generator` lets experiment scripts record which back end / precision /
+    # compile setting produced their numbers (E-4) without importing torch.
+    return {"status": "ok", "is_prod": IS_PROD, "generator": model_info()}
 if not IS_PROD:
     from fastapi.staticfiles import StaticFiles
     app.mount("/audio-cache", StaticFiles(directory=AUDIO_CACHE_DIR), name="audio-cache")

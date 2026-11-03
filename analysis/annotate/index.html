@@ -245,7 +245,13 @@ $("corpusFile").addEventListener("change", async (e) => {
   if (!f) return;
   try {
     const raw = JSON.parse(await f.text());
-    const pages = (raw.pages || []).filter((p) => p.pageData);
+    // Accepts both the capture format ({pageData: {title, rawText, url}}) and
+    // the allowlisted export from export_for_annotation.mjs ({id, url, title,
+    // text}); the latter is what annotators should be given (L-1).
+    const pages = (raw.pages || [])
+      .map((p) => (p.pageData || typeof p.text !== "string") ? p
+        : { ...p, pageData: { title: p.title || "", url: p.url || "", rawText: p.text } })
+      .filter((p) => p.pageData);
     if (!pages.length) throw new Error("no pages with extracted pageData in that file");
     pendingCorpus = { ...raw, pages };
     const skipped = (raw.pages || []).length - pages.length;

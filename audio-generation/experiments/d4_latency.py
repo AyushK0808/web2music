@@ -307,11 +307,18 @@ def section_cold(base_url, moods, repeats, duration, timeout):
 
 
 def section_duration(base_url, mood, durations, repeats, timeout):
-    """Cold latency vs requested clip length — expect ~linear in duration."""
-    print(f"\n[duration] mood={mood}, durations={durations}, {repeats} repeat(s) each")
+    """Cold latency vs requested clip length — expect ~linear in duration.
+
+    `mood` may be one mood or a list: repeat i uses moods[i % len(moods)], so a
+    run with 30 repeats and 11 moods spreads its n across every mood rather than
+    resting on a single mood's prompt.
+    """
+    moods = [mood] if isinstance(mood, str) else list(mood)
+    print(f"\n[duration] moods={moods}, durations={durations}, {repeats} repeat(s) each")
     rows = []
     for d in durations:
         for i in range(repeats):
+            mood = moods[i % len(moods)]
             payload = build_payload(mood, d, nonce=str(uuid.uuid4()))
             wall, body, err = _request(f"{base_url}/generate", payload, timeout=timeout)
             row = record(wall, body, err, mood=mood, duration_seconds=d, iteration=i)
@@ -323,45 +330,53 @@ def section_duration(base_url, mood, durations, repeats, timeout):
     return rows
 
 
-def section_concurrency(base_url, mood, levels, duration, timeout):
+def section_concurrency(base_url, moods, levels, duration, timeout, repeats=1):
     """
-    k simultaneous cold requests vs the same k run back to back.
+    k simultaneous cold requests vs the same k run back to back, repeated `repeats` times.
 
     The sequential baseline is measured in the same run, not taken from the
     `cold` section, so both halves see the same machine state — a comparison
     against numbers collected an hour earlier on a hotter box says nothing.
+
+    One trial per level cannot say whether a speedup of 1.02 differs from 1.00, so
+    each repeat re-measures every level; the repeats rotate through `moods` so the
+    result is not one mood's. Cost grows with repeats: a repeat generates 2 * sum(levels)
+    clips (30 for levels 1,2,4,8), so budget roughly repeats x 30 x the cold time.
     """
-    print(f"\n[concurrency] mood={mood}, levels={levels}")
+    moods = [moods] if isinstance(moods, str) else list(moods)
+    print(f"\n[concurrency] moods={moods}, levels={levels}, repeats={repeats}")
     rows = []
-    for k in levels:
-        payloads = [build_payload(mood, duration, nonce=str(uuid.uuid4())) for _ in range(k)]
+    for rep in range(repeats):
+        mood = moods[rep % len(moods)]
+        for k in levels:
+            payloads = [build_payload(mood, duration, nonce=str(uuid.uuid4())) for _ in range(k)]
 
-        started = time.perf_counter()
-        with ThreadPoolExecutor(max_workers=k) as pool:
-            results = list(pool.map(
-                lambda p: _request(f"{base_url}/generate", p, timeout=timeout), payloads
-            ))
-        concurrent_wall_ms = (time.perf_counter() - started) * 1000
+            started = time.perf_counter()
+            with ThreadPoolExecutor(max_workers=k) as pool:
+                results = list(pool.map(
+                    lambda p: _request(f"{base_url}/generate", p, timeout=timeout), payloads
+                ))
+            concurrent_wall_ms = (time.perf_counter() - started) * 1000
 
-        for i, (wall, body, err) in enumerate(results):
-            rows.append(record(wall, body, err, mood=mood, level=k, mode="concurrent", iteration=i))
+            for i, (wall, body, err) in enumerate(results):
+                rows.append(record(wall, body, err, mood=mood, level=k, mode="concurrent", iteration=i, repeat=rep))
 
-        seq_payloads = [build_payload(mood, duration, nonce=str(uuid.uuid4())) for _ in range(k)]
-        started = time.perf_counter()
-        for i, p in enumerate(seq_payloads):
-            wall, body, err = _request(f"{base_url}/generate", p, timeout=timeout)
-            rows.append(record(wall, body, err, mood=mood, level=k, mode="sequential", iteration=i))
-        sequential_wall_ms = (time.perf_counter() - started) * 1000
+            seq_payloads = [build_payload(mood, duration, nonce=str(uuid.uuid4())) for _ in range(k)]
+            started = time.perf_counter()
+            for i, p in enumerate(seq_payloads):
+                wall, body, err = _request(f"{base_url}/generate", p, timeout=timeout)
+                rows.append(record(wall, body, err, mood=mood, level=k, mode="sequential", iteration=i, repeat=rep))
+            sequential_wall_ms = (time.perf_counter() - started) * 1000
 
-        speedup = sequential_wall_ms / concurrent_wall_ms if concurrent_wall_ms else 0
-        print(f"    k={k:<2} concurrent {concurrent_wall_ms/1000:7.1f} s   "
-              f"sequential {sequential_wall_ms/1000:7.1f} s   speedup {speedup:.2f}x")
-        rows.append({
-            "aggregate": True, "level": k,
-            "concurrent_wall_ms": round(concurrent_wall_ms, 1),
-            "sequential_wall_ms": round(sequential_wall_ms, 1),
-            "speedup": round(speedup, 3),
-        })
+            speedup = sequential_wall_ms / concurrent_wall_ms if concurrent_wall_ms else 0
+            print(f"    repeat {rep} ({mood}) k={k:<2} concurrent {concurrent_wall_ms/1000:7.1f} s   "
+                  f"sequential {sequential_wall_ms/1000:7.1f} s   speedup {speedup:.2f}x")
+            rows.append({
+                "aggregate": True, "level": k, "repeat": rep, "mood": mood,
+                "concurrent_wall_ms": round(concurrent_wall_ms, 1),
+                "sequential_wall_ms": round(sequential_wall_ms, 1),
+                "speedup": round(speedup, 3),
+            })
     return rows
 
 
@@ -401,11 +416,15 @@ def report(results):
                              f"d3 mean {statistics.fmean(gens)/1000 if gens else 0:6.1f} s   {rtf:5.2f}x realtime")
 
         if name == "concurrency":
-            lines.append("   batching:")
-            for agg in [r for r in rows if r.get("aggregate")]:
-                lines.append(f"     k={agg['level']:<2} speedup {agg['speedup']:.2f}x  "
-                             f"(concurrent {agg['concurrent_wall_ms']/1000:.1f} s vs "
-                             f"sequential {agg['sequential_wall_ms']/1000:.1f} s)")
+            lines.append("   batching (median over repeats; min-max in brackets):")
+            aggs = [r for r in rows if r.get("aggregate")]
+            for k in sorted({r["level"] for r in aggs}):
+                ks = [r for r in aggs if r["level"] == k]
+                sp = [r["speedup"] for r in ks]
+                lines.append(f"     k={k:<2} speedup {statistics.median(sp):.2f}x [{min(sp):.2f}-{max(sp):.2f}]  "
+                             f"(concurrent {statistics.median(r['concurrent_wall_ms'] for r in ks)/1000:.1f} s vs "
+                             f"sequential {statistics.median(r['sequential_wall_ms'] for r in ks)/1000:.1f} s, "
+                             f"n={len(ks)})")
 
         if name in ("warm", "cold"):
             by_mood = {}
@@ -449,6 +468,8 @@ def main():
                          f"Default is the two fast ones; 'all' runs real generations.")
     ap.add_argument("--moods", default=",".join(ALL_MOODS))
     ap.add_argument("--repeats", type=int, default=3)
+    ap.add_argument("--spread-moods", action="store_true",
+                    help="duration section: cycle the repeats across every mood in --moods instead of only the first")
     ap.add_argument("--duration", type=int, default=28, help="duration_seconds for every section except --sections duration")
     ap.add_argument("--durations", default=",".join(str(d) for d in DEFAULT_DURATIONS))
     ap.add_argument("--concurrency-levels", default="1,2,4,8")
@@ -496,10 +517,16 @@ def main():
     if "cold" in sections:
         results["sections"]["cold"] = section_cold(base_url, moods, args.repeats, args.duration, args.timeout)
     if "duration" in sections:
-        results["sections"]["duration"] = section_duration(base_url, moods[0], durations, args.repeats, args.timeout)
+        results["sections"]["duration"] = section_duration(base_url, moods if args.spread_moods else moods[0], durations, args.repeats, args.timeout)
     if "concurrency" in sections:
-        results["sections"]["concurrency"] = section_concurrency(base_url, moods[0], levels, args.duration, args.timeout)
+        results["sections"]["concurrency"] = section_concurrency(
+            base_url, moods if args.spread_moods else moods[0], levels, args.duration, args.timeout, args.repeats)
     results["elapsed_s"] = round(time.perf_counter() - started, 1)
+    try:
+        from _dcommon import hardware_manifest  # E-4
+        results["manifest"] = hardware_manifest(base_url)
+    except Exception as e:  # never lose a finished run over a header
+        results["manifest"] = {"error": f"{type(e).__name__}: {e}"}
 
     summary = report(results)
     print(summary)

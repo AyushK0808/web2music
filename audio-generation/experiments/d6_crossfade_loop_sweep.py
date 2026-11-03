@@ -165,19 +165,30 @@ def seam_score(metric):
     return e + (abs(c) / 5000.0 if c is not None else 0.0)
 
 
-def run_clip(mood, path):
+def run_clip(mood, path, strict=True):
+    """strict=True (the n=141 protocol): skip any clip without room for the widest
+    crossfade sweep. strict=False (S-G fresh-clip study): score every clip that has
+    room for the production crossfade only, and drop just the sweep widths that
+    do not fit; "full_sweep" records which clips had all of them."""
     seg, arr = load_clip(path)
     sr = seg.frame_rate
     audio_len_ms = len(seg)
 
     base_loop_ms, base_frame, sims = production_loop_point(arr, sr, audio_len_ms)
-    if base_frame is None or audio_len_ms - base_loop_ms < 2 * max(SWEEP_WIDTHS_MS):
-        return {"mood": mood, "skipped": "clip too short for the full sweep", "duration_ms": audio_len_ms}
+    tail_ms = audio_len_ms - base_loop_ms
+    if base_frame is None:
+        return {"mood": mood, "skipped": "no loop point detected", "duration_ms": audio_len_ms}
+    full_sweep = tail_ms >= 2 * max(SWEEP_WIDTHS_MS)
+    if (strict and not full_sweep) or tail_ms < 2 * CROSSFADE_MS:
+        return {"mood": mood, "skipped": "clip too short for the full sweep" if strict
+                else f"tail {tail_ms} ms leaves no room for the {CROSSFADE_MS} ms crossfade",
+                "duration_ms": audio_len_ms, "tail_ms": tail_ms}
 
     # ---- Experiment A: crossfade-window sweep at the fixed production loop point ----
     sweep = {}
     for w in SWEEP_WIDTHS_MS:
-        sweep[w] = seam_at(seg, base_loop_ms, w)
+        if tail_ms >= 2 * w:
+            sweep[w] = seam_at(seg, base_loop_ms, w)
 
     # ---- Experiment B: seam-minimising loop-point selection, at 50 ms ----
     peaks = local_maxima(sims)
@@ -214,10 +225,12 @@ def run_clip(mood, path):
         "mood": mood,
         "duration_ms": audio_len_ms,
         "production_loop_point_ms": base_loop_ms,
+        "tail_ms": tail_ms,
+        "full_sweep": full_sweep,
         "n_similarity_peaks": len(peaks),
         "n_bar_candidates": len(bar_candidates_ms),
         "n_candidates_evaluated": len(candidate_ms),
-        "crossfade_sweep": {str(w): sweep[w] for w in SWEEP_WIDTHS_MS},
+        "crossfade_sweep": {str(w): sweep.get(w) for w in SWEEP_WIDTHS_MS},
         "seam_minimising": {
             "baseline_loop_point_ms": base_loop_ms,
             "baseline_seam": baseline_metric,

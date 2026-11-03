@@ -183,6 +183,12 @@ def make_cache_key(profile: dict) -> str:
     # cache and draws a new seed instead of replaying whatever's already cached.
     if profile.get("nonce"):
         canonical["nonce"] = profile["nonce"]
+    # C-4: a clip made by another generator must never satisfy this request.
+    # The default back end is left out of the key so existing cache entries
+    # (and the pre-warm grid) stay valid.
+    _gen = os.getenv("W2M_MODEL", "musicgen-small").strip().lower()
+    if _gen != "musicgen-small":
+        canonical["generator"] = _gen
     return hashlib.sha256(
         json.dumps(canonical, sort_keys=True).encode()
     ).hexdigest()

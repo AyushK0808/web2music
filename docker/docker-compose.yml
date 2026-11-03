@@ -92,6 +92,8 @@ services:
     env_file: ../.env
     environment:
       LOCAL_DB_URL: postgresql://postgres:postgres@db:5432/audio_cache
+      W2M_MODEL: ${W2M_MODEL:-musicgen-small}
+      W2M_COMPILE: ${W2M_COMPILE:-0}
     depends_on:
       db:
         condition: service_healthy

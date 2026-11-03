@@ -139,7 +139,7 @@ console.log("sensitivity: a page with almost no text is skipped before spending 
   assert.equal(spent, false);
 }
 
-console.log("sensitivity: the proxy backend POSTs exactly the two contrastive labels");
+console.log("sensitivity: the proxy backend POSTs the three contrastive labels (C-2 default)");
 {
   const seen = {};
   global.fetch = async (url, opts) => {
@@ -149,8 +149,60 @@ console.log("sensitivity: the proxy backend POSTs exactly the two contrastive la
   };
   const r = await classifySensitivityZeroShot(CONTENT, { enabled: true, backend: "proxy", serviceUrl: "http://localhost:8078/v1/zero-shot" });
   assert.equal(r.side, "reference");
-  assert.deepEqual(seen.body.labels.sort(), [SENSITIVITY_HYPOTHESES.crisis, SENSITIVITY_HYPOTHESES.reference].sort());
+  assert.deepEqual(
+    seen.body.labels.sort(),
+    [SENSITIVITY_HYPOTHESES.crisis, SENSITIVITY_HYPOTHESES.reference, SENSITIVITY_HYPOTHESES.unrelated].sort(),
+  );
   delete global.fetch;
+}
+
+console.log("sensitivity: sensitivityHypotheses: 2 restores the original two-label request");
+{
+  const seen = {};
+  global.fetch = async (url, opts) => {
+    seen.body = JSON.parse(opts.body);
+    return { ok: true, json: async () => sidePayload("reference", { score: 0.6, otherScore: 0.2 }) };
+  };
+  await classifySensitivityZeroShot(CONTENT, {
+    enabled: true, backend: "proxy", serviceUrl: "http://localhost:8078/v1/zero-shot", sensitivityHypotheses: 2,
+  });
+  assert.deepEqual(
+    seen.body.labels.sort(),
+    [SENSITIVITY_HYPOTHESES.crisis, SENSITIVITY_HYPOTHESES.reference].sort(),
+  );
+  delete global.fetch;
+}
+
+console.log("sensitivity: parse picks 'unrelated' and takes the margin against the runner-up");
+{
+  const parsed = parseSensitivityResult({
+    labels: [SENSITIVITY_HYPOTHESES.crisis, SENSITIVITY_HYPOTHESES.reference, SENSITIVITY_HYPOTHESES.unrelated],
+    scores: [0.25, 0.15, 0.6],
+  });
+  assert.equal(parsed.side, "unrelated");
+  assert.ok(Math.abs(parsed.score - 0.6) < 1e-9);
+  assert.ok(Math.abs(parsed.margin - 0.35) < 1e-9);
+}
+
+console.log("cascade: a keyword hit read as 'unrelated' is demoted to not-sensitive");
+{
+  const text = "Our psychology degree covers anorexia nervosa and grief counselling modules. Apply by June.";
+  const kw = checkSensitiveContent(text);
+  const r = await resolveSensitivity(text, { title: "Psychology BSc", summary: text }, {
+    zeroShot: {
+      enabled: true,
+      classify: async () => ({
+        labels: [SENSITIVITY_HYPOTHESES.crisis, SENSITIVITY_HYPOTHESES.reference, SENSITIVITY_HYPOTHESES.unrelated],
+        scores: [0.1, 0.15, 0.75],
+      }),
+    },
+  });
+  if (kw.hard) {
+    assert.equal(r.isSensitive, true, "hard-severe terms are never weakened");
+  } else {
+    assert.equal(r.zeroShot.side, "unrelated");
+    assert.equal(r.isSensitive, false);
+  }
 }
 
 // ── resolveSensitivity: disabled tier is a strict no-op ─────────────────────

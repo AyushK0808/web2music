@@ -54,7 +54,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from d2_prompt import build_prompt  # noqa: E402
 from experiments._dcommon import (  # noqa: E402
-    MOOD_PROFILES, analyse_clip, fetch_audio, health, payload_for, request, summarise,
+    MOOD_PROFILES, analyse_clip, fetch_audio, hardware_manifest, health, payload_for, request, seeds,
+    summarise,
 )
 
 DEFAULT_BASE = os.getenv("D_BASE_URL", "http://127.0.0.1:8000")
@@ -121,6 +122,7 @@ def conditions_for(mood: str) -> dict[str, str]:
 
 def run(base_url, moods, repeats, duration, timeout, dry_run):
     rows = []
+    seed_list = seeds(repeats)  # C-5: same seed for every condition of a (mood, i) pair
     for mood in moods:
         conds = conditions_for(mood)
         for cond_name, prompt in conds.items():
@@ -132,11 +134,11 @@ def run(base_url, moods, repeats, duration, timeout, dry_run):
 
                 nonce = f"pa-{cond_name}-{mood}-{i}-{int(time.time()*1000)}"
                 payload = payload_for(mood, duration_seconds=duration, nonce=nonce, prompt=prompt,
-                                      seed_override=1000 + i,force_prompt=True)
+                                      seed_override=seed_list[i], force_prompt=True)
                 wall_ms, body, err = request(f"{base_url}/generate", payload, timeout=timeout)
 
                 row = {
-                    "mood": mood, "condition": cond_name, "iteration": i,
+                    "mood": mood, "condition": cond_name, "iteration": i, "seed": seed_list[i],
                     "prompt": prompt, "prompt_chars": len(prompt),
                     "wall_ms": round(wall_ms, 1), "error": err,
                 }
@@ -223,8 +225,9 @@ def report(rows, duration):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--base-url", default=DEFAULT_BASE)
-    ap.add_argument("--moods", default="calm,focused,tense,energetic,sad")
-    ap.add_argument("--repeats", type=int, default=3)
+    ap.add_argument("--moods", default="calm,focused,joyful,energetic,sad,dark,nostalgic,curious,tense,uplifting,neutral")
+    ap.add_argument("--repeats", type=int, default=5,
+                    help="number of fixed seeds per (mood, prompt); paired by (mood, seed)")
     ap.add_argument("--duration", type=int, default=15)
     ap.add_argument("--timeout", type=int, default=900)
     ap.add_argument("--dry-run", action="store_true",
@@ -261,6 +264,8 @@ def main():
     out.write_text(json.dumps({
         "started_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
         "elapsed_s": round(time.time() - started, 1),
+        "manifest": hardware_manifest(args.base_url),
+        "seeds": seeds(args.repeats),
         "config": {"base_url": args.base_url, "moods": moods, "repeats": args.repeats,
                    "duration_seconds": args.duration},
         "b4_template": B4_TEMPLATE,

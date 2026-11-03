@@ -38,7 +38,7 @@ def main_client(call_log, monkeypatch):
 
     import main as main_module
 
-    async def fake_generate_audio(prompt, duration_seconds=28):
+    async def fake_generate_audio(prompt, duration_seconds=28, seed_override=None):
         return _make_wav_bytes(duration_s=6), 42
 
     monkeypatch.setattr(main_module, "generate_audio", fake_generate_audio)

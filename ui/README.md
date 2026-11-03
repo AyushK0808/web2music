@@ -36,7 +36,7 @@ Source lives in `src/` and is bundled into `dist/` by `build.mjs`. **Load `dist/
 | `offscreenTypes.js` | The single source of truth for which message types are Feature A extract RPCs. Routing keys on message *type*, not on `target` — `offscreen_routing_test.js` is the regression cover for the bug where that distinction was missing and every audio command was swallowed. |
 | `remoteDeps.js` | Content-script-side proxies for the two RPCs above, round-tripped through the worker. |
 | `embed.worker.js` | Web Worker hosting transformers.js + MiniLM ONNX, spawned from the offscreen document so inference can't stall the audio thread. Fully offline (`allowRemoteModels = false`). |
-| `telemetry.js` | Local-only ring buffer in `chrome.storage.local`. URLs are SHA-256 hashed before storage, and nothing leaves the machine until the popup's Export button is pressed. |
+| `telemetry.js` | Local-only ring buffer in `chrome.storage.local`. URLs are HMAC-SHA-256 hashed (per-install random key) before storage, and nothing leaves the machine until the popup's Export button is pressed. |
 
 | Static (copied verbatim into `dist/`) | Role |
 |---|---|

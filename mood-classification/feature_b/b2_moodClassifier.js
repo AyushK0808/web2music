@@ -18,6 +18,7 @@
 "use strict";
 
 import { DEFAULT_MODEL } from "./llmConfig.js";
+import { cachedLlmFetch } from "./llmCache.js";
 
 // ─── Mood definitions (maps to EMOTIONAL TONE from spec) ─────────────────────
 export const MOODS = {
@@ -318,7 +319,8 @@ export async function callLLMClassifier(cleanedContent, llmConfig) {
     // silently starving B2's larger structured-output response the same way
     // it starved B1's. Set explicitly rather than relying on the per-model
     // default.
-    reasoning_effort: "low",
+    // Only gpt-oss takes this field; servers such as Ollama reject it for other models with a 400.
+    ...(/gpt-oss/i.test(model) ? { reasoning_effort: "low" } : {}),
     temperature: 0, // deterministic classification — reproducibility over variety
     messages:    [{ role: "user", content: prompt }],
   });
@@ -330,14 +332,16 @@ export async function callLLMClassifier(cleanedContent, llmConfig) {
     // browser call CORS-succeeds here is unconfirmed. If it fails in the
     // actual extension, switch to "proxy", which sidesteps the question
     // entirely (the container calls Groq server-to-server, no CORS involved).
-    const res = backend === "proxy"
-      ? await fetch(serviceUrl, {
+    // C-10: replays and ablations read raw responses from the cache (no-op
+    // unless a cache is installed, see llmCache.js).
+    const res = await cachedLlmFetch("b2-mood", requestBody, () => backend === "proxy"
+      ? fetch(serviceUrl, {
           method:  "POST",
           signal:  controller.signal,
           headers: { "Content-Type": "application/json" },
           body:    requestBody,
         })
-      : await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      : fetch("https://api.groq.com/openai/v1/chat/completions", {
           method:  "POST",
           signal:  controller.signal,
           headers: {
@@ -345,7 +349,7 @@ export async function callLLMClassifier(cleanedContent, llmConfig) {
             "Authorization": `Bearer ${apiKey}`,
           },
           body: requestBody,
-        });
+        }));
     clearTimeout(timeout);
 
     if (!res.ok) throw new Error(`LLM API ${res.status}`);

@@ -140,11 +140,13 @@ chrome.storage.sync.get(
     // "proxy" runs the full facebook/bart-large-mnli server-side (the
     // classify container holds the HF token); "local" runs a distilled MNLI
     // checkpoint in the offscreen worker and sends nothing off the machine.
-    // Off unless explicitly enabled — the local model is a first-use
-    // download and the proxy needs a token that may not be set.
-    const zeroShotBackend = settings.zeroShotBackend === "local" ? "local" : "proxy";
+    // C-1: the evaluated system (A6b: on-device zero-shot middle stage, LLM
+    // only for pages it cannot decide) is the shipped default, so the headline
+    // numbers describe what users get. Opt out with zeroShotEnabled: false, or
+    // switch to the hosted model with zeroShotBackend: "proxy".
+    const zeroShotBackend = settings.zeroShotBackend === "proxy" ? "proxy" : "local";
     const zeroShot = {
-      enabled: settings.zeroShotEnabled === true,
+      enabled: settings.zeroShotEnabled !== false,
       backend: zeroShotBackend,
       serviceUrl: `${classifyBase}/v1/zero-shot`,
       classify: zeroShotBackend === "local" ? classifyZeroShotViaOffscreen : null,

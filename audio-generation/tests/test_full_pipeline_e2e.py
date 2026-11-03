@@ -105,7 +105,7 @@ def pipeline_client(call_log, monkeypatch):
 
     import main as main_module
 
-    async def fake_generate_audio(prompt, duration_seconds=28):
+    async def fake_generate_audio(prompt, duration_seconds=28, seed_override=None):
         return _make_wav_bytes(duration_s=6), 99
 
     monkeypatch.setattr(main_module, "generate_audio", fake_generate_audio)
@@ -210,7 +210,7 @@ def test_pipeline_falls_back_gracefully_if_d3_generation_fails_on_real_profile(p
     import main as main_module
     from d3_generate import GenerationError
 
-    async def failing_generate_audio(prompt, duration_seconds=28):
+    async def failing_generate_audio(prompt, duration_seconds=28, seed_override=None):
         raise GenerationError("simulated model failure")
 
     monkeypatch.setattr(main_module, "generate_audio", failing_generate_audio)

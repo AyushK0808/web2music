@@ -95,7 +95,7 @@ const POLICIES = [
   {
     id: 'url-hashing',
     policy: 'No browsing history leaves the device in plaintext',
-    trigger: 'Every telemetry event stores urlHash (SHA-256), never the URL',
+    trigger: 'Every telemetry event stores urlHash (HMAC-SHA-256, per-install key), never the URL',
     implementation: 'ui/src/telemetry.js',
     test: { cmd: 'node', args: ['ui/offscreen_routing_test.js'], label: 'offscreen_routing_test.js' },
   },

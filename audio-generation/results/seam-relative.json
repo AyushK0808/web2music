@@ -1,0 +1,204 @@
+{
+  "config": {
+    "clips_dir": "audio-generation/fallback_clips",
+    "win_ms": 250
+  },
+  "summary": {
+    "n_clips": 11,
+    "n_skipped": 0,
+    "share_within_p95_energy": {
+      "n": 11,
+      "point": 0.5454545454545454,
+      "ci95": [
+        0.2727272727272727,
+        0.8181818181818182
+      ]
+    },
+    "share_within_p95_centroid": {
+      "n": 11,
+      "point": 0.7272727272727273,
+      "ci95": [
+        0.45454545454545453,
+        1.0
+      ]
+    },
+    "share_within_p95_both": {
+      "n": 11,
+      "point": 0.45454545454545453,
+      "ci95": [
+        0.18181818181818182,
+        0.7272727272727273
+      ]
+    },
+    "median_percentile_energy": {
+      "n": 11,
+      "point": 0.9085365853658537,
+      "ci95": [
+        0.6577777777777778,
+        1.0
+      ]
+    },
+    "median_percentile_centroid": {
+      "n": 11,
+      "point": 0.7213930348258707,
+      "ci95": [
+        0.6219512195121951,
+        0.9698795180722891
+      ]
+    },
+    "median_seam_dE_db": {
+      "n": 11,
+      "point": 6.134296234713158,
+      "ci95": [
+        4.05538970080552,
+        9.898167150631972
+      ]
+    },
+    "wording": "signal measurement relative to each clip's own variation; no audibility claim"
+  },
+  "clips": [
+    {
+      "clip": "calm.ogg",
+      "seam_dE_db": 5.501242280442941,
+      "seam_dc_hz": 98.12147502779601,
+      "pct_dE": 1.0,
+      "pct_dc": 0.9411764705882353,
+      "interior_p95_dE_db": 2.3565646561112943,
+      "interior_p95_dc_hz": 99.43493773755183,
+      "within_p95_dE": false,
+      "within_p95_dc": true,
+      "within_p95_both": false,
+      "n_interior": 204
+    },
+    {
+      "clip": "curious.ogg",
+      "seam_dE_db": 12.680903314635138,
+      "seam_dc_hz": 734.4490417446785,
+      "pct_dE": 0.9759036144578314,
+      "pct_dc": 0.9698795180722891,
+      "interior_p95_dE_db": 6.284730692880303,
+      "interior_p95_dc_hz": 427.27635449061677,
+      "within_p95_dE": false,
+      "within_p95_dc": false,
+      "within_p95_both": false,
+      "n_interior": 166
+    },
+    {
+      "clip": "dark.ogg",
+      "seam_dE_db": 6.134296234713158,
+      "seam_dc_hz": 65.41291671995259,
+      "pct_dE": 1.0,
+      "pct_dc": 0.9270833333333334,
+      "interior_p95_dE_db": 3.515887046330113,
+      "interior_p95_dc_hz": 70.7394976309146,
+      "within_p95_dE": false,
+      "within_p95_dc": true,
+      "within_p95_both": false,
+      "n_interior": 96
+    },
+    {
+      "clip": "energetic.ogg",
+      "seam_dE_db": 9.898167150631972,
+      "seam_dc_hz": 1312.8206156570302,
+      "pct_dE": 0.9085365853658537,
+      "pct_dc": 0.6219512195121951,
+      "interior_p95_dE_db": 12.317660752518956,
+      "interior_p95_dc_hz": 2805.615834158044,
+      "within_p95_dE": true,
+      "within_p95_dc": true,
+      "within_p95_both": true,
+      "n_interior": 164
+    },
+    {
+      "clip": "focused.ogg",
+      "seam_dE_db": 9.014935124933299,
+      "seam_dc_hz": 2130.3872397726,
+      "pct_dE": 0.6212121212121212,
+      "pct_dc": 0.5151515151515151,
+      "interior_p95_dE_db": 20.37493119252718,
+      "interior_p95_dc_hz": 4442.574364699501,
+      "within_p95_dE": true,
+      "within_p95_dc": true,
+      "within_p95_both": true,
+      "n_interior": 198
+    },
+    {
+      "clip": "joyful.ogg",
+      "seam_dE_db": 48.656841738270224,
+      "seam_dc_hz": 389.98525921696273,
+      "pct_dE": 1.0,
+      "pct_dc": 0.6296296296296297,
+      "interior_p95_dE_db": 20.436502851994444,
+      "interior_p95_dc_hz": 1705.162146538489,
+      "within_p95_dE": false,
+      "within_p95_dc": true,
+      "within_p95_both": false,
+      "n_interior": 54
+    },
+    {
+      "clip": "neutral.ogg",
+      "seam_dE_db": 3.154300186323203,
+      "seam_dc_hz": 95.53436874148309,
+      "pct_dE": 0.8606965174129353,
+      "pct_dc": 0.7213930348258707,
+      "interior_p95_dE_db": 4.8232317351199825,
+      "interior_p95_dc_hz": 424.40147561537754,
+      "within_p95_dE": true,
+      "within_p95_dc": true,
+      "within_p95_both": true,
+      "n_interior": 201
+    },
+    {
+      "clip": "nostalgic.ogg",
+      "seam_dE_db": 4.8413143169461375,
+      "seam_dc_hz": 21.457067300012568,
+      "pct_dE": 0.6577777777777778,
+      "pct_dc": 0.07111111111111111,
+      "interior_p95_dE_db": 11.411860449357068,
+      "interior_p95_dc_hz": 422.70994406210804,
+      "within_p95_dE": true,
+      "within_p95_dc": true,
+      "within_p95_both": true,
+      "n_interior": 225
+    },
+    {
+      "clip": "sad.ogg",
+      "seam_dE_db": 3.4926375480363987,
+      "seam_dc_hz": 92.2082089375333,
+      "pct_dE": 0.4421052631578947,
+      "pct_dc": 0.7052631578947368,
+      "interior_p95_dE_db": 12.88150339031124,
+      "interior_p95_dc_hz": 186.32363333756814,
+      "within_p95_dE": true,
+      "within_p95_dc": true,
+      "within_p95_both": true,
+      "n_interior": 95
+    },
+    {
+      "clip": "tense.ogg",
+      "seam_dE_db": 9.6186398419844,
+      "seam_dc_hz": 1241.5498709017807,
+      "pct_dE": 1.0,
+      "pct_dc": 1.0,
+      "interior_p95_dE_db": 5.771674520901529,
+      "interior_p95_dc_hz": 631.4862586166682,
+      "within_p95_dE": false,
+      "within_p95_dc": false,
+      "within_p95_both": false,
+      "n_interior": 116
+    },
+    {
+      "clip": "uplifting.ogg",
+      "seam_dE_db": 4.05538970080552,
+      "seam_dc_hz": 190.23190589934129,
+      "pct_dE": 0.7212121212121212,
+      "pct_dc": 1.0,
+      "interior_p95_dE_db": 6.748822094932869,
+      "interior_p95_dc_hz": 114.8543286394393,
+      "within_p95_dE": true,
+      "within_p95_dc": false,
+      "within_p95_both": false,
+      "n_interior": 165
+    }
+  ]
+}

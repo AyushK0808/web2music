@@ -8,6 +8,25 @@
  *       npm run test:latency -- --d-delay 12000        # simulate CPU MusicGen
  *       npm run test:latency -- --only=calm_nature_guide --headed
  *
+ * ── Real-pipeline mode (C-6, R3 W4 / R4 #4) ────────────────────────────────
+ *       --real-classify        keep the stub off localhost:8078 so Feature B's
+ *                              real LLM tier is in the numbers (the A6b setup;
+ *                              omit it for A6, where the LLM is unreachable)
+ *       --d-url=http://127.0.0.1:8000
+ *                              point the extension at a REAL Feature D instead
+ *                              of the in-harness stub, so "nav -> generated
+ *                              audio audible" includes real generation
+ *       --swap-timeout=300000  how long to wait for the generated clip; a run
+ *                              that exceeds it is recorded as CENSORED
+ *                              (swap_censored: true), never dropped
+ *       --cache=warm           prime every site once, untimed, so the timed load
+ *                              is a Feature D cache hit (cold = restart D with
+ *                              an empty audio-cache and omit this flag)
+ *       --label=<text>         free-text setup name written to the result JSON
+ *
+ * The embedding model is the real one in every mode (the offscreen worker
+ * loads it); only Feature B's LLM tier and Feature D were ever stubbed.
+ *
  * ── Why this is separate from experiments/d4_latency.py ────────────────────
  * That script measures Feature D in isolation, over HTTP, with a synthetic
  * profile. It cannot see the three costs that sit either side of it: Feature
@@ -72,6 +91,12 @@ const REPEATS = parseInt(flag("repeats", "3"), 10);
 const OUT = flag("out", null);
 /** Simulated Feature D generation time. 0 = instant stub (measures the shell). */
 const D_DELAY_MS = parseInt(flag("d-delay", "0"), 10);
+/** C-6: real pipeline switches. */
+const REAL_CLASSIFY = args.includes("--real-classify");
+const D_URL = flag("d-url", null);
+const SWAP_TIMEOUT_MS = parseInt(flag("swap-timeout", "300000"), 10);
+const CACHE_MODE = flag("cache", "cold");
+const LABEL = flag("label", null);
 
 /**
  * feature_b/index.js's confidenceWindowMs. Not readable from the harness —
@@ -95,6 +120,30 @@ function percentile(values, p) {
   return ordered[idx];
 }
 
+/** Deterministic PRNG so a rerun on the same rows gives the same interval. */
+function mulberry32(a) {
+  return () => {
+    a |= 0; a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/** Percentile bootstrap CI (10k resamples) of a nearest-rank percentile. */
+function bootstrapPercentileCI(values, p, nBoot = 10000) {
+  if (values.length < 2) return null;
+  const rnd = mulberry32(12345);
+  const stats = new Array(nBoot);
+  for (let b = 0; b < nBoot; b++) {
+    const sample = new Array(values.length);
+    for (let i = 0; i < values.length; i++) sample[i] = values[Math.floor(rnd() * values.length)];
+    stats[b] = percentile(sample, p);
+  }
+  stats.sort((a, b) => a - b);
+  return [Math.round(stats[Math.floor(0.025 * nBoot)]), Math.round(stats[Math.min(nBoot - 1, Math.floor(0.975 * nBoot))])];
+}
+
 function summarise(values) {
   const clean = values.filter((v) => typeof v === "number" && Number.isFinite(v));
   if (!clean.length) return { n: 0 };
@@ -104,6 +153,8 @@ function summarise(values) {
     min: Math.round(Math.min(...clean)),
     p50: Math.round(percentile(clean, 50)),
     p95: Math.round(percentile(clean, 95)),
+    p50_ci95: bootstrapPercentileCI(clean, 50),
+    p95_ci95: bootstrapPercentileCI(clean, 95),
     max: Math.round(Math.max(...clean)),
     mean: Math.round(mean),
   };
@@ -218,7 +269,19 @@ function buildTimeline({ navAt, telemetry, dRequests, sessionStartAt }) {
     nav_to_generate_request_ms: t(firstGenerateReq?.at),
     d_roundtrip_ms: dMs.length ? Math.round(dMs[0]) : null,
     nav_to_first_audio_ms: t(playing?.ts),
+    // C-6: the headline "does the listener hear page-conditioned audio" number.
+    nav_to_swap_audio_ms: t(swapPlaying?.ts),
   };
+  // The commit is the moment Feature B settled on a mood; it triggers the
+  // fallback request and the generate request together, so the earlier of the
+  // two is the best observable proxy for it.
+  const commitReq = [timeline.nav_to_fallback_request_ms, timeline.nav_to_generate_request_ms]
+    .filter((v) => v != null);
+  timeline.nav_to_mood_commit_ms = commitReq.length ? Math.min(...commitReq) : null;
+  timeline.commit_to_fallback_audible_ms =
+    timeline.nav_to_first_audio_ms != null && timeline.nav_to_mood_commit_ms != null
+      ? timeline.nav_to_first_audio_ms - timeline.nav_to_mood_commit_ms
+      : null;
 
   // Decode + crossfade start: from the moment the service worker had a URL to
   // the moment the offscreen document reported the deck running. This is the
@@ -296,13 +359,19 @@ async function measureSite(context, server, site, iteration) {
     // delay, keep polling — past the point where audio was first heard —
     // for the D_generate event specifically, up to a deadline sized to the
     // delay rather than the fixed 60s used for "did we hear anything at all".
-    if (D_DELAY_MS > 0) {
-      const swapDeadline = Date.now() + D_DELAY_MS + 15_000; // delay + buffer for fetch/decode/crossfade
+    let swapCensored = false;
+    if (D_DELAY_MS > 0 || D_URL) {
+      // Real Feature D: wait up to --swap-timeout. A load that never swaps is
+      // CENSORED (we only know generation took longer than the cutoff), and is
+      // reported as such rather than silently dropped.
+      const swapDeadline = Date.now() + (D_URL ? SWAP_TIMEOUT_MS : D_DELAY_MS + 15_000);
+      let swapped = false;
       while (Date.now() < swapDeadline) {
         const t = await readTelemetry(context);
-        if (t.some((e) => e.ts >= sessionStartAt && e.stage === "D_generate")) break;
+        if (t.some((e) => e.ts >= sessionStartAt && e.stage === "D_generate")) { swapped = true; break; }
         await sleep(500);
       }
+      swapCensored = !swapped;
     }
 
     const telemetry = await readTelemetry(context);
@@ -320,6 +389,7 @@ async function measureSite(context, server, site, iteration) {
       site: site.name,
       iteration,
       heardAudio,
+      swap_censored: swapCensored,
       pageErrors,
       ...timeline,
     };
@@ -336,10 +406,13 @@ const METRICS = [
   ["extract_self_ms", "  of which Feature A extraction itself"],
   ["b_decision_ms_p50", "Feature B decision, per call"],
   ["nav_to_fallback_request_ms", "nav → GET /fallback (first sound requested)"],
-  ["nav_to_generate_request_ms", "nav → POST /generate (mood committed)"],
+  ["nav_to_mood_commit_ms", "nav → mood commit (earlier of fallback / generate request)"],
+  ["commit_to_fallback_audible_ms", "mood commit → fallback audible"],
+  ["nav_to_generate_request_ms", "nav → POST /generate"],
   ["d_roundtrip_ms", "Feature D round trip"],
   ["decode_to_audio_ms", "fetch + decode + crossfade start"],
   ["nav_to_first_audio_ms", "nav → audible (WALL CLOCK, incl. confidence window)"],
+  ["nav_to_swap_audio_ms", "nav → GENERATED audio audible (swap)"],
   ["compute_ms", "sum of compute stages (excl. confidence window)"],
 ];
 
@@ -362,6 +435,13 @@ function report(rows) {
     lines.push(
       `  ${label.padEnd(58)}${String(s.p50).padStart(9)}${String(s.p95).padStart(9)}${String(s.max).padStart(9)}`
     );
+    if (s.p95_ci95) lines.push(`  ${"".padEnd(67)}p95 95% CI [${s.p95_ci95.join(", ")}]`);
+  }
+
+  if (D_URL || D_DELAY_MS) {
+    const censored = rows.filter((r) => r.swap_censored).length;
+    lines.push("");
+    lines.push(`  generated clip not heard before the cut-off (censored): ${censored}/${rows.length}`);
   }
 
   const extractions = summarise(heard.map((r) => r.extractions_before_commit));
@@ -403,7 +483,7 @@ async function main() {
   const sites = (ONLY ? SITES.filter((s) => s.name === ONLY) : SITES).filter((s) => !s.expectSilence);
   if (!sites.length) throw new Error(`no measurable site${ONLY ? ` matching --only=${ONLY}` : ""}`);
 
-  const server = await startHarnessServer({ stubLlm: true, generateDelayMs: D_DELAY_MS });
+  const server = await startHarnessServer({ stubLlm: !REAL_CLASSIFY, generateDelayMs: D_DELAY_MS });
   const userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "w2m-latency-"));
 
   console.log(`[latency] extension:  ${EXT_PATH}`);
@@ -429,7 +509,7 @@ async function main() {
     if (!worker) throw new Error("extension service worker never started — is ui/dist a valid unpacked extension?");
     await worker.evaluate(
       async (backendUrl) => { await chrome.storage.local.set({ backendUrl, masterEnabled: true }); },
-      `${server.baseUrl}/d`
+      D_URL ? D_URL.replace(/\/$/, "") : `${server.baseUrl}/d`
     );
 
     // A discarded warm-up load: the very first page of a session also pays
@@ -440,6 +520,17 @@ async function main() {
     process.stdout.write("  (warm-up load, discarded) … ");
     await measureSite(context, server, sites[0], -1);
     console.log("done\n");
+
+    if (CACHE_MODE === "warm" && D_URL) {
+      // Prime Feature D's cache with every site's profile, untimed, so the
+      // measured loads below are cache hits.
+      for (const site of sites) {
+        process.stdout.write(`  (priming cache: ${site.name}) … `);
+        await measureSite(context, server, site, -1);
+        console.log("done");
+      }
+      console.log("");
+    }
 
     for (let i = 0; i < REPEATS; i++) {
       for (const site of sites) {
@@ -469,7 +560,12 @@ async function main() {
       JSON.stringify(
         {
           startedAt: new Date().toISOString(),
-          config: { repeats: REPEATS, dDelayMs: D_DELAY_MS, confidenceWindowMs: CONFIDENCE_WINDOW_MS, sites: sites.map((s) => s.name) },
+          manifest: { node: process.version, platform: `${os.platform()} ${os.release()}`, cpus: os.cpus()[0]?.model, totalMemGb: Math.round(os.totalmem() / 2 ** 30) },
+          config: {
+            label: LABEL, repeats: REPEATS, dDelayMs: D_DELAY_MS, confidenceWindowMs: CONFIDENCE_WINDOW_MS,
+            realClassify: REAL_CLASSIFY && !server.classifyStubbed, dUrl: D_URL, cache: CACHE_MODE,
+            swapTimeoutMs: SWAP_TIMEOUT_MS, sites: sites.map((s) => s.name),
+          },
           rows,
         },
         null,
