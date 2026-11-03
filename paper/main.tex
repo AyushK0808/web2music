@@ -100,8 +100,8 @@ The page descriptor takes 86\,ms per page without the embedding model
 (keywords, an on-device language-inference model, a hosted large language
 model) matches the macro-averaged F1 of a keyword-then-LLM baseline on the
 255-page development set (0.689) while sending 38\% fewer pages off the
-device; on a held-out test set of \tbd{S-E: n pages} pages its macro-F1 is
-\tbd{S-E: test macro-F1}. Playback starts with a short mood-level clip that
+device; the gates are tuned on those same pages and no held-out set was
+evaluated. Playback starts with a short mood-level clip that
 becomes audible 36\,ms after the mood is decided. Music generated for the
 specific page replaces it only when generation finishes, which takes a median
 of 13\,s for a 15\,s clip on a consumer GPU, 62\,s on the same machine's CPU and
@@ -430,7 +430,7 @@ proxy.
 \subsection{Evaluation design}
 \label{sec:res-design}
 
-We report a systems benchmark, a cascade ablation with a held-out test set, a
+We report a systems benchmark, a cascade ablation on the development set, a
 browsing simulation of how often generated audio is heard, objective
 conditioning-fidelity measures, a loop quality study, and a restraint audit.
 Percentiles are nearest-rank. Where an interval is given it is a 95\%
@@ -438,32 +438,20 @@ percentile bootstrap over pages or clips (10,000 resamples).
 
 \textbf{Corpora.} The \emph{development set} is 255 real pages in seven slices
 (general, vocabulary mismatch, non-English, mixed-genre, sensitive, near-miss,
-bypass), 252 of them category-labelled. Every threshold is chosen on it. The
-\emph{test set} is \tbd{S-E: n} further pages captured after the system was
-frozen, from a URL list fixed before any classifier saw them, and is scored once
-with the thresholds chosen on development. No URL was suggested by an LLM; the
-source mix is \tbd{S-E: source mix}, and \tbd{S-E: n post-cutoff} pages were
-published after the LLM's knowledge cutoff, so that contamination can be checked.
-The \emph{adversarial slice} is 47 hand-written pages (29 sensitive, 18 not)
-built from the detector's own term lists; it is used only to choose the
-sensitivity gates. The \emph{black-box set} is \tbd{S-F: n} real crisis and
-support pages found by searching for support resources, not by using the term
-lists.
+bypass), 252 of them category-labelled. Every threshold is chosen on it, so the cascade results below are
+development-set results and the gate is tuned on the pages it is scored on; no held-out
+set was evaluated. The \emph{adversarial slice} is 47 hand-written pages (29 sensitive,
+18 not) built from the detector's own term lists; it is used only to choose the
+sensitivity gates.
 
 \textbf{Labels.} Each page carries the category it was collected for. Three of
-the authors labelled every page independently. For the test set the labelling was
-blind: the collection category, the system's predictions and the other labellers'
-answers were hidden, page order was shuffled per labeller, and the guidelines
-were frozen after a calibration round on development pages and before any test
-page was labelled. The labellers are the authors, not independent annotators; we
-state this as a limitation (Section~\ref{sec:limitations}). The gold label is the
-majority of the three, and \tbd{S-E: n ties} ties were settled by discussion. On
-the development set the majority resolves for 208 pages and agrees with the
-collection category on 85\%. Only category and binary sensitivity are labelled;
-mood is not labelled or evaluated. No LLM chose pages, labelled them or judged
-any output; the LLM stage (model, prompt, temperature 0) was frozen before the
-test set was opened and its raw answers are cached, so every replay uses the same
-answers.
+the authors labelled every page independently, and the gold label is the majority of
+the three; the majority resolves for 208 pages and agrees with the collection category
+on 85\%. The labellers are the authors, not independent annotators; we state this as a
+limitation (Section~\ref{sec:limitations}). Only category and binary sensitivity are
+labelled; mood is not labelled or evaluated. No LLM chose pages, labelled them or judged
+any output; the LLM stage uses temperature 0 and its raw answers are cached, so every
+replay uses the same answers.
 
 \textbf{Clips and hardware.} The first loop study uses the 141 clips in the service's
 store, 130 generated and 11 per-mood fallbacks; the second generates 220 fresh clips
@@ -519,25 +507,6 @@ A6b & keyword $\to$ local ZS $\to$ LLM      & .671 & .689 [.63, .74] & .467 & .4
 \label{fig:frontier}
 \end{figure}
 
-\begin{table}[t]
-\caption{Held-out test set: gates chosen on the development set, each
-configuration scored once. Accuracy is split by the stage that decided.}
-\label{tab:cascade-test}
-\begin{center}
-\scriptsize
-\setlength{\tabcolsep}{2.5pt}
-\begin{tabular}{lccccc}
-\toprule
-\textbf{Configuration} & \textbf{Macro-F1 [95\% CI]} & \textbf{Off-dev.} & \textbf{Kw.} & \textbf{ZS} & \textbf{LLM} \\
-\midrule
-keyword $\to$ LLM (A4) & \tbd{S-E} & \tbd{S-E} & \tbd{S-E} & -- & \tbd{S-E} \\
-A6b local ZS $\to$ LLM & \tbd{S-E} & \tbd{S-E} & \tbd{S-E} & \tbd{S-E} & \tbd{S-E} \\
-A6 keyword $\to$ local ZS & \tbd{S-E} & 0 & \tbd{S-E} & \tbd{S-E} & -- \\
-\bottomrule
-\end{tabular}
-\end{center}
-\end{table}
-
 \subsection{Annotation agreement}
 \label{sec:res-agreement}
 
@@ -550,10 +519,7 @@ stays low even after coarsening to valence--arousal quadrants \cite{kang}
 ($\alpha = 0.121$) or NRC VAD norms \cite{nrcvad} ($\alpha = 0.300$): the
 mood of a page is a matter of taste. Web2Music therefore treats mood as a
 stylistic mapping from page signals rather than a classification target, and mood
-is not evaluated anywhere in this paper. On the test set, labelled blind under
-frozen guidelines, $\alpha$ is \tbd{S-E: test alpha category} for category and
-\tbd{S-E: test alpha sensitivity} for binary sensitivity, with per-category values
-in the supplementary material.
+is not evaluated anywhere in this paper.
 
 \subsection{Descriptor cost and signal value}
 \label{sec:res-descriptor}
@@ -624,16 +590,9 @@ the score threshold from 0.45 to 0.30 cuts off-device from .467 to .290 at
 macro-F1 .675, and opening the gate entirely keeps every page on the device
 at .594, level with the hosted zero-shot model alone (A2, .595); A6 at the
 default gate reaches only .500 because declined pages fall to a default
-category. On the development set
-these gate cells locate the trade-off. For the held-out test set, the gates are
-chosen on development pages only and every configuration is then scored once
-(Table~\ref{tab:cascade-test}): A6b reaches macro-F1 \tbd{S-E: A6b test F1} against
-\tbd{S-E: A4 test F1} for keyword-to-LLM, a paired difference of \tbd{S-E: paired
-diff}, with off-device rates of \tbd{S-E: A6b off-device} and \tbd{S-E: A4
-off-device}. Splitting accuracy by the stage that decided shows how much of each
-score comes from the LLM: \tbd{S-E: by-stage}. On the \tbd{S-E: n post-cutoff}
-test pages published after the LLM's knowledge cutoff, macro-F1 is \tbd{S-E:
-post-cutoff F1} against \tbd{S-E: pre-cutoff F1} on the rest.
+category. The gates are tuned
+on these same pages, so the frontier locates the trade-off but is not an out-of-sample
+estimate, and the .689 of A6b and A4 may be optimistic by an unmeasured amount.
 
 A hosted middle stage only redistributes disclosure. A5 cuts LLM-specific
 exposure from .757 to .220, but every page it keeps from the LLM reaches the
@@ -961,13 +920,10 @@ it is meant to protect. The disclosure property holds only with the on-device
 backend. The hosted two-hypothesis check also overtriggers: its eleven false
 positives include all six plainly benign pages, such as a Rust tutorial, because
 the prompt offers only crisis or reference discussion and no ``unrelated'' option.
-The shipped check therefore adds that third hypothesis and runs on-device. With
-its gates chosen on the hand-written slice only, it detects \tbd{S-F: recall
-[Wilson CI]} of the \tbd{S-F: n} real black-box pages (\tbd{S-F: non-English
-recall} of the non-English ones) and raises a false alarm on \tbd{S-F: FPR
-[Wilson CI]} of \tbd{S-F: n benign} benign pages, with a median latency of
-\tbd{S-F: ms}\,ms (Table~\ref{tab:sensitive}). All detector claims come from the
-black-box and benign sets, not from the hand-written slice.
+The shipped check therefore adds that third hypothesis and runs on-device. We did not
+evaluate this version: its recall on real crisis pages and its false-alarm rate on benign
+pages are unmeasured, and the hand-written slice, from which its gates were chosen, cannot
+measure them.
 
 \textbf{Network audit.} To check the disclosure claims on the wire, we recorded every
 request made by the service worker, the offscreen document, the content scripts
@@ -983,7 +939,7 @@ generation service carried the music profile and nothing else. The generation se
 the category and mood of each page; with a local GPU it is local too.
 
 \begin{table}[t]
-\caption{Sensitive-page detection: the hand-written slice (29 sensitive, 18 not), then real black-box pages and benign pages.}
+\caption{Sensitive-page detection on the hand-written slice (29 sensitive, 18 not); the shipped on-device three-way check is not evaluated.}
 \label{tab:sensitive}
 \begin{center}
 \scriptsize
@@ -994,11 +950,6 @@ the category and mood of each page; with a local GPU it is local too.
 \midrule
 Term lists (default)             & 19/29 & 3/18  & 0/4 \\
 Term lists + NLI (hosted) & 0/29  & 11/18 & 4/4 \\
-Term lists + NLI (on-device, 3-way) & \tbd{S-F} & \tbd{S-F} & \tbd{S-F} \\
-\midrule
-\multicolumn{4}{l}{\emph{Black-box set and benign pages (Wilson 95\% intervals)}} \\
-Term lists (default) & \tbd{S-F} & \tbd{S-F} & \tbd{S-F} \\
-Term lists + NLI (on-device, 3-way) & \tbd{S-F} & \tbd{S-F} & \tbd{S-F} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -1013,8 +964,8 @@ Web2Music plays background music conditioned on the page being read. Each
 pipeline step is assessed against the properties of Section~\ref{sec:gaps}.
 Running the middle classifier stage on the device keeps the keyword-to-LLM
 macro-F1 on the development set and cuts off-device page transfers by 38\%;
-the gate sets how much further disclosure is reduced, and the held-out result is
-in Table~\ref{tab:cascade-test}. On the wire, the fully local configuration sends
+the gate sets how much further disclosure is reduced, though these are
+development-set results with the gate tuned on the same pages. On the wire, the fully local configuration sends
 no page text, and the default sends it only to the LLM proxy. A mood-level clip is
 audible 36\,ms after the mood decision whatever the generation time; with a laptop GPU
 the page-level clip is heard on about half of the simulated visits, and on a CPU on
@@ -1038,9 +989,11 @@ captions, not web pages, and the mood-to-tag mapping is an assumption. The
 measured effects are small (CLAP retrieval of 12.5\% against 10\% chance), so the
 fidelity result shows a tendency, not that a page's music is recognisably its own.
 
-\textbf{Author annotation.} The three labellers are authors. Labelling was blind
-and the guidelines were frozen first, but this is not independent annotation, and
-agreement between authors who share a design may overstate reliability.
+\textbf{Annotation and held-out data.} The three labellers are authors, not independent
+annotators, and agreement between authors who share a design may overstate reliability.
+There is no held-out test set: the cascade's gates are tuned and scored on the same 255
+pages, so its macro-F1 values are in-sample, and the on-device sensitive-page check was
+not evaluated on real crisis pages.
 
 \textbf{Simulation assumptions.} How often generated audio is heard depends on
 dwell times that we model rather than measure: the Weibull shape and the long-form
@@ -1053,7 +1006,7 @@ fixture pages, so they establish timings and where text goes, not rates over rea
 browsing. The A6b end-to-end run used a local 7B LLM on the same GPU as the generator,
 which slows generation; a hosted LLM would not.
 
-\textbf{Other limits.} The held-out test set is small, so macro-F1 intervals are
+\textbf{Other limits.} The development set is small, so macro-F1 intervals are
 about $\pm .05$ wide and smaller differences are not resolved. The LLM stage in the main
 configuration is a hosted model; its answers are cached for replay but its behaviour can
 change under the same model name, and the local Qwen2.5-7B configuration gives different

@@ -33,12 +33,11 @@ quoted here is produced by a script in the released repository from a result fil
 committed alongside it.
 
 \medskip
-\noindent Two requests could not be met in full in the revision window: we ran \textbf{no human
-listening study}, and we could \textbf{not recruit independent annotators}. For each we
-explain what we did instead and how the claims were narrowed. Two studies are still
-running and are marked \textcolor{pending}{\textbf{Pending}} below: the held-out test set for the cascade (R4\,\#1,
-R3\,W3) and the real black-box set for the sensitive-page detector (R4\,\#3). Their
-placeholders remain in the manuscript and will be filled before the camera-ready version.
+\noindent Four requests could not be met in the revision window: we ran \textbf{no human listening
+study}, we could \textbf{not recruit independent annotators}, we did \textbf{not build a
+held-out test set}, and we did \textbf{not evaluate the sensitive-page detector on real
+crisis pages}. For each we say what we did instead and how the claims were narrowed; the
+paper states all four as limitations and contains no placeholder for any of them.
 
 \section*{Summary of the main changes}
 \begin{itemize}
@@ -76,21 +75,21 @@ Each compares page-matched against shuffled-mood clips over 234 pages $\times$ 3
 protocol and instruments for a within-subjects listening study are released for follow-up
 work.
 
-\paragraph{Independent annotators (R3 W3/R3; R4 \#1).}
-We could not recruit independent annotators. The revised protocol:
+\paragraph{Independent annotators and a held-out test set (R3 W3/R3; R4 \#1).}
+We could not recruit independent annotators, and we did not build the proposed held-out
+test set. What we did instead:
 \begin{itemize}
-\item labelling is blind to the collection category, to system outputs and to the other
-  labellers, under guidelines frozen before the test set is labelled;
-\item all cascade thresholds are chosen on the 255-page development set only;
-\item LLMs are kept out of page selection, labelling and judging, and the LLM stage is frozen,
-  with its raw answers cached for replay;
+\item the paper now says explicitly that the cascade's gates are tuned and scored on the same
+  255 development pages, so its macro-F1 values are in-sample and may be optimistic by an
+  unmeasured amount; the abstract and conclusion carry the same caveat, and the held-out
+  claims were removed;
+\item LLMs are kept out of page selection, labelling and judging, and the LLM stage's raw
+  answers are cached so every replay is identical;
 \item every claim that depends on mood labels is removed, since mood is no longer an
   evaluated target;
-\item author annotation is stated as a limitation.
+\item author annotation, the absence of a held-out set and the small development set
+  ($\pm.05$ macro-F1 intervals) are stated as limitations.
 \end{itemize}
-\pending{the held-out test set itself (pages captured after the freeze, blind labels and
-test-set agreement) is being collected; its numbers will be added to the test table and
-the abstract.}
 
 \section*{Reviewer 3}
 
@@ -129,9 +128,9 @@ hit rate measured on real profiles (0 of 235). At 15\,s clips and a median dwell
 Abstract; Introduction; Results: Generation latency, How often generated audio is heard (Table ``Exposure'', Eq.~4) \\
 \midrule
 W3 / R3 & Labels come from the authors; $\alpha$ below threshold; mood $\alpha = 0.195$ &
-Partly addressed (see above): blind labelling under frozen guidelines; mood is no longer an
-evaluated target; author labelling stated as a limitation.
-\pending{held-out test set and test-set $\alpha$ for category and sensitivity.} &
+Not resolved (see above). Mood is no longer an evaluated target, the existing agreement
+coefficients are reported as they were, and author labelling is stated as a limitation. We
+did not collect a new labelled set, so there is no new $\alpha$. &
 Results: Evaluation design, Annotation agreement; Limitations \\
 \midrule
 W4 & Headline latencies come from stubbed benchmarks &
@@ -163,11 +162,10 @@ Throughout \\
 \midrule
 \endhead
 1 & Independent held-out corpus and annotators; tune thresholds on a separate set &
-Gates are chosen on the 255-page development set only, and the test protocol scores every
-configuration once with those gates. Independent annotators: not possible, mitigated as
-above. \pending{held-out test results (macro-F1 with CIs, off-device rate, accuracy by
-deciding stage, post-cutoff split).} &
-Results: Evaluation design, Classification and disclosure (Table ``Held-out test set'') \\
+Not done. We did not build a held-out set or recruit independent annotators. The paper
+now states that the gates are tuned on the pages they are scored on, labels the results
+in-sample, and lists both gaps as limitations. &
+Abstract; Results: Evaluation design, Classification and disclosure; Conclusion; Limitations \\
 \midrule
 2 & Listening study for fit and gapless loops &
 A listening study was not possible. Instead:
@@ -183,10 +181,12 @@ A listening study was not possible. Instead:
 Results: Loop quality \\
 \midrule
 3 & Improve and re-measure the sensitive detector, including the on-device model &
-Added an ``unrelated'' hypothesis (three-way entailment) and an on-device back end. Gates are
-chosen on the hand-written slice only. \pending{evaluation on the real black-box crisis/support
-pages and benign pages (recall and false-alarm rate with Wilson CIs, latency).} &
-Results: Restraint (Table ``Sensitive-page detection'') \\
+Partly done. The shipped check now adds an ``unrelated'' hypothesis (three-way entailment)
+and runs on-device. We did not evaluate it on real crisis pages or on benign pages, so its
+recall and false-alarm rate are unmeasured, and the paper says so. What we could measure is
+the network audit, which shows that no page text leaves the device in the fully local
+configuration. &
+Results: Restraint (Table ``Sensitive-page detection''); Limitations \\
 \midrule
 4 & Real end-to-end latency; enough runs for p95; CPU-only case &
 See R3 W4.
@@ -214,7 +214,7 @@ Results: Loop quality, Prompt ablation, Generator comparison (Table ``Generators
 \midrule
 6 & Rewrite abstract and intro; define terms; release code and data &
 Rewritten, and terms defined. Code, URLs, result files and the raw LLM responses are released
-(page text withheld for copyright). \pending{archive DOI.} &
+(page text withheld for copyright); the archive DOI is added when the repository is released. &
 Abstract; Introduction; repository release \\
 \midrule
 7 & Mathematical modelling, annotation reliability, privacy validation, perception, clarity &
