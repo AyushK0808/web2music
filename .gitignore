@@ -72,10 +72,12 @@ generated_audio/
 # "audio_cache/" here never matched it and let generated clips get committed.
 audio-generation/audio-cache/
 
+# Generated clips (experiment output, d6/d7 clip dirs, proxies/out) are ignored.
 # fallback_clips/*.ogg (Feature D's fallback clips) are intentionally
 # tracked, not generated output -- deterministic reproducibility artifacts
-# every error path in main.py depends on. Nothing above ignores *.ogg/*.mp3
-# generically; don't reintroduce a blanket audio-extension rule here.
+# every error path in main.py depends on, so they are re-included below.
+*.ogg
+!audio-generation/fallback_clips/*.ogg
 
 # Vendored embedding model + ONNX runtime for the extension (Phase 1) --
 # committed on purpose so `git clone && npm run build` works without a
