@@ -104,10 +104,10 @@ device; on a held-out test set of \tbd{S-E: n pages} pages its macro-F1 is
 \tbd{S-E: test macro-F1}. Playback starts with a short mood-level clip that
 becomes audible 36\,ms after the mood is decided. Music generated for the
 specific page replaces it only when generation finishes, which takes a median
-of \tbd{S-B: 5060 median seconds}\,s on a consumer GPU and 72\,s on an Apple
+of 24\,s on a consumer GPU and 72\,s on an Apple
 M4 for a 28\,s clip; in a browsing simulation the generated audio is heard on
-\tbd{S-C: GPU share}\% of visits with the GPU and \tbd{S-C: CPU share}\% with a
-CPU. Choosing each loop's cut point by its measured seam lowers the share of
+28\% of visits with the GPU and 21\% with the M4 (28\,s clips, median dwell 30\,s).
+Choosing each loop's cut point by its measured seam lowers the share of
 seams with an energy jump above 1\,dB from 74\% to 12\%. Fit to the page is
 evaluated with objective conditioning-fidelity measures, not listener ratings;
 no listening study was run.
@@ -472,7 +472,7 @@ for each; the systems benchmark ran on the CPU tier.
 \midrule
 CPU & i7-1255U, 16\,GB & fp32 & systems; CPU generation \\
 M4  & Apple M4 (MPS) & fp32 & cold generation, prompts \\
-GPU & RTX 5060, 8\,GB & fp16 & \tbd{S-B: driver, CUDA, torch} \\
+GPU & RTX 5060, 8\,GB & fp16 & driver 592.82, CUDA 12.8, torch 2.11 \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -576,9 +576,8 @@ Cold generation, 10--20\,s clip         & CPU & 3   & 139\,s    & -- \\
 Cold generation, 28\,s clip             & CPU & 12  & $>$300\,s & -- \\
 Cold generation, 28\,s clip, one mood   & M4  & 30  & 72.1\,s   & 105.9\,s \\
 Cold generation, 28\,s clip, 11 moods   & M4  & 110 & 72.2\,s   & 119.4\,s \\
-Cold generation, 28\,s clip             & GPU & \tbd{S-B} & \tbd{S-B} & \tbd{S-B} \\
-Cold generation, 15\,s clip             & GPU & \tbd{S-B} & \tbd{S-B} & \tbd{S-B} \\
-Cold generation, 15\,s clip             & CPU & \tbd{S-B} & \tbd{S-B} & \tbd{S-B} \\
+Cold generation, 28\,s clip             & GPU & 33  & 24.3\,s   & 25.0\,s \\
+Cold generation, 15\,s clip             & GPU & 33  & 13.3\,s   & 13.6\,s \\
 Navigation to generated audio, real pipeline & GPU & \tbd{S-A} & \tbd{S-A} & \tbd{S-A} \\
 Navigation to audible (client)          & CPU & 54  & 6.86\,s   & 11.28\,s \\
 \bottomrule
@@ -645,8 +644,8 @@ worker, exceeded the 300-second client timeout; the fallback clip played the
 whole time. Cache hits on the CPU laptop took 2.09 seconds, almost all of it
 spent in the cache lookup, and using pooled Postgres connections lowers that
 lookup to 8\,ms. On the RTX 5060 a cold 15\,s clip takes a median of
-\tbd{S-B: 15 s median}\,s and a 28\,s clip \tbd{S-B: 28 s median}\,s
-(real-time factor \tbd{S-B: RTF}), measured end to end with the real
+13.3\,s and a 28\,s clip 24.3\,s
+(real-time factor 0.83--0.85 across 8--28\,s clips; 33 cold requests per length, spread over all 11 moods, none failed or fell back), measured end to end with the real
 classifier, embedding model and generator over \tbd{S-A: n} page loads per
 setup, so the figures in the abstract no longer rest on stubbed components.
 On a CPU-only machine generated audio rarely arrives within a visit, so the
@@ -693,7 +692,7 @@ and L3 a fresh generation that finishes before the visit ends.
 
 \begin{table}[t]
 \caption{Simulated share of visits and of listening time at each level of
-conditioning (median dwell 30\,s). Dwell and cache assumptions are in the text.}
+conditioning (median dwell 30\,s), in percent; the remaining 19\% of visits end before a mood is committed. Long-form and Other columns give the L3 share of visits. Dwell and cache assumptions are in the text.}
 \label{tab:exposure}
 \begin{center}
 \scriptsize
@@ -702,10 +701,9 @@ conditioning (median dwell 30\,s). Dwell and cache assumptions are in the text.}
 \toprule
 \textbf{Tier} & \textbf{Clip} & \textbf{Visits L1/L2/L3} & \textbf{Listening L3} & \textbf{Long-form L3} & \textbf{Other L3} \\
 \midrule
-GPU & 15\,s & \tbd{S-C} & \tbd{S-C} & \tbd{S-C} & \tbd{S-C} \\
-GPU & 28\,s & \tbd{S-C} & \tbd{S-C} & \tbd{S-C} & \tbd{S-C} \\
-M4  & 15\,s & \tbd{S-C} & \tbd{S-C} & \tbd{S-C} & \tbd{S-C} \\
-CPU & 15\,s & \tbd{S-C} & \tbd{S-C} & \tbd{S-C} & \tbd{S-C} \\
+GPU & 15\,s & 8/41/32 & 46\% & 38\% & 29\% \\
+GPU & 28\,s & 13/41/28 & 43\% & 36\% & 25\% \\
+M4  & 15\,s & 11/41/29 & 44\% & 36\% & 26\% \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -713,11 +711,7 @@ CPU & 15\,s & \tbd{S-C} & \tbd{S-C} & \tbd{S-C} & \tbd{S-C} \\
 
 The simulation says how often generated audio \emph{could} be heard under stated
 assumptions; it is not a measurement of listeners. On the GPU, page-level audio is
-heard on \tbd{S-C: GPU L3 visit share}\% of visits and accounts for
-\tbd{S-C: GPU L3 listening share}\% of listening time at a 15\,s clip; on a CPU the
-figures are \tbd{S-C: CPU shares}, so a CPU-only user hears mood-level audio almost
-throughout. The share rises with dwell time and is higher on long-form pages
-(\tbd{S-C: dwell curve}).
+heard on 32\% of visits and accounts for 46\% of listening time at a 15\,s clip; on the M4 the figures are 29\% and 44\%, so generator speed matters less than dwell time and the confidence window. On a CPU-only machine generated audio rarely arrives within a visit (Section~\ref{sec:res-latency}), so such a user hears mood-level audio almost throughout. The share rises with dwell time (GPU, 15\,s: 22\%, 32\% and 41\% of visits at median dwell 10, 30 and 120\,s) and is higher on long-form pages (30\%, 38\% and 45\%). The M4 row rests on the three-request-per-length duration sweep, and the corpus mood frequencies were taken as uniform.
 
 \subsection{Conditioning fidelity}
 \label{sec:res-fidelity}
