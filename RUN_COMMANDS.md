@@ -217,6 +217,16 @@ Timeouts are recorded as errors and are treated as **censored** by S-C; report t
 
 ### S-A — real end-to-end latency  (C-6)  → `\tbd{S-A…}`
 
+**Local LLM instead of Groq (A6b).** Stop the Docker proxy and run the same service from WSL against the local Ollama:
+
+```bash
+docker stop web2music-classify-service
+OLLAMA_HOST=127.0.0.1:11435 OLLAMA_MODELS=$HOME/ollama-wsl/models OLLAMA_KEEP_ALIVE=2m nohup $HOME/ollama-wsl/dist/bin/ollama serve > /tmp/ollama.log 2>&1 &
+LLM_BASE_URL=http://127.0.0.1:11435/v1 LLM_MODEL=qwen2.5:7b-instruct PORT=8078 nohup node services/classify/classifyService.js > /tmp/classify.log 2>&1 &
+```
+
+The A6b numbers then include a 7B model sharing the GPU with MusicGen, not Groq's latency; say so in the text.
+
 Needs the built extension (`npm run build` is part of `test:latency`), the classify
 proxy for A6b (`docker compose -f docker/docker-compose.yml up -d classify-service`, needs the Groq key
 in `.env`), and Feature D on :8000 (GPU service from step 2, **or** the CPU service from above).
