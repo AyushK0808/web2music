@@ -96,7 +96,7 @@ has to solve three problems: describe the page, keep the page text from
 leaving the device, and hide a music generator that is slower than browsing.
 We present Web2Music, a Manifest V3 Chrome extension that addresses all three.
 The page descriptor takes 86\,ms per page without the embedding model
-(\tbd{S-A: descriptor cost including embedding}). A three-stage classifier
+(360\,ms with the embedding model). A three-stage classifier
 (keywords, an on-device language-inference model, a hosted large language
 model) matches the macro-averaged F1 of a keyword-then-LLM baseline on the
 255-page development set (0.689) while sending 38\% fewer pages off the
@@ -555,8 +555,10 @@ On 105 live websites loaded in an automated Chromium browser, descriptor
 construction takes a median of 86\,ms against a 1,989\,ms navigation, and
 boilerplate removal keeps 80.8\% of visible text. Embedding inference is
 stubbed in this benchmark, so 86\,ms is the extraction cost excluding the model;
-with the real embedding model on \tbd{S-A: n} sites the median is
-\tbd{S-A: ms}\,ms. Text extraction, the colour histogram, and readability take medians of
+with the real MiniLM embedding model, loaded once and warm as in the extension, on 166 sites
+the median is 360\,ms (p95 519\,ms), of which the embedding stage is 343\,ms (p95 430\,ms).
+Of 204 sites attempted, 38 could not be loaded (DNS or connection errors on infrastructure
+domains) and are excluded; the embedding failed on none of the 166. Text extraction, the colour histogram, and readability take medians of
 11.0, 3.9, and 1.5\,ms; most of the remainder, and the whole p95 tail, is the
 vector-store search, which is idle-scheduled. An offline ablation on 255
 pages replays the keyword stage with one signal removed: removing colour
@@ -584,7 +586,8 @@ Cold generation, 28\,s clip, one mood   & M4  & 30  & 72.1\,s   & 105.9\,s \\
 Cold generation, 28\,s clip, 11 moods   & M4  & 110 & 72.2\,s   & 119.4\,s \\
 Cold generation, 28\,s clip             & GPU & 33  & 24.3\,s   & 25.0\,s \\
 Cold generation, 15\,s clip             & GPU & 33  & 13.3\,s   & 13.6\,s \\
-Navigation to generated audio, real pipeline & GPU & \tbd{S-A} & \tbd{S-A} & \tbd{S-A} \\
+Navigation to generated audio, A6 (LLM unreachable) & GPU & 110 & 7.7\,s & 37.4\,s \\
+Navigation to generated audio, A6b (local 7B LLM) & GPU & 110 & 7.9\,s & 64.6\,s \\
 Navigation to audible (client)          & CPU & 54  & 6.86\,s   & 11.28\,s \\
 \bottomrule
 \end{tabular}
@@ -650,9 +653,9 @@ spent in the cache lookup, and using pooled Postgres connections lowers that
 lookup to 8\,ms. On the RTX 5060 a cold 15\,s clip takes a median of
 13.3\,s and a 28\,s clip 24.3\,s
 (real-time factor 0.87--0.91 end to end across 8--28\,s clips, of which the generator call alone is 0.83--0.85; 33 cold requests per length, spread over all 11 moods, none failed or fell back), measured end to end with the real
-classifier, embedding model and generator over \tbd{S-A: n} page loads per
-setup, so the figures in the abstract no longer rest on stubbed components.
-Concurrent requests do not raise throughput: $k = 2$, 4 and 8 simultaneous 15\,s requests finish in 28.3, 54.8 and 111.3\,s, within 1--2\% of running the same requests one after another (speedup 1.02, 1.01 and 1.01$	imes$; five repeats per level, rotating moods, none failed), so the worker's batching brings no gain on this GPU and the queueing delay grows linearly with $k$.
+classifier, embedding model and generator over 110 page loads per
+setup (11 fixture pages $\times$ 10 repeats, of which 10 loads per setup generate and the rest hit the cache), so the figures in the abstract no longer rest on stubbed components.
+Concurrent requests do not raise throughput: $k = 2$, 4 and 8 simultaneous 15\,s requests finish in 28.3, 54.8 and 111.3\,s, within 1--2\% of running the same requests one after another (speedup 1.02, 1.01 and 1.01$\times$; five repeats per level, rotating moods, none failed), so the worker's batching brings no gain on this GPU and the queueing delay grows linearly with $k$.
 On the CPU-only configuration a cold 15\,s clip takes about a minute, so generated audio
 arrives only in longer visits, and for most visits the system behaves as a mood-level
 player with cache hits (Section~\ref{sec:res-exposure}).
