@@ -1,0 +1,1743 @@
+{
+  "startedAt": "2026-11-03T13:07:55.337Z",
+  "manifest": {
+    "node": "v22.22.1",
+    "platform": "linux 6.18.54.1-microsoft-standard-WSL2"
+  },
+  "config": {
+    "mode": "a6",
+    "realClassify": false,
+    "dUrl": null,
+    "repeats": 3,
+    "dwellMs": 12000
+  },
+  "verdict": {
+    "mode": "a6",
+    "a1_no_page_text_in_any_body_when_a6": true,
+    "a2_page_text_only_to_classify_proxy_when_a6b": null,
+    "a3_no_telemetry_leaves": true,
+    "a4_generate_bodies_are_profile_only": true,
+    "offending": {
+      "pageTextOutsideClassify": [],
+      "pageTextAnywhere": [],
+      "telemetry": [],
+      "nonProfileGenerate": []
+    },
+    "external_hosts": [],
+    "off_device_rate": 0,
+    "pages_escalated": 0,
+    "pages": 36
+  },
+  "bytes_by_destination": {
+    "feature-d": {
+      "totalBytes": 30603,
+      "bytesPerPage": 850
+    }
+  },
+  "visits": [
+    {
+      "site": "calm_forest_bathing",
+      "expectSilence": false,
+      "requests": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:43527/d/fallback/calm",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 0,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": null,
+          "bodyKeys": null
+        },
+        {
+          "method": "POST",
+          "url": "http://127.0.0.1:43527/d/generate",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 874,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": true,
+          "bodyKeys": [
+            "duration_seconds",
+            "mood",
+            "energy",
+            "bpm",
+            "key",
+            "style",
+            "content_category",
+            "arousal",
+            "valence",
+            "instruments",
+            "timbre",
+            "reverb",
+            "ambience",
+            "tempo",
+            "dynamics",
+            "listening_context",
+            "time_of_day",
+            "atmosphere_tags",
+            "sensitive_override",
+            "prompt"
+          ]
+        }
+      ],
+      "escalatedOffDevice": false,
+      "classifyRequests": 0
+    },
+    {
+      "site": "focused_deep_work",
+      "expectSilence": false,
+      "requests": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:43527/d/fallback/focused",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 0,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": null,
+          "bodyKeys": null
+        },
+        {
+          "method": "POST",
+          "url": "http://127.0.0.1:43527/d/generate",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 948,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": true,
+          "bodyKeys": [
+            "duration_seconds",
+            "mood",
+            "energy",
+            "bpm",
+            "key",
+            "style",
+            "content_category",
+            "arousal",
+            "valence",
+            "instruments",
+            "timbre",
+            "reverb",
+            "ambience",
+            "tempo",
+            "dynamics",
+            "listening_context",
+            "time_of_day",
+            "atmosphere_tags",
+            "sensitive_override",
+            "prompt"
+          ]
+        }
+      ],
+      "escalatedOffDevice": false,
+      "classifyRequests": 0
+    },
+    {
+      "site": "joyful_festival_recap",
+      "expectSilence": false,
+      "requests": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:43527/d/fallback/joyful",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 0,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": null,
+          "bodyKeys": null
+        },
+        {
+          "method": "POST",
+          "url": "http://127.0.0.1:43527/d/generate",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 892,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": true,
+          "bodyKeys": [
+            "duration_seconds",
+            "mood",
+            "energy",
+            "bpm",
+            "key",
+            "style",
+            "content_category",
+            "arousal",
+            "valence",
+            "instruments",
+            "timbre",
+            "reverb",
+            "ambience",
+            "tempo",
+            "dynamics",
+            "listening_context",
+            "time_of_day",
+            "atmosphere_tags",
+            "sensitive_override",
+            "prompt"
+          ]
+        }
+      ],
+      "escalatedOffDevice": false,
+      "classifyRequests": 0
+    },
+    {
+      "site": "energetic_hiit_circuit",
+      "expectSilence": false,
+      "requests": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:43527/d/fallback/energetic",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 0,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": null,
+          "bodyKeys": null
+        },
+        {
+          "method": "POST",
+          "url": "http://127.0.0.1:43527/d/generate",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 881,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": true,
+          "bodyKeys": [
+            "duration_seconds",
+            "mood",
+            "energy",
+            "bpm",
+            "key",
+            "style",
+            "content_category",
+            "arousal",
+            "valence",
+            "instruments",
+            "timbre",
+            "reverb",
+            "ambience",
+            "tempo",
+            "dynamics",
+            "listening_context",
+            "time_of_day",
+            "atmosphere_tags",
+            "sensitive_override",
+            "prompt"
+          ]
+        }
+      ],
+      "escalatedOffDevice": false,
+      "classifyRequests": 0
+    },
+    {
+      "site": "sad_in_memoriam",
+      "expectSilence": false,
+      "requests": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:43527/d/fallback/sad",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 0,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": null,
+          "bodyKeys": null
+        },
+        {
+          "method": "POST",
+          "url": "http://127.0.0.1:43527/d/generate",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 943,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": true,
+          "bodyKeys": [
+            "duration_seconds",
+            "mood",
+            "energy",
+            "bpm",
+            "key",
+            "style",
+            "content_category",
+            "arousal",
+            "valence",
+            "instruments",
+            "timbre",
+            "reverb",
+            "ambience",
+            "tempo",
+            "dynamics",
+            "listening_context",
+            "time_of_day",
+            "atmosphere_tags",
+            "sensitive_override",
+            "prompt"
+          ]
+        }
+      ],
+      "escalatedOffDevice": false,
+      "classifyRequests": 0
+    },
+    {
+      "site": "dark_slasher_retrospective",
+      "expectSilence": false,
+      "requests": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:43527/d/fallback/dark",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 0,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": null,
+          "bodyKeys": null
+        },
+        {
+          "method": "POST",
+          "url": "http://127.0.0.1:43527/d/generate",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 965,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": true,
+          "bodyKeys": [
+            "duration_seconds",
+            "mood",
+            "energy",
+            "bpm",
+            "key",
+            "style",
+            "content_category",
+            "arousal",
+            "valence",
+            "instruments",
+            "timbre",
+            "reverb",
+            "ambience",
+            "tempo",
+            "dynamics",
+            "listening_context",
+            "time_of_day",
+            "atmosphere_tags",
+            "sensitive_override",
+            "prompt"
+          ]
+        }
+      ],
+      "escalatedOffDevice": false,
+      "classifyRequests": 0
+    },
+    {
+      "site": "nostalgic_arcade",
+      "expectSilence": false,
+      "requests": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:43527/d/fallback/nostalgic",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 0,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": null,
+          "bodyKeys": null
+        },
+        {
+          "method": "POST",
+          "url": "http://127.0.0.1:43527/d/generate",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 944,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": true,
+          "bodyKeys": [
+            "duration_seconds",
+            "mood",
+            "energy",
+            "bpm",
+            "key",
+            "style",
+            "content_category",
+            "arousal",
+            "valence",
+            "instruments",
+            "timbre",
+            "reverb",
+            "ambience",
+            "tempo",
+            "dynamics",
+            "listening_context",
+            "time_of_day",
+            "atmosphere_tags",
+            "sensitive_override",
+            "prompt"
+          ]
+        }
+      ],
+      "escalatedOffDevice": false,
+      "classifyRequests": 0
+    },
+    {
+      "site": "curious_hadal_zone",
+      "expectSilence": false,
+      "requests": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:43527/d/fallback/curious",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 0,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": null,
+          "bodyKeys": null
+        },
+        {
+          "method": "POST",
+          "url": "http://127.0.0.1:43527/d/generate",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 997,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": true,
+          "bodyKeys": [
+            "duration_seconds",
+            "mood",
+            "energy",
+            "bpm",
+            "key",
+            "style",
+            "content_category",
+            "arousal",
+            "valence",
+            "instruments",
+            "timbre",
+            "reverb",
+            "ambience",
+            "tempo",
+            "dynamics",
+            "listening_context",
+            "time_of_day",
+            "atmosphere_tags",
+            "sensitive_override",
+            "prompt"
+          ]
+        }
+      ],
+      "escalatedOffDevice": false,
+      "classifyRequests": 0
+    },
+    {
+      "site": "tense_border_standoff",
+      "expectSilence": false,
+      "requests": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:43527/d/fallback/tense",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 0,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": null,
+          "bodyKeys": null
+        },
+        {
+          "method": "POST",
+          "url": "http://127.0.0.1:43527/d/generate",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 952,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": true,
+          "bodyKeys": [
+            "duration_seconds",
+            "mood",
+            "energy",
+            "bpm",
+            "key",
+            "style",
+            "content_category",
+            "arousal",
+            "valence",
+            "instruments",
+            "timbre",
+            "reverb",
+            "ambience",
+            "tempo",
+            "dynamics",
+            "listening_context",
+            "time_of_day",
+            "atmosphere_tags",
+            "sensitive_override",
+            "prompt"
+          ]
+        }
+      ],
+      "escalatedOffDevice": false,
+      "classifyRequests": 0
+    },
+    {
+      "site": "uplifting_town_rebuilds",
+      "expectSilence": false,
+      "requests": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:43527/d/fallback/uplifting",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 0,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": null,
+          "bodyKeys": null
+        },
+        {
+          "method": "POST",
+          "url": "http://127.0.0.1:43527/d/generate",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 958,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": true,
+          "bodyKeys": [
+            "duration_seconds",
+            "mood",
+            "energy",
+            "bpm",
+            "key",
+            "style",
+            "content_category",
+            "arousal",
+            "valence",
+            "instruments",
+            "timbre",
+            "reverb",
+            "ambience",
+            "tempo",
+            "dynamics",
+            "listening_context",
+            "time_of_day",
+            "atmosphere_tags",
+            "sensitive_override",
+            "prompt"
+          ]
+        }
+      ],
+      "escalatedOffDevice": false,
+      "classifyRequests": 0
+    },
+    {
+      "site": "neutral_recycling_notice",
+      "expectSilence": false,
+      "requests": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:43527/d/fallback/neutral",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 0,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": null,
+          "bodyKeys": null
+        },
+        {
+          "method": "POST",
+          "url": "http://127.0.0.1:43527/d/generate",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 847,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": true,
+          "bodyKeys": [
+            "duration_seconds",
+            "mood",
+            "energy",
+            "bpm",
+            "key",
+            "style",
+            "content_category",
+            "arousal",
+            "valence",
+            "instruments",
+            "timbre",
+            "reverb",
+            "ambience",
+            "tempo",
+            "dynamics",
+            "listening_context",
+            "time_of_day",
+            "atmosphere_tags",
+            "sensitive_override",
+            "prompt"
+          ]
+        }
+      ],
+      "escalatedOffDevice": false,
+      "classifyRequests": 0
+    },
+    {
+      "site": "sensitive_crisis_support",
+      "expectSilence": true,
+      "requests": [],
+      "escalatedOffDevice": false,
+      "classifyRequests": 0
+    },
+    {
+      "site": "calm_forest_bathing",
+      "expectSilence": false,
+      "requests": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:43527/d/fallback/calm",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 0,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": null,
+          "bodyKeys": null
+        },
+        {
+          "method": "POST",
+          "url": "http://127.0.0.1:43527/d/generate",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 874,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": true,
+          "bodyKeys": [
+            "duration_seconds",
+            "mood",
+            "energy",
+            "bpm",
+            "key",
+            "style",
+            "content_category",
+            "arousal",
+            "valence",
+            "instruments",
+            "timbre",
+            "reverb",
+            "ambience",
+            "tempo",
+            "dynamics",
+            "listening_context",
+            "time_of_day",
+            "atmosphere_tags",
+            "sensitive_override",
+            "prompt"
+          ]
+        }
+      ],
+      "escalatedOffDevice": false,
+      "classifyRequests": 0
+    },
+    {
+      "site": "focused_deep_work",
+      "expectSilence": false,
+      "requests": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:43527/d/fallback/focused",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 0,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": null,
+          "bodyKeys": null
+        },
+        {
+          "method": "POST",
+          "url": "http://127.0.0.1:43527/d/generate",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 948,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": true,
+          "bodyKeys": [
+            "duration_seconds",
+            "mood",
+            "energy",
+            "bpm",
+            "key",
+            "style",
+            "content_category",
+            "arousal",
+            "valence",
+            "instruments",
+            "timbre",
+            "reverb",
+            "ambience",
+            "tempo",
+            "dynamics",
+            "listening_context",
+            "time_of_day",
+            "atmosphere_tags",
+            "sensitive_override",
+            "prompt"
+          ]
+        }
+      ],
+      "escalatedOffDevice": false,
+      "classifyRequests": 0
+    },
+    {
+      "site": "joyful_festival_recap",
+      "expectSilence": false,
+      "requests": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:43527/d/fallback/joyful",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 0,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": null,
+          "bodyKeys": null
+        },
+        {
+          "method": "POST",
+          "url": "http://127.0.0.1:43527/d/generate",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 892,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": true,
+          "bodyKeys": [
+            "duration_seconds",
+            "mood",
+            "energy",
+            "bpm",
+            "key",
+            "style",
+            "content_category",
+            "arousal",
+            "valence",
+            "instruments",
+            "timbre",
+            "reverb",
+            "ambience",
+            "tempo",
+            "dynamics",
+            "listening_context",
+            "time_of_day",
+            "atmosphere_tags",
+            "sensitive_override",
+            "prompt"
+          ]
+        }
+      ],
+      "escalatedOffDevice": false,
+      "classifyRequests": 0
+    },
+    {
+      "site": "energetic_hiit_circuit",
+      "expectSilence": false,
+      "requests": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:43527/d/fallback/energetic",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 0,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": null,
+          "bodyKeys": null
+        },
+        {
+          "method": "POST",
+          "url": "http://127.0.0.1:43527/d/generate",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 881,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": true,
+          "bodyKeys": [
+            "duration_seconds",
+            "mood",
+            "energy",
+            "bpm",
+            "key",
+            "style",
+            "content_category",
+            "arousal",
+            "valence",
+            "instruments",
+            "timbre",
+            "reverb",
+            "ambience",
+            "tempo",
+            "dynamics",
+            "listening_context",
+            "time_of_day",
+            "atmosphere_tags",
+            "sensitive_override",
+            "prompt"
+          ]
+        }
+      ],
+      "escalatedOffDevice": false,
+      "classifyRequests": 0
+    },
+    {
+      "site": "sad_in_memoriam",
+      "expectSilence": false,
+      "requests": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:43527/d/fallback/sad",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 0,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": null,
+          "bodyKeys": null
+        },
+        {
+          "method": "POST",
+          "url": "http://127.0.0.1:43527/d/generate",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 943,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": true,
+          "bodyKeys": [
+            "duration_seconds",
+            "mood",
+            "energy",
+            "bpm",
+            "key",
+            "style",
+            "content_category",
+            "arousal",
+            "valence",
+            "instruments",
+            "timbre",
+            "reverb",
+            "ambience",
+            "tempo",
+            "dynamics",
+            "listening_context",
+            "time_of_day",
+            "atmosphere_tags",
+            "sensitive_override",
+            "prompt"
+          ]
+        }
+      ],
+      "escalatedOffDevice": false,
+      "classifyRequests": 0
+    },
+    {
+      "site": "dark_slasher_retrospective",
+      "expectSilence": false,
+      "requests": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:43527/d/fallback/dark",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 0,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": null,
+          "bodyKeys": null
+        },
+        {
+          "method": "POST",
+          "url": "http://127.0.0.1:43527/d/generate",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 965,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": true,
+          "bodyKeys": [
+            "duration_seconds",
+            "mood",
+            "energy",
+            "bpm",
+            "key",
+            "style",
+            "content_category",
+            "arousal",
+            "valence",
+            "instruments",
+            "timbre",
+            "reverb",
+            "ambience",
+            "tempo",
+            "dynamics",
+            "listening_context",
+            "time_of_day",
+            "atmosphere_tags",
+            "sensitive_override",
+            "prompt"
+          ]
+        }
+      ],
+      "escalatedOffDevice": false,
+      "classifyRequests": 0
+    },
+    {
+      "site": "nostalgic_arcade",
+      "expectSilence": false,
+      "requests": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:43527/d/fallback/nostalgic",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 0,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": null,
+          "bodyKeys": null
+        },
+        {
+          "method": "POST",
+          "url": "http://127.0.0.1:43527/d/generate",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 944,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": true,
+          "bodyKeys": [
+            "duration_seconds",
+            "mood",
+            "energy",
+            "bpm",
+            "key",
+            "style",
+            "content_category",
+            "arousal",
+            "valence",
+            "instruments",
+            "timbre",
+            "reverb",
+            "ambience",
+            "tempo",
+            "dynamics",
+            "listening_context",
+            "time_of_day",
+            "atmosphere_tags",
+            "sensitive_override",
+            "prompt"
+          ]
+        }
+      ],
+      "escalatedOffDevice": false,
+      "classifyRequests": 0
+    },
+    {
+      "site": "curious_hadal_zone",
+      "expectSilence": false,
+      "requests": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:43527/d/fallback/curious",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 0,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": null,
+          "bodyKeys": null
+        },
+        {
+          "method": "POST",
+          "url": "http://127.0.0.1:43527/d/generate",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 997,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": true,
+          "bodyKeys": [
+            "duration_seconds",
+            "mood",
+            "energy",
+            "bpm",
+            "key",
+            "style",
+            "content_category",
+            "arousal",
+            "valence",
+            "instruments",
+            "timbre",
+            "reverb",
+            "ambience",
+            "tempo",
+            "dynamics",
+            "listening_context",
+            "time_of_day",
+            "atmosphere_tags",
+            "sensitive_override",
+            "prompt"
+          ]
+        }
+      ],
+      "escalatedOffDevice": false,
+      "classifyRequests": 0
+    },
+    {
+      "site": "tense_border_standoff",
+      "expectSilence": false,
+      "requests": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:43527/d/fallback/tense",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 0,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": null,
+          "bodyKeys": null
+        },
+        {
+          "method": "POST",
+          "url": "http://127.0.0.1:43527/d/generate",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 952,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": true,
+          "bodyKeys": [
+            "duration_seconds",
+            "mood",
+            "energy",
+            "bpm",
+            "key",
+            "style",
+            "content_category",
+            "arousal",
+            "valence",
+            "instruments",
+            "timbre",
+            "reverb",
+            "ambience",
+            "tempo",
+            "dynamics",
+            "listening_context",
+            "time_of_day",
+            "atmosphere_tags",
+            "sensitive_override",
+            "prompt"
+          ]
+        }
+      ],
+      "escalatedOffDevice": false,
+      "classifyRequests": 0
+    },
+    {
+      "site": "uplifting_town_rebuilds",
+      "expectSilence": false,
+      "requests": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:43527/d/fallback/uplifting",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 0,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": null,
+          "bodyKeys": null
+        },
+        {
+          "method": "POST",
+          "url": "http://127.0.0.1:43527/d/generate",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 958,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": true,
+          "bodyKeys": [
+            "duration_seconds",
+            "mood",
+            "energy",
+            "bpm",
+            "key",
+            "style",
+            "content_category",
+            "arousal",
+            "valence",
+            "instruments",
+            "timbre",
+            "reverb",
+            "ambience",
+            "tempo",
+            "dynamics",
+            "listening_context",
+            "time_of_day",
+            "atmosphere_tags",
+            "sensitive_override",
+            "prompt"
+          ]
+        }
+      ],
+      "escalatedOffDevice": false,
+      "classifyRequests": 0
+    },
+    {
+      "site": "neutral_recycling_notice",
+      "expectSilence": false,
+      "requests": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:43527/d/fallback/neutral",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 0,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": null,
+          "bodyKeys": null
+        },
+        {
+          "method": "POST",
+          "url": "http://127.0.0.1:43527/d/generate",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 847,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": true,
+          "bodyKeys": [
+            "duration_seconds",
+            "mood",
+            "energy",
+            "bpm",
+            "key",
+            "style",
+            "content_category",
+            "arousal",
+            "valence",
+            "instruments",
+            "timbre",
+            "reverb",
+            "ambience",
+            "tempo",
+            "dynamics",
+            "listening_context",
+            "time_of_day",
+            "atmosphere_tags",
+            "sensitive_override",
+            "prompt"
+          ]
+        }
+      ],
+      "escalatedOffDevice": false,
+      "classifyRequests": 0
+    },
+    {
+      "site": "sensitive_crisis_support",
+      "expectSilence": true,
+      "requests": [],
+      "escalatedOffDevice": false,
+      "classifyRequests": 0
+    },
+    {
+      "site": "calm_forest_bathing",
+      "expectSilence": false,
+      "requests": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:43527/d/fallback/calm",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 0,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": null,
+          "bodyKeys": null
+        },
+        {
+          "method": "POST",
+          "url": "http://127.0.0.1:43527/d/generate",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 874,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": true,
+          "bodyKeys": [
+            "duration_seconds",
+            "mood",
+            "energy",
+            "bpm",
+            "key",
+            "style",
+            "content_category",
+            "arousal",
+            "valence",
+            "instruments",
+            "timbre",
+            "reverb",
+            "ambience",
+            "tempo",
+            "dynamics",
+            "listening_context",
+            "time_of_day",
+            "atmosphere_tags",
+            "sensitive_override",
+            "prompt"
+          ]
+        }
+      ],
+      "escalatedOffDevice": false,
+      "classifyRequests": 0
+    },
+    {
+      "site": "focused_deep_work",
+      "expectSilence": false,
+      "requests": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:43527/d/fallback/focused",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 0,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": null,
+          "bodyKeys": null
+        },
+        {
+          "method": "POST",
+          "url": "http://127.0.0.1:43527/d/generate",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 948,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": true,
+          "bodyKeys": [
+            "duration_seconds",
+            "mood",
+            "energy",
+            "bpm",
+            "key",
+            "style",
+            "content_category",
+            "arousal",
+            "valence",
+            "instruments",
+            "timbre",
+            "reverb",
+            "ambience",
+            "tempo",
+            "dynamics",
+            "listening_context",
+            "time_of_day",
+            "atmosphere_tags",
+            "sensitive_override",
+            "prompt"
+          ]
+        }
+      ],
+      "escalatedOffDevice": false,
+      "classifyRequests": 0
+    },
+    {
+      "site": "joyful_festival_recap",
+      "expectSilence": false,
+      "requests": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:43527/d/fallback/joyful",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 0,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": null,
+          "bodyKeys": null
+        },
+        {
+          "method": "POST",
+          "url": "http://127.0.0.1:43527/d/generate",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 892,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": true,
+          "bodyKeys": [
+            "duration_seconds",
+            "mood",
+            "energy",
+            "bpm",
+            "key",
+            "style",
+            "content_category",
+            "arousal",
+            "valence",
+            "instruments",
+            "timbre",
+            "reverb",
+            "ambience",
+            "tempo",
+            "dynamics",
+            "listening_context",
+            "time_of_day",
+            "atmosphere_tags",
+            "sensitive_override",
+            "prompt"
+          ]
+        }
+      ],
+      "escalatedOffDevice": false,
+      "classifyRequests": 0
+    },
+    {
+      "site": "energetic_hiit_circuit",
+      "expectSilence": false,
+      "requests": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:43527/d/fallback/energetic",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 0,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": null,
+          "bodyKeys": null
+        },
+        {
+          "method": "POST",
+          "url": "http://127.0.0.1:43527/d/generate",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 881,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": true,
+          "bodyKeys": [
+            "duration_seconds",
+            "mood",
+            "energy",
+            "bpm",
+            "key",
+            "style",
+            "content_category",
+            "arousal",
+            "valence",
+            "instruments",
+            "timbre",
+            "reverb",
+            "ambience",
+            "tempo",
+            "dynamics",
+            "listening_context",
+            "time_of_day",
+            "atmosphere_tags",
+            "sensitive_override",
+            "prompt"
+          ]
+        }
+      ],
+      "escalatedOffDevice": false,
+      "classifyRequests": 0
+    },
+    {
+      "site": "sad_in_memoriam",
+      "expectSilence": false,
+      "requests": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:43527/d/fallback/sad",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 0,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": null,
+          "bodyKeys": null
+        },
+        {
+          "method": "POST",
+          "url": "http://127.0.0.1:43527/d/generate",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 943,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": true,
+          "bodyKeys": [
+            "duration_seconds",
+            "mood",
+            "energy",
+            "bpm",
+            "key",
+            "style",
+            "content_category",
+            "arousal",
+            "valence",
+            "instruments",
+            "timbre",
+            "reverb",
+            "ambience",
+            "tempo",
+            "dynamics",
+            "listening_context",
+            "time_of_day",
+            "atmosphere_tags",
+            "sensitive_override",
+            "prompt"
+          ]
+        }
+      ],
+      "escalatedOffDevice": false,
+      "classifyRequests": 0
+    },
+    {
+      "site": "dark_slasher_retrospective",
+      "expectSilence": false,
+      "requests": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:43527/d/fallback/dark",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 0,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": null,
+          "bodyKeys": null
+        },
+        {
+          "method": "POST",
+          "url": "http://127.0.0.1:43527/d/generate",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 965,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": true,
+          "bodyKeys": [
+            "duration_seconds",
+            "mood",
+            "energy",
+            "bpm",
+            "key",
+            "style",
+            "content_category",
+            "arousal",
+            "valence",
+            "instruments",
+            "timbre",
+            "reverb",
+            "ambience",
+            "tempo",
+            "dynamics",
+            "listening_context",
+            "time_of_day",
+            "atmosphere_tags",
+            "sensitive_override",
+            "prompt"
+          ]
+        }
+      ],
+      "escalatedOffDevice": false,
+      "classifyRequests": 0
+    },
+    {
+      "site": "nostalgic_arcade",
+      "expectSilence": false,
+      "requests": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:43527/d/fallback/nostalgic",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 0,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": null,
+          "bodyKeys": null
+        },
+        {
+          "method": "POST",
+          "url": "http://127.0.0.1:43527/d/generate",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 944,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": true,
+          "bodyKeys": [
+            "duration_seconds",
+            "mood",
+            "energy",
+            "bpm",
+            "key",
+            "style",
+            "content_category",
+            "arousal",
+            "valence",
+            "instruments",
+            "timbre",
+            "reverb",
+            "ambience",
+            "tempo",
+            "dynamics",
+            "listening_context",
+            "time_of_day",
+            "atmosphere_tags",
+            "sensitive_override",
+            "prompt"
+          ]
+        }
+      ],
+      "escalatedOffDevice": false,
+      "classifyRequests": 0
+    },
+    {
+      "site": "curious_hadal_zone",
+      "expectSilence": false,
+      "requests": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:43527/d/fallback/curious",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 0,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": null,
+          "bodyKeys": null
+        },
+        {
+          "method": "POST",
+          "url": "http://127.0.0.1:43527/d/generate",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 997,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": true,
+          "bodyKeys": [
+            "duration_seconds",
+            "mood",
+            "energy",
+            "bpm",
+            "key",
+            "style",
+            "content_category",
+            "arousal",
+            "valence",
+            "instruments",
+            "timbre",
+            "reverb",
+            "ambience",
+            "tempo",
+            "dynamics",
+            "listening_context",
+            "time_of_day",
+            "atmosphere_tags",
+            "sensitive_override",
+            "prompt"
+          ]
+        }
+      ],
+      "escalatedOffDevice": false,
+      "classifyRequests": 0
+    },
+    {
+      "site": "tense_border_standoff",
+      "expectSilence": false,
+      "requests": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:43527/d/fallback/tense",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 0,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": null,
+          "bodyKeys": null
+        },
+        {
+          "method": "POST",
+          "url": "http://127.0.0.1:43527/d/generate",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 952,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": true,
+          "bodyKeys": [
+            "duration_seconds",
+            "mood",
+            "energy",
+            "bpm",
+            "key",
+            "style",
+            "content_category",
+            "arousal",
+            "valence",
+            "instruments",
+            "timbre",
+            "reverb",
+            "ambience",
+            "tempo",
+            "dynamics",
+            "listening_context",
+            "time_of_day",
+            "atmosphere_tags",
+            "sensitive_override",
+            "prompt"
+          ]
+        }
+      ],
+      "escalatedOffDevice": false,
+      "classifyRequests": 0
+    },
+    {
+      "site": "uplifting_town_rebuilds",
+      "expectSilence": false,
+      "requests": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:43527/d/fallback/uplifting",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 0,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": null,
+          "bodyKeys": null
+        },
+        {
+          "method": "POST",
+          "url": "http://127.0.0.1:43527/d/generate",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 958,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": true,
+          "bodyKeys": [
+            "duration_seconds",
+            "mood",
+            "energy",
+            "bpm",
+            "key",
+            "style",
+            "content_category",
+            "arousal",
+            "valence",
+            "instruments",
+            "timbre",
+            "reverb",
+            "ambience",
+            "tempo",
+            "dynamics",
+            "listening_context",
+            "time_of_day",
+            "atmosphere_tags",
+            "sensitive_override",
+            "prompt"
+          ]
+        }
+      ],
+      "escalatedOffDevice": false,
+      "classifyRequests": 0
+    },
+    {
+      "site": "neutral_recycling_notice",
+      "expectSilence": false,
+      "requests": [
+        {
+          "method": "GET",
+          "url": "http://127.0.0.1:43527/d/fallback/neutral",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 0,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": null,
+          "bodyKeys": null
+        },
+        {
+          "method": "POST",
+          "url": "http://127.0.0.1:43527/d/generate",
+          "destination": "feature-d",
+          "origin": "service-worker",
+          "bodyBytes": 847,
+          "carriesPageText": false,
+          "carriesTelemetry": false,
+          "profileOnly": true,
+          "bodyKeys": [
+            "duration_seconds",
+            "mood",
+            "energy",
+            "bpm",
+            "key",
+            "style",
+            "content_category",
+            "arousal",
+            "valence",
+            "instruments",
+            "timbre",
+            "reverb",
+            "ambience",
+            "tempo",
+            "dynamics",
+            "listening_context",
+            "time_of_day",
+            "atmosphere_tags",
+            "sensitive_override",
+            "prompt"
+          ]
+        }
+      ],
+      "escalatedOffDevice": false,
+      "classifyRequests": 0
+    },
+    {
+      "site": "sensitive_crisis_support",
+      "expectSilence": true,
+      "requests": [],
+      "escalatedOffDevice": false,
+      "classifyRequests": 0
+    }
+  ]
+}

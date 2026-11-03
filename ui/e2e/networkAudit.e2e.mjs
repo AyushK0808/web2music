@@ -61,7 +61,7 @@ const HEADED = args.includes("--headed");
 const PROFILE_KEYS = new Set([
   "mood", "bpm", "key", "energy", "style", "content_category", "valence", "arousal", "intensity",
   "reverb", "ambience", "timbre", "instruments", "dynamics", "atmosphere_tags", "listening_context",
-  "time_of_day", "sensitive_override", "nonce", "seed_override", "duration_seconds", "prompt",
+  "time_of_day", "sensitive_override", "nonce", "seed_override", "duration_seconds", "prompt", "tempo",
 ]);
 const TELEMETRY_MARKERS = ["w2mTelemetry", "urlHash", "sessionId", "A_extract", "B_decision"];
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -241,9 +241,14 @@ async function main() {
     if (!worker) throw new Error("extension service worker never started");
     await worker.evaluate(async (backendUrl) => { await chrome.storage.local.set({ backendUrl, masterEnabled: true }); },
       D_URL ? D_URL.replace(/\/$/, "") : `${server.baseUrl}/d`);
-    // No setup needed for the cascade: since C-1 the on-device zero-shot middle
-    // stage is the shipped default. A6 vs A6b differs only in whether the LLM
-    // tier is reachable (classify proxy stubbed at 503, or the real one).
+    // Since C-1 the on-device zero-shot middle stage is the shipped default. A6 is the configuration
+    // with the LLM stage switched off (llmEnabled: false): the extension then makes no LLM request
+    // at all, which is what the "no page text leaves the device" check needs. A6b leaves it on and
+    // points it at the real classify proxy.
+    if (!REAL_CLASSIFY) {
+      await worker.evaluate(async () => { await chrome.storage.sync.set({ llmEnabled: false }); });
+      await sleep(500);
+    }
 
     for (let i = 0; i < REPEATS; i++) {
       for (const site of sites) {

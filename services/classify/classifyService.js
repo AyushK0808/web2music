@@ -47,6 +47,9 @@
  *   GROQ_API_KEY   (required for /v1/chat/completions) — injected by docker compose from .env
  *   HF_API_TOKEN   (required for /v1/zero-shot)        — HuggingFace read token
  *   ZERO_SHOT_MODEL (optional) — defaults to facebook/bart-large-mnli
+ *   LLM_BASE_URL   (optional) — OpenAI-compatible base URL to forward chat requests to instead of
+ *                  Groq, e.g. http://127.0.0.1:11435/v1 for a local Ollama; no key is then needed
+ *   LLM_MODEL      (optional) — model name sent to LLM_BASE_URL in place of the client's
  *   PORT           (optional) — listen port, defaults to 8078
  *
  * No npm dependencies: uses Node 18+ built-in global fetch and the http module.
@@ -59,6 +62,8 @@ const http = require('http');
 const PORT = parseInt(process.env.PORT, 10) || 8078;
 const API_KEY = process.env.GROQ_API_KEY || '';
 const HF_TOKEN = process.env.HF_API_TOKEN || '';
+const LLM_BASE_URL = (process.env.LLM_BASE_URL || '').replace(/\/+$/, '');
+const LLM_MODEL = process.env.LLM_MODEL || '';
 const ZERO_SHOT_MODEL = process.env.ZERO_SHOT_MODEL || 'facebook/bart-large-mnli';
 
 /**
@@ -99,6 +104,19 @@ function readBody(req) {
 // with the real key attached server-side, and returns the raw status + body
 // text so the caller can relay it byte-for-byte without reinterpreting it.
 async function forwardToGroq(rawBody) {
+  if (LLM_BASE_URL) {
+    // local back end: swap in the local model and drop fields only hosted reasoning models accept
+    let body = {};
+    try { body = JSON.parse(rawBody); } catch { /* forwarded unchanged below */ }
+    if (LLM_MODEL) body.model = LLM_MODEL;
+    delete body.reasoning_effort;
+    const resp = await fetch(`${LLM_BASE_URL}/chat/completions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    return { status: resp.status, text: await resp.text() };
+  }
   if (!API_KEY) {
     const err = new Error('GROQ_API_KEY not configured in the container environment.');
     err.status = 500;

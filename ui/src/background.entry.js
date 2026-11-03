@@ -132,10 +132,16 @@ async function classifyZeroShotViaOffscreen(request) {
   return res;
 }
 
-chrome.storage.sync.get(
-  ["llmApiKey", "llmBackend", "llmServiceUrl", "targetModel", "zeroShotEnabled", "zeroShotBackend", "zeroShotModel"],
-  (settings) => {
-    const usingProxy = settings.llmBackend === "proxy" || !settings.llmApiKey;
+const FEATURE_B_SETTING_KEYS =
+  ["llmApiKey", "llmBackend", "llmServiceUrl", "llmEnabled", "targetModel", "zeroShotEnabled", "zeroShotBackend", "zeroShotModel"];
+
+function applyFeatureBSettings(settings) {
+  {
+    // llmEnabled: false is the A6 configuration (keywords, then the on-device zero-shot model, no LLM
+    // stage): no request is made to any LLM or proxy URL, so no page text can leave the device. An empty
+    // key on the direct backend is how Feature B represents "no LLM configured".
+    const llmDisabled = settings.llmEnabled === false;
+    const usingProxy = !llmDisabled && (settings.llmBackend === "proxy" || !settings.llmApiKey);
     const classifyBase = (settings.llmServiceUrl || "http://localhost:8078/v1/chat/completions").replace(/\/v1\/.*/, "");
     // "proxy" runs the full facebook/bart-large-mnli server-side (the
     // classify container holds the HF token); "local" runs a distilled MNLI
@@ -154,7 +160,9 @@ chrome.storage.sync.get(
     };
 
     configureFeatureB({
-      apiKey: usingProxy
+      apiKey: llmDisabled
+        ? { backend: "direct", apiKey: "" }
+        : usingProxy
         ? { backend: "proxy", serviceUrl: settings.llmServiceUrl || "http://localhost:8078/v1/chat/completions" }
         : settings.llmApiKey,
       targetModel: settings.targetModel ?? "musicgen",
@@ -162,13 +170,20 @@ chrome.storage.sync.get(
     });
     // Never log the key itself — only which path was taken.
     log.info("Feature B configured:", {
-      backend: usingProxy ? "proxy" : "direct-key",
+      backend: llmDisabled ? "disabled" : usingProxy ? "proxy" : "direct-key",
       serviceUrl: usingProxy ? (settings.llmServiceUrl || "http://localhost:8078/v1/chat/completions") : undefined,
       targetModel: settings.targetModel ?? "musicgen",
       zeroShot: zeroShot.enabled ? { backend: zeroShot.backend, model: zeroShot.model ?? "(default)" } : "disabled",
     });
   }
-);
+}
+
+chrome.storage.sync.get(FEATURE_B_SETTING_KEYS, applyFeatureBSettings);
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === "sync" && FEATURE_B_SETTING_KEYS.some((k) => k in changes)) {
+    chrome.storage.sync.get(FEATURE_B_SETTING_KEYS, applyFeatureBSettings);
+  }
+});
 
 registerFeatureBHeartbeat();
 

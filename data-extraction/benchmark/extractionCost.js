@@ -111,6 +111,7 @@ function parseArgs(argv) {
     settleMs: 1500,
     headful: false,
     realEmbedding: false,
+    warmEmbedding: false,
   };
   for (let i = 2; i < argv.length; i++) {
     const arg = argv[i];
@@ -127,6 +128,7 @@ function parseArgs(argv) {
       case '--settle':          args.settleMs = parseInt(next(), 10); break;
       case '--headful':         args.headful = true; break;
       case '--real-embedding':  args.realEmbedding = true; break;
+      case '--warm-embedding':  args.warmEmbedding = true; args.realEmbedding = true; break;
       case '--help': case '-h':
         console.log(fs.readFileSync(__filename, 'utf8').split('*/')[0]);
         process.exit(0);
@@ -174,6 +176,48 @@ function summarise(values) {
 const fmt = (v, digits = 1) =>
   (typeof v === 'number' && Number.isFinite(v)) ? v.toFixed(digits) : '—';
 
+/* ── Model cache for --warm-embedding ─────────────────────────────────────── */
+
+// The extension loads the embedding model once, in its offscreen document, and
+// then only runs inference per page. A fresh benchmark page has no such document,
+// so --warm-embedding (a) serves the model files from a local disk cache instead
+// of re-downloading ~23 MB from the Hub into every site, and (b) builds the
+// pipeline and runs one inference before buildPageData() is timed. The embedding
+// stage then measures per-page inference, which is what a user pays.
+const MODEL_CACHE_DIR = path.join(__dirname, '.hf-cache');
+const MODEL_HOST = /(^|\.)(huggingface\.co|hf\.co)$|cdn-lfs/;
+
+async function installModelCache(page) {
+  fs.mkdirSync(MODEL_CACHE_DIR, { recursive: true });
+  await page.setRequestInterception(true);
+  page.on('request', async (req) => {
+    let host = '';
+    try { host = new URL(req.url()).hostname; } catch { /* not a URL we can parse */ }
+    if (!MODEL_HOST.test(host) || req.method() !== 'GET') return req.continue();
+    const key = require('crypto').createHash('sha256').update(req.url()).digest('hex');
+    const bodyPath = path.join(MODEL_CACHE_DIR, key);
+    const metaPath = `${bodyPath}.json`;
+    try {
+      if (!fs.existsSync(bodyPath)) {
+        const resp = await fetch(req.url(), { redirect: 'follow' });
+        if (!resp.ok) {
+          return req.respond({ status: resp.status, headers: { 'access-control-allow-origin': '*' }, body: '' });
+        }
+        fs.writeFileSync(bodyPath, Buffer.from(await resp.arrayBuffer()));
+        fs.writeFileSync(metaPath, JSON.stringify({ type: resp.headers.get('content-type') || 'application/octet-stream' }));
+      }
+      const meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
+      return req.respond({
+        status: 200,
+        headers: { 'content-type': meta.type, 'access-control-allow-origin': '*' },
+        body: fs.readFileSync(bodyPath),
+      });
+    } catch (err) {
+      return req.abort();
+    }
+  });
+}
+
 /* ── Per-site measurement ─────────────────────────────────────────────────── */
 
 async function measureSite(browser, url, moduleSources, args) {
@@ -219,6 +263,8 @@ async function measureSite(browser, url, moduleSources, args) {
   });
 
   try {
+    if (args.realEmbedding) await page.setBypassCSP(true);   // page CSP would block the model fetch from an injected script
+    if (args.warmEmbedding) await installModelCache(page);
     await page.setViewport({ width: 1280, height: 800 });
     // A realistic UA: some sites serve a stripped no-JS/blocked page to
     // HeadlessChrome, which would make extraction look artificially cheap.
@@ -289,6 +335,13 @@ async function measureSite(browser, url, moduleSources, args) {
       const pipelineReady = await page.evaluate(() => typeof window.transformersPipeline === 'function');
       if (!pipelineReady) {
         throw new Error('--real-embedding bundle loaded but window.transformersPipeline was not defined afterward.');
+      }
+      if (args.warmEmbedding) {
+        await page.evaluate(async () => {
+          const extractor = await window.transformersPipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
+          await extractor('warm up the inference session', { pooling: 'mean', normalize: true });
+          window.transformersPipeline = async () => extractor;      // Embeddingmodel.js gets the warm instance
+        });
       }
     }
 
@@ -545,7 +598,7 @@ async function main() {
         generatedAt: new Date().toISOString(),
         config: {
           sites: args.sites, limit: args.limit, settleMs: args.settleMs,
-          navTimeoutMs: args.navTimeoutMs, embedding: args.realEmbedding ? 'real' : 'stubbed',
+          navTimeoutMs: args.navTimeoutMs, embedding: args.warmEmbedding ? 'real-warm' : (args.realEmbedding ? 'real' : 'stubbed'),
         },
         results,
       }, null, 2));

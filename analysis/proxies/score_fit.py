@@ -55,9 +55,11 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import os
 import random
 import statistics
 import sys
+import time
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
@@ -383,7 +385,8 @@ def cmd_extract(args):
         import subprocess
         for stage in ("essentia", "clap"):
             print(f"[score_fit] extract stage: {stage}", flush=True)
-            rc = subprocess.call([sys.executable, str(Path(__file__).resolve()), *sys.argv[1:], "--stage", stage])
+            rc = subprocess.call([sys.executable, str(Path(__file__).resolve()), *sys.argv[1:], "--stage", stage],
+                            env={**os.environ, "TF_CPP_MIN_LOG_LEVEL": "3"})      # TF logs device init on every clip
             if rc != 0:
                 print(f"[score_fit] stage {stage} failed (exit {rc})", file=sys.stderr)
                 return rc
@@ -400,13 +403,28 @@ def cmd_extract(args):
         out_path.parent.mkdir(parents=True, exist_ok=True)
         out_path.write_text(json.dumps(cache), encoding="utf-8")
 
-    def do_dir(label, clips_dir):
-        nonlocal done
-        for p in sorted(Path(clips_dir).glob("*.ogg")):
+    dirs = [("matched", REPO / args.clips_dir)]
+    if args.fixed_clips_dir:
+        dirs.append(("fixed", REPO / args.fixed_clips_dir))
+    if args.fallback_dir:
+        dirs.append(("fallback", REPO / args.fallback_dir))
+    for spec in args.extra_clips or []:
+        name, _, d = spec.partition("=")
+        dirs.append((f"gen:{name}", REPO / d))
+    if args.fad_reference:
+        dirs.append(("fad-reference", REPO / args.fad_reference))
+
+    def pending(label, d):
+        return [p for p in sorted(Path(d).glob("*.ogg"))
+                if marker not in (cache["clips"].get(f"{label}/{p.name}") or {})]
+
+    total = sum(len(pending(l, d)) for l, d in dirs)
+    print(f"[{args.stage}] {total} clip(s) to process", flush=True)
+    t0 = time.time()
+    for label, d in dirs:
+        for p in pending(label, d):
             key = f"{label}/{p.name}"
             entry = cache["clips"].get(key) or {}
-            if marker in entry:
-                continue
             try:
                 entry.update(ex.clip_features(p))
                 if str(entry.get("error", "")).startswith(f"{args.stage}:"):
@@ -415,20 +433,12 @@ def cmd_extract(args):
                 entry["error"] = f"{args.stage}: {type(e).__name__}: {e}"
             cache["clips"][key] = entry
             done += 1
-            if done % 25 == 0:
+            if done % 10 == 0 or done == total:
                 save()
-                print(f"  {args.stage}: {done} clips this run", flush=True)
-
-    do_dir("matched", REPO / args.clips_dir)
-    if args.fixed_clips_dir:
-        do_dir("fixed", REPO / args.fixed_clips_dir)
-    if args.fallback_dir:
-        do_dir("fallback", REPO / args.fallback_dir)
-    for spec in args.extra_clips or []:
-        name, _, d = spec.partition("=")
-        do_dir(f"gen:{name}", REPO / d)
-    if args.fad_reference:
-        do_dir("fad-reference", REPO / args.fad_reference)
+                rate = done / max(1e-9, time.time() - t0)
+                eta = (total - done) / rate / 60
+                print(f"  [{args.stage}] {done}/{total} ({100 * done // max(1, total)}%)  {label}  "
+                      f"{rate:.2f} clips/s  ETA {eta:.0f} min", flush=True)
 
     if args.stage == "clap":
         todo = [p for p in profiles if p["id"] not in cache["texts"]]
