@@ -316,8 +316,14 @@ any other case it abstains and the page moves to the next stage
 \cite{agreement}. The defaults are $\tau = 0.45$ and $\delta = 0.10$. The stage
 has two interchangeable back ends: an online hosted bart-large-mnli endpoint, and a
 quantised ONNX nli-deberta-v3-xsmall model that runs in the offscreen
-document without sending any data. \textbf{LLM stage:} the gpt-oss-20b model
-running on Groq is used, with the temperature set to 0. An eight-second
+document without sending any data. In the ablations the hosted back end is replaced by
+the same bart-large-mnli weights run locally at full precision (fp32 ONNX in
+transformers.js, no data leaves the device); the 8-bit quantised export of that model
+returned near-uniform scores and was not used, and the deployed offscreen model remains the
+quantised deberta-v3-xsmall. \textbf{LLM stage:} the gpt-oss-20b model
+running on Groq is used, with the temperature set to 0. A second, fully local configuration
+uses Qwen2.5-7B-Instruct (4-bit, served by Ollama) in the same role; it builds the page
+profiles for the fidelity study and is reported separately from the Groq results. An eight-second
 timeout limit is implemented; in case of timeout, the decision would be made
 on the basis of keywords. The chosen mood will stay the same for five seconds
 in the confidence period before the musical transition to avoid the
@@ -560,7 +566,7 @@ both shape about a tenth of mood decisions, which, with no reliable mood
 ground truth (\S\ref{sec:res-agreement}), shows influence, not benefit.
 
 \begin{table}[t]
-\caption{Latency by request path. CPU-only timeouts are censored (reported as $>$300\,s, $k$ of $n$).}
+\caption{Latency by request path (wall-clock time at the client; the CPU rows are the same machine with the GPU disabled).}
 \label{tab:latency}
 \begin{center}
 \scriptsize
@@ -572,8 +578,8 @@ ground truth (\S\ref{sec:res-agreement}), shows influence, not benefit.
 Fallback clip served                    & CPU & 33  & 7\,ms     & 153\,ms \\
 Cache hit, end to end                   & CPU & 93  & 2.09\,s   & 2.11\,s \\
 Cache check, pooled connection          & M4  & 30  & 8\,ms     & 41\,ms \\
-Cold generation, 10--20\,s clip         & CPU & 3   & 139\,s    & -- \\
-Cold generation, 28\,s clip             & CPU & 12  & $>$300\,s & -- \\
+Cold generation, 10\,s clip             & CPU & 12  & 38.5\,s   & 39.5\,s \\
+Cold generation, 15\,s clip             & CPU & 12  & 62.2\,s   & 63.6\,s \\
 Cold generation, 28\,s clip, one mood   & M4  & 30  & 72.1\,s   & 105.9\,s \\
 Cold generation, 28\,s clip, 11 moods   & M4  & 110 & 72.2\,s   & 119.4\,s \\
 Cold generation, 28\,s clip             & GPU & 33  & 24.3\,s   & 25.0\,s \\
@@ -636,20 +642,20 @@ can take. The fallback clip is served in 7\,ms, so the audible start is never
 delayed by the generation process. On the Apple M4, all 140 cold generations
 of 28 seconds complete, with a median of 72 seconds and a real-time factor (RTF, generation seconds per second of audio) of
 1.8--2.3 across durations; the generation process itself takes up 71.5
-seconds of that median, and every other stage takes under a second. The CPU
-laptop is approximately four times slower (real-time factor 8.2--10.1): its
-three completed cold generations took a median of 139 seconds, and 12 out of
-144 requests, all cold 28-second misses queued one after another on a single
-worker, exceeded the 300-second client timeout; the fallback clip played the
-whole time. Cache hits on the CPU laptop took 2.09 seconds, almost all of it
+seconds of that median, and every other stage takes under a second. With the GPU disabled, the same machine generates a 10\,s clip in a median of 38.5\,s
+and a 15\,s clip in 62.2\,s (real-time factor 3.9--4.2; 12 requests per length spread
+over three moods, none timed out), so the fallback clip plays for a minute or more
+while a cold clip is generated. Cache hits on the CPU laptop took 2.09 seconds, almost all of it
 spent in the cache lookup, and using pooled Postgres connections lowers that
 lookup to 8\,ms. On the RTX 5060 a cold 15\,s clip takes a median of
 13.3\,s and a 28\,s clip 24.3\,s
-(real-time factor 0.83--0.85 across 8--28\,s clips; 33 cold requests per length, spread over all 11 moods, none failed or fell back), measured end to end with the real
+(real-time factor 0.87--0.91 end to end across 8--28\,s clips, of which the generator call alone is 0.83--0.85; 33 cold requests per length, spread over all 11 moods, none failed or fell back), measured end to end with the real
 classifier, embedding model and generator over \tbd{S-A: n} page loads per
 setup, so the figures in the abstract no longer rest on stubbed components.
-On a CPU-only machine generated audio rarely arrives within a visit, so the
-system behaves as a mood-level player with cache hits (Section~\ref{sec:res-exposure}).
+Concurrent requests do not raise throughput: $k = 2$, 4 and 8 simultaneous 15\,s requests finish in 28.3, 54.8 and 111.3\,s, within 1--2\% of running the same requests one after another (speedup 1.02, 1.01 and 1.01$	imes$; five repeats per level, rotating moods, none failed), so the worker's batching brings no gain on this GPU and the queueing delay grows linearly with $k$.
+On the CPU-only configuration a cold 15\,s clip takes about a minute, so generated audio
+arrives only in longer visits, and for most visits the system behaves as a mood-level
+player with cache hits (Section~\ref{sec:res-exposure}).
 
 \begin{figure}[t]
 \centerline{\includegraphics[width=\columnwidth]{figures/coldgen.pdf}}
@@ -687,12 +693,17 @@ fitted to the corpus mood frequencies; dwell times are Weibull-distributed
 long-form pages; generation times are drawn from the measured distributions of
 each tier and clip length, with timeouts treated as censored; there is one
 worker, generation is cancelled when the next page needs a different clip, and the
-99-entry pre-warm grid and earlier generations fill the cache. L2 is a cache hit
-and L3 a fresh generation that finishes before the visit ends.
+99-entry pre-warm grid and L3 a fresh generation that finishes before the visit ends. Cache entries are keyed on
+the exact profile (mood, tempo, key, energy and the style string), and the cache starts empty
+for each simulated session. The pre-warm grid is credited only with the hit rate measured on
+real profiles: replaying the profile builder's keys for the 235 corpus pages, none falls on a
+grid key (75 distinct keys occur in all), so L2 arises only from an earlier visit to the same
+key within a session. Mood frequencies are those of the corpus (curious 36\%, focused 18\%,
+neutral 12\%, calm 2\%).
 
 \begin{table}[t]
 \caption{Simulated share of visits and of listening time at each level of
-conditioning (median dwell 30\,s), in percent; the remaining 19\% of visits end before a mood is committed. Long-form and Other columns give the L3 share of visits. Dwell and cache assumptions are in the text.}
+conditioning (cold per-session cache, measured grid hit of 0, median dwell 30\,s), in percent; the remaining 19\% of visits end before a mood is committed. Long-form and Other columns give the L3 share of visits.}
 \label{tab:exposure}
 \begin{center}
 \scriptsize
@@ -701,9 +712,10 @@ conditioning (median dwell 30\,s), in percent; the remaining 19\% of visits end 
 \toprule
 \textbf{Tier} & \textbf{Clip} & \textbf{Visits L1/L2/L3} & \textbf{Listening L3} & \textbf{Long-form L3} & \textbf{Other L3} \\
 \midrule
-GPU & 15\,s & 8/41/32 & 46\% & 38\% & 29\% \\
-GPU & 28\,s & 13/41/28 & 43\% & 36\% & 25\% \\
-M4  & 15\,s & 11/41/29 & 44\% & 36\% & 26\% \\
+GPU & 15\,s & 14/15/52 & 75\% & 62\% & 49\% \\
+GPU & 28\,s & 21/14/46 & 72\% & 59\% & 42\% \\
+CPU & 15\,s & 37/10/34 & 64\% & 50\% & 29\% \\
+M4  & 15\,s & 19/14/48 & 73\% & 61\% & 44\% \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -711,7 +723,7 @@ M4  & 15\,s & 11/41/29 & 44\% & 36\% & 26\% \\
 
 The simulation says how often generated audio \emph{could} be heard under stated
 assumptions; it is not a measurement of listeners. On the GPU, page-level audio is
-heard on 32\% of visits and accounts for 46\% of listening time at a 15\,s clip; on the M4 the figures are 29\% and 44\%, so generator speed matters less than dwell time and the confidence window. On a CPU-only machine generated audio rarely arrives within a visit (Section~\ref{sec:res-latency}), so such a user hears mood-level audio almost throughout. The share rises with dwell time (GPU, 15\,s: 22\%, 32\% and 41\% of visits at median dwell 10, 30 and 120\,s) and is higher on long-form pages (30\%, 38\% and 45\%). The M4 row rests on the three-request-per-length duration sweep, and the corpus mood frequencies were taken as uniform.
+heard on 52\% of visits and accounts for 75\% of listening time at a 15\,s clip; on the M4 the figures are 48\% and 73\%, and on the CPU 34\% and 64\%, so generator speed matters less than dwell time and the confidence window. The share rises with dwell time (GPU, 15\,s: 37\%, 52\% and 64\% of visits at median dwell 10, 30 and 120\,s) and is higher on long-form pages (52\%, 62\% and 68\%). Two bounds frame these figures. If half of the pages did hit the pre-warm grid, which we do not observe, the GPU share would fall to 29\% of visits at 30\,s, because a grid hit is served as L2. If the cache persisted across sessions, then since the corpus has only 75 distinct keys nearly every committed visit would be served from the cache after the first sessions (81\% of visits are L2 at 30\,s); this is a trivial upper bound on cache use, not an estimate of it. The M4 row rests on the three-request-per-length duration sweep.
 
 \subsection{Conditioning fidelity}
 \label{sec:res-fidelity}
@@ -719,7 +731,7 @@ heard on 32\% of visits and accounts for 46\% of listening time at a 15\,s clip;
 With no listening study, we ask a narrower, objective question: does audio
 generated for a page agree with the mood the system intended for it, more than
 audio generated for a page of a different mood does? We generate
-\tbd{S-D: n clips} clips (\tbd{S-D: n pages} pages $\times$ 3 seeds) on the GPU and
+702 clips (234 pages $\times$ 3 seeds) on the GPU and
 compare each with a \emph{shuffled} control, a clip from a page whose mood is at
 least two steps away in valence--arousal space, plus a page-agnostic fixed-prompt
 control. Four non-generative scorers are used: Essentia valence/arousal regressors
@@ -738,18 +750,27 @@ Wilcoxon and bootstrap CI).}
 \toprule
 \textbf{Measure} & \textbf{Matched} & \textbf{Matched $-$ shuffled [95\% CI]} \\
 \midrule
-Valence Spearman $\rho$ & \tbd{S-D} & -- \\
-Arousal Spearman $\rho$ & \tbd{S-D} & -- \\
-Valence--arousal distance to target & \tbd{S-D} & \tbd{S-D} \\
-Intended mood in top-5 tags & \tbd{S-D} & \tbd{S-D} \\
-CLAP page-text similarity & \tbd{S-D} & \tbd{S-D} \\
-CLAP top-1 retrieval (chance 10\%) & \tbd{S-D} & -- \\
+Valence Spearman $\rho$ & .40 & -- \\
+Arousal Spearman $\rho$ & .51 & -- \\
+Valence--arousal distance to target (closer) & -- & $+.050$ [.026, .076] \\
+Intended mood in top-5 tags & 59.9\% [56.2, 63.4] & $+7.5$ pts [1.3, 13.8] \\
+CLAP page-text similarity & -- & $+.023$ [.014, .033] \\
+CLAP top-1 retrieval (chance 10\%) & 12.5\% [10.1, 15.0] & -- \\
 \bottomrule
 \end{tabular}
 \end{center}
 \end{table}
 
-\tbd{S-D: one-sentence reading of Table~\ref{tab:fidelity}, including any null result.}
+Matched clips are closer to the intended mood than shuffled ones on all three scorers
+(paired Wilcoxon $p = .010$, $.029$ and $4\times10^{-5}$; the mixed-model intercepts,
+which also account for the three seeds per page, give $p = 2\times10^{-6}$, $.004$ and
+$3\times10^{-8}$), and valence and arousal track the intended values ($\rho = .40$ and
+$.51$, $p < 10^{-27}$). The effects are small, however. The tagger's hit rate for a
+shuffled mood is already 52\%, and CLAP retrieves a page's own clip among ten candidates
+in only 12.5\% of cases, barely above the 10\% chance, so the audio is shifted toward
+the intended mood on average but a page's clip cannot be picked out from its text.
+The matched clips score 7.03 [6.97, 7.09] on Audiobox Production Quality, against 7.33
+for the 11 shipped fallback clips and 6.95 for the fixed-prompt control (3 clips).
 These are proxies for conditioning fidelity, not for perceived fit. CLAP is trained
 on music captions, not web pages; the mapping from moods to tags is an assumption
 fixed before scoring; and agreement between a prompt and its audio shows only that
@@ -765,22 +786,31 @@ AudioLDM2-music, a latent-diffusion model, on the GPU. It shows the effect of
 scale and of a different model family, and every other stage is unchanged.
 
 \begin{table}[t]
-\caption{Generator comparison (15\,s requests, RTX 5060; paired by mood and seed).}
+\caption{Generator comparison (15\,s requests, RTX 5060; 55 clips per generator, paired by mood and seed). RTF is end to end. FAD is the Fr\'echet distance in LAION-CLAP audio space to the 11 shipped fallback clips (lower is closer); PQ is Audiobox Production Quality.}
 \label{tab:generators}
 \begin{center}
 \scriptsize
 \setlength{\tabcolsep}{3pt}
 \begin{tabular}{lccccc}
 \toprule
-\textbf{Generator} & \textbf{RTF} & \textbf{Seam $|\Delta E|$ p50} & \textbf{Retention} & \textbf{CLAP} & \textbf{Aesthetics PQ} \\
+\textbf{Generator} & \textbf{RTF} & \textbf{Seam $|\Delta E|$ p50} & \textbf{Retention p50} & \textbf{FAD (CLAP)} $\downarrow$ & \textbf{Aesthetics PQ} \\
 \midrule
-MusicGen-small  & \tbd{S-G} & \tbd{S-G} & \tbd{S-G} & \tbd{S-G} & \tbd{S-G} \\
-MusicGen-medium & \tbd{S-G} & \tbd{S-G} & \tbd{S-G} & \tbd{S-G} & \tbd{S-G} \\
-AudioLDM2-music & \tbd{S-G} & \tbd{S-G} & \tbd{S-G} & \tbd{S-G} & \tbd{S-G} \\
+MusicGen-small  & 0.89 & 0.11\,dB & .548 & 0.33 & 7.34 \\
+MusicGen-medium & 1.61 & 0.12\,dB & .536 & 0.37 & 7.47 \\
+AudioLDM2-music & 0.51 & 0.05\,dB & .602 & 0.68 & 6.87 \\
 \bottomrule
 \end{tabular}
 \end{center}
 \end{table}
+
+MusicGen-medium is the slowest (RTF 1.61, so a 15\,s clip is not ready before it
+would have finished playing) and is no better than the default: its seam differs from
+MusicGen-small's by $-0.03$\,dB [$-0.08$, $0.01$], and its PQ and FAD are within the
+small model's confidence interval or marginally worse. AudioLDM2-music is the fastest
+(RTF 0.51) with the smallest seam jump, but it sits farthest from the fallback clips in
+CLAP space (FAD 0.68) and has the lowest PQ (6.87 [6.68, 7.05]). Without a listening
+study we cannot say which timbre is preferred; the data support the default only on
+speed and seam quality.
 
 \begin{table}[t]
 \caption{Loop-seam quality by cut method.}
@@ -829,16 +859,20 @@ measured-seam selector; this table compares the levers on the 50\,ms setting the
 were measured at.
 
 Two further checks replace listener judgement. First, a fresh study of 220 clips
-(11 moods $\times$ 20 fixed seeds) compares the two rules on the shipped crossfade:
-the median $|\Delta E|$ is \tbd{S-G: chroma p50 [CI]} for chroma similarity and
-\tbd{S-G: seam p50 [CI]} for the measured seam, and the share above 1\,dB falls from
-\tbd{S-G: chroma share [CI]} to \tbd{S-G: seam share [CI]} (McNemar $p =$
-\tbd{S-G: p}). Second, the loops are \emph{gapless}: rendering each clip through the
-browser's own decoder and a looping buffer source for 10 cycles, \tbd{S-I: k/30}
+(11 moods $\times$ 20 fixed seeds) compares the two rules on the shipped crossfade.
+Of the 220, 176 are scoreable: 39 have a tail shorter than 500\,ms, too short for the
+250\,ms crossfade, and 5 have no detectable loop point. On these 176 the median
+$|\Delta E|$ is 2.08\,dB [1.69, 2.33] for chroma similarity and 0.16\,dB [0.12, 0.23]
+for the measured seam, and the share above 1\,dB falls from 72.7\% [65.9, 79.0] to
+8.5\% [4.5, 12.5] (McNemar $p = 2\times10^{-34}$; the 145 clips that fit the full
+crossfade sweep give 71.7\% and 6.2\%). Second, the loops are \emph{gapless}: rendering each clip through the
+browser's own decoder and a looping buffer source for 10 cycles, 30 of 30
 clips show no inserted silence and are sample-identical from cycle to cycle, so the
 Ogg/Opus container adds no padding at repeats. Relative to each clip's own
-variation, the seam lies within the clip's 95th percentile of interior energy
-change in \tbd{S-I: share [CI]}\% of clips. Gapless playback is shown; a seam being
+variation, the seam's spectral-centroid change lies within the clip's 95th percentile of interior
+change in 91.4\% [87.7, 95.0] of the 220 clips. The energy jump is within its 95th
+percentile in all 220, which is expected because the selector minimises that jump, so we
+do not count it as evidence. Gapless playback is shown; a seam being
 \emph{inaudible} is not claimed.
 
 \begin{figure}[t]
@@ -851,8 +885,8 @@ change in \tbd{S-I: share [CI]}\% of clips. Gapless playback is shown; a seam be
 \label{sec:res-prompt}
 
 The default prompt is an engineered description of 312 characters. On the
-Apple M4, we tested it against the bare mood word and the service's
-175-character template, keeping mood, duration and seed constant
+Apple M4, we tested it against the bare mood word (3--9 characters) and the service's
+template (about 175 characters), keeping mood, duration and seed constant
 (Table~\ref{tab:prompt}).
 
 \begin{table}[t]
@@ -864,7 +898,7 @@ Apple M4, we tested it against the bare mood word and the service's
 \toprule
 \textbf{Prompt} & \textbf{Chars} & \textbf{$|\Delta E|$} & \textbf{$|\Delta c|$} & \textbf{Retention} \\
 \midrule
-P1 bare mood word        & 5   & 3.75\,dB & 565\,Hz & .527 \\
+P1 bare mood word        & 6   & 3.75\,dB & 565\,Hz & .527 \\
 P2 service template      & 175 & 2.63\,dB & 509\,Hz & .444 \\
 P3 engineered (default)  & 312 & 4.35\,dB & 316\,Hz & .393 \\
 \bottomrule
@@ -872,17 +906,17 @@ P3 engineered (default)  & 312 & 4.35\,dB & 316\,Hz & .393 \\
 \end{center}
 \end{table}
 
-Both shorter prompts outperform the engineered one on energy seam and
-duration retention, the engineered prompt wins only on spectral-centroid
-seam, and all three take the same time to generate (18.2--18.3\,s). The
-template yields the smallest energy jump, and the mood word yields the
-longest loops. Prompt engineering therefore brings no improvement in loop
-quality here; with 15 generations per prompt and no statistical testing,
-this table is an indication rather than a ranking. A fixed-seed rerun on the GPU
-(11 moods $\times$ 5 seeds per prompt, 165 clips, paired by mood and seed) gives
-$|\Delta E|$ differences of \tbd{S-G: P3$-$P2 [CI], Wilcoxon p}, and the same seeds
-are reported with every result. Whether the engineered prompt's timbre is
-preferred is untested.
+On the M4 the two shorter prompts gave a smaller energy jump and longer loops than the
+engineered one (15 generations per prompt, no statistical testing), which is an
+indication, not a ranking. The fixed-seed rerun on the GPU (11 moods $\times$ 5 seeds
+per prompt, 165 clips, paired by mood and seed) does not reproduce a difference: the
+median seam $|\Delta E|$ is 0.14\,dB for the bare word, 0.11\,dB for the template and
+0.14\,dB for the engineered prompt, the paired difference engineered minus template is
+0.00\,dB [$-0.10$, $0.04$] (Wilcoxon $p = 0.88$), and bare minus template is $-0.05$\,dB
+[$-0.11$, $0.05$] ($p = 0.34$). All three take the same time to generate (13.2--13.3\,s
+median) and keep a median 47--55\% of the requested duration. The prompt therefore has no
+measurable effect on loop quality here, and the same seeds are reported with every result.
+Whether the engineered prompt's timbre is preferred is untested.
 
 \subsection{Restraint}
 \label{sec:res-restraint}
@@ -981,15 +1015,16 @@ and the guidelines were frozen first, but this is not independent annotation, an
 agreement between authors who share a design may overstate reliability.
 
 \textbf{Simulation assumptions.} How often generated audio is heard depends on
-dwell times and cache behaviour that we model rather than measure: the Weibull
-shape, the long-form multiplier and the share of pages whose profile is in the
-pre-warm grid. The sweep over the median dwell shows the sensitivity, not the
+dwell times that we model rather than measure: the Weibull shape and the long-form
+multiplier. The share of pages whose profile is in the pre-warm grid is measured on the
+corpus (0 of 235), but the corpus is not a sample of real browsing. The sweep over the median dwell shows the sensitivity, not the
 truth for any particular user.
 
 \textbf{Other limits.} The held-out test set is small, so macro-F1 intervals are
-about $\pm .05$ wide and smaller differences are not resolved. The LLM stage is a
-hosted model; its answers are cached for replay but its behaviour can change
-under the same model name. The hardware is one machine with one GPU, plus two
+about $\pm .05$ wide and smaller differences are not resolved. The LLM stage in the main
+configuration is a hosted model; its answers are cached for replay but its behaviour can
+change under the same model name, and the local Qwen2.5-7B configuration gives different
+answers and is not interchangeable with it. The hardware is one machine with one GPU, plus two
 CPU-class tiers. Future work includes conditioning the generator to produce
 loop-closed content, independent annotators and a listening study, and applying the
 same pipeline to other continuous contexts such as documents and code editors.
