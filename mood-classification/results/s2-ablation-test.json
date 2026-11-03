@@ -1,0 +1,740 @@
+{
+  "corpus": "/mnt/c/Users/theof/projects/personal/web2music/analysis/corpus/s2_corpus_test.json",
+  "zero_shot_backend": "local:Xenova/bart-large-mnli(fp32)",
+  "per_page": [
+    {
+      "id": "news-reuters-markets",
+      "true_category": "News",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": null,
+      "zeroShotError": null,
+      "zeroShotMs": 0,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": 0,
+      "llm": "Entertainment",
+      "llmError": null,
+      "llmMs": 5
+    },
+    {
+      "id": "edu-mdn-eventloop",
+      "true_category": "Technology",
+      "lang": "en-us",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.5555143352130694,
+        "margin": 0.48434178304438663,
+        "runnerUp": "Comedy",
+        "model": "Xenova/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2869,
+      "zeroShotLocal": {
+        "category": "Educational",
+        "score": 0.15517273556777889,
+        "margin": 0.02395435697412071,
+        "runnerUp": "Comedy",
+        "model": "Xenova/nli-deberta-v3-xsmall"
+      },
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": 490,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 7
+    },
+    {
+      "id": "food-nyt-pasta",
+      "true_category": "Food",
+      "lang": "en-us",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Food",
+        "score": 0.9337262100076723,
+        "margin": 0.9130504684149128,
+        "runnerUp": "Health",
+        "model": "Xenova/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 3502,
+      "zeroShotLocal": {
+        "category": "Food",
+        "score": 0.5260125804649098,
+        "margin": 0.4149408689936455,
+        "runnerUp": "Health",
+        "model": "Xenova/nli-deberta-v3-xsmall"
+      },
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": 362,
+      "llm": "Food",
+      "llmError": null,
+      "llmMs": 577
+    },
+    {
+      "id": "mismatch-gut-microbiome",
+      "true_category": "Health",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.25947941813672937,
+        "margin": 0.022560699797693595,
+        "runnerUp": "Sports",
+        "model": "Xenova/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2300,
+      "zeroShotLocal": {
+        "category": "Sports",
+        "score": 0.2982668390021735,
+        "margin": 0.1412212417771474,
+        "runnerUp": "Educational",
+        "model": "Xenova/nli-deberta-v3-xsmall"
+      },
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": 208,
+      "llm": "News",
+      "llmError": null,
+      "llmMs": 838
+    },
+    {
+      "id": "mismatch-vc-essay",
+      "true_category": "Business",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.8691359880640069,
+        "margin": 0.8462554298661595,
+        "runnerUp": "Comedy",
+        "model": "Xenova/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2738,
+      "zeroShotLocal": {
+        "category": "Educational",
+        "score": 0.6333915983317309,
+        "margin": 0.5780485453875415,
+        "runnerUp": "Legal",
+        "model": "Xenova/nli-deberta-v3-xsmall"
+      },
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": 391,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 1
+    },
+    {
+      "id": "noneng-lemonde-une",
+      "true_category": "News",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "News",
+        "score": 0.6525347548567164,
+        "margin": 0.5548770770089841,
+        "runnerUp": "Educational",
+        "model": "Xenova/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 4024,
+      "zeroShotLocal": {
+        "category": "News",
+        "score": 0.37707366757075533,
+        "margin": 0.13232210691846807,
+        "runnerUp": "Educational",
+        "model": "Xenova/nli-deberta-v3-xsmall"
+      },
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": 391,
+      "llm": "News",
+      "llmError": null,
+      "llmMs": 560
+    },
+    {
+      "id": "noneng-nhk-news",
+      "true_category": "News",
+      "lang": "ja",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.8870893072910959,
+        "margin": 0.8501500026853837,
+        "runnerUp": "News",
+        "model": "Xenova/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1882,
+      "zeroShotLocal": {
+        "category": "Educational",
+        "score": 0.5984007011006258,
+        "margin": 0.5060802621299807,
+        "runnerUp": "News",
+        "model": "Xenova/nli-deberta-v3-xsmall"
+      },
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": 174,
+      "llm": "News",
+      "llmError": null,
+      "llmMs": 483
+    },
+    {
+      "id": "noneng-elpais-ciencia",
+      "true_category": "Educational",
+      "lang": "es-es",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.5744141250821486,
+        "margin": 0.49424857204386496,
+        "runnerUp": "News",
+        "model": "Xenova/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 5776,
+      "zeroShotLocal": {
+        "category": "Educational",
+        "score": 0.24203325270535175,
+        "margin": 0.11690920594242363,
+        "runnerUp": "Travel",
+        "model": "Xenova/nli-deberta-v3-xsmall"
+      },
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": 504,
+      "llm": "News",
+      "llmError": null,
+      "llmMs": 475
+    },
+    {
+      "id": "mixed-recipe-memoir",
+      "true_category": "Food",
+      "lang": "en-us",
+      "isSensitive": false,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Food",
+        "score": 0.3757881461434574,
+        "margin": 0.14274208725122872,
+        "runnerUp": "Horror",
+        "model": "Xenova/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2206,
+      "zeroShotLocal": {
+        "category": "Food",
+        "score": 0.45526871771071903,
+        "margin": 0.26145185063772436,
+        "runnerUp": "Emotional",
+        "model": "Xenova/nli-deberta-v3-xsmall"
+      },
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": 219,
+      "llm": "Food",
+      "llmError": null,
+      "llmMs": 497
+    },
+    {
+      "id": "mixed-sport-politics",
+      "true_category": "Sports",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "News",
+        "score": 0.17643283706171256,
+        "margin": 0.044379656863233086,
+        "runnerUp": "Educational",
+        "model": "Xenova/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2458,
+      "zeroShotLocal": {
+        "category": "Educational",
+        "score": 0.3086703851018264,
+        "margin": 0.18853832721304886,
+        "runnerUp": "Legal",
+        "model": "Xenova/nli-deberta-v3-xsmall"
+      },
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": 231,
+      "llm": "News",
+      "llmError": null,
+      "llmMs": 507
+    },
+    {
+      "id": "sens-samaritans",
+      "true_category": "Health",
+      "lang": "en-gb",
+      "isSensitive": true,
+      "langSkipsKeyword": true,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Comedy",
+        "score": 0.13302792996815357,
+        "margin": 0.017201558637119405,
+        "runnerUp": "Educational",
+        "model": "Xenova/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2316,
+      "zeroShotLocal": {
+        "category": "Emotional",
+        "score": 0.24138079067690205,
+        "margin": 0.029552134520580364,
+        "runnerUp": "Health",
+        "model": "Xenova/nli-deberta-v3-xsmall"
+      },
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": 324,
+      "llm": "Health",
+      "llmError": null,
+      "llmMs": 1
+    },
+    {
+      "id": "sens-nhs-selfharm",
+      "true_category": "Health",
+      "lang": "en",
+      "isSensitive": true,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Health",
+        "score": 0.6231650608258567,
+        "margin": 0.4149727323297334,
+        "runnerUp": "Educational",
+        "model": "Xenova/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 1599,
+      "zeroShotLocal": {
+        "category": "Health",
+        "score": 0.23342803347340943,
+        "margin": 0.051320045235805384,
+        "runnerUp": "Educational",
+        "model": "Xenova/nli-deberta-v3-xsmall"
+      },
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": 180,
+      "llm": "Health",
+      "llmError": null,
+      "llmMs": 571
+    },
+    {
+      "id": "near-great-depression",
+      "true_category": "Educational",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.7199305183490158,
+        "margin": 0.6440052625064254,
+        "runnerUp": "Horror",
+        "model": "Xenova/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2575,
+      "zeroShotLocal": {
+        "category": "Horror",
+        "score": 0.4564875358169689,
+        "margin": 0.30287337825903593,
+        "runnerUp": "Educational",
+        "model": "Xenova/nli-deberta-v3-xsmall"
+      },
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": 340,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 0
+    },
+    {
+      "id": "near-grief-degrees",
+      "true_category": "Educational",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.5547029136345895,
+        "margin": 0.45253876750661315,
+        "runnerUp": "Horror",
+        "model": "Xenova/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2026,
+      "zeroShotLocal": {
+        "category": "Educational",
+        "score": 0.45488587322682,
+        "margin": 0.3605574022477772,
+        "runnerUp": "Horror",
+        "model": "Xenova/nli-deberta-v3-xsmall"
+      },
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": 239,
+      "llm": "Entertainment",
+      "llmError": null,
+      "llmMs": 221
+    },
+    {
+      "id": "near-eating-disorder-textbook",
+      "true_category": "Health",
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.6498340757395858,
+        "margin": 0.4357885090203907,
+        "runnerUp": "Health",
+        "model": "Xenova/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 3088,
+      "zeroShotLocal": {
+        "category": "Educational",
+        "score": 0.6533335423525932,
+        "margin": 0.5395549539674354,
+        "runnerUp": "Health",
+        "model": "Xenova/nli-deberta-v3-xsmall"
+      },
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": 396,
+      "llm": "Educational",
+      "llmError": null,
+      "llmMs": 1
+    },
+    {
+      "id": "bypass-checkout",
+      "true_category": null,
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": {
+        "category": "Educational",
+        "score": 0.3221948338730759,
+        "margin": 0.2101737752511062,
+        "runnerUp": "Comedy",
+        "model": "Xenova/bart-large-mnli"
+      },
+      "zeroShotError": null,
+      "zeroShotMs": 2504,
+      "zeroShotLocal": {
+        "category": "Educational",
+        "score": 0.22032767345120086,
+        "margin": 0.09811967329864296,
+        "runnerUp": "Horror",
+        "model": "Xenova/nli-deberta-v3-xsmall"
+      },
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": 249,
+      "llm": "News",
+      "llmError": null,
+      "llmMs": 677
+    },
+    {
+      "id": "bypass-chrome-settings",
+      "true_category": null,
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": null,
+      "zeroShotError": null,
+      "zeroShotMs": 0,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": 0,
+      "llm": "Entertainment",
+      "llmError": null,
+      "llmMs": 1
+    },
+    {
+      "id": "bypass-chrome-extensions",
+      "true_category": null,
+      "lang": "en",
+      "isSensitive": false,
+      "langSkipsKeyword": false,
+      "keyword": {
+        "primary": null,
+        "secondary": null
+      },
+      "zeroShot": null,
+      "zeroShotError": null,
+      "zeroShotMs": 0,
+      "zeroShotLocal": null,
+      "zeroShotLocalError": null,
+      "zeroShotLocalMs": 0,
+      "llm": "Entertainment",
+      "llmError": null,
+      "llmMs": 1
+    }
+  ],
+  "configs": [
+    {
+      "name": "A1 keyword-only",
+      "n": 18,
+      "n_scored": 15,
+      "accuracy": 0,
+      "macro_f1": 0,
+      "escalation": {
+        "none": 18
+      },
+      "exposure_rate": 0,
+      "zero_shot_proxy_rate": 0,
+      "zero_shot_local_rate": 0,
+      "total_offdevice_rate": 0
+    },
+    {
+      "name": "A2 zero-shot-only (ungated)",
+      "n": 18,
+      "n_scored": 15,
+      "accuracy": 0.467,
+      "macro_f1": 0.391,
+      "escalation": {
+        "none": 3,
+        "zero-shot": 15
+      },
+      "exposure_rate": 0,
+      "zero_shot_proxy_rate": 0.833,
+      "zero_shot_local_rate": 0,
+      "total_offdevice_rate": 0.833
+    },
+    {
+      "name": "A3 LLM-only",
+      "n": 18,
+      "n_scored": 15,
+      "accuracy": 0.467,
+      "macro_f1": 0.409,
+      "escalation": {
+        "llm": 18
+      },
+      "exposure_rate": 1,
+      "zero_shot_proxy_rate": 0,
+      "zero_shot_local_rate": 0,
+      "total_offdevice_rate": 1
+    },
+    {
+      "name": "A4 keyword->LLM",
+      "n": 18,
+      "n_scored": 15,
+      "accuracy": 0.333,
+      "macro_f1": 0.298,
+      "escalation": {
+        "llm": 16,
+        "skipped-sensitive": 2
+      },
+      "exposure_rate": 0.889,
+      "zero_shot_proxy_rate": 0,
+      "zero_shot_local_rate": 0,
+      "total_offdevice_rate": 0.889
+    },
+    {
+      "name": "A5 keyword->zero-shot->LLM",
+      "n": 18,
+      "n_scored": 15,
+      "accuracy": 0.4,
+      "macro_f1": 0.322,
+      "escalation": {
+        "llm": 7,
+        "zero-shot": 9,
+        "skipped-sensitive": 2
+      },
+      "exposure_rate": 0.389,
+      "zero_shot_proxy_rate": 0.5,
+      "zero_shot_local_rate": 0,
+      "total_offdevice_rate": 0.889
+    },
+    {
+      "name": "A6 keyword->local zero-shot (Xenova/nli-deberta-v3-xsmall), no LLM",
+      "n": 18,
+      "n_scored": 15,
+      "accuracy": 0.2,
+      "macro_f1": 0.184,
+      "escalation": {
+        "default": 9,
+        "zero-shot": 7,
+        "skipped-sensitive": 2
+      },
+      "exposure_rate": 0,
+      "zero_shot_proxy_rate": 0,
+      "zero_shot_local_rate": 0.389,
+      "total_offdevice_rate": 0
+    },
+    {
+      "name": "A6b keyword->local zero-shot->LLM",
+      "n": 18,
+      "n_scored": 15,
+      "accuracy": 0.267,
+      "macro_f1": 0.219,
+      "escalation": {
+        "llm": 9,
+        "zero-shot": 7,
+        "skipped-sensitive": 2
+      },
+      "exposure_rate": 0.5,
+      "zero_shot_proxy_rate": 0,
+      "zero_shot_local_rate": 0.389,
+      "total_offdevice_rate": 0.5
+    }
+  ],
+  "a7_sweep": [
+    {
+      "minScore": 0.3,
+      "minMargin": 0.05,
+      "macro_f1": 0.322,
+      "exposure_rate": 0.278,
+      "zero_shot_proxy_rate": 0.611
+    },
+    {
+      "minScore": 0.3,
+      "minMargin": 0.1,
+      "macro_f1": 0.322,
+      "exposure_rate": 0.278,
+      "zero_shot_proxy_rate": 0.611
+    },
+    {
+      "minScore": 0.3,
+      "minMargin": 0.2,
+      "macro_f1": 0.322,
+      "exposure_rate": 0.333,
+      "zero_shot_proxy_rate": 0.556
+    },
+    {
+      "minScore": 0.45,
+      "minMargin": 0.05,
+      "macro_f1": 0.322,
+      "exposure_rate": 0.389,
+      "zero_shot_proxy_rate": 0.5
+    },
+    {
+      "minScore": 0.45,
+      "minMargin": 0.1,
+      "macro_f1": 0.322,
+      "exposure_rate": 0.389,
+      "zero_shot_proxy_rate": 0.5
+    },
+    {
+      "minScore": 0.45,
+      "minMargin": 0.2,
+      "macro_f1": 0.322,
+      "exposure_rate": 0.389,
+      "zero_shot_proxy_rate": 0.5
+    },
+    {
+      "minScore": 0.6,
+      "minMargin": 0.05,
+      "macro_f1": 0.256,
+      "exposure_rate": 0.556,
+      "zero_shot_proxy_rate": 0.333
+    },
+    {
+      "minScore": 0.6,
+      "minMargin": 0.1,
+      "macro_f1": 0.256,
+      "exposure_rate": 0.556,
+      "zero_shot_proxy_rate": 0.333
+    },
+    {
+      "minScore": 0.6,
+      "minMargin": 0.2,
+      "macro_f1": 0.256,
+      "exposure_rate": 0.556,
+      "zero_shot_proxy_rate": 0.333
+    },
+    {
+      "minScore": 0.75,
+      "minMargin": 0.05,
+      "macro_f1": 0.256,
+      "exposure_rate": 0.722,
+      "zero_shot_proxy_rate": 0.167
+    },
+    {
+      "minScore": 0.75,
+      "minMargin": 0.1,
+      "macro_f1": 0.256,
+      "exposure_rate": 0.722,
+      "zero_shot_proxy_rate": 0.167
+    },
+    {
+      "minScore": 0.75,
+      "minMargin": 0.2,
+      "macro_f1": 0.256,
+      "exposure_rate": 0.722,
+      "zero_shot_proxy_rate": 0.167
+    }
+  ]
+}
