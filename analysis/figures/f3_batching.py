@@ -12,6 +12,7 @@ one its caption asks.
 from __future__ import annotations
 
 import collections
+import statistics
 
 from analysis.registry import Artefact
 from analysis.figures import _common as C
@@ -32,7 +33,16 @@ def build(ctx):
     data = ctx.load_json(ARTEFACT.inputs[0])
     m = ctx.metric("batching_speedup")
     rows = data["sections"].get("concurrency", [])
-    agg = sorted((r for r in rows if r.get("aggregate")), key=lambda r: r["level"])
+    # one row per level: a run with repeats has several aggregates per level, so take the median
+    by_level = collections.defaultdict(list)
+    for r in rows:
+        if r.get("aggregate"):
+            by_level[r["level"]].append(r)
+    agg = [{"level": k,
+            "speedup": statistics.median(x["speedup"] for x in v),
+            "concurrent_wall_ms": statistics.median(x["concurrent_wall_ms"] for x in v),
+            "sequential_wall_ms": statistics.median(x["sequential_wall_ms"] for x in v),
+            "n_repeats": len(v)} for k, v in sorted(by_level.items())]
     per_request = [r for r in rows if not r.get("aggregate")]
 
     classes = collections.Counter(r.get("cache") for r in per_request)
