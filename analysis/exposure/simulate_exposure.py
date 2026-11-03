@@ -78,7 +78,9 @@ def load_gen_times(d4_specs, gen_json):
             if r.get("error") or r.get("is_fallback"):
                 t = CENSORED  # timeouts and fallbacks are censored, not missing
             else:
-                ms = (r.get("timings") or {}).get("d3_generate_ms") or r.get("wall_ms")
+                # wall_ms is what the listener waits (generation + processing + save);
+                # the generator's own timer is only a fallback for files without it
+                ms = r.get("wall_ms") or (r.get("timings") or {}).get("d3_generate_ms")
                 if ms is None:
                     continue
                 t = ms / 1000.0
@@ -89,6 +91,17 @@ def load_gen_times(d4_specs, gen_json):
                 out.setdefault(tier, {}).setdefault(int(d), []).extend(
                     CENSORED if v is None else float(v) for v in vals)
     return out
+
+
+def load_profile_keys(path):
+    """profile_keys.py output -> (grid_hit_measured, {mood: [cache key per profile]})."""
+    if not path:
+        return None, None
+    data = json.loads(Path(path).read_text(encoding="utf-8"))
+    pool: dict = {}
+    for r in data["profiles"]:
+        pool.setdefault(r["mood"], []).append(r["key"])
+    return data.get("grid_hit_measured"), pool
 
 
 def mood_frequencies(path):
@@ -111,8 +124,15 @@ def weibull_scale(median_s, shape=WEIBULL_SHAPE):
 
 class Sim:
     def __init__(self, freqs, gen_samples, *, stickiness, grid_hit, median_dwell_s,
-                 visits_per_session=20, off_grid_keys=500, zipf_s=1.0, rng):
+                 visits_per_session=20, off_grid_keys=500, zipf_s=1.0, rng,
+                 key_pool=None, persist_cache=False):
         self.freqs, self.gen_samples = freqs, gen_samples
+        # key_pool: {mood: [cache key per real profile]}; off-grid keys are then drawn from
+        # the real profiles instead of the synthetic Zipf key space.
+        self.key_pool = key_pool
+        # persist_cache: clips generated in one session stay cached for the next (the real
+        # cache is a database, not per session). False = every session starts cold.
+        self.persist_cache, self.shared_cache = persist_cache, set()
         self.stickiness, self.grid_hit = stickiness, grid_hit
         self.median, self.n_visits = median_dwell_s, visits_per_session
         self.rng = rng
@@ -134,6 +154,8 @@ class Sim:
     def _key(self, mood):
         if self.rng.random() < self.grid_hit:
             return ("grid", mood, self.rng.randrange(9))      # one of the 9 pre-warmed buckets
+        if self.key_pool and self.key_pool.get(mood):
+            return ("prof", mood, self.rng.choice(self.key_pool[mood]))
         k = self.rng.choices(range(self.off_n), weights=self.off_w)[0]
         return ("off", mood, k)
 
@@ -142,7 +164,7 @@ class Sim:
 
     def session(self):
         """One session -> list of visit dicts {level, listen_s, dwell_s, long_form}."""
-        cache = set()                       # keys generated this session
+        cache = self.shared_cache if self.persist_cache else set()   # keys generated so far
         cached_grid = True                  # the pre-warm grid is present from the start
         visits, mood, free_at = [], None, 0.0
         t = 0.0
@@ -204,9 +226,11 @@ def aggregate(sessions):
     return out
 
 
-def run_cell(freqs, gen_samples, *, stickiness, grid_hit, median, n_sessions, seed):
+def run_cell(freqs, gen_samples, *, stickiness, grid_hit, median, n_sessions, seed,
+             key_pool=None, persist_cache=False):
     rng = random.Random(seed)
-    sim = Sim(freqs, gen_samples, stickiness=stickiness, grid_hit=grid_hit, median_dwell_s=median, rng=rng)
+    sim = Sim(freqs, gen_samples, stickiness=stickiness, grid_hit=grid_hit, median_dwell_s=median, rng=rng,
+              key_pool=key_pool, persist_cache=persist_cache)
     sessions = [sim.session() for _ in range(n_sessions)]
     out = aggregate(sessions)
     visits = [v for s in sessions for v in s]
@@ -238,6 +262,21 @@ def _self_test():
     fast = run_cell(freqs, [5.0], stickiness=0.3, grid_hit=0.0, median=20, n_sessions=500, seed=3)
     slow = run_cell(freqs, [60.0], stickiness=0.3, grid_hit=0.0, median=20, n_sessions=500, seed=3)
     assert slow["visit_share_L3"] <= fast["visit_share_L3"], (fast, slow)
+    # a persistent cache can only add cache hits, never remove them
+    pool = {m: [f"{m}-{i}" for i in range(3)] for m in MOODS}           # 3 distinct profile keys per mood
+    cold = run_cell(freqs, [5.0], stickiness=0.0, grid_hit=0.0, median=30, n_sessions=400, seed=4, key_pool=pool)
+    warm = run_cell(freqs, [5.0], stickiness=0.0, grid_hit=0.0, median=30, n_sessions=400, seed=4, key_pool=pool,
+                    persist_cache=True)
+    assert warm["visit_share_L2"] > cold["visit_share_L2"], (cold, warm)
+    # the generation time a listener waits is wall_ms, not the generator's own timer
+    import tempfile
+    with tempfile.TemporaryDirectory() as td:
+        f = Path(td) / "d4.json"
+        f.write_text(json.dumps({"sections": {"duration": [
+            {"duration_seconds": 15, "wall_ms": 13000, "timings": {"d3_generate_ms": 12400}, "error": None},
+            {"duration_seconds": 15, "wall_ms": 14000, "error": None}]}}), encoding="utf-8")
+        got = load_gen_times([f"t={f}"], None)["t"][15]
+    assert got == [13.0, 14.0], got
     print("self-test ok")
 
 
@@ -249,7 +288,12 @@ def main():
     ap.add_argument("--durations", default="10,15,28")
     ap.add_argument("--medians", default="10,20,30,60,120", help="median dwell seconds to sweep")
     ap.add_argument("--stickiness", type=float, default=0.3)
-    ap.add_argument("--grid-hit", type=float, default=0.5, help="share of page profiles whose key is in the 99-entry pre-warm grid")
+    ap.add_argument("--grid-hit", type=float, default=None,
+                    help="share of page profiles whose key is in the 99-entry pre-warm grid. Default: the value "
+                         "measured by profile_keys.py when --profile-keys is given, else 0 (not an assumed 0.5)")
+    ap.add_argument("--grid-hit-sensitivity", type=float, default=None,
+                    help="also run this grid-hit share as a labelled 'assumed' scenario (e.g. 0.5)")
+    ap.add_argument("--profile-keys", help="profile_keys.py output: real cache keys of the page profiles")
     ap.add_argument("--sessions", type=int, default=2000)
     ap.add_argument("--seed", type=int, default=20260611)
     ap.add_argument("--primary-median", type=float, default=30.0)
@@ -265,34 +309,64 @@ def main():
         print("no generation-time data: pass --d4 tier=path and/or --gen-json", file=sys.stderr)
         return 2
     freqs = mood_frequencies(args.moods)
+    measured_hit, key_pool = load_profile_keys(args.profile_keys)
+    grid_hit = args.grid_hit if args.grid_hit is not None else (measured_hit if measured_hit is not None else 0.0)
+    if measured_hit is not None and abs(grid_hit - measured_hit) > 1e-9:
+        print(f"note: --grid-hit {grid_hit} differs from the measured {measured_hit:.3f}", file=sys.stderr)
+    print("mood frequencies: " + ", ".join(f"{m} {p:.3f}" for m, p in freqs.items()))
+    print(f"grid_hit = {grid_hit:.3f}" + (" (measured)" if args.grid_hit is None and measured_hit is not None else ""))
     durations = [int(d) for d in args.durations.split(",")]
     medians = [float(m) for m in args.medians.split(",")]
 
+    # scenarios: the primary one (cold cache, measured grid hits) and bounds around it
+    scenarios = [("cold_cache", grid_hit, False)]
+    if key_pool:
+        scenarios.append(("warm_cache", grid_hit, True))
+    if args.grid_hit_sensitivity is not None:
+        scenarios.append((f"assumed_grid_hit_{args.grid_hit_sensitivity:g}", args.grid_hit_sensitivity, False))
+
+    grid_source = ("flag" if args.grid_hit is not None
+                   else "measured" if measured_hit is not None else "default 0")
     result = {"assumptions": {"confidence_window_s": CONFIDENCE_WINDOW_S, "weibull_shape": WEIBULL_SHAPE,
                               "long_form_dwell_multiplier": LONG_FORM_DWELL_MULTIPLIER,
                               "long_form_share": LONG_FORM_SHARE, "stickiness": args.stickiness,
-                              "grid_hit": args.grid_hit, "sessions_per_cell": args.sessions,
-                              "seed": args.seed, "primary_median_dwell_s": args.primary_median},
+                              "grid_hit": grid_hit, "grid_hit_source": grid_source,
+                              "sessions_per_cell": args.sessions,
+                              "seed": args.seed, "primary_median_dwell_s": args.primary_median,
+                              "key_source": "real profiles" if key_pool else "synthetic Zipf (500 keys)",
+                              "gen_time_field": "wall_ms"},
+              "mood_frequencies": {m: round(p, 4) for m, p in freqs.items()},
               "gen_time_sources": {t: {str(d): {"n": len(v), "censored": sum(1 for x in v if x == CENSORED),
                                               "median_s": (statistics.median([x for x in v if x != CENSORED])
                                                            if any(x != CENSORED for x in v) else None)}
                                        for d, v in by_d.items()} for t, by_d in gen.items()},
-              "cells": []}
-    for tier, by_d in gen.items():
-        for d in durations:
-            samples = by_d.get(d)
-            if not samples:
-                continue
-            for med in medians:
-                cell = run_cell(freqs, samples, stickiness=args.stickiness, grid_hit=args.grid_hit,
-                                median=med, n_sessions=args.sessions, seed=args.seed)
-                result["cells"].append({"tier": tier, "duration_s": d, "median_dwell_s": med, **cell})
-            line = next(c for c in result["cells"] if c["tier"] == tier and c["duration_s"] == d
-                        and c["median_dwell_s"] == min(medians, key=lambda m: abs(m - args.primary_median)))
-            print(f"{tier:>6} {d:>3}s  median dwell {line['median_dwell_s']:>5.0f}s  "
-                  f"visits L1/L2/L3/none = {line['visit_share_L1']:.2f}/{line['visit_share_L2']:.2f}/"
-                  f"{line['visit_share_L3']:.2f}/{line['visit_share_none']:.2f}   "
-                  f"listening L1/L2/L3 = {line['listen_share_L1']:.2f}/{line['listen_share_L2']:.2f}/{line['listen_share_L3']:.2f}")
+              "scenarios": {}}
+    for name, gh, persist in scenarios:
+        cells = []
+        print(f"\n== {name} (grid_hit {gh:g}, {'persistent' if persist else 'per-session'} cache) ==")
+        for tier, by_d in gen.items():
+            for d in durations:
+                samples = by_d.get(d)
+                if not samples:
+                    continue
+                for med in medians:
+                    cell = run_cell(freqs, samples, stickiness=args.stickiness, grid_hit=gh, median=med,
+                                    n_sessions=args.sessions, seed=args.seed, key_pool=key_pool, persist_cache=persist)
+                    cells.append({"tier": tier, "duration_s": d, "median_dwell_s": med, **cell})
+                line = next(c for c in cells if c["tier"] == tier and c["duration_s"] == d
+                            and c["median_dwell_s"] == min(medians, key=lambda m: abs(m - args.primary_median)))
+                print(f"{tier:>6} {d:>3}s  median dwell {line['median_dwell_s']:>5.0f}s  "
+                      f"visits L1/L2/L3/none = {line['visit_share_L1']:.2f}/{line['visit_share_L2']:.2f}/"
+                      f"{line['visit_share_L3']:.2f}/{line['visit_share_none']:.2f}   "
+                      f"listening L1/L2/L3 = {line['listen_share_L1']:.2f}/{line['listen_share_L2']:.2f}/{line['listen_share_L3']:.2f}")
+        note = None
+        if persist and key_pool:
+            n_keys = len({k for v in key_pool.values() for k in v})
+            note = (f"trivial upper bound: the corpus has only {n_keys} distinct keys and the cache never resets, so "
+                    "every key is cached within the first sessions and nearly all committed visits become L2. Real "
+                    "browsing touches far more distinct pages than this corpus.")
+        result["scenarios"][name] = {"grid_hit": gh, "persistent_cache": persist, "note": note, "cells": cells}
+    result["cells"] = result["scenarios"]["cold_cache"]["cells"]     # primary scenario, kept for older readers
 
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
