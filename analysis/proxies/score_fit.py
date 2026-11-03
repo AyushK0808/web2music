@@ -204,12 +204,25 @@ def frechet_distance(a, b):
 
 # ── feature extraction (heavy, lazy imports) ─────────────────────────────────
 
+MIN_TAG_SAMPLES = int(3.5 * 16000)      # essentia's MusiCNN/EffNet windows need about 3 s
+
+
 class Extractors:
-    def __init__(self, essentia_dir, clap_ckpt, want_quality=True):
-        self.essentia_dir, self.clap_ckpt = Path(essentia_dir), clap_ckpt
-        self._load_essentia()
-        self._load_clap()
-        self.audiobox = self._load_audiobox() if want_quality else None
+    """Features for one clip. essentia-tensorflow and PyTorch (CLAP, Audiobox) corrupt each other's
+    memory when loaded into one process ("free(): invalid pointer" / segfault on the first clip, in
+    either import order), so the two live in separate stages, run as separate processes by
+    cmd_extract: stage "essentia" -> valence/arousal and mood tags, stage "clap" -> CLAP embeddings
+    and Audiobox Aesthetics. Both write into the same features file."""
+
+    def __init__(self, stage, essentia_dir, clap_ckpt, want_quality=True):
+        assert stage in ("essentia", "clap"), stage
+        self.stage, self.essentia_dir, self.clap_ckpt = stage, Path(essentia_dir), clap_ckpt
+        self.audiobox = None
+        if stage == "essentia":
+            self._load_essentia()
+        else:
+            self._load_clap()
+            self.audiobox = self._load_audiobox() if want_quality else None
 
     def _load_essentia(self):
         try:
@@ -229,35 +242,126 @@ class Extractors:
         self.musicnn = TensorflowPredictMusiCNN(graphFilename=str(d / "msd-musicnn-1.pb"), output="model/dense/BiasAdd")
         self.emo = TensorflowPredict2D(graphFilename=str(d / "emomusic-msd-musicnn-2.pb"), output="model/Identity")
         self.effnet = TensorflowPredictEffnetDiscogs(graphFilename=str(d / "discogs-effnet-bs64-1.pb"), output="PartitionedCall:1")
-        self.mood = TensorflowPredict2D(graphFilename=str(d / "mtg_jamendo_moodtheme-discogs-effnet-1.pb"),
-                                        input="serving_default_model_Placeholder", output="PartitionedCall:0")
+        mood_graph = str(d / "mtg_jamendo_moodtheme-discogs-effnet-1.pb")
+        # The published .pb exists in two exports: TF-serving node names, and the older
+        # model/Placeholder -> model/Sigmoid graph. Both end in the 56-tag sigmoid.
+        try:
+            self.mood = TensorflowPredict2D(graphFilename=mood_graph,
+                                            input="serving_default_model_Placeholder", output="PartitionedCall:0")
+        except RuntimeError:
+            self.mood = TensorflowPredict2D(graphFilename=mood_graph,
+                                            input="model/Placeholder", output="model/Sigmoid")
         self.mood_labels = json.loads((d / "mtg_jamendo_moodtheme-discogs-effnet-1.json").read_text())["classes"]
 
     def _load_clap(self):
+        # laion_clap runs its own training argparse over sys.argv (at import and when it builds the
+        # model), which rejects this script's arguments ("unrecognized arguments: extract
+        # --clips-dir ..."). Hide them for the whole load.
+        argv, sys.argv = sys.argv, sys.argv[:1]
         try:
-            import laion_clap
-        except Exception as e:
-            raise SystemExit(f"laion_clap is required for extract ({e}): pip install laion-clap")
-        self.clap = laion_clap.CLAP_Module(enable_fusion=False, amodel="HTSAT-base")
-        self.clap.load_ckpt(self.clap_ckpt)
+            try:
+                import laion_clap
+            except Exception as e:
+                raise SystemExit(f"laion_clap is required for extract ({e}): pip install laion-clap")
+            self.clap = laion_clap.CLAP_Module(enable_fusion=False, amodel="HTSAT-base")
+            self._load_clap_ckpt()
+        finally:
+            sys.argv = argv
+
+    def _load_clap_ckpt(self):
+        """torch >= 2.6 only unpickles tensors by default, and this checkpoint also stores numpy
+        objects (a scalar, a dtype). Allow the types torch reports one at a time, but only numpy
+        ones, and give up after a few; never switch weights_only off for an arbitrary pickle."""
+        import importlib
+        import re
+        import pickle
+        import torch
+        # newer transformers no longer registers the text tower's position_ids buffer, so the
+        # checkpoint's copy is an "unexpected key". It is a fixed 0..N index, not a learned
+        # weight: drop that one key and nothing else.
+        orig_load = self.clap.model.load_state_dict
+
+        def load_without_position_ids(state, *a, **k):
+            dropped = [n for n in state if n.endswith("embeddings.position_ids")]
+            if dropped:
+                print(f"[score_fit] ignoring {len(dropped)} checkpoint key(s) the installed transformers "
+                      f"no longer has: {dropped}", file=sys.stderr)
+            return orig_load({n: v for n, v in state.items() if n not in dropped}, *a, **k)
+
+        self.clap.model.load_state_dict = load_without_position_ids
+        allowed = []
+        for _ in range(8):
+            try:
+                with torch.serialization.safe_globals(allowed):
+                    self.clap.load_ckpt(self.clap_ckpt)
+                return
+            except pickle.UnpicklingError as e:
+                msg = str(e)
+                m = re.search(r"Unsupported global: GLOBAL ([\w.]+)", msg)
+                c = re.search(r"got <class '([\w.]+)'>", msg)
+                if m:      # (object, name as pickled): numpy 2 exposes these under numpy._core, the pickle says numpy.core
+                    full = m.group(1)
+                    mod, _, name = full.rpartition(".")
+                    item = (getattr(importlib.import_module(mod), name), full)
+                elif c:
+                    full = c.group(1)
+                    mod, _, name = full.rpartition(".")
+                    item = getattr(importlib.import_module(mod), name)
+                else:
+                    raise
+                if not mod.startswith("numpy"):
+                    raise SystemExit(f"CLAP checkpoint needs {full}, which is not a numpy type; not loading it")
+                print(f"[score_fit] allowing numpy type {full} while unpickling the CLAP checkpoint", file=sys.stderr)
+                allowed.append(item)
+        raise SystemExit("CLAP checkpoint needs more than 8 extra numpy types; not loading it")
 
     def _load_audiobox(self):
         try:
-            from audiobox_aesthetics.infer import initialize_predictor
-            return initialize_predictor()
+            import torch
+            import audiobox_aesthetics.infer as infer
+
+            def read_wav(meta):                       # replaces infer.read_wav (torchaudio.load -> torchcodec)
+                return torch.from_numpy(Extractors._decode(meta["path"], 16000))[None, :], 16000
+
+            infer.read_wav = read_wav
+            return infer.initialize_predictor()
         except Exception as e:
             print(f"[score_fit] Audiobox Aesthetics unavailable ({e}); quality proxy will be skipped", file=sys.stderr)
             return None
 
+    # the field each stage owns; a clip with it is already done for that stage
+    STAGE_MARKER = {"essentia": "valence", "clap": "clap_audio"}
+
+    @staticmethod
+    def _decode(path, sr):
+        """Mono float32 samples at `sr` Hz. Every clip here is Ogg/Opus, which essentia's bundled
+        decoder rejects ("AudioLoader: Unsupported codec!", then a segfault) and whose support in
+        torchaudio/soundfile depends on the build, so ffmpeg decodes them for all three models."""
+        import subprocess
+        import numpy as np
+        raw = subprocess.run(["ffmpeg", "-v", "error", "-i", str(path), "-f", "f32le", "-ac", "1", "-ar", str(sr), "-"],
+                             capture_output=True, check=True).stdout
+        return np.frombuffer(raw, dtype=np.float32).copy()
+
     def clip_features(self, path: Path) -> dict:
         import numpy as np
-        audio = self.MonoLoader(filename=str(path), sampleRate=16000, resampleQuality=4)()
-        va_raw = np.asarray(self.emo(self.musicnn(audio))).mean(axis=0)          # [valence, arousal] on 1..9
-        tags = np.asarray(self.mood(self.effnet(audio))).mean(axis=0)
-        top = [self.mood_labels[i] for i in np.argsort(tags)[::-1][:TOP_K_TAGS]]
-        emb = self.clap.get_audio_embedding_from_filelist(x=[str(path)], use_tensor=False)[0]
-        feat = {"valence": float((va_raw[0] - 5) / 4), "arousal": float((va_raw[1] - 1) / 8),
-                "top_tags": top, "clap_audio": [float(v) for v in emb]}
+        if self.stage == "essentia":
+            audio = self._decode(path, 16000)
+            tiled = False
+            if len(audio) < MIN_TAG_SAMPLES:
+                # MusiCNN/EffNet need ~3 s of audio; a loop-trimmed clip can be shorter. The clips
+                # repeat gaplessly in the player, so repeating one to the minimum is what a listener hears.
+                audio = np.tile(audio, int(np.ceil(MIN_TAG_SAMPLES / max(1, len(audio)))))
+                tiled = True
+            va_raw = np.asarray(self.emo(self.musicnn(audio))).mean(axis=0)          # [valence, arousal] on 1..9
+            tags = np.asarray(self.mood(self.effnet(audio))).mean(axis=0)
+            top = [self.mood_labels[i] for i in np.argsort(tags)[::-1][:TOP_K_TAGS]]
+            feat = {"valence": float((va_raw[0] - 5) / 4), "arousal": float((va_raw[1] - 1) / 8), "top_tags": top}
+            if tiled:
+                feat["tiled_to_min_length"] = True
+            return feat
+        emb = self.clap.get_audio_embedding_from_data(x=self._decode(path, 48000)[None, :])[0]
+        feat = {"clap_audio": [float(v) for v in emb]}
         if self.audiobox:
             try:
                 q = self.audiobox.forward([{"path": str(path)}])[0]
@@ -267,27 +371,53 @@ class Extractors:
         return feat
 
     def texts(self, texts):
-        return [[float(v) for v in e] for e in self.clap.get_text_embedding(texts, use_tensor=False)]
+        out = []
+        for i in range(0, len(texts), 32):       # this laion_clap's get_text_embedding has no use_tensor and returns numpy
+            out.extend([float(v) for v in e] for e in self.clap.get_text_embedding(texts[i:i + 32]))
+        return out
 
 
 def cmd_extract(args):
+    if args.stage is None:
+        # one process per framework (see Extractors); each reads and updates the same features file
+        import subprocess
+        for stage in ("essentia", "clap"):
+            print(f"[score_fit] extract stage: {stage}", flush=True)
+            rc = subprocess.call([sys.executable, str(Path(__file__).resolve()), *sys.argv[1:], "--stage", stage])
+            if rc != 0:
+                print(f"[score_fit] stage {stage} failed (exit {rc})", file=sys.stderr)
+                return rc
+        return 0
+
     profiles = json.loads((REPO / args.profiles).read_text(encoding="utf-8"))
     out_path = REPO / args.out
     cache = json.loads(out_path.read_text(encoding="utf-8")) if out_path.exists() else {"clips": {}, "texts": {}}
-    ex = Extractors(Path(args.essentia_models), args.clap_ckpt, want_quality=not args.no_quality)
+    ex = Extractors(args.stage, Path(args.essentia_models), args.clap_ckpt, want_quality=not args.no_quality)
+    marker = Extractors.STAGE_MARKER[args.stage]
+    done = 0
+
+    def save():
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(json.dumps(cache), encoding="utf-8")
 
     def do_dir(label, clips_dir):
+        nonlocal done
         for p in sorted(Path(clips_dir).glob("*.ogg")):
             key = f"{label}/{p.name}"
-            if key in cache["clips"]:
+            entry = cache["clips"].get(key) or {}
+            if marker in entry:
                 continue
             try:
-                cache["clips"][key] = ex.clip_features(p)
+                entry.update(ex.clip_features(p))
+                if str(entry.get("error", "")).startswith(f"{args.stage}:"):
+                    entry.pop("error")          # only clear this stage's own earlier error
             except Exception as e:
-                cache["clips"][key] = {"error": f"{type(e).__name__}: {e}"}
-            if len(cache["clips"]) % 25 == 0:
-                out_path.write_text(json.dumps(cache), encoding="utf-8")
-                print(f"  {len(cache['clips'])} clips", flush=True)
+                entry["error"] = f"{args.stage}: {type(e).__name__}: {e}"
+            cache["clips"][key] = entry
+            done += 1
+            if done % 25 == 0:
+                save()
+                print(f"  {args.stage}: {done} clips this run", flush=True)
 
     do_dir("matched", REPO / args.clips_dir)
     if args.fixed_clips_dir:
@@ -300,13 +430,20 @@ def cmd_extract(args):
     if args.fad_reference:
         do_dir("fad-reference", REPO / args.fad_reference)
 
-    todo = [p for p in profiles if p["id"] not in cache["texts"]]
-    if todo:
-        for p, e in zip(todo, ex.texts([f"{p['title']}. {p['lead']}"[:600] for p in todo])):
-            cache["texts"][p["id"]] = e
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(json.dumps(cache), encoding="utf-8")
-    print(f"features for {len(cache['clips'])} clip(s), {len(cache['texts'])} page text(s) -> {out_path}")
+    if args.stage == "clap":
+        todo = [p for p in profiles if p["id"] not in cache["texts"]]
+        if todo:
+            for p, e in zip(todo, ex.texts([f"{p['title']}. {p['lead']}"[:600] for p in todo])):
+                cache["texts"][p["id"]] = e
+    save()
+    failed = [k for k, v in cache["clips"].items() if "error" in v]
+    print(f"[{args.stage}] features for {len(cache['clips'])} clip(s), {len(cache['texts'])} page text(s) -> {out_path}")
+    if failed:
+        print(f"[{args.stage}] WARNING: {len(failed)} of {len(cache['clips'])} clip(s) carry an error and will be "
+              f"ignored by analyse; first: {failed[0]}: {cache['clips'][failed[0]]['error']}", file=sys.stderr)
+    if cache["clips"] and len(failed) > 0.2 * len(cache["clips"]):
+        print(f"[{args.stage}] more than 20% of clips failed; treating the stage as failed", file=sys.stderr)
+        return 1
     return 0
 
 
@@ -479,6 +616,8 @@ def main():
     e.add_argument("--clap-ckpt", default="models/clap/music_audioset_epoch_15_esc_90.14.pt")
     e.add_argument("--no-quality", action="store_true", help="skip Audiobox Aesthetics")
     e.add_argument("--out", default="analysis/proxies/out/features.json")
+    e.add_argument("--stage", choices=["essentia", "clap"],
+                   help="run one stage only (default: both, each in its own process)")
     a = sub.add_parser("analyse")
     a.add_argument("--profiles", default="analysis/proxies/out/profiles.json")
     a.add_argument("--features", default="analysis/proxies/out/features.json")
